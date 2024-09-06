@@ -10,7 +10,7 @@ It generates Zod schemas (uses code from https://github.com/astahmer/openapi-zod
 yarn add @povio/openapi-codegen-cli
 ```
 
-###Example
+### Example
 
 ```bash
 yarn openapi-codegen generate --input http://localhost:3001/docs-json
@@ -30,12 +30,12 @@ yarn test
 
 # run sources with tsx
 yarn start --help
-yarn start generate --input http://localhost:3001/docs-json
+yarn start generate --input ./test/openapi-doc.json --verbose
 
 # build new version
 yarn build
 
 # test build
 yarn start --help
-yarn start:dist generate --input http://localhost:3001/docs-json
+yarn start:dist generate --input ./test/openapi-doc.json --verbose
 ```
