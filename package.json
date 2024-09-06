@@ -1,0 +1,70 @@
+{
+  "name": "@povio/openapi-codegen-cli",
+  "version": "0.0.1",
+  "bin": {
+    "openapi-codegen": "./dist/sh.js"
+  },
+  "type": "module",
+  "scripts": {
+    "start": "node --import tsx/esm ./src/sh.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "build:clean": "rm -rf ./dist",
+    "build": "yarn build:clean && node ./esbuild.mjs && chmod +x ./dist/sh.js",
+    "build:check": "yarn tsc --project . --noEmit",
+    "start:dist": "node ./dist/sh.js",
+    "lint": "eslint --fix",
+    "format:check": "prettier --check .",
+    "format:fix": "prettier --write ."
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "keywords": [
+    "povio",
+    "openapi",
+    "codegen",
+    "zod",
+    "react-query"
+  ],
+  "homepage": "https://github.com/povio/openapi-codegen-cli",
+  "bugs": "https://github.com/povio/openapi-codegen-cli/issues",
+  "repository": {
+    "url": "git+https://github.com/povio/openapi-codegen-cli.git",
+    "type": "git"
+  },
+  "author": "Monika Bozhinova <monika.bozhinova@povio.com>",
+  "license": "BSD-3-Clause",
+  "devDependencies": {
+    "@apidevtools/swagger-parser": "^10.1.0",
+    "@types/node": "^20.12.12",
+    "@types/prettier": "^3.0.0",
+    "@types/prompt-sync": "^4.2.3",
+    "@types/yargs": "^17.0.32",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "chalk": "^5.3.0",
+    "esbuild": "^0.21.3",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.1.3",
+    "openapi-types": "^12.1.3",
+    "prettier": "^3.2.5",
+    "prompt-sync": "^4.2.0",
+    "reflect-metadata": "^0.2.2",
+    "ts-node": "^10.9.2",
+    "ts-pattern": "^5.3.1",
+    "tsx": "^4.10.5",
+    "type-fest": "^4.26.0",
+    "typescript": "^5.4.5",
+    "vitest": "^2.0.5",
+    "yargs": "^17.7.2"
+  },
+  "engines": {
+    "node": ">= 14",
+    "yarn": ">= 3.2",
+    "npm": ">= 8"
+  },
+  "packageManager": "yarn@4.2.2"
+}
