@@ -1,5 +1,5 @@
 import { OpenAPIV3 } from "openapi-types";
-import { OpenAPISchemaResolver } from "./openapi-schema-resolver.utils";
+import { OpenAPISchemaResolver } from "src/generators/types/context";
 import { isReferenceObject } from "./openapi.utils";
 
 export function isSchemaObject(

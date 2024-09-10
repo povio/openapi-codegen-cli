@@ -25,7 +25,7 @@ export function pick<T extends ObjectLiteral, K extends keyof T>(obj: T, paths: 
 
   Object.keys(obj).forEach((key) => {
     if (!paths.includes(key as K)) return;
-    result[key] = obj[key];
+    result[key as keyof Pick<T, K>] = obj[key];
   });
 
   return result;

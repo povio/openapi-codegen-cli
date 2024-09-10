@@ -1,7 +1,8 @@
 import SwaggerParser from "@apidevtools/swagger-parser";
 import { OpenAPIV3 } from "openapi-types";
-import { getZodSchemasFromOpenApiDoc } from "src/generators";
-import { logInfo } from "src/helpers/cli.helper";
+import { generateCodeFromOpenAPIDoc } from "src/generators/code-generation";
+import { printCodeToFiles } from "src/generators/code-print";
+import { logInfo, logSuccess } from "src/helpers/cli.helper";
 
 export type GenerateParams = {
   input: string;
@@ -13,16 +14,19 @@ export async function generate({ input, output, verbose }: GenerateParams) {
   if (verbose) {
     logInfo(`Parsing OpenAPI document from "${input}"`);
   }
-
   const openApiDoc = (await SwaggerParser.bundle(input)) as OpenAPIV3.Document;
 
   if (verbose) {
-    logInfo(`Generating Zod schemas from OpenAPI document`);
+    logInfo("Generating code from OpenAPI document");
   }
-
-  const zodSchemas = getZodSchemasFromOpenApiDoc(openApiDoc);
+  const code = generateCodeFromOpenAPIDoc(openApiDoc);
 
   if (verbose) {
-    logInfo(`Generated Zod schemas:\n${JSON.stringify(zodSchemas, null, 2)}`);
+    logInfo(`Printing generated code to "${output}"`);
+  }
+  printCodeToFiles(code, output);
+
+  if (verbose) {
+    logSuccess("Generated code successfully");
   }
 }

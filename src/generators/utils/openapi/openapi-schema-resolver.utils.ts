@@ -1,24 +1,11 @@
 import { OpenAPIV3 } from "openapi-types";
+import { OpenAPISchemaResolver, RefInfo } from "src/generators/types/context";
 import { getNested } from "../object.utils";
 import { normalizeString } from "./openapi.utils";
 
-type RefInfo = {
-  ref: string;
-  name: string;
-  normalized: string;
-};
-
-export type OpenAPISchemaResolver = {
-  getSchemaByRef: (ref: string) => OpenAPIV3.SchemaObject;
-  resolveRef: (ref: string) => RefInfo;
-  resolveSchemaName: (normalized: string) => RefInfo;
-};
-
 export const getOpenAPISchemaResolver = (openApiDoc: OpenAPIV3.Document): OpenAPISchemaResolver => {
   // both used for debugging purpose
-  // eslint-disable-next-line sonarjs/no-unused-collection
   const nameByRef = new Map<string, string>();
-  // eslint-disable-next-line sonarjs/no-unused-collection
   const refByName = new Map<string, string>();
 
   const byRef = new Map<string, RefInfo>();

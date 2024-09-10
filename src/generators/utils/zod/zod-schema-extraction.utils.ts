@@ -1,7 +1,7 @@
 import { OpenAPIV3 } from "openapi-types";
+import { GenerateContext } from "src/generators/types/context";
+import { ZodSchemasOptions } from "src/generators/types/options";
 import { match } from "ts-pattern";
-import { OpenAPISchemaMeta, OpenAPISchemaMetaData } from "../openapi/openapi-schema-meta.utils";
-import { OpenAPISchemaResolver } from "../openapi/openapi-schema-resolver.utils";
 import { inferRequiredSchema, isArraySchemaObject, isSchemaObject } from "../openapi/openapi-schema.utils";
 import {
   escapeControlCharacters,
@@ -9,48 +9,29 @@ import {
   isReferenceObject,
   wrapWithQuotesIfNeeded,
 } from "../openapi/openapi.utils";
-
-export type ZodSchemasOptions = {
-  withImplicitRequiredProps?: boolean;
-  withDefaultValues?: boolean;
-  complexityThreshold?: number;
-  withDescription?: boolean;
-  allReadonly?: boolean;
-  strictObjects?: boolean;
-  additionalPropertiesDefaultValue?: boolean | OpenAPIV3.SchemaObject;
-};
-
-export type ConversionTypeContext = {
-  resolver: OpenAPISchemaResolver;
-  zodSchemaByName: Record<string, string>;
-  schemaByName: Record<string, string>;
-  schemasByName?: Record<string, string[]>;
-};
-
-type ConversionArgs = {
-  schema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject;
-  ctx?: ConversionTypeContext | undefined;
-  meta?: OpenAPISchemaMetaData | undefined;
-  options?: ZodSchemasOptions | undefined;
-};
+import { ZodSchema, ZodSchemaMetaData } from "./zod-schema.class";
 
 /**
  * @see https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.3.md#schemaObject
  * @see https://github.com/colinhacks/zod
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity
 export function getZodSchema({
   schema: $schema,
   ctx,
   meta: inheritedMeta,
   options,
-}: ConversionArgs): OpenAPISchemaMeta {
+}: {
+  schema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject;
+  ctx?: GenerateContext | undefined;
+  meta?: ZodSchemaMetaData | undefined;
+  options?: ZodSchemasOptions | undefined;
+}): ZodSchema {
   if (!$schema) {
     throw new Error("Schema is required");
   }
 
   const schema = $schema;
-  const code = new OpenAPISchemaMeta(schema, ctx?.resolver, inheritedMeta);
+  const code = new ZodSchema(schema, ctx?.resolver, inheritedMeta);
   const meta = {
     parent: code.inherit(inheritedMeta?.parent),
     referencedBy: [...code.meta.referencedBy],
@@ -67,10 +48,10 @@ export function getZodSchema({
 
     // circular(=recursive) reference
     if (refsPath.length > 1 && refsPath.includes(schemaName)) {
-      return code.assign(ctx.zodSchemaByName[code.ref!]!);
+      return code.assign(ctx.zodSchemas[code.ref!]!);
     }
 
-    let result = ctx.zodSchemaByName[schema.$ref];
+    let result = ctx.zodSchemas[schema.$ref];
     if (!result) {
       const actualSchema = ctx.resolver.getSchemaByRef(schema.$ref);
       if (!actualSchema) {
@@ -80,11 +61,11 @@ export function getZodSchema({
       result = getZodSchema({ schema: actualSchema, ctx, meta, options }).toString();
     }
 
-    if (ctx.zodSchemaByName[schemaName]) {
+    if (ctx.zodSchemas[schemaName]) {
       return code;
     }
 
-    ctx.zodSchemaByName[schemaName] = result;
+    ctx.zodSchemas[schemaName] = result;
 
     return code;
   }
@@ -195,7 +176,6 @@ export function getZodSchema({
           return code.assign(`z.literal(${valueString})`);
         }
 
-        // eslint-disable-next-line sonarjs/no-nested-template-literals
         return code.assign(
           `z.enum([${schema.enum.map((value) => (value === null ? "null" : `"${value}"`)).join(", ")}])`,
         );
@@ -211,7 +191,6 @@ export function getZodSchema({
       }
 
       return code.assign(
-        // eslint-disable-next-line sonarjs/no-nested-template-literals
         `z.union([${schema.enum.map((value) => `z.literal(${value === null ? "null" : value})`).join(", ")}])`,
       );
     }
@@ -281,7 +260,7 @@ export function getZodSchema({
               ? schema.required?.includes(prop)
               : options?.withImplicitRequiredProps,
           name: prop,
-        } as OpenAPISchemaMetaData;
+        } as ZodSchemaMetaData;
 
         let propActualSchema = propSchema;
 
@@ -312,11 +291,10 @@ export function getZodSchema({
 
   if (!schemaType) return code.assign("z.unknown()");
 
-  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
   throw new Error(`Unsupported schema type: ${schemaType}`);
 }
 
-type ZodChainArgs = { schema: OpenAPIV3.SchemaObject; meta?: OpenAPISchemaMetaData; options?: ZodSchemasOptions };
+type ZodChainArgs = { schema: OpenAPIV3.SchemaObject; meta?: ZodSchemaMetaData; options?: ZodSchemasOptions };
 
 export const getZodChain = ({ schema, meta, options }: ZodChainArgs) => {
   const chains: string[] = [];
@@ -345,7 +323,7 @@ export const getZodChain = ({ schema, meta, options }: ZodChainArgs) => {
   return output ? `.${output}` : "";
 };
 
-const getZodChainablePresence = (schema: OpenAPIV3.SchemaObject, meta?: OpenAPISchemaMetaData) => {
+const getZodChainablePresence = (schema: OpenAPIV3.SchemaObject, meta?: ZodSchemaMetaData) => {
   if (schema.nullable && !meta?.isRequired) {
     return "nullish()";
   }

@@ -30,12 +30,12 @@ yarn test
 
 # run sources with tsx
 yarn start --help
-yarn start generate --input ./test/openapi-doc.json --verbose
+yarn start generate --input ./test/openapi-doc.json
 
 # build new version
 yarn build
 
 # test build
 yarn start --help
-yarn start:dist generate --input ./test/openapi-doc.json --verbose
+yarn start:dist generate --input ./test/openapi-doc.json
 ```

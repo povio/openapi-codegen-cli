@@ -1,57 +1,57 @@
 import { OpenAPIV3 } from "openapi-types";
 import { describe, expect, test } from "vitest";
-import { OpenAPISchemaMetaData } from "../openapi/openapi-schema-meta.utils";
 import { getOpenAPISchemaResolver } from "../openapi/openapi-schema-resolver.utils";
 import { asComponentSchema } from "../openapi/openapi.utils";
-import { ConversionTypeContext, getZodSchema } from "./zod-schema.utils";
+import { getZodSchema } from "./zod-schema-extraction.utils";
+import { ZodSchemaMetaData } from "./zod-schema.class";
 
 const makeSchema = (schema: OpenAPIV3.SchemaObject) => schema;
-const getSchemaAsZodString = (schema: OpenAPIV3.SchemaObject, meta?: OpenAPISchemaMetaData | undefined) =>
+const getZodSchemaString = (schema: OpenAPIV3.SchemaObject, meta?: ZodSchemaMetaData | undefined) =>
   getZodSchema({ schema: makeSchema(schema), meta }).toString();
 
-describe("Utils: zod-schema", () => {
-  test("getSchemaAsZodString", () => {
-    expect(getSchemaAsZodString({ type: "boolean" })).toMatchInlineSnapshot('"z.boolean()"');
-    expect(getSchemaAsZodString({ type: "string" })).toMatchInlineSnapshot('"z.string()"');
-    expect(getSchemaAsZodString({ type: "number" })).toMatchInlineSnapshot('"z.number()"');
-    expect(getSchemaAsZodString({ type: "integer" })).toMatchInlineSnapshot('"z.number()"');
-    // expect(getSchemaAsZodString({ type: "string", format: "date-time" })).toMatchInlineSnapshot('"z.string().datetime()"');
-    // expect(getSchemaAsZodString({ type: "number", nullable: true, minimum: 0 })).toMatchInlineSnapshot('"z.number().nullable().gte(0)"');
+describe("Utils: zod-schema-extraction", () => {
+  test("getZodSchemaString", () => {
+    expect(getZodSchemaString({ type: "boolean" })).toMatchInlineSnapshot('"z.boolean()"');
+    expect(getZodSchemaString({ type: "string" })).toMatchInlineSnapshot('"z.string()"');
+    expect(getZodSchemaString({ type: "number" })).toMatchInlineSnapshot('"z.number()"');
+    expect(getZodSchemaString({ type: "integer" })).toMatchInlineSnapshot('"z.number()"');
+    // expect(getZodSchemaString({ type: "string", format: "date-time" })).toMatchInlineSnapshot('"z.string().datetime()"');
+    // expect(getZodSchemaString({ type: "number", nullable: true, minimum: 0 })).toMatchInlineSnapshot('"z.number().nullable().gte(0)"');
 
-    expect(getSchemaAsZodString({ type: "array", items: { type: "string" } })).toMatchInlineSnapshot(
+    expect(getZodSchemaString({ type: "array", items: { type: "string" } })).toMatchInlineSnapshot(
       '"z.array(z.string())"',
     );
-    expect(getSchemaAsZodString({ type: "object" })).toMatchInlineSnapshot('"z.object({}).partial().passthrough()"');
-    expect(getSchemaAsZodString({ type: "object", properties: { str: { type: "string" } } })).toMatchInlineSnapshot(
+    expect(getZodSchemaString({ type: "object" })).toMatchInlineSnapshot('"z.object({}).partial().passthrough()"');
+    expect(getZodSchemaString({ type: "object", properties: { str: { type: "string" } } })).toMatchInlineSnapshot(
       '"z.object({ str: z.string() }).partial().passthrough()"',
     );
 
-    expect(getSchemaAsZodString({ type: "object", properties: { str: { type: "string" } } })).toMatchInlineSnapshot(
+    expect(getZodSchemaString({ type: "object", properties: { str: { type: "string" } } })).toMatchInlineSnapshot(
       '"z.object({ str: z.string() }).partial().passthrough()"',
     );
 
-    expect(getSchemaAsZodString({ type: "object", properties: { nb: { type: "integer" } } })).toMatchInlineSnapshot(
+    expect(getZodSchemaString({ type: "object", properties: { nb: { type: "integer" } } })).toMatchInlineSnapshot(
       '"z.object({ nb: z.number().int() }).partial().passthrough()"',
     );
 
     expect(
-      getSchemaAsZodString({ type: "object", properties: { pa: { type: "number", minimum: 0 } } }),
+      getZodSchemaString({ type: "object", properties: { pa: { type: "number", minimum: 0 } } }),
     ).toMatchInlineSnapshot('"z.object({ pa: z.number().gte(0) }).partial().passthrough()"');
 
     expect(
-      getSchemaAsZodString({ type: "object", properties: { pa: { type: "number", minimum: 0, maximum: 100 } } }),
+      getZodSchemaString({ type: "object", properties: { pa: { type: "number", minimum: 0, maximum: 100 } } }),
     ).toMatchInlineSnapshot('"z.object({ pa: z.number().gte(0).lte(100) }).partial().passthrough()"');
 
     expect(
-      getSchemaAsZodString({ type: "object", properties: { ml: { type: "string", minLength: 0 } } }),
+      getZodSchemaString({ type: "object", properties: { ml: { type: "string", minLength: 0 } } }),
     ).toMatchInlineSnapshot('"z.object({ ml: z.string().min(0) }).partial().passthrough()"');
 
     expect(
-      getSchemaAsZodString({ type: "object", properties: { dt: { type: "string", format: "date-time" } } }),
+      getZodSchemaString({ type: "object", properties: { dt: { type: "string", format: "date-time" } } }),
     ).toMatchInlineSnapshot('"z.object({ dt: z.string().datetime({ offset: true }) }).partial().passthrough()"');
 
     expect(
-      getSchemaAsZodString({
+      getZodSchemaString({
         type: "object",
         properties: {
           str: { type: "string" },
@@ -69,7 +69,7 @@ describe("Utils: zod-schema", () => {
     );
 
     expect(
-      getSchemaAsZodString({
+      getZodSchemaString({
         type: "array",
         items: {
           type: "object",
@@ -81,7 +81,7 @@ describe("Utils: zod-schema", () => {
     ).toMatchInlineSnapshot('"z.array(z.object({ str: z.string() }).partial().passthrough())"');
 
     expect(
-      getSchemaAsZodString({
+      getZodSchemaString({
         type: "array",
         items: {
           type: "array",
@@ -93,7 +93,7 @@ describe("Utils: zod-schema", () => {
     ).toMatchInlineSnapshot('"z.array(z.array(z.string()))"');
 
     expect(
-      getSchemaAsZodString({
+      getZodSchemaString({
         type: "object",
         properties: {
           union: { oneOf: [{ type: "string" }, { type: "number" }] },
@@ -102,7 +102,7 @@ describe("Utils: zod-schema", () => {
     ).toMatchInlineSnapshot('"z.object({ union: z.union([z.string(), z.number()]) }).partial().passthrough()"');
 
     expect(
-      getSchemaAsZodString({
+      getZodSchemaString({
         type: "object",
         oneOf: [
           {
@@ -142,7 +142,7 @@ describe("Utils: zod-schema", () => {
 
     // returns z.discriminatedUnion, when allOf has single object
     expect(
-      getSchemaAsZodString({
+      getZodSchemaString({
         type: "object",
         oneOf: [
           {
@@ -192,7 +192,7 @@ describe("Utils: zod-schema", () => {
 
     // returns z.union, when allOf has multiple objects
     expect(
-      getSchemaAsZodString({
+      getZodSchemaString({
         type: "object",
         oneOf: [
           {
@@ -265,7 +265,7 @@ describe("Utils: zod-schema", () => {
     );
 
     expect(
-      getSchemaAsZodString({
+      getZodSchemaString({
         type: "object",
         properties: {
           anyOfExample: { anyOf: [{ type: "string" }, { type: "number" }] },
@@ -274,7 +274,7 @@ describe("Utils: zod-schema", () => {
     ).toMatchInlineSnapshot('"z.object({ anyOfExample: z.union([z.string(), z.number()]) }).partial().passthrough()"');
 
     expect(
-      getSchemaAsZodString({
+      getZodSchemaString({
         type: "object",
         properties: {
           intersection: { allOf: [{ type: "string" }, { type: "number" }] },
@@ -282,33 +282,33 @@ describe("Utils: zod-schema", () => {
       }),
     ).toMatchInlineSnapshot('"z.object({ intersection: z.string().and(z.number()) }).partial().passthrough()"');
 
-    expect(getSchemaAsZodString({ type: "string", enum: ["aaa", "bbb", "ccc"] })).toMatchInlineSnapshot(
+    expect(getZodSchemaString({ type: "string", enum: ["aaa", "bbb", "ccc"] })).toMatchInlineSnapshot(
       '"z.enum(["aaa", "bbb", "ccc"])"',
     );
-    expect(getSchemaAsZodString({ type: "number", enum: [1, 2, 3, null] })).toMatchInlineSnapshot(
+    expect(getZodSchemaString({ type: "number", enum: [1, 2, 3, null] })).toMatchInlineSnapshot(
       '"z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(null)])"',
     );
-    expect(getSchemaAsZodString({ type: "number", enum: [1] })).toMatchInlineSnapshot('"z.literal(1)"');
-    expect(getSchemaAsZodString({ type: "string", enum: ["aString"] })).toMatchInlineSnapshot('"z.literal("aString")"');
+    expect(getZodSchemaString({ type: "number", enum: [1] })).toMatchInlineSnapshot('"z.literal(1)"');
+    expect(getZodSchemaString({ type: "string", enum: ["aString"] })).toMatchInlineSnapshot('"z.literal("aString")"');
   });
 
   test("getSchemaWithChainableAsZodString", () => {
-    expect(getSchemaAsZodString({ type: "string", nullable: true })).toMatchInlineSnapshot('"z.string()"');
-    expect(getSchemaAsZodString({ type: "string", nullable: false })).toMatchInlineSnapshot('"z.string()"');
+    expect(getZodSchemaString({ type: "string", nullable: true })).toMatchInlineSnapshot('"z.string()"');
+    expect(getZodSchemaString({ type: "string", nullable: false })).toMatchInlineSnapshot('"z.string()"');
 
-    expect(getSchemaAsZodString({ type: "string", nullable: false }, { isRequired: true })).toMatchInlineSnapshot(
+    expect(getZodSchemaString({ type: "string", nullable: false }, { isRequired: true })).toMatchInlineSnapshot(
       '"z.string()"',
     );
-    expect(getSchemaAsZodString({ type: "string", nullable: true }, { isRequired: true })).toMatchInlineSnapshot(
+    expect(getZodSchemaString({ type: "string", nullable: true }, { isRequired: true })).toMatchInlineSnapshot(
       '"z.string()"',
     );
   });
 
-  test("CodeMeta with missing ref", () => {
-    const ctx: ConversionTypeContext = {
+  test("ZodSchema with missing ref", () => {
+    const ctx = {
       resolver: getOpenAPISchemaResolver({ components: { schemas: {} } } as any),
-      zodSchemaByName: {},
-      schemaByName: {},
+      zodSchemas: {},
+      schemas: {},
     };
 
     expect(() =>
@@ -333,7 +333,7 @@ describe("Utils: zod-schema", () => {
     ).toThrowErrorMatchingInlineSnapshot("[Error: Schema Example not found]");
   });
 
-  test("CodeMeta with ref", () => {
+  test("ZodSchema with ref", () => {
     const schemas = {
       Example: {
         type: "object",
@@ -343,10 +343,10 @@ describe("Utils: zod-schema", () => {
         },
       },
     } as Record<string, OpenAPIV3.SchemaObject>;
-    const ctx: ConversionTypeContext = {
+    const ctx = {
       resolver: getOpenAPISchemaResolver({ components: { schemas } } as any),
-      zodSchemaByName: {},
-      schemaByName: {},
+      zodSchemas: {},
+      schemas: {},
     };
     Object.keys(schemas).forEach((key) => ctx.resolver.getSchemaByRef(asComponentSchema(key)));
 
@@ -380,7 +380,7 @@ describe("Utils: zod-schema", () => {
   `);
   });
 
-  test("CodeMeta with nested refs", () => {
+  test("ZodSchema with nested refs", () => {
     const schemas = {
       Basic: { type: "object", properties: { prop: { type: "string" }, second: { type: "number" } } },
       WithNested: {
@@ -398,10 +398,10 @@ describe("Utils: zod-schema", () => {
       },
       DeepNested: { type: "object", properties: { deep: { type: "boolean" } } },
     } as Record<string, OpenAPIV3.SchemaObject>;
-    const ctx: ConversionTypeContext = {
+    const ctx = {
       resolver: getOpenAPISchemaResolver({ components: { schemas } } as any),
-      zodSchemaByName: {},
-      schemaByName: {},
+      zodSchemas: {},
+      schemas: {},
     };
     Object.keys(schemas).forEach((key) => ctx.resolver.getSchemaByRef(asComponentSchema(key)));
 
@@ -446,8 +446,8 @@ describe("Utils: zod-schema", () => {
             "resolveRef": [Function],
             "resolveSchemaName": [Function],
         },
-        "schemaByName": {},
-        "zodSchemaByName": {
+        "schemas": {},
+        "zodSchemas": {
             "Basic": "z.object({ prop: z.string(), second: z.number() }).partial().passthrough()",
             "DeepNested": "z.object({ deep: z.boolean() }).partial().passthrough()",
             "ObjectWithArrayOfRef": "z.object({ exampleProp: z.string(), another: z.number(), link: z.array(WithNested), someReference: Basic }).partial().passthrough()",

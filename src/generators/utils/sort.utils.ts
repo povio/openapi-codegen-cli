@@ -1,3 +1,5 @@
+import { ObjectLiteral } from "../types/types";
+
 /** @see https://gist.github.com/RubyTuesdayDONO/5006455 */
 export function topologicalSort(graph: Record<string, Set<string>>) {
   const sorted: string[] = [], // sorted list of IDs ( returned value )
@@ -31,4 +33,15 @@ export function topologicalSort(graph: Record<string, Set<string>>) {
   Object.keys(graph).forEach((name) => visit(name, []));
 
   return sorted;
+}
+
+/** Sort object keys using a reference order array, sort keys not in reference order in lasts positions */
+export function sortObjKeysFromArray<T extends ObjectLiteral>(obj: T, orderedKeys: Array<keyof T>) {
+  const entries = Object.entries(obj) as Array<[keyof T, T[keyof T]]>;
+
+  const sortedEntries = entries
+    .filter(([key]) => orderedKeys.includes(key))
+    .sort(([a], [b]) => orderedKeys.indexOf(a) - orderedKeys.indexOf(b))
+    .concat(entries.filter(([key]) => !orderedKeys.includes(key)));
+  return Object.fromEntries(sortedEntries);
 }
