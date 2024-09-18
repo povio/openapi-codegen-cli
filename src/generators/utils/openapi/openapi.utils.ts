@@ -1,8 +1,10 @@
 import { OpenAPIV3 } from "openapi-types";
 import { match, P } from "ts-pattern";
-import { capitalize, kebabToCamel, snakeToCamel } from "../string.utils";
+import { snakeToCamel } from "../string.utils";
 
 export const asComponentSchema = (name: string) => `#/components/schemas/${name}`;
+
+export const autocorrectRef = (ref: string) => (ref[1] === "/" ? ref : "#/" + ref.slice(1));
 
 export function isReferenceObject(obj: any): obj is OpenAPIV3.ReferenceObject {
   return obj != null && Object.prototype.hasOwnProperty.call(obj, "$ref");
@@ -36,40 +38,17 @@ const prefixStringStartingWithNumberIfNeeded = (str: string) => {
   return str;
 };
 
-const pathParamWithBracketsRegex = /({\w+})/g;
-const wordPrecededByNonWordCharacter = /[^\w\-]+/g;
-
 export const pathParamToVariableName = (name: string) => {
   // Replace all underscores with # to preserve them when doing snakeToCamel
   const preserveUnderscore = name.replaceAll("_", "#");
   return snakeToCamel(preserveUnderscore.replaceAll("-", "_")).replaceAll("#", "_");
 };
 
-const matcherRegex = /{(\b\w+(?:-\w+)*\b)}/g;
-export const replaceHyphenatedPath = (path: string) => {
-  const matches = path.match(matcherRegex);
-  if (matches === null) {
-    return path.replaceAll(matcherRegex, ":$1");
-  }
-
-  matches.forEach((match) => {
-    const replacement = pathParamToVariableName(match.replaceAll(matcherRegex, ":$1"));
-    path = path.replaceAll(match, replacement);
-  });
-  return path;
-};
-
-/** @example turns `/media-objects/{id}` into `MediaObjectsId` */
-export const pathToVariableName = (path: string) =>
-  capitalize(kebabToCamel(path).replaceAll("/", "")) // /media-objects/{id} -> MediaObjects{id}
-    .replace(pathParamWithBracketsRegex, (group) => capitalize(group.slice(1, -1))) // {id} -> Id
-    .replace(wordPrecededByNonWordCharacter, "_"); // "/robots.txt" -> "/robots_txt"
-
 type SingleType = Exclude<OpenAPIV3.SchemaObject["type"], any[] | undefined>;
-export const isPrimitiveType = (type: SingleType): type is PrimitiveType => primitiveTypeList.includes(type as any);
+export const isPrimitiveType = (type: SingleType): type is PrimitiveType => PRIMITIVE_TYPE_LIST.includes(type as any);
 
-const primitiveTypeList = ["string", "number", "integer", "boolean"] as const;
-export type PrimitiveType = (typeof primitiveTypeList)[number];
+const PRIMITIVE_TYPE_LIST = ["string", "number", "integer", "boolean"] as const;
+export type PrimitiveType = (typeof PRIMITIVE_TYPE_LIST)[number];
 
 export const escapeControlCharacters = (str: string): string => {
   return str

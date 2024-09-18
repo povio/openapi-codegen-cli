@@ -1,6 +1,6 @@
 import { OpenAPIV3 } from "openapi-types";
 import { describe, expect, test } from "vitest";
-import { getOpenAPISchemaResolver } from "../openapi/openapi-schema-resolver.utils";
+import { OpenAPISchemaResolver } from "../openapi/openapi-schema-resolver.class";
 import { asComponentSchema } from "../openapi/openapi.utils";
 import { getZodSchema } from "./zod-schema-extraction.utils";
 import { ZodSchemaMetaData } from "./zod-schema.class";
@@ -305,12 +305,6 @@ describe("Utils: zod-schema-extraction", () => {
   });
 
   test("ZodSchema with missing ref", () => {
-    const ctx = {
-      resolver: getOpenAPISchemaResolver({ components: { schemas: {} } } as any),
-      zodSchemas: {},
-      schemas: {},
-    };
-
     expect(() =>
       getZodSchema({
         schema: makeSchema({
@@ -328,7 +322,7 @@ describe("Utils: zod-schema-extraction", () => {
             },
           },
         }),
-        ctx,
+        resolver: new OpenAPISchemaResolver({ components: { schemas: {} } } as any),
       }),
     ).toThrowErrorMatchingInlineSnapshot("[Error: Schema Example not found]");
   });
@@ -343,12 +337,8 @@ describe("Utils: zod-schema-extraction", () => {
         },
       },
     } as Record<string, OpenAPIV3.SchemaObject>;
-    const ctx = {
-      resolver: getOpenAPISchemaResolver({ components: { schemas } } as any),
-      zodSchemas: {},
-      schemas: {},
-    };
-    Object.keys(schemas).forEach((key) => ctx.resolver.getSchemaByRef(asComponentSchema(key)));
+    const resolver = new OpenAPISchemaResolver({ components: { schemas } } as any);
+    Object.keys(schemas).forEach((key) => resolver.getSchemaByRef(asComponentSchema(key)));
 
     const code = getZodSchema({
       schema: makeSchema({
@@ -366,7 +356,7 @@ describe("Utils: zod-schema-extraction", () => {
           },
         },
       }),
-      ctx,
+      resolver,
     });
     expect(code.toString()).toMatchInlineSnapshot(
       '"z.object({ str: z.string(), reference: Example, inline: z.object({ nested_prop: z.boolean() }).partial().passthrough() }).partial().passthrough()"',
@@ -398,12 +388,12 @@ describe("Utils: zod-schema-extraction", () => {
       },
       DeepNested: { type: "object", properties: { deep: { type: "boolean" } } },
     } as Record<string, OpenAPIV3.SchemaObject>;
+    const resolver = new OpenAPISchemaResolver({ components: { schemas } } as any);
     const ctx = {
-      resolver: getOpenAPISchemaResolver({ components: { schemas } } as any),
       zodSchemas: {},
       schemas: {},
     };
-    Object.keys(schemas).forEach((key) => ctx.resolver.getSchemaByRef(asComponentSchema(key)));
+    Object.keys(schemas).forEach((key) => resolver.getSchemaByRef(asComponentSchema(key)));
 
     const code = getZodSchema({
       schema: makeSchema({
@@ -424,6 +414,7 @@ describe("Utils: zod-schema-extraction", () => {
           differentPropSameRef: { $ref: "#/components/schemas/Basic" },
         },
       }),
+      resolver,
       ctx,
     });
     expect(code.toString()).toMatchInlineSnapshot(
@@ -439,21 +430,13 @@ describe("Utils: zod-schema-extraction", () => {
         "Basic",
     ]
   `);
-    expect(ctx).toMatchInlineSnapshot(`
-    {
-        "resolver": {
-            "getSchemaByRef": [Function],
-            "resolveRef": [Function],
-            "resolveSchemaName": [Function],
-        },
-        "schemas": {},
-        "zodSchemas": {
-            "Basic": "z.object({ prop: z.string(), second: z.number() }).partial().passthrough()",
-            "DeepNested": "z.object({ deep: z.boolean() }).partial().passthrough()",
-            "ObjectWithArrayOfRef": "z.object({ exampleProp: z.string(), another: z.number(), link: z.array(WithNested), someReference: Basic }).partial().passthrough()",
-            "WithNested": "z.object({ nested: z.string(), nestedRef: DeepNested }).partial().passthrough()",
-        },
-    }
-  `);
+    expect(ctx.zodSchemas).toStrictEqual({
+      Basic: "z.object({ prop: z.string(), second: z.number() }).partial().passthrough()",
+      DeepNested: "z.object({ deep: z.boolean() }).partial().passthrough()",
+      ObjectWithArrayOfRef:
+        "z.object({ exampleProp: z.string(), another: z.number(), link: z.array(WithNested), someReference: Basic }).partial().passthrough()",
+      WithNested: "z.object({ nested: z.string(), nestedRef: DeepNested }).partial().passthrough()",
+    });
+    expect(ctx.schemas).toStrictEqual({});
   });
 });

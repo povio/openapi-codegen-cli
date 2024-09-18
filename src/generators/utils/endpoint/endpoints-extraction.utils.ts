@@ -1,17 +1,13 @@
 import { OpenAPIV3 } from "openapi-types";
-import { GenerateContext, OpenAPISchemaResolver } from "src/generators/types/context";
+import { GenerateContext } from "src/generators/types/context";
 import { Endpoint } from "src/generators/types/endpoint";
-import { EndpointsOptions, ZodSchemasOptions } from "src/generators/types/options";
+import { GenerateOptions } from "src/generators/types/options";
 import { match, P } from "ts-pattern";
 import { pick } from "../object.utils";
 import { getOpenAPISchemaComplexity } from "../openapi/openapi-schema-complexity.utils";
-import { getOpenAPISchemaDependencyGraph } from "../openapi/openapi-schema-dependency-graph.utils";
-import {
-  asComponentSchema,
-  isReferenceObject,
-  normalizeString,
-  pathParamToVariableName,
-} from "../openapi/openapi.utils";
+import { OpenAPISchemaResolver } from "../openapi/openapi-schema-resolver.class";
+import { isReferenceObject, normalizeString, pathParamToVariableName } from "../openapi/openapi.utils";
+import { snakeToCamel } from "../string.utils";
 import { getZodChain, getZodSchema } from "../zod/zod-schema-extraction.utils";
 import { ZodSchema } from "../zod/zod-schema.class";
 import {
@@ -22,7 +18,14 @@ import {
   replaceHyphenatedPath,
 } from "./endpoint";
 
-const voidSchema = "z.void()";
+const ALLOWED_PATH_IN_VALUES = ["query", "header", "path"] as Array<OpenAPIV3.ParameterObject["in"]>;
+const ALLOWED_PARAM_MEDIA_TYPES = [
+  "application/octet-stream",
+  "multipart/form-data",
+  "application/x-www-form-urlencoded",
+  "*/*",
+] as const;
+const VOID_SCHEMA = "z.void()";
 
 export function getEndpointsFromOpenAPIDoc({
   resolver,
@@ -31,18 +34,13 @@ export function getEndpointsFromOpenAPIDoc({
 }: {
   resolver: OpenAPISchemaResolver;
   openApiDoc: OpenAPIV3.Document;
-  options?: ZodSchemasOptions & EndpointsOptions;
+  options?: GenerateOptions;
 }) {
-  const dependencyGraph = getOpenAPISchemaDependencyGraph(
-    Object.keys(openApiDoc.components?.schemas ?? {}).map((name) => asComponentSchema(name)),
-    resolver.getSchemaByRef,
-  );
-
   const endpoints = [];
-  const ctx: GenerateContext = { resolver, zodSchemas: {}, schemas: {} };
+  const ctx: GenerateContext = { zodSchemas: {}, schemas: {} };
   const complexityThreshold = options?.complexityThreshold ?? 4;
 
-  const getZodSchemaName = (input: ZodSchema, fallbackName?: string) => {
+  const resolveZodSchema = (input: ZodSchema, fallbackName?: string) => {
     const result = input.toString();
 
     // special value, inline everything (= no variable used)
@@ -86,12 +84,12 @@ export function getEndpointsFromOpenAPIDoc({
     // result is a reference to another schema
     let schema = ctx.zodSchemas[result];
     if (!schema && input.ref) {
-      const refInfo = ctx.resolver.resolveRef(input.ref);
+      const refInfo = resolver.resolveRef(input.ref);
       schema = ctx.zodSchemas[refInfo.name];
     }
 
     if (input.ref && schema) {
-      const complexity = getOpenAPISchemaComplexity({ current: 0, schema: ctx.resolver.getSchemaByRef(input.ref) });
+      const complexity = getOpenAPISchemaComplexity({ current: 0, schema: resolver.getSchemaByRef(input.ref) });
 
       // ref result is simple enough that it doesn't need to be assigned to a variable
       if (complexity < complexityThreshold) {
@@ -101,7 +99,6 @@ export function getEndpointsFromOpenAPIDoc({
       return result;
     }
 
-    console.log({ ref: input.ref, fallbackName, result });
     throw new Error("Invalid ref: " + input.ref);
   };
 
@@ -143,11 +140,11 @@ export function getEndpointsFromOpenAPIDoc({
       if (operation.requestBody) {
         const requestBody = (
           isReferenceObject(operation.requestBody)
-            ? ctx.resolver.getSchemaByRef(operation.requestBody.$ref)
+            ? resolver.getSchemaByRef(operation.requestBody.$ref)
             : operation.requestBody
         ) as OpenAPIV3.RequestBodyObject;
         const mediaTypes = Object.keys(requestBody.content ?? {});
-        const matchingMediaType = mediaTypes.find(isAllowedParamMediaTypes);
+        const matchingMediaType = mediaTypes.find(isAllowedParamMediaType);
 
         const bodySchema = matchingMediaType && requestBody.content?.[matchingMediaType]?.schema;
         if (bodySchema) {
@@ -160,6 +157,7 @@ export function getEndpointsFromOpenAPIDoc({
 
           const bodyCode = getZodSchema({
             schema: bodySchema,
+            resolver,
             ctx,
             meta: { isRequired: requestBody.required ?? true },
             options,
@@ -170,9 +168,9 @@ export function getEndpointsFromOpenAPIDoc({
             type: "Body",
             description: requestBody.description!,
             schema:
-              getZodSchemaName(bodyCode, operationName + "_Body") +
+              resolveZodSchema(bodyCode, bodyZodSchemaName(operationName)) +
               getZodChain({
-                schema: isReferenceObject(bodySchema) ? ctx.resolver.getSchemaByRef(bodySchema.$ref) : bodySchema,
+                schema: isReferenceObject(bodySchema) ? resolver.getSchemaByRef(bodySchema.$ref) : bodySchema,
                 meta: bodyCode.meta,
               }),
           });
@@ -181,13 +179,13 @@ export function getEndpointsFromOpenAPIDoc({
 
       for (const param of parameters) {
         const paramItem = (
-          isReferenceObject(param) ? ctx.resolver.getSchemaByRef(param.$ref) : param
+          isReferenceObject(param) ? resolver.getSchemaByRef(param.$ref) : param
         ) as OpenAPIV3.ParameterObject;
-        if (allowedPathInValues.includes(paramItem.in)) {
+        if (ALLOWED_PATH_IN_VALUES.includes(paramItem.in)) {
           let paramSchema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject | undefined;
           if (paramItem.content) {
             const mediaTypes = Object.keys(paramItem.content ?? {});
-            const matchingMediaType = mediaTypes.find(isAllowedParamMediaTypes);
+            const matchingMediaType = mediaTypes.find(isAllowedParamMediaType);
 
             if (!matchingMediaType) {
               throw new Error(`Unsupported media type for param ${paramItem.name}: ${mediaTypes.join(", ")}`);
@@ -204,7 +202,7 @@ export function getEndpointsFromOpenAPIDoc({
             paramSchema = mediaTypeObject?.schema ?? mediaTypeObject;
           } else {
             paramSchema = isReferenceObject(paramItem.schema)
-              ? ctx.resolver.getSchemaByRef(paramItem.schema.$ref)
+              ? resolver.getSchemaByRef(paramItem.schema.$ref)
               : paramItem.schema;
           }
 
@@ -214,11 +212,12 @@ export function getEndpointsFromOpenAPIDoc({
 
           // resolve ref if needed, and fallback to default (unknown) value if needed
           paramSchema = paramSchema
-            ? (isReferenceObject(paramSchema) ? ctx.resolver.getSchemaByRef(paramSchema.$ref) : paramSchema)!
+            ? (isReferenceObject(paramSchema) ? resolver.getSchemaByRef(paramSchema.$ref) : paramSchema)!
             : {};
 
           const paramCode = getZodSchema({
             schema: paramSchema ?? {},
+            resolver,
             ctx,
             meta: { isRequired: paramItem.in === "path" ? true : paramItem.required ?? false },
             options,
@@ -233,11 +232,11 @@ export function getEndpointsFromOpenAPIDoc({
               .with("query", () => "Query")
               .with("path", () => "Path")
               .run() as "Header" | "Query" | "Path",
-            schema: getZodSchemaName(
+            schema: resolveZodSchema(
               paramCode.assign(
                 paramCode.toString() + getZodChain({ schema: paramSchema, meta: paramCode.meta, options }),
               ),
-              paramItem.name,
+              paramZodSchemaName(operationName, paramItem.name),
             ),
           });
         }
@@ -246,7 +245,7 @@ export function getEndpointsFromOpenAPIDoc({
       for (const statusCode in operation.responses) {
         const responseItem = (
           isReferenceObject(operation.responses[statusCode])
-            ? ctx.resolver.getSchemaByRef(operation.responses[statusCode].$ref)
+            ? resolver.getSchemaByRef(operation.responses[statusCode].$ref)
             : operation.responses[statusCode]
         ) as OpenAPIV3.ResponseObject;
 
@@ -255,15 +254,17 @@ export function getEndpointsFromOpenAPIDoc({
 
         const maybeSchema = matchingMediaType ? responseItem.content?.[matchingMediaType]?.schema : null;
 
-        let schemaString = matchingMediaType ? undefined : voidSchema;
+        let schemaString = matchingMediaType ? undefined : VOID_SCHEMA;
         let schema: ZodSchema | undefined;
 
         if (maybeSchema) {
-          schema = getZodSchema({ schema: maybeSchema, ctx, meta: { isRequired: true }, options });
+          schema = getZodSchema({ schema: maybeSchema, resolver, ctx, meta: { isRequired: true }, options });
           schemaString =
-            (schema.ref ? getZodSchemaName(schema) : schema.toString()) +
+            (schema.ref
+              ? resolveZodSchema(schema)
+              : resolveZodSchema(schema, getResponseZodSchemaName(statusCode, endpoint))) +
             getZodChain({
-              schema: isReferenceObject(maybeSchema) ? ctx.resolver.getSchemaByRef(maybeSchema.$ref) : maybeSchema,
+              schema: isReferenceObject(maybeSchema) ? resolver.getSchemaByRef(maybeSchema.$ref) : maybeSchema,
               meta: schema.meta,
             });
         }
@@ -283,32 +284,8 @@ export function getEndpointsFromOpenAPIDoc({
         }
       }
 
-      // use `default` as fallback for `response` undeclared responses
-      // if no main response has been found, this should be considered it as a fallback
-      // else this will be added as an error response
-      if (operation.responses?.default) {
-        const responseItem = operation.responses.default as OpenAPIV3.ResponseObject;
-
-        const mediaTypes = Object.keys(responseItem.content ?? {});
-        const matchingMediaType = mediaTypes.find(isMediaTypeAllowed);
-
-        const maybeSchema = matchingMediaType && responseItem.content?.[matchingMediaType]?.schema;
-        let schemaString = matchingMediaType ? undefined : voidSchema;
-        let schema: ZodSchema | undefined;
-
-        if (maybeSchema) {
-          schema = getZodSchema({ schema: maybeSchema, ctx, meta: { isRequired: true }, options });
-          schemaString =
-            (schema.ref ? getZodSchemaName(schema) : schema.toString()) +
-            getZodChain({
-              schema: isReferenceObject(maybeSchema) ? ctx.resolver.getSchemaByRef(maybeSchema.$ref) : maybeSchema,
-              meta: schema.meta,
-            });
-        }
-      }
-
       if (!endpoint.response) {
-        endpoint.response = voidSchema;
+        endpoint.response = VOID_SCHEMA;
       }
 
       endpoints.push(endpoint);
@@ -316,11 +293,28 @@ export function getEndpointsFromOpenAPIDoc({
   }
 
   return {
-    dependencyGraph,
     endpoints,
     schemas: ctx.schemas,
     zodSchemas: ctx.zodSchemas,
   };
+}
+
+const bodyZodSchemaName = (operationName: string) => snakeToCamel(`${operationName}_Body`);
+
+const paramZodSchemaName = (operationName: string, paramName: string) =>
+  snakeToCamel(`${operationName}_${paramName}_Param`);
+
+const responseZodSchemaName = (operationName: string) => snakeToCamel(`${operationName}_Response`);
+
+const errorResponseZodSchemaName = (operationName: string, statusCode: string) =>
+  snakeToCamel(`${operationName}_${statusCode}_ErrorResponse`);
+
+function getResponseZodSchemaName(statusCode: string, endpoint: Endpoint): string {
+  const status = Number(statusCode);
+  if ((!isMainResponseStatus(status) || endpoint.response) && statusCode !== "default" && isErrorStatus(status)) {
+    return errorResponseZodSchemaName(endpoint.alias, statusCode);
+  }
+  return responseZodSchemaName(endpoint.alias);
 }
 
 function getParametersMap(parameters: NonNullable<OpenAPIV3.PathItemObject["parameters"]>) {
@@ -329,21 +323,12 @@ function getParametersMap(parameters: NonNullable<OpenAPIV3.PathItemObject["para
   );
 }
 
-const allowedPathInValues = ["query", "header", "path"] as Array<OpenAPIV3.ParameterObject["in"]>;
-
-const allowedParamMediaTypes = [
-  "application/octet-stream",
-  "multipart/form-data",
-  "application/x-www-form-urlencoded",
-  "*/*",
-] as const;
-
-function isAllowedParamMediaTypes(
+function isAllowedParamMediaType(
   mediaType: string,
-): mediaType is (typeof allowedParamMediaTypes)[number] | `application/${string}json${string}` | `text/${string}` {
+): mediaType is (typeof ALLOWED_PARAM_MEDIA_TYPES)[number] | `application/${string}json${string}` | `text/${string}` {
   return (
     (mediaType.includes("application/") && mediaType.includes("json")) ||
-    allowedParamMediaTypes.includes(mediaType as any) ||
+    ALLOWED_PARAM_MEDIA_TYPES.includes(mediaType as any) ||
     mediaType.includes("text/")
   );
 }

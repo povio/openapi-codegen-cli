@@ -1,20 +1,17 @@
 import { OpenAPIV3 } from "openapi-types";
-import { EndpointsOptions, ZodSchemasOptions } from "./types/options";
+import { GenerateOptions } from "./types/options";
 import { getEndpointsFromOpenAPIDoc } from "./utils/endpoint/endpoints-extraction.utils";
-import { getOpenAPISchemaResolver } from "./utils/openapi/openapi-schema-resolver.utils";
+import { OpenAPISchemaResolver } from "./utils/openapi/openapi-schema-resolver.class";
 import {
   getZodSchemasFromOpenAPIDocSchemas,
   sortZodSchemasByTopology,
   wrapCircularZodSchemasWithLazy,
 } from "./utils/zod/zod-schemas.utils";
 
-export function generateCodeFromOpenAPIDoc(
-  openApiDoc: OpenAPIV3.Document,
-  options: ZodSchemasOptions & EndpointsOptions = {},
-) {
+export function generateCodeFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, options: GenerateOptions = {}) {
   const { zodSchemas, endpoints, queries } = getEntitiesFromOpenAPIDoc(openApiDoc, options);
 
-  console.log({ zodSchemas, endpoints, queries });
+  console.log({ zodSchemas, endpoints });
   // TODO: implement code generation from zodSchemas, endpoints and queries
 
   return {
@@ -24,21 +21,23 @@ export function generateCodeFromOpenAPIDoc(
   };
 }
 
-function getEntitiesFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, options: ZodSchemasOptions & EndpointsOptions = {}) {
-  const docSchemas = openApiDoc.components?.schemas ?? {};
+function getEntitiesFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, options: GenerateOptions = {}) {
+  const resolver = new OpenAPISchemaResolver(openApiDoc);
 
-  const resolver = getOpenAPISchemaResolver(openApiDoc);
+  const { zodSchemas: zodSchemasFromEndpoints, endpoints } = getEndpointsFromOpenAPIDoc({
+    resolver,
+    openApiDoc,
+    options,
+  });
+  const zodSchemasFromDocSchemas = getZodSchemasFromOpenAPIDocSchemas({
+    resolver,
+    docSchemas: openApiDoc.components?.schemas ?? {},
+    options,
+  });
 
-  const {
-    zodSchemas: zodSchemasFromDocPaths,
-    dependencyGraph,
-    endpoints,
-  } = getEndpointsFromOpenAPIDoc({ resolver, openApiDoc, options });
-  const zodSchemasFromDocSchemas = getZodSchemasFromOpenAPIDocSchemas({ resolver, docSchemas, options });
-
-  let zodSchemas = { ...zodSchemasFromDocSchemas, ...zodSchemasFromDocPaths };
-  zodSchemas = wrapCircularZodSchemasWithLazy({ resolver, zodSchemas, dependencyGraph });
-  zodSchemas = sortZodSchemasByTopology({ resolver, zodSchemas, dependencyGraph });
+  let zodSchemas = { ...zodSchemasFromDocSchemas, ...zodSchemasFromEndpoints };
+  zodSchemas = wrapCircularZodSchemasWithLazy({ resolver, zodSchemas });
+  zodSchemas = sortZodSchemasByTopology({ resolver, zodSchemas });
 
   return { zodSchemas, endpoints, queries: [] };
 }

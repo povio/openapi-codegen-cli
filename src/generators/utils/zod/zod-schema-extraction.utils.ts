@@ -1,7 +1,8 @@
 import { OpenAPIV3 } from "openapi-types";
 import { GenerateContext } from "src/generators/types/context";
-import { ZodSchemasOptions } from "src/generators/types/options";
+import { ZodSchemasGenerateOptions } from "src/generators/types/options";
 import { match } from "ts-pattern";
+import { OpenAPISchemaResolver } from "../openapi/openapi-schema-resolver.class";
 import { inferRequiredSchema, isArraySchemaObject, isSchemaObject } from "../openapi/openapi-schema.utils";
 import {
   escapeControlCharacters,
@@ -17,34 +18,37 @@ import { ZodSchema, ZodSchemaMetaData } from "./zod-schema.class";
  */
 export function getZodSchema({
   schema: $schema,
-  ctx,
+  resolver,
+  ctx = { zodSchemas: {}, schemas: {} },
   meta: inheritedMeta,
   options,
 }: {
   schema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject;
-  ctx?: GenerateContext | undefined;
-  meta?: ZodSchemaMetaData | undefined;
-  options?: ZodSchemasOptions | undefined;
+  resolver?: OpenAPISchemaResolver;
+  ctx?: GenerateContext;
+  meta?: ZodSchemaMetaData;
+  options?: ZodSchemasGenerateOptions;
 }): ZodSchema {
   if (!$schema) {
     throw new Error("Schema is required");
   }
 
   const schema = $schema;
-  const code = new ZodSchema(schema, ctx?.resolver, inheritedMeta);
+  const code = new ZodSchema(schema, resolver, inheritedMeta);
   const meta = {
     parent: code.inherit(inheritedMeta?.parent),
     referencedBy: [...code.meta.referencedBy],
   };
+  const params = { resolver, ctx, meta, options };
 
   const refsPath = code.meta.referencedBy
     .slice(0, -1)
-    .map((prev) => (ctx ? ctx.resolver.resolveRef(prev.ref!).normalized : prev.ref!));
+    .map((prev) => resolver?.resolveRef(prev.ref!).normalized ?? prev.ref!);
 
   if (isReferenceObject(schema)) {
-    if (!ctx) throw new Error("Context is required");
+    if (!resolver) throw new Error("Resolver is required");
 
-    const schemaName = ctx.resolver.resolveRef(schema.$ref)?.normalized;
+    const schemaName = resolver.resolveRef(schema.$ref)?.normalized;
 
     // circular(=recursive) reference
     if (refsPath.length > 1 && refsPath.includes(schemaName)) {
@@ -53,12 +57,12 @@ export function getZodSchema({
 
     let result = ctx.zodSchemas[schema.$ref];
     if (!result) {
-      const actualSchema = ctx.resolver.getSchemaByRef(schema.$ref);
+      const actualSchema = resolver.getSchemaByRef(schema.$ref);
       if (!actualSchema) {
         throw new Error(`Schema ${schema.$ref} not found`);
       }
 
-      result = getZodSchema({ schema: actualSchema, ctx, meta, options }).toString();
+      result = getZodSchema({ ...params, schema: actualSchema }).toString();
     }
 
     if (ctx.zodSchemas[schemaName]) {
@@ -72,19 +76,19 @@ export function getZodSchema({
 
   if (Array.isArray(schema.type)) {
     if (schema.type.length === 1) {
-      return getZodSchema({ schema: { ...schema, type: schema.type[0]! }, ctx, meta, options });
+      return getZodSchema({ ...params, schema: { ...schema, type: schema.type[0]! } });
     }
 
     return code.assign(
       `z.union([${schema.type
-        .map((prop) => getZodSchema({ schema: { ...schema, type: prop }, ctx, meta, options }))
+        .map((prop) => getZodSchema({ ...params, schema: { ...schema, type: prop } }))
         .join(", ")}])`,
     );
   }
 
   if (schema.oneOf) {
     if (schema.oneOf.length === 1) {
-      const type = getZodSchema({ schema: schema.oneOf[0]!, ctx, meta, options });
+      const type = getZodSchema({ ...params, schema: schema.oneOf[0]! });
       return code.assign(type.toString());
     }
 
@@ -96,25 +100,25 @@ export function getZodSchema({
 
       return code.assign(`
         z.discriminatedUnion("${propertyName}", [${schema.oneOf
-          .map((prop) => getZodSchema({ schema: prop, ctx, meta, options }))
+          .map((prop) => getZodSchema({ ...params, schema: prop }))
           .join(", ")}])
           `);
     }
 
     return code.assign(
-      `z.union([${schema.oneOf.map((prop) => getZodSchema({ schema: prop, ctx, meta, options })).join(", ")}])`,
+      `z.union([${schema.oneOf.map((prop) => getZodSchema({ ...params, schema: prop })).join(", ")}])`,
     );
   }
 
   // anyOf = oneOf but with 1 or more = `T extends oneOf ? T | T[] : never`
   if (schema.anyOf) {
     if (schema.anyOf.length === 1) {
-      const type = getZodSchema({ schema: schema.anyOf[0]!, ctx, meta, options });
+      const type = getZodSchema({ ...params, schema: schema.anyOf[0]! });
       return code.assign(type.toString());
     }
 
     const types = schema.anyOf
-      .map((prop) => getZodSchema({ schema: prop, ctx, meta, options }))
+      .map((prop) => getZodSchema({ ...params, schema: prop }))
       .map((type) => {
         let isObject = true;
 
@@ -136,26 +140,19 @@ export function getZodSchema({
 
   if (schema.allOf) {
     if (schema.allOf.length === 1) {
-      const type = getZodSchema({ schema: schema.allOf[0]!, ctx, meta, options });
+      const type = getZodSchema({ ...params, schema: schema.allOf[0]! });
       return code.assign(type.toString());
     }
     const { patchRequiredSchemaInLoop, noRequiredOnlyAllof, composedRequiredSchema } = inferRequiredSchema(schema);
 
     const types = noRequiredOnlyAllof.map((prop) => {
-      const zodSchema = getZodSchema({ schema: prop, ctx, meta, options });
-      ctx?.resolver && patchRequiredSchemaInLoop(prop, ctx.resolver);
+      const zodSchema = getZodSchema({ ...params, schema: prop });
+      resolver && patchRequiredSchemaInLoop(prop, resolver);
       return zodSchema;
     });
 
     if (composedRequiredSchema.required.length) {
-      types.push(
-        getZodSchema({
-          schema: composedRequiredSchema,
-          ctx,
-          meta,
-          options,
-        }),
-      );
+      types.push(getZodSchema({ ...params, schema: composedRequiredSchema }));
     }
     const first = types.at(0)!;
     const rest = types
@@ -212,7 +209,7 @@ export function getZodSchema({
   if (isArraySchemaObject(schema)) {
     if (schema.items) {
       return code.assign(
-        `z.array(${getZodSchema({ schema: schema.items, ctx, meta, options }).toString()}${getZodChain({
+        `z.array(${getZodSchema({ ...params, schema: schema.items }).toString()}${getZodChain({
           schema: schema.items as OpenAPIV3.SchemaObject,
           meta: { ...meta, isRequired: true },
           options,
@@ -236,7 +233,7 @@ export function getZodSchema({
     if (typeof schema.additionalProperties === "object" && Object.keys(schema.additionalProperties).length > 0) {
       return code.assign(
         `z.record(${(
-          getZodSchema({ schema: schema.additionalProperties, ctx, meta, options }) +
+          getZodSchema({ ...params, schema: schema.additionalProperties }) +
           getZodChain({
             schema: schema.additionalProperties as OpenAPIV3.SchemaObject,
             meta: { ...meta, isRequired: true },
@@ -264,15 +261,15 @@ export function getZodSchema({
 
         let propActualSchema = propSchema;
 
-        if (isReferenceObject(propSchema) && ctx?.resolver) {
-          propActualSchema = ctx.resolver.getSchemaByRef(propSchema.$ref);
+        if (isReferenceObject(propSchema) && resolver) {
+          propActualSchema = resolver.getSchemaByRef(propSchema.$ref);
           if (!propActualSchema) {
             throw new Error(`Schema ${propSchema.$ref} not found`);
           }
         }
 
         const propCode =
-          getZodSchema({ schema: propSchema, ctx, meta: propMetadata, options }) +
+          getZodSchema({ ...params, schema: propSchema, meta: propMetadata }) +
           getZodChain({ schema: propActualSchema as OpenAPIV3.SchemaObject, meta: propMetadata, options });
 
         return [prop, propCode.toString()];
@@ -294,7 +291,7 @@ export function getZodSchema({
   throw new Error(`Unsupported schema type: ${schemaType}`);
 }
 
-type ZodChainArgs = { schema: OpenAPIV3.SchemaObject; meta?: ZodSchemaMetaData; options?: ZodSchemasOptions };
+type ZodChainArgs = { schema: OpenAPIV3.SchemaObject; meta?: ZodSchemaMetaData; options?: ZodSchemasGenerateOptions };
 
 export const getZodChain = ({ schema, meta, options }: ZodChainArgs) => {
   const chains: string[] = [];

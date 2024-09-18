@@ -1,7 +1,7 @@
 import SwaggerParser from "@apidevtools/swagger-parser";
 import { OpenAPIV3 } from "openapi-types";
 import { describe, expect, test } from "vitest";
-import { getOpenAPISchemaResolver } from "../openapi/openapi-schema-resolver.utils";
+import { OpenAPISchemaResolver } from "../openapi/openapi-schema-resolver.class";
 import { getEndpointsFromOpenAPIDoc } from "./endpoints-extraction.utils";
 
 const baseDoc = {
@@ -82,7 +82,7 @@ const schemas = {
 } as const;
 
 const getEndpoints = (openApiDoc: OpenAPIV3.Document) => {
-  const resolver = getOpenAPISchemaResolver(openApiDoc);
+  const resolver = new OpenAPISchemaResolver(openApiDoc);
   return getEndpointsFromOpenAPIDoc({ resolver, openApiDoc });
 };
 
@@ -119,10 +119,6 @@ describe("Utils: endpoints-extraction", () => {
 
     expect(getEndpoints(doc)).toMatchInlineSnapshot(`
       {
-          "dependencyGraph": {
-              "deepDependencyGraph": {},
-              "refsDependencyGraph": {},
-          },
           "endpoints": [
               {
                   "alias": "placeOrder",
@@ -222,20 +218,6 @@ describe("Utils: endpoints-extraction", () => {
 
     expect(getEndpoints(doc)).toMatchInlineSnapshot(`
       {
-          "dependencyGraph": {
-              "deepDependencyGraph": {
-                  "#/components/schemas/Pet": Set {
-                      "#/components/schemas/Category",
-                      "#/components/schemas/Tag",
-                  },
-              },
-              "refsDependencyGraph": {
-                  "#/components/schemas/Pet": Set {
-                      "#/components/schemas/Category",
-                      "#/components/schemas/Tag",
-                  },
-              },
-          },
           "endpoints": [
               {
                   "alias": "updatePet",
@@ -335,11 +317,6 @@ describe("Utils: endpoints-extraction", () => {
                   schema: {
                     allOf: [{ $ref: "#/components/schemas/Pet" }, { $ref: "#/components/schemas/Reason" }],
                   },
-                  "application/x-www-form-urlencoded": {
-                    schema: {
-                      allOf: [{ $ref: "#/components/schemas/Pet" }, { $ref: "#/components/schemas/Reason" }],
-                    },
-                  },
                 },
               },
               required: true,
@@ -363,26 +340,6 @@ describe("Utils: endpoints-extraction", () => {
     };
     expect(getEndpoints(doc)).toMatchInlineSnapshot(`
       {
-          "dependencyGraph": {
-              "deepDependencyGraph": {
-                  "#/components/schemas/Pet": Set {
-                      "#/components/schemas/Category",
-                      "#/components/schemas/Tag",
-                  },
-                  "#/components/schemas/Reason": Set {
-                      "#/components/schemas/ReasonDetails",
-                  },
-              },
-              "refsDependencyGraph": {
-                  "#/components/schemas/Pet": Set {
-                      "#/components/schemas/Category",
-                      "#/components/schemas/Tag",
-                  },
-                  "#/components/schemas/Reason": Set {
-                      "#/components/schemas/ReasonDetails",
-                  },
-              },
-          },
           "endpoints": [
               {
                   "alias": "updatePet",
@@ -409,7 +366,7 @@ describe("Utils: endpoints-extraction", () => {
                       {
                           "description": "Update an existent pet in the store",
                           "name": "body",
-                          "schema": "updatePet_Body",
+                          "schema": "updatePetBody",
                           "type": "Body",
                       },
                   ],
@@ -420,7 +377,7 @@ describe("Utils: endpoints-extraction", () => {
           ],
           "schemas": {
               "Pet.and(Reason)": [
-                  "updatePet_Body",
+                  "updatePetBody",
               ],
           },
           "zodSchemas": {
@@ -429,7 +386,7 @@ describe("Utils: endpoints-extraction", () => {
               "Reason": "z.object({ reason: ReasonDetails }).passthrough()",
               "ReasonDetails": "z.object({ details: z.string() }).passthrough()",
               "Tag": "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
-              "updatePet_Body": "Pet.and(Reason)",
+              "updatePetBody": "Pet.and(Reason)",
           },
       }
     `);
@@ -553,20 +510,6 @@ describe("Utils: endpoints-extraction", () => {
 
     expect(getEndpoints(doc)).toMatchInlineSnapshot(`
       {
-          "dependencyGraph": {
-              "deepDependencyGraph": {
-                  "#/components/schemas/Pet": Set {
-                      "#/components/schemas/Category",
-                      "#/components/schemas/Tag",
-                  },
-              },
-              "refsDependencyGraph": {
-                  "#/components/schemas/Pet": Set {
-                      "#/components/schemas/Category",
-                      "#/components/schemas/Tag",
-                  },
-              },
-          },
           "endpoints": [
               {
                   "alias": "findPetsByStatus",
@@ -628,26 +571,6 @@ describe("Utils: endpoints-extraction", () => {
     const result = getEndpoints(openApiDoc);
     expect(result).toMatchInlineSnapshot(`
       {
-          "dependencyGraph": {
-              "deepDependencyGraph": {
-                  "#/components/schemas/Customer": Set {
-                      "#/components/schemas/Address",
-                  },
-                  "#/components/schemas/Pet": Set {
-                      "#/components/schemas/Category",
-                      "#/components/schemas/Tag",
-                  },
-              },
-              "refsDependencyGraph": {
-                  "#/components/schemas/Customer": Set {
-                      "#/components/schemas/Address",
-                  },
-                  "#/components/schemas/Pet": Set {
-                      "#/components/schemas/Category",
-                      "#/components/schemas/Tag",
-                  },
-              },
-          },
           "endpoints": [
               {
                   "alias": "updatePet",
@@ -1182,20 +1105,6 @@ describe("Utils: endpoints-extraction", () => {
     };
     expect(getEndpoints(doc)).toMatchInlineSnapshot(`
       {
-          "dependencyGraph": {
-              "deepDependencyGraph": {
-                  "#/components/schemas/Pet": Set {
-                      "#/components/schemas/Category",
-                      "#/components/schemas/Tag",
-                  },
-              },
-              "refsDependencyGraph": {
-                  "#/components/schemas/Pet": Set {
-                      "#/components/schemas/Category",
-                      "#/components/schemas/Tag",
-                  },
-              },
-          },
           "endpoints": [
               {
                   "alias": "findPetsByStatus",

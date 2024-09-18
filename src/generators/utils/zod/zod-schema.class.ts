@@ -1,6 +1,6 @@
 import { OpenAPIV3 } from "openapi-types";
-import { OpenAPISchemaResolver } from "src/generators/types/context";
 import { getOpenAPISchemaComplexity } from "../openapi/openapi-schema-complexity.utils";
+import { OpenAPISchemaResolver } from "../openapi/openapi-schema-resolver.class";
 import { isReferenceObject } from "../openapi/openapi.utils";
 
 export type ZodSchemaMetaData = {
@@ -10,14 +10,13 @@ export type ZodSchemaMetaData = {
   referencedBy?: ZodSchema[];
 };
 
-type DefinedZodSchemaMetaProps = "referencedBy";
-type DefinedZodSchemaMetaData = Pick<Required<ZodSchemaMetaData>, DefinedZodSchemaMetaProps> &
-  Omit<ZodSchemaMetaData, DefinedZodSchemaMetaProps>;
+type DefinedZodSchemaMetaDataProps = "referencedBy";
+type DefinedZodSchemaMetaData = Pick<Required<ZodSchemaMetaData>, DefinedZodSchemaMetaDataProps> &
+  Omit<ZodSchemaMetaData, DefinedZodSchemaMetaDataProps>;
 
 export class ZodSchema {
   private code?: string;
   ref?: string;
-
   children: ZodSchema[] = [];
   meta: DefinedZodSchemaMetaData;
 
@@ -41,8 +40,9 @@ export class ZodSchema {
   }
 
   get codeString(): string {
-    if (this.code) return this.code;
-
+    if (this.code) {
+      return this.code;
+    }
     return this.resolver ? this.resolver.resolveRef(this.ref!).normalized : this.ref!;
   }
 
@@ -52,7 +52,6 @@ export class ZodSchema {
 
   assign(code: string) {
     this.code = code;
-
     return this;
   }
 
@@ -60,7 +59,6 @@ export class ZodSchema {
     if (parent) {
       parent.children.push(this);
     }
-
     return this;
   }
 

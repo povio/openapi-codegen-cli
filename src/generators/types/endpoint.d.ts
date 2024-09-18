@@ -16,7 +16,7 @@ export type EndpointResponse = {
 export type Endpoint = {
   method: OpenAPIV3.HttpMethods;
   path: string;
-  alias?: string;
+  alias: string;
   description?: string;
   requestFormat?: "json" | "form-data" | "form-url" | "binary" | "text";
   parameters: Array<EndpointParameter>;
