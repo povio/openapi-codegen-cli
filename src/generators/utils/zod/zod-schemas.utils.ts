@@ -1,9 +1,9 @@
 import { OpenAPIV3 } from "openapi-types";
 import { ZodSchemasGenerateOptions } from "src/generators/types/options";
 import { OpenAPISchemaResolver } from "../openapi/openapi-schema-resolver.class";
-import { normalizeString } from "../openapi/openapi.utils";
 import { sortObjKeysFromArray, topologicalSort } from "../sort.utils";
 import { getZodSchema } from "./zod-schema-extraction.utils";
+import { getZodSchemaNormalizedName } from "./zod-schema.utils";
 
 export function getZodSchemasFromOpenAPIDocSchemas({
   resolver,
@@ -17,8 +17,9 @@ export function getZodSchemasFromOpenAPIDocSchemas({
   const zodSchemas = {} as Record<string, string>;
 
   Object.entries(docSchemas).forEach(([name, schema]) => {
-    if (!zodSchemas[name]) {
-      zodSchemas[name] = getZodSchema({ schema, resolver, options }).toString();
+    const normalized = getZodSchemaNormalizedName(name, options.schemaSuffix);
+    if (!zodSchemas[normalized]) {
+      zodSchemas[normalized] = getZodSchema({ schema, resolver, options }).toString();
     }
   });
 
@@ -28,16 +29,18 @@ export function getZodSchemasFromOpenAPIDocSchemas({
 export function wrapCircularZodSchemasWithLazy({
   resolver,
   zodSchemas,
+  options,
 }: {
   resolver: OpenAPISchemaResolver;
   zodSchemas: Record<string, string>;
+  options: ZodSchemasGenerateOptions;
 }) {
   const schemas = {} as Record<string, string>;
 
   Object.entries(zodSchemas).forEach(([name, code]) => {
     const ref = resolver.resolveSchemaName(name)?.ref;
     const isCircular = ref && resolver.dependencyGraph.deepDependencyGraph[ref]?.has(ref);
-    schemas[normalizeString(name)] = isCircular ? `z.lazy(() => ${code})` : code;
+    schemas[getZodSchemaNormalizedName(name, options.schemaSuffix)] = isCircular ? `z.lazy(() => ${code})` : code;
   });
 
   return schemas;
@@ -51,7 +54,7 @@ export function sortZodSchemasByTopology({
   zodSchemas: Record<string, string>;
 }) {
   const zodSchemasOrderedByDependencies = topologicalSort(resolver.dependencyGraph.deepDependencyGraph).map(
-    (ref) => resolver.resolveRef(ref).name,
+    (ref) => resolver.resolveRef(ref).normalized,
   );
   const sortedZodSchemas = sortObjKeysFromArray(zodSchemas, zodSchemasOrderedByDependencies);
   return sortedZodSchemas;

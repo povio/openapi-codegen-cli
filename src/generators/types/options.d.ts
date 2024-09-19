@@ -1,9 +1,9 @@
 import { OpenAPIV3 } from "openapi-types";
 
 export type ZodSchemasGenerateOptions = {
+  schemaSuffix: string;
   withImplicitRequiredProps?: boolean;
   withDefaultValues?: boolean;
-  complexityThreshold?: number;
   withDescription?: boolean;
   allReadonly?: boolean;
   strictObjects?: boolean;

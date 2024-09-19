@@ -1,6 +1,7 @@
 import { OpenAPIV3 } from "openapi-types";
+import { getZodSchemaNormalizedName } from "../zod/zod-schema.utils";
 import { getOpenAPISchemaDependencyGraph } from "./openapi-schema-dependency-graph.utils";
-import { asComponentSchema, autocorrectRef, normalizeString } from "./openapi.utils";
+import { asComponentSchema, autocorrectRef } from "./openapi.utils";
 
 type SchemaRefInfo = {
   ref: string;
@@ -18,7 +19,10 @@ export class OpenAPISchemaResolver {
     return this.openApiDoc.components?.schemas ?? {};
   }
 
-  constructor(private openApiDoc: OpenAPIV3.Document) {
+  constructor(
+    private openApiDoc: OpenAPIV3.Document,
+    private schemaSuffix: string,
+  ) {
     this.dependencyGraph = getOpenAPISchemaDependencyGraph(
       Object.keys(this.docSchemas).map((name) => asComponentSchema(name)),
       this.getSchemaByRef.bind(this),
@@ -28,7 +32,7 @@ export class OpenAPISchemaResolver {
   getSchemaByRef(ref: string) {
     const correctRef = autocorrectRef(ref);
     const name = correctRef.split("/").at(-1)!;
-    const normalized = normalizeString(name);
+    const normalized = getZodSchemaNormalizedName(name, this.schemaSuffix);
     const info = { ref: correctRef, name, normalized };
 
     this.schemasRefInfoByRef.set(info.ref, info);

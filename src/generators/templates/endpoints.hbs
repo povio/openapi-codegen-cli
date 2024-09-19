@@ -1,0 +1,57 @@
+import { AppRestClient } from "@/util/rest/clients/app-rest-client";
+import {
+    {{! Referenced zod schemas imports }}
+    {{#each zodSchemaImports}}
+    {{this}},
+    {{/each}}
+     {{! Referenced infered zod schemas types imports }}
+    {{#each zodSchemaTypeImports}}
+    {{this}},
+    {{/each}}
+} from "./zod-schemas";
+{{! Optional zod import }}
+{{#if hasZodImport}}
+import { z } from "zod";
+{{/if}}
+
+{{#each endpoints}}
+export const {{getEndpointName this.alias}} = (
+    {{! Parameters }}
+    {{#each (getEndpointParams this.parameters)}}
+    {{this.name}}{{#unless this.required}}?{{/unless}}: {{this.type}},
+    {{/each}}
+    ) => { 
+    return AppRestClient.{{this.method}}( 
+        {{! Response }}
+        { resSchema: {{this.response}} }, 
+        {{! Path }}
+        `{{getEndpointPath this.path}}`,
+        {{! Body }}
+        {{#with (getEndpointBody this.parameters)}}
+        {{#if this}}{{this.name}}, {{/if}}
+        {{/with}}
+        {{! Config }}
+        {{#with (getEndpointConfig this)}}
+        {{#unless this.isEmpty}}
+        {
+            {{#if this.hasParams}}
+            params: {
+                {{#each this.params}}
+                {{this.name}},
+                {{/each}}
+            },
+            {{/if}}
+            {{#if this.hasHeaders}}
+            headers: {
+                {{#each this.headers}}
+                '{{@key}}': '{{this}}',
+                {{/each}}
+            },
+            {{/if}}
+        }
+        {{/unless}}
+        {{/with}}
+    )
+};
+
+{{/each}}

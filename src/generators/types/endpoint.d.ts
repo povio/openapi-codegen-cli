@@ -5,6 +5,7 @@ export type EndpointParameter = {
   description?: string;
   type: "Query" | "Body" | "Header" | "Path";
   schema: string;
+  openApiObject?: OpenAPIV3.ParameterObject;
 };
 
 export type EndpointResponse = {
@@ -18,7 +19,8 @@ export type Endpoint = {
   path: string;
   alias: string;
   description?: string;
-  requestFormat?: "json" | "form-data" | "form-url" | "binary" | "text";
+  requestFormat?: string;
+  responseFormat?: string;
   parameters: Array<EndpointParameter>;
   status?: number;
   response: string;

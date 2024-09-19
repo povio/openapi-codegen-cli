@@ -1,4 +1,5 @@
 import { OpenAPIV3 } from "openapi-types";
+import { printEndpointsToFile, printZodSchemasToFile } from "./code-print";
 import { GenerateOptions } from "./types/options";
 import { getEndpointsFromOpenAPIDoc } from "./utils/endpoint/endpoints-extraction.utils";
 import { OpenAPISchemaResolver } from "./utils/openapi/openapi-schema-resolver.class";
@@ -8,21 +9,32 @@ import {
   wrapCircularZodSchemasWithLazy,
 } from "./utils/zod/zod-schemas.utils";
 
-export function generateCodeFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, options: GenerateOptions = {}) {
-  const { zodSchemas, endpoints, queries } = getEntitiesFromOpenAPIDoc(openApiDoc, options);
+const DEFAULT_GENERATE_OPTIONS = { schemaSuffix: "Schema" };
 
-  console.log({ zodSchemas, endpoints });
-  // TODO: implement code generation from zodSchemas, endpoints and queries
+export async function generateCodeFromOpenAPIDoc({
+  openApiDoc,
+  output,
+  options = DEFAULT_GENERATE_OPTIONS,
+}: {
+  openApiDoc: OpenAPIV3.Document;
+  output: string;
+  options?: GenerateOptions;
+}) {
+  const generateOptions = { ...DEFAULT_GENERATE_OPTIONS, ...options };
+  const { zodSchemas, endpoints } = getEntitiesFromOpenAPIDoc({ openApiDoc, options: generateOptions });
 
-  return {
-    zodSchemas: "",
-    endpoints: "",
-    queries: "",
-  };
+  await printZodSchemasToFile({ zodSchemas, output, options: generateOptions });
+  await printEndpointsToFile({ endpoints, output, options: generateOptions });
 }
 
-function getEntitiesFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, options: GenerateOptions = {}) {
-  const resolver = new OpenAPISchemaResolver(openApiDoc);
+function getEntitiesFromOpenAPIDoc({
+  openApiDoc,
+  options,
+}: {
+  openApiDoc: OpenAPIV3.Document;
+  options: GenerateOptions;
+}) {
+  const resolver = new OpenAPISchemaResolver(openApiDoc, options.schemaSuffix);
 
   const { zodSchemas: zodSchemasFromEndpoints, endpoints } = getEndpointsFromOpenAPIDoc({
     resolver,
@@ -36,8 +48,8 @@ function getEntitiesFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, options: Gene
   });
 
   let zodSchemas = { ...zodSchemasFromDocSchemas, ...zodSchemasFromEndpoints };
-  zodSchemas = wrapCircularZodSchemasWithLazy({ resolver, zodSchemas });
+  zodSchemas = wrapCircularZodSchemasWithLazy({ resolver, zodSchemas, options });
   zodSchemas = sortZodSchemasByTopology({ resolver, zodSchemas });
 
-  return { zodSchemas, endpoints, queries: [] };
+  return { zodSchemas, endpoints };
 }

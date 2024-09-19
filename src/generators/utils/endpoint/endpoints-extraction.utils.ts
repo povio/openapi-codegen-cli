@@ -2,14 +2,15 @@ import { OpenAPIV3 } from "openapi-types";
 import { GenerateContext } from "src/generators/types/context";
 import { Endpoint } from "src/generators/types/endpoint";
 import { GenerateOptions } from "src/generators/types/options";
-import { match, P } from "ts-pattern";
+import { match } from "ts-pattern";
 import { pick } from "../object.utils";
 import { getOpenAPISchemaComplexity } from "../openapi/openapi-schema-complexity.utils";
 import { OpenAPISchemaResolver } from "../openapi/openapi-schema-resolver.class";
-import { isReferenceObject, normalizeString, pathParamToVariableName } from "../openapi/openapi.utils";
+import { isReferenceObject, pathParamToVariableName } from "../openapi/openapi.utils";
 import { snakeToCamel } from "../string.utils";
 import { getZodChain, getZodSchema } from "../zod/zod-schema-extraction.utils";
 import { ZodSchema } from "../zod/zod-schema.class";
+import { getZodSchemaNormalizedName, isNamedZodSchema } from "../zod/zod-schema.utils";
 import {
   getOperationAlias,
   isErrorStatus,
@@ -30,31 +31,26 @@ const VOID_SCHEMA = "z.void()";
 export function getEndpointsFromOpenAPIDoc({
   resolver,
   openApiDoc,
-  options = {},
+  options,
 }: {
   resolver: OpenAPISchemaResolver;
   openApiDoc: OpenAPIV3.Document;
-  options?: GenerateOptions;
+  options: GenerateOptions;
 }) {
   const endpoints = [];
   const ctx: GenerateContext = { zodSchemas: {}, schemas: {} };
-  const complexityThreshold = options?.complexityThreshold ?? 4;
+  const complexityThreshold = 2;
 
   const resolveZodSchema = (input: ZodSchema, fallbackName?: string) => {
     const result = input.toString();
 
-    // special value, inline everything (= no variable used)
-    if (complexityThreshold === -1) {
-      return input.ref ? ctx.zodSchemas[result]! : result;
-    }
-
-    if ((result.startsWith("z.") || input.ref === undefined) && fallbackName) {
+    if ((!isNamedZodSchema(result) || input.ref === undefined) && fallbackName) {
       // result is simple enough that it doesn't need to be assigned to a variable
       if (input.complexity < complexityThreshold) {
         return result;
       }
 
-      const safeName = normalizeString(fallbackName);
+      const safeName = getZodSchemaNormalizedName(fallbackName, options.schemaSuffix);
 
       // result is complex and would benefit from being re-used
       let formatedName = safeName;
@@ -131,7 +127,6 @@ export function getEndpointsFromOpenAPIDoc({
         path: replaceHyphenatedPath(path),
         alias: operationName,
         description: operation.description,
-        requestFormat: "json",
         parameters: [],
         errors: [],
         response: "",
@@ -145,16 +140,10 @@ export function getEndpointsFromOpenAPIDoc({
         ) as OpenAPIV3.RequestBodyObject;
         const mediaTypes = Object.keys(requestBody.content ?? {});
         const matchingMediaType = mediaTypes.find(isAllowedParamMediaType);
+        endpoint.requestFormat = matchingMediaType;
 
         const bodySchema = matchingMediaType && requestBody.content?.[matchingMediaType]?.schema;
         if (bodySchema) {
-          endpoint.requestFormat = match(matchingMediaType)
-            .with("application/octet-stream", () => "binary" as const)
-            .with("application/x-www-form-urlencoded", () => "form-url" as const)
-            .with("multipart/form-data", () => "form-data" as const)
-            .with(P.string.includes("json"), () => "json" as const)
-            .otherwise(() => "text" as const);
-
           const bodyCode = getZodSchema({
             schema: bodySchema,
             resolver,
@@ -238,6 +227,7 @@ export function getEndpointsFromOpenAPIDoc({
               ),
               paramZodSchemaName(operationName, paramItem.name),
             ),
+            openApiObject: paramItem,
           });
         }
       }
@@ -251,6 +241,7 @@ export function getEndpointsFromOpenAPIDoc({
 
         const mediaTypes = Object.keys(responseItem.content ?? {});
         const matchingMediaType = mediaTypes.find(isMediaTypeAllowed);
+        endpoint.responseFormat = matchingMediaType;
 
         const maybeSchema = matchingMediaType ? responseItem.content?.[matchingMediaType]?.schema : null;
 
