@@ -11,20 +11,20 @@ import {
 
 const DEFAULT_GENERATE_OPTIONS = { schemaSuffix: "Schema" };
 
-export async function generateCodeFromOpenAPIDoc({
+export function generateCodeFromOpenAPIDoc({
   openApiDoc,
   output,
-  options = DEFAULT_GENERATE_OPTIONS,
+  options,
 }: {
   openApiDoc: OpenAPIV3.Document;
   output: string;
   options?: GenerateOptions;
 }) {
-  const generateOptions = { ...DEFAULT_GENERATE_OPTIONS, ...options };
-  const { zodSchemas, endpoints } = getEntitiesFromOpenAPIDoc({ openApiDoc, options: generateOptions });
+  options = { ...DEFAULT_GENERATE_OPTIONS, ...options };
+  const { zodSchemas, endpoints } = getEntitiesFromOpenAPIDoc({ openApiDoc, options });
 
-  await printZodSchemasToFile({ zodSchemas, output, options: generateOptions });
-  await printEndpointsToFile({ endpoints, output, options: generateOptions });
+  printZodSchemasToFile({ zodSchemas, output, options });
+  printEndpointsToFile({ endpoints, output, options });
 }
 
 function getEntitiesFromOpenAPIDoc({

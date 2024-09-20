@@ -11,14 +11,14 @@ export type GenerateParams = {
 
 export async function generate({ input, output, verbose }: GenerateParams) {
   if (verbose) {
-    logInfo(`Parsing OpenAPI document from "${input}"`);
+    logInfo(`Parsing OpenAPI spec from "${input}"`);
   }
   const openApiDoc = (await SwaggerParser.bundle(input)) as OpenAPIV3.Document;
 
   if (verbose) {
-    logInfo("Generating code from OpenAPI document");
+    logInfo("Generating code from OpenAPI spec");
   }
-  await generateCodeFromOpenAPIDoc({ openApiDoc, output });
+  generateCodeFromOpenAPIDoc({ openApiDoc, output });
   if (verbose) {
     logSuccess("Generated code successfully");
   }

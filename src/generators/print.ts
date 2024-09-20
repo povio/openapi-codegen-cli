@@ -1,4 +1,4 @@
-import fs from "fs/promises";
+import fs from "fs";
 import Handlebars from "handlebars";
 import { Endpoint, EndpointParameter } from "./types/endpoint";
 import { GenerateOptions } from "./types/options";
@@ -14,7 +14,7 @@ import { getZodSchemaInferedTypeName, isNamedZodSchema } from "./utils/zod/zod-s
 
 const TEMPLATES_DIR = "src/generators/templates";
 
-export async function printZodSchemasToFile({
+export function printZodSchemasToFile({
   zodSchemas,
   output,
   options,
@@ -23,15 +23,15 @@ export async function printZodSchemasToFile({
   output: string;
   options: GenerateOptions;
 }) {
-  const template = await fs.readFile(`${TEMPLATES_DIR}/zod-schemas.hbs`, "utf-8");
+  const template = fs.readFileSync(`${TEMPLATES_DIR}/zod-schemas.hbs`, "utf-8");
 
   setZodSchemaInferedTypeNameHelper(options.schemaSuffix);
   const hbsTemplate = Handlebars.compile(template);
 
-  await fs.writeFile(`${output}/zod-schemas.ts`, hbsTemplate({ zodSchemas }));
+  fs.writeFileSync(`${output}/zod-schemas.ts`, hbsTemplate({ zodSchemas }));
 }
 
-export async function printEndpointsToFile({
+export function printEndpointsToFile({
   endpoints,
   output,
   options,
@@ -40,7 +40,7 @@ export async function printEndpointsToFile({
   output: string;
   options: GenerateOptions;
 }) {
-  const template = await fs.readFile(`${TEMPLATES_DIR}/endpoints.hbs`, "utf-8");
+  const template = fs.readFileSync(`${TEMPLATES_DIR}/endpoints.hbs`, "utf-8");
 
   const endpointResponseSchemas = endpoints.map((endpoint) => endpoint.response);
   const zodSchemaImports = [...new Set(endpointResponseSchemas.filter(isNamedZodSchema))];
@@ -62,7 +62,7 @@ export async function printEndpointsToFile({
   setEndpointConfigHelper();
   const hbsTemplate = Handlebars.compile(template);
 
-  await fs.writeFile(
+  fs.writeFileSync(
     `${output}/endpoints.ts`,
     hbsTemplate({ zodSchemaImports, zodSchemaTypeImports, hasZodImport, endpoints }),
   );
