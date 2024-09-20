@@ -46,10 +46,14 @@ export async function printEndpointsToFile({
   const zodSchemaImports = [...new Set(endpointResponseSchemas.filter(isNamedZodSchema))];
   const hasZodImport = endpointResponseSchemas.some((response) => !isNamedZodSchema(response));
   const endpointParams = endpoints.reduce((prev, curr) => [...prev, ...curr.parameters], [] as EndpointParameter[]);
-  const zodSchemaTypeImports = endpointParams
-    .map((param) => param.schema)
-    .filter(isNamedZodSchema)
-    .map((name) => getZodSchemaInferedTypeName(name, options.schemaSuffix));
+  const zodSchemaTypeImports = [
+    ...new Set(
+      endpointParams
+        .map((param) => param.schema)
+        .filter(isNamedZodSchema)
+        .map((name) => getZodSchemaInferedTypeName(name, options.schemaSuffix)),
+    ),
+  ];
 
   setEndpointNameHelper();
   setEndpointParamsHelper(options.schemaSuffix);

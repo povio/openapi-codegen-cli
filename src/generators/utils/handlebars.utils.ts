@@ -39,18 +39,10 @@ export const setEndpointBodyHelper = () => {
 export const setEndpointConfigHelper = () => {
   Handlebars.registerHelper("getEndpointConfig", (endpoint: Endpoint) => {
     const params = endpoint.parameters.filter((param) => param.type === "Query");
-    const hasParams = params.length > 0;
     const headers = {
-      ...(endpoint.requestFormat ? { "Content-Type": endpoint.requestFormat } : {}),
+      "Content-Type": endpoint.requestFormat,
       ...(endpoint.responseFormat ? { Accept: endpoint.responseFormat } : {}),
     };
-    const hasHeaders = Object.entries(headers).length > 0;
-    return {
-      params,
-      hasParams,
-      headers,
-      hasHeaders,
-      isEmpty: !hasParams && !hasHeaders,
-    };
+    return { params, headers };
   });
 };

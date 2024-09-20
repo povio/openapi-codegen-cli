@@ -32,24 +32,20 @@ export const {{getEndpointName this.alias}} = (
         {{/with}}
         {{! Config }}
         {{#with (getEndpointConfig this)}}
-        {{#unless this.isEmpty}}
         {
-            {{#if this.hasParams}}
+            {{#if this.params}}
             params: {
                 {{#each this.params}}
                 {{this.name}},
                 {{/each}}
             },
             {{/if}}
-            {{#if this.hasHeaders}}
             headers: {
                 {{#each this.headers}}
                 '{{@key}}': '{{this}}',
                 {{/each}}
             },
-            {{/if}}
         }
-        {{/unless}}
         {{/with}}
     )
 };

@@ -127,6 +127,7 @@ export function getEndpointsFromOpenAPIDoc({
         path: replaceHyphenatedPath(path),
         alias: operationName,
         description: operation.description,
+        requestFormat: "application/json",
         parameters: [],
         errors: [],
         response: "",
@@ -140,7 +141,9 @@ export function getEndpointsFromOpenAPIDoc({
         ) as OpenAPIV3.RequestBodyObject;
         const mediaTypes = Object.keys(requestBody.content ?? {});
         const matchingMediaType = mediaTypes.find(isAllowedParamMediaType);
-        endpoint.requestFormat = matchingMediaType;
+        if (matchingMediaType) {
+          endpoint.requestFormat = matchingMediaType;
+        }
 
         const bodySchema = matchingMediaType && requestBody.content?.[matchingMediaType]?.schema;
         if (bodySchema) {
@@ -241,7 +244,9 @@ export function getEndpointsFromOpenAPIDoc({
 
         const mediaTypes = Object.keys(responseItem.content ?? {});
         const matchingMediaType = mediaTypes.find(isMediaTypeAllowed);
-        endpoint.responseFormat = matchingMediaType;
+        if (matchingMediaType) {
+          endpoint.responseFormat = matchingMediaType;
+        }
 
         const maybeSchema = matchingMediaType ? responseItem.content?.[matchingMediaType]?.schema : null;
 

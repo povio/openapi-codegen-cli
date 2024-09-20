@@ -82,8 +82,8 @@ const schemas = {
 } as const;
 
 const getEndpoints = (openApiDoc: OpenAPIV3.Document) => {
-  const resolver = new OpenAPISchemaResolver(openApiDoc);
-  return getEndpointsFromOpenAPIDoc({ resolver, openApiDoc });
+  const resolver = new OpenAPISchemaResolver(openApiDoc, "");
+  return getEndpointsFromOpenAPIDoc({ resolver, openApiDoc, options: { schemaSuffix: "" } });
 };
 
 describe("Utils: endpoints-extraction", () => {
@@ -140,8 +140,9 @@ describe("Utils: endpoints-extraction", () => {
                       },
                   ],
                   "path": "/store/order",
-                  "requestFormat": "json",
+                  "requestFormat": "application/json",
                   "response": "Order",
+                  "responseFormat": "application/json",
               },
           ],
           "schemas": {},
@@ -249,8 +250,9 @@ describe("Utils: endpoints-extraction", () => {
                       },
                   ],
                   "path": "/pet",
-                  "requestFormat": "json",
+                  "requestFormat": "application/json",
                   "response": "Pet",
+                  "responseFormat": "application/json",
               },
               {
                   "alias": "addPet",
@@ -272,8 +274,9 @@ describe("Utils: endpoints-extraction", () => {
                       },
                   ],
                   "path": "/pet",
-                  "requestFormat": "json",
+                  "requestFormat": "application/json",
                   "response": "Pet",
+                  "responseFormat": "application/json",
               },
           ],
           "schemas": {},
@@ -366,18 +369,19 @@ describe("Utils: endpoints-extraction", () => {
                       {
                           "description": "Update an existent pet in the store",
                           "name": "body",
-                          "schema": "updatePetBody",
+                          "schema": "UpdatePetBody",
                           "type": "Body",
                       },
                   ],
                   "path": "/pet",
-                  "requestFormat": "json",
+                  "requestFormat": "application/json",
                   "response": "Pet",
+                  "responseFormat": "application/json",
               },
           ],
           "schemas": {
               "Pet.and(Reason)": [
-                  "updatePetBody",
+                  "UpdatePetBody",
               ],
           },
           "zodSchemas": {
@@ -386,7 +390,7 @@ describe("Utils: endpoints-extraction", () => {
               "Reason": "z.object({ reason: ReasonDetails }).passthrough()",
               "ReasonDetails": "z.object({ details: z.string() }).passthrough()",
               "Tag": "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
-              "updatePetBody": "Pet.and(Reason)",
+              "UpdatePetBody": "Pet.and(Reason)",
           },
       }
     `);
@@ -525,13 +529,30 @@ describe("Utils: endpoints-extraction", () => {
                   "parameters": [
                       {
                           "name": "status",
-                          "schema": "z.enum(["available", "pending", "sold"]).optional().default("available")",
+                          "openApiObject": {
+                              "description": "Status values that need to be considered for filter",
+                              "explode": true,
+                              "in": "query",
+                              "name": "status",
+                              "required": false,
+                              "schema": {
+                                  "default": "available",
+                                  "enum": [
+                                      "available",
+                                      "pending",
+                                      "sold",
+                                  ],
+                                  "type": "string",
+                              },
+                          },
+                          "schema": "FindPetsByStatusStatusParam",
                           "type": "Query",
                       },
                   ],
                   "path": "/pet/findByStatus",
-                  "requestFormat": "json",
-                  "response": "z.array(Pet)",
+                  "requestFormat": "application/json",
+                  "response": "FindPetsByStatusResponse",
+                  "responseFormat": "application/json",
               },
               {
                   "alias": "findPetsByTags",
@@ -547,18 +568,47 @@ describe("Utils: endpoints-extraction", () => {
                   "parameters": [
                       {
                           "name": "tags",
-                          "schema": "z.array(z.string()).optional()",
+                          "openApiObject": {
+                              "description": "Tags to filter by",
+                              "explode": true,
+                              "in": "query",
+                              "name": "tags",
+                              "required": false,
+                              "schema": {
+                                  "items": {
+                                      "type": "string",
+                                  },
+                                  "type": "array",
+                              },
+                          },
+                          "schema": "FindPetsByTagsTagsParam",
                           "type": "Query",
                       },
                   ],
                   "path": "/pet/findByTags",
-                  "requestFormat": "json",
-                  "response": "z.array(Pet)",
+                  "requestFormat": "application/json",
+                  "response": "FindPetsByTagsResponse",
+                  "responseFormat": "application/json",
               },
           ],
-          "schemas": {},
+          "schemas": {
+              "z.array(Pet)": [
+                  "FindPetsByStatusResponse",
+                  "FindPetsByTagsResponse",
+              ],
+              "z.array(z.string()).optional()": [
+                  "FindPetsByTagsTagsParam",
+              ],
+              "z.enum(["available", "pending", "sold"]).optional().default("available")": [
+                  "FindPetsByStatusStatusParam",
+              ],
+          },
           "zodSchemas": {
               "Category": "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
+              "FindPetsByStatusResponse": "z.array(Pet)",
+              "FindPetsByStatusStatusParam": "z.enum(["available", "pending", "sold"]).optional().default("available")",
+              "FindPetsByTagsResponse": "z.array(Pet)",
+              "FindPetsByTagsTagsParam": "z.array(z.string()).optional()",
               "Pet": "z.object({ id: z.number().int().optional(), name: z.string(), category: Category.optional(), photoUrls: z.array(z.string()), tags: z.array(Tag).optional(), status: z.enum(["available", "pending", "sold"]).optional() }).passthrough()",
               "Tag": "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
           },
@@ -602,8 +652,9 @@ describe("Utils: endpoints-extraction", () => {
                       },
                   ],
                   "path": "/pet",
-                  "requestFormat": "json",
+                  "requestFormat": "application/json",
                   "response": "Pet",
+                  "responseFormat": "application/json",
               },
               {
                   "alias": "addPet",
@@ -625,8 +676,9 @@ describe("Utils: endpoints-extraction", () => {
                       },
                   ],
                   "path": "/pet",
-                  "requestFormat": "json",
+                  "requestFormat": "application/json",
                   "response": "Pet",
+                  "responseFormat": "application/json",
               },
               {
                   "alias": "findPetsByStatus",
@@ -642,13 +694,30 @@ describe("Utils: endpoints-extraction", () => {
                   "parameters": [
                       {
                           "name": "status",
-                          "schema": "z.enum(["available", "pending", "sold"]).optional().default("available")",
+                          "openApiObject": {
+                              "description": "Status values that need to be considered for filter",
+                              "explode": true,
+                              "in": "query",
+                              "name": "status",
+                              "required": false,
+                              "schema": {
+                                  "default": "available",
+                                  "enum": [
+                                      "available",
+                                      "pending",
+                                      "sold",
+                                  ],
+                                  "type": "string",
+                              },
+                          },
+                          "schema": "FindPetsByStatusStatusParam",
                           "type": "Query",
                       },
                   ],
                   "path": "/pet/findByStatus",
-                  "requestFormat": "json",
-                  "response": "z.array(Pet)",
+                  "requestFormat": "application/json",
+                  "response": "FindPetsByStatusResponse",
+                  "responseFormat": "application/json",
               },
               {
                   "alias": "findPetsByTags",
@@ -664,13 +733,27 @@ describe("Utils: endpoints-extraction", () => {
                   "parameters": [
                       {
                           "name": "tags",
-                          "schema": "z.array(z.string()).optional()",
+                          "openApiObject": {
+                              "description": "Tags to filter by",
+                              "explode": true,
+                              "in": "query",
+                              "name": "tags",
+                              "required": false,
+                              "schema": {
+                                  "items": {
+                                      "type": "string",
+                                  },
+                                  "type": "array",
+                              },
+                          },
+                          "schema": "FindPetsByTagsTagsParam",
                           "type": "Query",
                       },
                   ],
                   "path": "/pet/findByTags",
-                  "requestFormat": "json",
-                  "response": "z.array(Pet)",
+                  "requestFormat": "application/json",
+                  "response": "FindPetsByTagsResponse",
+                  "responseFormat": "application/json",
               },
               {
                   "alias": "getPetById",
@@ -691,13 +774,24 @@ describe("Utils: endpoints-extraction", () => {
                   "parameters": [
                       {
                           "name": "petId",
+                          "openApiObject": {
+                              "description": "ID of pet to return",
+                              "in": "path",
+                              "name": "petId",
+                              "required": true,
+                              "schema": {
+                                  "format": "int64",
+                                  "type": "integer",
+                              },
+                          },
                           "schema": "z.number().int()",
                           "type": "Path",
                       },
                   ],
                   "path": "/pet/:petId",
-                  "requestFormat": "json",
+                  "requestFormat": "application/json",
                   "response": "Pet",
+                  "responseFormat": "application/json",
               },
               {
                   "alias": "updatePetWithForm",
@@ -713,22 +807,48 @@ describe("Utils: endpoints-extraction", () => {
                   "parameters": [
                       {
                           "name": "petId",
+                          "openApiObject": {
+                              "description": "ID of pet that needs to be updated",
+                              "in": "path",
+                              "name": "petId",
+                              "required": true,
+                              "schema": {
+                                  "format": "int64",
+                                  "type": "integer",
+                              },
+                          },
                           "schema": "z.number().int()",
                           "type": "Path",
                       },
                       {
                           "name": "name",
+                          "openApiObject": {
+                              "description": "Name of pet that needs to be updated",
+                              "in": "query",
+                              "name": "name",
+                              "schema": {
+                                  "type": "string",
+                              },
+                          },
                           "schema": "z.string().optional()",
                           "type": "Query",
                       },
                       {
                           "name": "status",
+                          "openApiObject": {
+                              "description": "Status of pet that needs to be updated",
+                              "in": "query",
+                              "name": "status",
+                              "schema": {
+                                  "type": "string",
+                              },
+                          },
                           "schema": "z.string().optional()",
                           "type": "Query",
                       },
                   ],
                   "path": "/pet/:petId",
-                  "requestFormat": "json",
+                  "requestFormat": "application/json",
                   "response": "z.void()",
               },
               {
@@ -745,17 +865,36 @@ describe("Utils: endpoints-extraction", () => {
                   "parameters": [
                       {
                           "name": "api_key",
+                          "openApiObject": {
+                              "description": "",
+                              "in": "header",
+                              "name": "api_key",
+                              "required": false,
+                              "schema": {
+                                  "type": "string",
+                              },
+                          },
                           "schema": "z.string().optional()",
                           "type": "Header",
                       },
                       {
                           "name": "petId",
+                          "openApiObject": {
+                              "description": "Pet id to delete",
+                              "in": "path",
+                              "name": "petId",
+                              "required": true,
+                              "schema": {
+                                  "format": "int64",
+                                  "type": "integer",
+                              },
+                          },
                           "schema": "z.number().int()",
                           "type": "Path",
                       },
                   ],
                   "path": "/pet/:petId",
-                  "requestFormat": "json",
+                  "requestFormat": "application/json",
                   "response": "z.void()",
               },
               {
@@ -772,18 +911,38 @@ describe("Utils: endpoints-extraction", () => {
                       },
                       {
                           "name": "petId",
+                          "openApiObject": {
+                              "description": "ID of pet to update",
+                              "in": "path",
+                              "name": "petId",
+                              "required": true,
+                              "schema": {
+                                  "format": "int64",
+                                  "type": "integer",
+                              },
+                          },
                           "schema": "z.number().int()",
                           "type": "Path",
                       },
                       {
                           "name": "additionalMetadata",
+                          "openApiObject": {
+                              "description": "Additional Metadata",
+                              "in": "query",
+                              "name": "additionalMetadata",
+                              "required": false,
+                              "schema": {
+                                  "type": "string",
+                              },
+                          },
                           "schema": "z.string().optional()",
                           "type": "Query",
                       },
                   ],
                   "path": "/pet/:petId/uploadImage",
-                  "requestFormat": "binary",
+                  "requestFormat": "application/octet-stream",
                   "response": "ApiResponse",
+                  "responseFormat": "application/json",
               },
               {
                   "alias": "getInventory",
@@ -792,8 +951,9 @@ describe("Utils: endpoints-extraction", () => {
                   "method": "get",
                   "parameters": [],
                   "path": "/store/inventory",
-                  "requestFormat": "json",
-                  "response": "z.record(z.number().int())",
+                  "requestFormat": "application/json",
+                  "response": "GetInventoryResponse",
+                  "responseFormat": "application/json",
               },
               {
                   "alias": "placeOrder",
@@ -815,8 +975,9 @@ describe("Utils: endpoints-extraction", () => {
                       },
                   ],
                   "path": "/store/order",
-                  "requestFormat": "json",
+                  "requestFormat": "application/json",
                   "response": "Order",
+                  "responseFormat": "application/json",
               },
               {
                   "alias": "getOrderById",
@@ -837,13 +998,24 @@ describe("Utils: endpoints-extraction", () => {
                   "parameters": [
                       {
                           "name": "orderId",
+                          "openApiObject": {
+                              "description": "ID of order that needs to be fetched",
+                              "in": "path",
+                              "name": "orderId",
+                              "required": true,
+                              "schema": {
+                                  "format": "int64",
+                                  "type": "integer",
+                              },
+                          },
                           "schema": "z.number().int()",
                           "type": "Path",
                       },
                   ],
                   "path": "/store/order/:orderId",
-                  "requestFormat": "json",
+                  "requestFormat": "application/json",
                   "response": "Order",
+                  "responseFormat": "application/json",
               },
               {
                   "alias": "deleteOrder",
@@ -864,12 +1036,22 @@ describe("Utils: endpoints-extraction", () => {
                   "parameters": [
                       {
                           "name": "orderId",
+                          "openApiObject": {
+                              "description": "ID of the order that needs to be deleted",
+                              "in": "path",
+                              "name": "orderId",
+                              "required": true,
+                              "schema": {
+                                  "format": "int64",
+                                  "type": "integer",
+                              },
+                          },
                           "schema": "z.number().int()",
                           "type": "Path",
                       },
                   ],
                   "path": "/store/order/:orderId",
-                  "requestFormat": "json",
+                  "requestFormat": "application/json",
                   "response": "z.void()",
               },
               {
@@ -886,8 +1068,9 @@ describe("Utils: endpoints-extraction", () => {
                       },
                   ],
                   "path": "/user",
-                  "requestFormat": "json",
+                  "requestFormat": "application/json",
                   "response": "z.void()",
+                  "responseFormat": "application/json",
               },
               {
                   "alias": "createUsersWithListInput",
@@ -898,13 +1081,14 @@ describe("Utils: endpoints-extraction", () => {
                       {
                           "description": undefined,
                           "name": "body",
-                          "schema": "z.array(User)",
+                          "schema": "CreateUsersWithListInputBody",
                           "type": "Body",
                       },
                   ],
                   "path": "/user/createWithList",
-                  "requestFormat": "json",
+                  "requestFormat": "application/json",
                   "response": "User",
+                  "responseFormat": "application/json",
               },
               {
                   "alias": "loginUser",
@@ -920,18 +1104,37 @@ describe("Utils: endpoints-extraction", () => {
                   "parameters": [
                       {
                           "name": "username",
+                          "openApiObject": {
+                              "description": "The user name for login",
+                              "in": "query",
+                              "name": "username",
+                              "required": false,
+                              "schema": {
+                                  "type": "string",
+                              },
+                          },
                           "schema": "z.string().optional()",
                           "type": "Query",
                       },
                       {
                           "name": "password",
+                          "openApiObject": {
+                              "description": "The password for login in clear text",
+                              "in": "query",
+                              "name": "password",
+                              "required": false,
+                              "schema": {
+                                  "type": "string",
+                              },
+                          },
                           "schema": "z.string().optional()",
                           "type": "Query",
                       },
                   ],
                   "path": "/user/login",
-                  "requestFormat": "json",
+                  "requestFormat": "application/json",
                   "response": "z.string()",
+                  "responseFormat": "application/json",
               },
               {
                   "alias": "logoutUser",
@@ -940,7 +1143,7 @@ describe("Utils: endpoints-extraction", () => {
                   "method": "get",
                   "parameters": [],
                   "path": "/user/logout",
-                  "requestFormat": "json",
+                  "requestFormat": "application/json",
                   "response": "z.void()",
               },
               {
@@ -962,13 +1165,23 @@ describe("Utils: endpoints-extraction", () => {
                   "parameters": [
                       {
                           "name": "username",
+                          "openApiObject": {
+                              "description": "The name that needs to be fetched. Use user1 for testing. ",
+                              "in": "path",
+                              "name": "username",
+                              "required": true,
+                              "schema": {
+                                  "type": "string",
+                              },
+                          },
                           "schema": "z.string()",
                           "type": "Path",
                       },
                   ],
                   "path": "/user/:username",
-                  "requestFormat": "json",
+                  "requestFormat": "application/json",
                   "response": "User",
+                  "responseFormat": "application/json",
               },
               {
                   "alias": "updateUser",
@@ -984,12 +1197,21 @@ describe("Utils: endpoints-extraction", () => {
                       },
                       {
                           "name": "username",
+                          "openApiObject": {
+                              "description": "name that need to be deleted",
+                              "in": "path",
+                              "name": "username",
+                              "required": true,
+                              "schema": {
+                                  "type": "string",
+                              },
+                          },
                           "schema": "z.string()",
                           "type": "Path",
                       },
                   ],
                   "path": "/user/:username",
-                  "requestFormat": "json",
+                  "requestFormat": "application/json",
                   "response": "z.void()",
               },
               {
@@ -1011,19 +1233,51 @@ describe("Utils: endpoints-extraction", () => {
                   "parameters": [
                       {
                           "name": "username",
+                          "openApiObject": {
+                              "description": "The name that needs to be deleted",
+                              "in": "path",
+                              "name": "username",
+                              "required": true,
+                              "schema": {
+                                  "type": "string",
+                              },
+                          },
                           "schema": "z.string()",
                           "type": "Path",
                       },
                   ],
                   "path": "/user/:username",
-                  "requestFormat": "json",
+                  "requestFormat": "application/json",
                   "response": "z.void()",
               },
           ],
-          "schemas": {},
+          "schemas": {
+              "z.array(Pet)": [
+                  "FindPetsByStatusResponse",
+                  "FindPetsByTagsResponse",
+              ],
+              "z.array(User)": [
+                  "CreateUsersWithListInputBody",
+              ],
+              "z.array(z.string()).optional()": [
+                  "FindPetsByTagsTagsParam",
+              ],
+              "z.enum(["available", "pending", "sold"]).optional().default("available")": [
+                  "FindPetsByStatusStatusParam",
+              ],
+              "z.record(z.number().int())": [
+                  "GetInventoryResponse",
+              ],
+          },
           "zodSchemas": {
               "ApiResponse": "z.object({ code: z.number().int(), type: z.string(), message: z.string() }).partial().passthrough()",
               "Category": "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
+              "CreateUsersWithListInputBody": "z.array(User)",
+              "FindPetsByStatusResponse": "z.array(Pet)",
+              "FindPetsByStatusStatusParam": "z.enum(["available", "pending", "sold"]).optional().default("available")",
+              "FindPetsByTagsResponse": "z.array(Pet)",
+              "FindPetsByTagsTagsParam": "z.array(z.string()).optional()",
+              "GetInventoryResponse": "z.record(z.number().int())",
               "Order": "z.object({ id: z.number().int(), petId: z.number().int(), quantity: z.number().int(), shipDate: z.string().datetime({ offset: true }), status: z.enum(["placed", "approved", "delivered"]), complete: z.boolean() }).partial().passthrough()",
               "Pet": "z.object({ id: z.number().int().optional(), name: z.string(), category: Category.optional(), photoUrls: z.array(z.string()), tags: z.array(Tag).optional(), status: z.enum(["available", "pending", "sold"]).optional() }).passthrough()",
               "Tag": "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
@@ -1124,8 +1378,9 @@ describe("Utils: endpoints-extraction", () => {
                   "method": "get",
                   "parameters": [],
                   "path": "/pet/findByStatus",
-                  "requestFormat": "json",
-                  "response": "z.array(Pet)",
+                  "requestFormat": "application/json",
+                  "response": "FindPetsByStatusResponse",
+                  "responseFormat": "application/json",
               },
               {
                   "alias": "findPetsByTags",
@@ -1140,13 +1395,21 @@ describe("Utils: endpoints-extraction", () => {
                   "method": "get",
                   "parameters": [],
                   "path": "/pet/findByTags",
-                  "requestFormat": "json",
-                  "response": "z.array(Pet)",
+                  "requestFormat": "application/json",
+                  "response": "FindPetsByTagsResponse",
+                  "responseFormat": "application/json",
               },
           ],
-          "schemas": {},
+          "schemas": {
+              "z.array(Pet)": [
+                  "FindPetsByStatusResponse",
+                  "FindPetsByTagsResponse",
+              ],
+          },
           "zodSchemas": {
               "Category": "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
+              "FindPetsByStatusResponse": "z.array(Pet)",
+              "FindPetsByTagsResponse": "z.array(Pet)",
               "Pet": "z.object({ id: z.number().int().optional(), name: z.string(), category: Category.optional(), photoUrls: z.array(z.string()), tags: z.array(Tag).optional(), status: z.enum(["available", "pending", "sold"]).optional() }).passthrough()",
               "Tag": "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
           },

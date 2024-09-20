@@ -19,7 +19,7 @@ export type Endpoint = {
   path: string;
   alias: string;
   description?: string;
-  requestFormat?: string;
+  requestFormat: string;
   responseFormat?: string;
   parameters: Array<EndpointParameter>;
   status?: number;

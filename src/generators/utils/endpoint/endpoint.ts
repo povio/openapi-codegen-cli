@@ -22,7 +22,7 @@ const PATH_PARAM_WITH_BRACKETS_REGEX = /({\w+})/g;
 const WORD_PRECEDED_BY_NON_WORD_CHARACTER = /[^\w\-]+/g;
 /** @example turns `/media-objects/{id}` into `MediaObjectsId` */
 export function pathToVariableName(path: string) {
-  return capitalize(kebabToCamel(path).replaceAll("/", "")) // /media-objects/{id} -> MediaObjects{id}
+  return capitalize(kebabToCamel(path.replaceAll("/", "-")).replaceAll("-", "")) // /media-objects/{id} -> MediaObjects{id}
     .replace(PATH_PARAM_WITH_BRACKETS_REGEX, (group) => capitalize(group.slice(1, -1))) // {id} -> Id
     .replace(WORD_PRECEDED_BY_NON_WORD_CHARACTER, "_"); // "/robots.txt" -> "/robots_txt"
 }

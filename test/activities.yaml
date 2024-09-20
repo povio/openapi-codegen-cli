@@ -1,0 +1,1372 @@
+openapi: 3.1.0
+info:
+  title: Sample API
+  version: "1.0"
+  description: >-
+    <pre>Table User {
+      id uuid [pk, unique, not null]
+      iamId string
+      roles string
+      name string
+      email string
+      nickname string
+      setupFinished boolean
+      lastSetupStep integer
+      enableNotifications boolean
+      profilePictureUrl string
+      timezone string
+      createdAt timestamp
+      updatedAt timestamp
+      deletedAt timestamp
+    }
+
+    Table CompletedGoal {
+      id uuid [pk, unique, not null]
+      userId uuid [ref: > User.id, not null]
+      goalId uuid [ref: > Goal.id, not null]
+      completedAt timestamp
+    }
+
+    Table Goal {
+      id uuid [pk, unique, not null]
+      userId uuid [ref: > User.id, not null]
+      title string [not null]
+      description string
+      createdAt timestamp
+      updatedAt timestamp
+      deletedAt timestamp
+    }
+
+    Table GoalReminder {
+      id uuid [pk, unique, not null]
+      goalId uuid [ref: > Goal.id, not null]
+      reminderType string [note: "DAILY, WEEKLY, MONTHLY"]
+      reminderTime string
+      reminderDays string [note: "e.g. MON,TUE or if it's monthly is 1,2,3 etc"]
+      lastReminderSentAt timestamp
+    }
+
+    Table GoalStep {
+      id uuid [pk, unique, not null]
+      goalId uuid [ref: > Goal.id, not null]
+      title string [not null]
+      description string
+    }
+
+    Table GoalSuggestion {
+      id uuid [pk, unique, not null]
+      title string [not null]
+      description string
+    }
+
+    Table GoalSuggestionStep {
+      id uuid [pk, unique, not null]
+      goalSuggestionId uuid [ref: > GoalSuggestion.id, not null]
+      title string [not null]
+      description string
+    }
+
+    Table UserActivity {
+      id uuid [pk, unique, not null]
+      userId uuid [ref: > User.id, not null]
+      activityId uuid [ref: > Activity.id, not null]
+      answer string
+      createdAt timestamp
+      updatedAt timestamp
+    }
+
+    Table Activity {
+      id uuid [pk, unique, not null]
+      name string
+      description string
+      activityQuestion string [note: "Only for Practical Activity"]
+      type string [note: "PRACTICAL, INTROSPECTIVE"]
+      tags string [note: "Comma sepparated tags: PHYSICAL, MENTAL, EMOTIONAL, SPIRITUAL"]
+      createdAt timestamp
+      updatedAt timestamp
+    }
+
+    Table ActivityDetails {
+      id uuid [pk, unique, not null]
+      activityId uuid [ref: > Activity.id, not null]
+      type string [note: "BENEFITS, RECOMMENDATIONS"]
+      content string
+    }
+
+    Table DailyActivity {
+      id uuid [pk, unique, not null]
+      date timestamp
+      activityId uuid [ref: > Activity.id, not null]
+    }
+
+    Table QuestionGroupSchedule {
+      id uuid [pk, unique, not null]
+      date timestamp [not null]
+      questionGroupId uuid [ref: > QuestionGroup.id, not null]
+      createdAt timestamp
+      updatedAt timestamp
+    }
+
+    Table DailyQuestionResponse {
+      id uuid [pk, unique, not null]
+      userId uuid [ref: > User.id, not null]
+      date timestamp [not null]
+      completed bool
+      createdAt timestamp
+      updatedAt timestamp
+    }
+
+    Table QuestionResponse {
+      id uuid [pk, unique, not null]
+      userId uuid [ref: > User.id, not null]
+      questionId uuid [ref: > Question.id, not null]
+      dailyQuestionResponseId uuid [ref: > DailyQuestionResponse.id]
+      answers string [note: "Comma separated answers"]
+      step integer
+      createdAt timestamp
+      updatedAt timestamp
+    }
+
+    Table QuestionGroup {
+      id uuid [pk, unique, not null]
+      title string
+      description string
+      usage string [note: "PROFILE_SETUP, CHECK_IN"]
+      createdAt timestamp
+      updatedAt timestamp
+    }
+
+    Table Question {
+      id uuid [pk, unique, not null]
+      questionGroupId uuid [ref: > QuestionGroup.id, not null]
+      title string
+      description string
+      type string [note: "OPEN, SINGLE, MULTIPLE"]
+      subType string [note: "EMOTIONAL, PHYSICAL, MENTAL, SPIRITUAL"]
+      step integer
+      createdAt timestamp
+      updatedAt timestamp
+    }
+
+    Table QuestionOption {
+      id uuid [pk, unique, not null]
+      questionId uuid [ref: > Question.id, not null]
+      title string
+      description string
+      createdAt timestamp
+      updatedAt timestamp
+    }
+
+    Table Affirmation {
+      id uuid [pk, unique, not null]
+      affirmation string
+      createdAt timestamp
+      updatedAt timestamp
+    }
+
+    </pre>
+paths:
+  /users/me:
+    get:
+      tags:
+        - Users
+      summary: GET /users/me
+      description: <p>Fetches the user data</p><h3>Roles</h3><ul><li>USER</li></ul>
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileResponseDto"
+    put:
+      tags:
+        - Users
+      summary: PUT /users/me
+      description: <p>Updates user profile</p><h3>Steps</h3><ul><li>Update user
+        profile</li><li>If profilePictureUrl is null or empty, then set default
+        profile picture</li><li>Update timezone in the
+        UserTable</li></ul><h3>Roles</h3><ul><li>USER</li></ul>
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileResponseDto"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProfileDto"
+    delete:
+      tags:
+        - Users
+      summary: DELETE /users/me
+      description: <p>Soft deletes the user</p><h3>Steps</h3><ul><li>Soft delete the
+        user using the `deletedAt`
+        field</li></ul><h3>Roles</h3><ul><li>USER</li></ul>
+      responses: {}
+  /profile/kpis:
+    get:
+      tags:
+        - Profile
+      summary: GET /profile/kpis
+      description: <p>Fetches the user KPIs</p><h3>Steps</h3><ul><li>Calculate
+        checkins from QuestionResponse table based on question.usage =
+        'CHECK_IN'</li><li>Get summary of goals from Goal table for the
+        user</li><li>Get summary of activities from UserActivity
+        table</li></ul><h3>Roles</h3><ul><li>USER</li></ul>
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserKpiDto"
+  /profile/calendar:
+    get:
+      tags:
+        - Profile
+      summary: GET /profile/calendar
+      description: <p>Fetches the user calendar</p><h3>Steps</h3><ul><li>Get all dates
+        where user has completed daily check-in or any activity, or goals for
+        the last month</li></ul><h3>Roles</h3><ul><li>USER</li></ul>
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/UserCalendarDto"
+                  page:
+                    type: number
+                    description: Items per page
+                  totalItems:
+                    type: number
+                    description: Total number of items
+  /profile/calendar/{date}:
+    get:
+      tags:
+        - Profile
+      summary: GET /profile/calendar/{date}
+      description: <p>This API returns a day when the user completed the daily
+        check-in, activities, and goals.</p><h3>Steps</h3><ul><li>Get all
+        activities from UserActivity</li><li>Get daily checkin from
+        QuestionResponse</li><li>Get completed Goals from Goal table where
+        completedAt is equal with
+        date</li></ul><h3>Roles</h3><ul><li>USER</li></ul>
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserCalendarFullDto"
+  /profile/check-in/streak:
+    get:
+      tags:
+        - Profile
+      summary: GET /profile/check-in/streak
+      description: <p>Fetches the user check-in
+        streak</p><h3>Roles</h3><ul><li>USER</li></ul>
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckinStreakDto"
+  /home:
+    get:
+      tags:
+        - Profile
+      summary: GET /home
+      description: <p>Fetches the home data</p><h3>Steps</h3><ul><li>Fetch the daily
+        checkin status from QuestionResponse table</li><li>Fetch the daily
+        activity from UserActivity
+        table</li></ul><h3>Roles</h3><ul><li>USER</li></ul>
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HomeDto"
+  /home/affirmation:
+    get:
+      tags:
+        - Profile
+      summary: GET /home/affirmation
+      description: <p>Fetches the daily affirmation, randomly from the affirmation
+        table</p><h3>Roles</h3><ul><li>USER</li></ul>
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AffirmationDto"
+  /toolkit:
+    get:
+      tags:
+        - Profile
+      summary: GET /toolkit
+      description: <p>Fetches the toolkit data</p><h3>Roles</h3><ul><li>USER</li></ul>
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DailyActivityDto"
+  /questions/profile-setup:
+    get:
+      tags:
+        - Questions
+      summary: GET /questions/profile-setup
+      description: <p>Fetches the user profile setup
+        questions</p><h3>Steps</h3><ul><li>Fetch the user profile setup
+        questions</li><li>Fetch the user profile setup
+        responses</li></ul><h3>Roles</h3><ul><li>USER</li></ul>
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SetupQuestionsResponseDto"
+  /questions/profile-setup/{questionId}:
+    post:
+      tags:
+        - Questions
+      summary: POST /questions/profile-setup/{questionId}
+      description: <p>Answer the user profile setup
+        question</p><h3>Steps</h3><ul><li>Create a new question
+        response</li></ul><h3>Validations</h3><ul><li>If question is not a setup
+        question, throw 400 error</li><li>If question.step is not equal to
+        lastCompletedStep + 1, throw 400 error</li><li>If question.step is the
+        last step, update user setupFinished to
+        true</li></ul><h3>Roles</h3><ul><li>USER</li></ul>
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SetupQuestionAnswerResponseDto"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnswerQuestionDto"
+  /questions/daily-check-in:
+    get:
+      tags:
+        - Questions
+      summary: GET /questions/daily-check-in
+      description: <p>Fetches the user daily check-in
+        questions</p><h3>Steps</h3><ul><li>Fetch the user daily check-in
+        questions</li><li>Fetch the user daily check-in
+        responses</li></ul><h3>Roles</h3><ul><li>USER</li></ul>
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DailyCheckInQuestionsResponseDto"
+  /questions/daily-check-in/{questionId}:
+    post:
+      tags:
+        - Questions
+      summary: POST /questions/daily-check-in/{questionId}
+      description: <p>Answer the user daily check-in
+        question</p><h3>Steps</h3><ul><li>Create a new question
+        response</li><li>Find or create DailyQuestionResponse for
+        today</li><li>Find or create QuestionResponse for this
+        DailyQuestionResponse</li><li>If question.step is the last step, update
+        DailyQuestionResponse completed to
+        true</li></ul><h3>Validations</h3><ul><li>If question is not a daily
+        check-in question, throw 400 error</li><li>If question.step is not equal
+        to lastCompletedStep + 1, throw 400 error</li><li>If question is not for
+        today, throw 403 error</li><li>If question.type is OPEN or SINGLE, then
+        answers should be exactly
+        one</li></ul><h3>Roles</h3><ul><li>USER</li></ul>
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DailyCheckInQuestionAnswerResponseDto"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnswerQuestionDto"
+  /goals:
+    get:
+      tags:
+        - Goals
+      summary: GET /goals
+      description: <p>Fetches the user goals</p><h3>Roles</h3><ul><li>USER</li></ul>
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/GoalDto"
+                  page:
+                    type: number
+                    description: Items per page
+                  totalItems:
+                    type: number
+                    description: Total number of items
+    post:
+      tags:
+        - Goals
+      summary: POST /goals
+      description: <p>Creates a new goal</p><h3>Steps</h3><ul><li>Create a new
+        goal</li><li>Create all goal steps</li><li>Create a new goal
+        reminder</li></ul><h3>Validations</h3><ul><li>If user.setupFinished is
+        false, throw an error 400</li></ul><h3>Roles</h3><ul><li>USER</li></ul>
+      responses: {}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateGoalDto"
+  /goals/{id}:
+    put:
+      tags:
+        - Goals
+      summary: PUT /goals/{id}
+      description: <p>Updates user goal</p><h3>Steps</h3><ul><li>Update the
+        goal</li><li>Update, add or remove goal steps</li><li>Update the goal
+        reminder</li></ul><h3>Validations</h3><ul><li>If goal doesn't exist,
+        throw 404 error</li><li>If user is not owner of the goal, throw 403
+        error</li></ul><h3>Roles</h3><ul><li>USER</li></ul>
+      responses: {}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateGoalDto"
+    delete:
+      tags:
+        - Goals
+      summary: DELETE /goals/{id}
+      description: <p>Removes user goal</p><h3>Steps</h3><ul><li>Soft delete the goal
+        using the `deletedAt` field</li></ul><h3>Validations</h3><ul><li>If goal
+        doesn't exist, throw 404 error</li><li>If user is not owner of the goal,
+        throw 403 error</li></ul><h3>Roles</h3><ul><li>USER</li></ul>
+      responses: {}
+  /goals/{id}/complete:
+    post:
+      tags:
+        - Goals
+      summary: POST /goals/{id}/complete
+      description: <p>Complete goal</p><h3>Steps</h3><ul><li>Fetch last CompletedGoal
+        record for the user and goal</li><li>Check if user has completed the
+        goal in defined goal reminder period</li><li>If user already completed
+        the goal in defined time period, throw 400 error</li><li>Otherwise
+        create a new CompletedGoal
+        record</li></ul><h3>Validations</h3><ul><li>If goal doesn't exist, throw
+        404 error</li><li>If user is not owner of the goal, throw 403
+        error</li></ul><h3>Roles</h3><ul><li>USER</li></ul>
+      responses: {}
+  /goals/suggestions:
+    get:
+      tags:
+        - Goals
+      summary: GET /goals/suggestions
+      description: <p>Fetches the goal suggestions</p><h3>Roles</h3><ul><li>USER</li></ul>
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/GoalSuggestionDto"
+                  page:
+                    type: number
+                    description: Items per page
+                  totalItems:
+                    type: number
+                    description: Total number of items
+  /goals/cron:
+    get:
+      tags:
+        - GoalsReminder
+      summary: GET /goals/cron
+      description: <p>Send notification to the user for the goal
+        reminder</p><h3>Steps</h3><ul><li>Iterate through all records on
+        GoalReminder table where goal.deletedAt is null</li><li>Take on
+        calculation the timezone of the user from user.timezone</li><li>If
+        reminder type is daily, check if reminder.time is equal or less than
+        current time, otherwise skip</li><li>If reminder type is daily, check if
+        difference from lastReminderSentAt to current moment is more or equal
+        than 24 hours, otherwise skip</li><li>If reminder type is weekly, check
+        if current day (day of the week, Monday, Tuesday) is in the reminder
+        days</li><li>If reminder type is weekly, check if time is equal or less
+        than current time, otherwise skip</li><li>If reminder type is weekly,
+        check if lastReminderSentAt is from previous day on the reminder.days,
+        otherwise skip</li><li>If reminder type is monthly, check if current day
+        (day on the month 1,2,3) is in the reminder days</li><li>If reminder
+        type is monthly, check if time is equal or less than current time,
+        otherwise skip</li><li>Update lastReminderSentAt to current
+        time</li><li>Send "REMINDER_NOTIFICATION" push notification to the
+        user</li></ul><h3>Roles</h3><ul><li>USER</li></ul>
+      responses: {}
+  /activities:
+    get:
+      tags:
+        - Activities
+      summary: GET /activities
+      description: <p>Get activities from Activity table based on the category (which
+        filters on tags), including name and description, There are two types of
+        activities (practical or
+        introspective).</p><h3>Roles</h3><ul><li>USER</li></ul>
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ActivityDto"
+                  page:
+                    type: number
+                    description: Items per page
+                  totalItems:
+                    type: number
+                    description: Total number of items
+  /activities/{id}:
+    get:
+      tags:
+        - Activities
+      summary: GET /activities/{id}
+      description: <p>Get single activity from activities library based on the
+        id</p><h3>Roles</h3><ul><li>USER</li></ul>
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DetailActivityDto"
+  /user-activities:
+    get:
+      tags:
+        - Activities
+      summary: GET /user-activities
+      description: <p>Get user activities from UserActivity table based on the user
+        id</p><h3>Roles</h3><ul><li>USER</li></ul>
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/UserActivityDto"
+                  page:
+                    type: number
+                    description: Items per page
+                  totalItems:
+                    type: number
+                    description: Total number of items
+    post:
+      tags:
+        - Activities
+      summary: POST /user-activities
+      description: <p>Accept an activity</p><h3>Steps</h3><ul><li>Create a new user
+        activity</li></ul><h3>Validations</h3><ul><li>Check if the activity
+        exists</li></ul><h3>Roles</h3><ul><li>USER</li></ul>
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserActivityDto"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AcceptActivityDto"
+  /user-activities/{userActivityId}:
+    get:
+      tags:
+        - Activities
+      summary: GET /user-activities/{userActivityId}
+      description: <p>Get single user activity from user activities based on the
+        id</p><h3>Roles</h3><ul><li>USER</li></ul>
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserActivityDto"
+tags:
+  - name: Users
+    description: ""
+  - name: Profile
+    description: ""
+  - name: Questions
+    description: ""
+  - name: Goals
+    description: ""
+  - name: GoalsReminder
+    description: ""
+  - name: Activities
+    description: ""
+components:
+  responses: {}
+  requestBodies: {}
+  schemas:
+    ProfileResponseDto:
+      description: Return the user data
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the user
+          format: uuid
+        email:
+          type: string
+          description: Email of the user
+          format: string
+        name:
+          type: string
+          description: Name of the user
+          format: string
+        nickname:
+          type: string
+          description: Nickname of the user
+          format: string
+        profilePictureUrl:
+          type: string
+          description: Profile picture of the user
+          format: string
+        timezone:
+          type: string
+          description: Timezone of the user
+          format: string
+        enableNotifications:
+          type: string
+          description: Enable notifications for the user
+          format: boolean
+        setupFinished:
+          type: string
+          description: Setup status of the user
+          format: boolean
+    UpdateProfileDto:
+      description: Request to update user profile
+      type: object
+      required:
+        - name
+        - nickname
+        - profilePictureUrl
+        - timezone
+        - enableNotifications
+      properties:
+        name:
+          type: string
+          description: Name of the user
+          format: string
+        nickname:
+          type: string
+          description: Nickname of the user
+          format: string
+        profilePictureUrl:
+          type: string
+          description: Profile picture URL of the user
+          format: string
+        timezone:
+          type: string
+          description: Timezone of the user
+          format: string
+        enableNotifications:
+          type: string
+          description: Enable notifications for the user
+          format: boolean
+    ActiveDaysDto:
+      description: Return the active days details
+      type: object
+      properties:
+        date:
+          type: string
+          description: Date of the active day
+          format: timestamp
+        activity:
+          type: string
+          description: Activity status
+          format: boolean
+    InsightsDto:
+      description: Return the insights details
+      type: object
+      properties:
+        type:
+          type: string
+          description: Type of insight (EMOTIONAL, PHYSICAL, MENTAL, SPIRITUAL)
+          format: string
+        score:
+          type: string
+          description: Score of the insight
+          format: integer
+        trend:
+          type: string
+          description: Trend of the insight (up, down)
+          format: string
+    CheckinStreakDto:
+      description: Return the checkin streak details
+      type: object
+      properties:
+        activeDays:
+          type: array
+          description: Checkin streak
+          items:
+            $ref: "#/components/schemas/ActiveDaysDto"
+        insights:
+          type: array
+          description: Checkin Insights
+          items:
+            $ref: "#/components/schemas/InsightsDto"
+    ShortGoalDto:
+      description: Return the short goal details
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the goal
+          format: uuid
+        title:
+          type: string
+          description: Title of the goal
+          format: string
+    GoalDto:
+      description: Return the goal details
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the goal
+          format: uuid
+        title:
+          type: string
+          description: Title of the goal
+          format: string
+        description:
+          type: string
+          description: Description of the goal
+          format: string
+        status:
+          type: string
+          description: Status of the goal (IN_PROGRESS, COMPLETED)
+          format: string
+        reminder:
+          description: Reminder type of the goal
+          $ref: "#/components/schemas/ReminderResponseDto"
+        steps:
+          type: array
+          description: Goal steps
+          items:
+            $ref: "#/components/schemas/GoalStepResponseDto"
+        createdAt:
+          type: string
+          description: Date and time of the goal creation
+          format: timestamp
+        updatedAt:
+          type: string
+          description: Date and time of the goal update
+          format: timestamp
+    ReminderResponseDto:
+      description: Return the reminder details
+      type: object
+      properties:
+        type:
+          type: string
+          description: Type of the reminder, values (DAILY, WEEKLY, MONTHLY)
+          format: string
+        time:
+          type: string
+          description: Time of the reminder
+          format: string
+        days:
+          type: array
+          description: Days of the reminder
+          items:
+            type: string
+            format: string
+    GoalStepResponseDto:
+      description: Return the goal step details
+      type: object
+      properties:
+        title:
+          type: string
+          description: Title of the goal step
+          format: string
+        description:
+          type: string
+          description: Description of the goal step
+          format: string
+    ShortCheckinDto:
+      description: Return the checkin details
+      type: object
+      properties:
+        completed:
+          type: string
+          description: Checkin status
+          format: boolean
+        completedAt:
+          type: string
+          description: Date and time of the checkin
+          format: timestamp
+    ShortActivityDto:
+      description: Return the short activity details
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the activity
+          format: uuid
+        name:
+          type: string
+          description: Title of the activity
+          format: string
+        description:
+          type: string
+          description: Description of the activity
+          format: string
+        tags:
+          type: array
+          description: Tags of the activity
+          items:
+            type: string
+            format: string
+    UserCalendarFullDto:
+      description: Return the user calendar
+      type: object
+      properties:
+        date:
+          type: string
+          description: Date of the event
+          format: timestamp
+        checkin:
+          description: Checkin details
+          $ref: "#/components/schemas/ShortCheckinDto"
+        activities:
+          type: array
+          description: All done activities
+          items:
+            $ref: "#/components/schemas/ShortActivityDto"
+        goals:
+          type: array
+          description: All completed goals
+          items:
+            $ref: "#/components/schemas/ShortGoalDto"
+    UserCalendarDto:
+      description: Return the user calendar
+      type: object
+      properties:
+        date:
+          type: string
+          description: Date of the event
+          format: timestamp
+        userActive:
+          type: string
+          description: Indicates if user has done any activity, complete any goal, or
+            checkin
+          format: boolean
+    UserKpiDto:
+      description: Return the user KPIs
+      type: object
+      properties:
+        checkIns:
+          type: string
+          description: Total number of checkins
+          format: integer
+        goals:
+          type: string
+          description: Total number of goals
+          format: integer
+        activities:
+          type: string
+          description: Total number of activities
+          format: integer
+    AffirmationDto:
+      description: Return the affirmation details
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the affirmation
+          format: uuid
+        affirmation:
+          type: string
+          description: Affirmation
+          format: string
+    DailyActivityDto:
+      description: Return the daily activity details
+      type: object
+      properties:
+        completed:
+          type: string
+          description: Activity status
+          format: boolean
+        id:
+          type: string
+          description: Unique identifier of the activity
+          format: string
+    HomeDto:
+      description: Return the home details
+      type: object
+      properties:
+        dailyCheckIn:
+          type: string
+          description: Daily checkin status
+          format: boolean
+        activity:
+          description: Daily activity
+          $ref: "#/components/schemas/DailyActivityDto"
+    ReminderDto:
+      description: Return the reminder details
+      type: object
+      required:
+        - type
+        - time
+        - days
+      properties:
+        type:
+          type: string
+          description: Type of the reminder
+          format: string
+        time:
+          type: string
+          description: Time of the reminder
+          format: string
+        days:
+          type: array
+          description: Days of the reminder
+          items:
+            type: string
+            format: string
+    UpdateGoalDto:
+      description: Request to update a goal
+      type: object
+      required:
+        - title
+        - description
+        - reminder
+        - steps
+      properties:
+        title:
+          type: string
+          description: Title of the goal
+          format: string
+        description:
+          type: string
+          description: Description of the goal
+          format: string
+        reminder:
+          description: Reminder type of the goal
+          $ref: "#/components/schemas/ReminderDto"
+        steps:
+          type: array
+          description: Goal steps
+          items:
+            $ref: "#/components/schemas/GoalStepDto"
+    CreateGoalDto:
+      description: Request to create a new goal
+      type: object
+      required:
+        - title
+        - description
+        - reminder
+        - steps
+      properties:
+        title:
+          type: string
+          description: Title of the goal
+          format: string
+        description:
+          type: string
+          description: Description of the goal
+          format: string
+        reminder:
+          description: Reminder type of the goal
+          $ref: "#/components/schemas/ReminderDto"
+        steps:
+          type: array
+          description: Goal steps
+          items:
+            $ref: "#/components/schemas/GoalStepDto"
+    GoalStepDto:
+      description: Return the goal step details
+      type: object
+      required:
+        - title
+        - description
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the goal step
+          format: string
+        title:
+          type: string
+          description: Title of the goal step
+          format: string
+        description:
+          type: string
+          description: Description of the goal step
+          format: string
+    SetupQuestionsResponseDto:
+      description: Return the user profile setup questions
+      type: object
+      properties:
+        completed:
+          type: string
+          description: Setup status
+          format: boolean
+        lastCompletedStep:
+          type: string
+          description: Last completed step
+          format: integer
+        questions:
+          type: array
+          description: Setup questions
+          items:
+            $ref: "#/components/schemas/SetupQuestionDto"
+        questionResponses:
+          type: array
+          description: Setup responses
+          items:
+            $ref: "#/components/schemas/QuestionResponseDto"
+    DailyCheckInQuestionsResponseDto:
+      description: Return the user daily check-in questions
+      type: object
+      properties:
+        completed:
+          type: string
+          description: Check-in status
+          format: boolean
+        date:
+          type: string
+          description: Date of the check-in
+          format: timestamp
+        lastCompletedStep:
+          type: string
+          description: Last completed step
+          format: integer
+        questions:
+          type: array
+          description: Check-in questions
+          items:
+            $ref: "#/components/schemas/SetupQuestionDto"
+        questionResponses:
+          type: array
+          description: Check-in responses
+          items:
+            $ref: "#/components/schemas/QuestionResponseDto"
+    SetupQuestionDto:
+      description: Return the question details
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the question
+          format: uuid
+        title:
+          type: string
+          description: Title of the question
+          format: string
+        description:
+          type: string
+          description: Description of the question
+          format: string
+        type:
+          type: string
+          description: Type of the question
+          format: string
+        step:
+          type: string
+          description: Step of the question
+          format: number
+        options:
+          type: array
+          description: Question options
+          items:
+            $ref: "#/components/schemas/QuestionOptionDto"
+    QuestionOptionDto:
+      description: Return the question option details
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the question option
+          format: uuid
+        title:
+          type: string
+          description: Title of the question option
+          format: string
+        description:
+          type: string
+          description: Description of the question option
+          format: string
+    QuestionResponseDto:
+      description: Return the question response details
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the question response
+          format: uuid
+        questionId:
+          type: string
+          description: Unique identifier of the question
+          format: uuid
+        answers:
+          type: array
+          description: Answers of the question
+          items:
+            type: string
+            format: string
+        step:
+          type: string
+          description: Step of the question
+          format: integer
+    SetupQuestionAnswerResponseDto:
+      description: Return the question response details
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the question response
+          format: uuid
+        questionId:
+          type: string
+          description: Unique identifier of the question
+          format: uuid
+        answers:
+          type: array
+          description: Answers of the question
+          items:
+            type: string
+            format: string
+        step:
+          type: string
+          description: Step of the question
+          format: integer
+    DailyCheckInQuestionAnswerResponseDto:
+      description: Return the question response details
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the question response
+          format: uuid
+        questionId:
+          type: string
+          description: Unique identifier of the question
+          format: uuid
+        answers:
+          type: array
+          description: Answers of the question
+          items:
+            type: string
+            format: string
+        step:
+          type: string
+          description: Step of the question
+          format: integer
+    AnswerQuestionDto:
+      description: Request to answer a question
+      type: object
+      required:
+        - answers
+      properties:
+        answers:
+          type: array
+          description: Answers of the question
+          items:
+            type: string
+            format: string
+    GoalSuggestionDto:
+      description: Return the goal suggestion details
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the goal suggestion
+          format: uuid
+        title:
+          type: string
+          description: Title of the goal suggestion
+          format: string
+        description:
+          type: string
+          description: Description of the goal suggestion
+          format: string
+        steps:
+          type: array
+          description: Goal suggestion steps
+          items:
+            $ref: "#/components/schemas/GoalSuggestionStepDto"
+    GoalSuggestionStepDto:
+      description: Return the goal suggestion step details
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the goal suggestion step
+          format: uuid
+        title:
+          type: string
+          description: Title of the goal suggestion step
+          format: string
+        description:
+          type: string
+          description: Description of the goal suggestion step
+          format: string
+    UserActivityDto:
+      description: Return the user activity details
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the user activity
+          format: uuid
+        activityId:
+          type: string
+          description: Unique identifier of the activity
+          format: uuid
+        answer:
+          type: string
+          description: Answer of the activity
+          format: string
+        activity:
+          description: Activity details
+          $ref: "#/components/schemas/ActivityDto"
+        createdAt:
+          type: string
+          description: Date and time of the user activity creation
+          format: timestamp
+        updatedAt:
+          type: string
+          description: Date and time of the user activity update
+          format: timestamp
+    DetailActivityDto:
+      description: Return the activity details
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the activity
+          format: uuid
+        name:
+          type: string
+          description: Title of the activity
+          format: string
+        description:
+          type: string
+          description: Description of the activity
+          format: string
+        activityQuestion:
+          type: string
+          description: Question of the activity
+          format: string
+        type:
+          type: string
+          description: Type of the activity
+          format: string
+        recommendations:
+          type: array
+          description: Recommendations of the activity
+          items:
+            type: string
+            format: string
+        benefits:
+          type: array
+          description: Benefits of the activity
+          items:
+            type: string
+            format: string
+        tags:
+          type: array
+          description: Tags of the activity
+          items:
+            type: string
+            format: string
+        createdAt:
+          type: string
+          description: Date and time of the activity creation
+          format: timestamp
+        updatedAt:
+          type: string
+          description: Date and time of the activity update
+          format: timestamp
+    ActivityDto:
+      description: Return the activity details
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the activity
+          format: uuid
+        name:
+          type: string
+          description: Title of the activity
+          format: string
+        description:
+          type: string
+          description: Description of the activity
+          format: string
+        activityQuestion:
+          type: string
+          description: Question of the activity
+          format: string
+        type:
+          type: string
+          description: Type of the activity
+          format: string
+        tags:
+          type: array
+          description: Tags of the activity
+          items:
+            type: string
+            format: string
+        createdAt:
+          type: string
+          description: Date and time of the activity creation
+          format: timestamp
+        updatedAt:
+          type: string
+          description: Date and time of the activity update
+          format: timestamp
+    AcceptActivityDto:
+      description: Request to accept an activity
+      type: object
+      required:
+        - activityId
+      properties:
+        activityId:
+          type: string
+          description: Activity to accept and add to userActivity
+          format: string
+        answer:
+          type: string
+          description: Answer of the activity
+          format: string
+  parameters: {}
+  examples: {}
+  headers: {}
+  securitySchemes: {}
+  links: {}
+  callbacks: {}
