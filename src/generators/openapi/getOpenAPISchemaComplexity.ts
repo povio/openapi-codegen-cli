@@ -1,8 +1,8 @@
 import { OpenAPIV3 } from "openapi-types";
 import { match } from "ts-pattern";
-import { isPrimitiveType, isReferenceObject, PrimitiveType } from "./openapi.utils";
-
-type CompositeType = "oneOf" | "anyOf" | "allOf" | "enum" | "array" | "empty-object" | "object" | "record";
+import { CompositeType, PrimitiveType } from "../types/openapi";
+import { sum } from "../utils/math.utils";
+import { isPrimitiveType, isReferenceObject } from "../utils/openapi.utils";
 
 export function getOpenAPISchemaComplexity({
   current,
@@ -30,7 +30,7 @@ export function getOpenAPISchemaComplexity({
     return (
       current +
       complexityByComposite("oneOf") +
-      getSum(schema.type.map((prop) => getOpenAPISchemaComplexity({ current: 0, schema: { ...schema, type: prop } })))
+      sum(schema.type.map((prop) => getOpenAPISchemaComplexity({ current: 0, schema: { ...schema, type: prop } })))
     );
   }
 
@@ -42,7 +42,7 @@ export function getOpenAPISchemaComplexity({
     return (
       current +
       complexityByComposite("oneOf") +
-      getSum(schema.oneOf.map((prop) => getOpenAPISchemaComplexity({ current: 0, schema: prop })))
+      sum(schema.oneOf.map((prop) => getOpenAPISchemaComplexity({ current: 0, schema: prop })))
     );
   }
 
@@ -55,7 +55,7 @@ export function getOpenAPISchemaComplexity({
     return (
       current +
       complexityByComposite("anyOf") +
-      getSum(schema.anyOf.map((prop) => getOpenAPISchemaComplexity({ current: 0, schema: prop })))
+      sum(schema.anyOf.map((prop) => getOpenAPISchemaComplexity({ current: 0, schema: prop })))
     );
   }
 
@@ -67,7 +67,7 @@ export function getOpenAPISchemaComplexity({
     return (
       current +
       complexityByComposite("allOf") +
-      getSum(schema.allOf.map((prop) => getOpenAPISchemaComplexity({ current: 0, schema: prop })))
+      sum(schema.allOf.map((prop) => getOpenAPISchemaComplexity({ current: 0, schema: prop })))
     );
   }
 
@@ -81,7 +81,7 @@ export function getOpenAPISchemaComplexity({
         current +
         complexityByType(schema as OpenAPIV3.SchemaObject & { type: PrimitiveType }) +
         complexityByComposite("enum") +
-        getSum(schema.enum.map((prop) => getOpenAPISchemaComplexity({ current: 0, schema: prop })))
+        sum(schema.enum.map((prop) => getOpenAPISchemaComplexity({ current: 0, schema: prop })))
       );
     }
 
@@ -113,7 +113,7 @@ export function getOpenAPISchemaComplexity({
       return (
         current +
         complexityByComposite("object") +
-        getSum(props.map((prop) => getOpenAPISchemaComplexity({ current: 0, schema: prop })))
+        sum(props.map((prop) => getOpenAPISchemaComplexity({ current: 0, schema: prop })))
       );
     }
 
@@ -123,9 +123,7 @@ export function getOpenAPISchemaComplexity({
   return current;
 }
 
-const getSum = (arr: number[]) => arr.reduce((acc, item) => acc + item, 0);
-
-const complexityByType = (schema: OpenAPIV3.SchemaObject & { type: PrimitiveType }) => {
+function complexityByType(schema: OpenAPIV3.SchemaObject & { type: PrimitiveType }) {
   const type = schema.type;
   if (!type) {
     return 0;
@@ -137,9 +135,9 @@ const complexityByType = (schema: OpenAPIV3.SchemaObject & { type: PrimitiveType
     .with("integer", () => 1)
     .with("boolean", () => 1)
     .otherwise(() => 0);
-};
+}
 
-const complexityByComposite = (from?: CompositeType | undefined) => {
+function complexityByComposite(from?: CompositeType | undefined) {
   if (!from) {
     return 0;
   }
@@ -154,4 +152,4 @@ const complexityByComposite = (from?: CompositeType | undefined) => {
     .with("empty-object", () => 1)
     .with("object", () => 2)
     .otherwise(() => 0);
-};
+}

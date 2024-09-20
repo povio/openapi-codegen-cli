@@ -1,13 +1,11 @@
 import { OpenAPIV3 } from "openapi-types";
-import { printEndpointsToFile, printZodSchemasToFile } from "./print";
+import { SchemaResolver } from "./SchemaResolver.class";
+import { getEndpointsFromOpenAPIDoc } from "./endpoints/getEndpointsFromOpenAPIDoc";
+import { printEndpointsToFile } from "./endpoints/printEndpointsToFile";
 import { GenerateOptions } from "./types/options";
-import { getEndpointsFromOpenAPIDoc } from "./utils/endpoint/endpoints-extraction.utils";
-import { OpenAPISchemaResolver } from "./utils/openapi/openapi-schema-resolver.class";
-import {
-  getZodSchemasFromOpenAPIDocSchemas,
-  sortZodSchemasByTopology,
-  wrapCircularZodSchemasWithLazy,
-} from "./utils/zod/zod-schemas.utils";
+import { sortZodSchemasByTopology, wrapCircularZodSchemasWithLazy } from "./utils/zod-schemas.utils";
+import { getZodSchemasFromOpenAPIDoc } from "./zod/getZodSchemasFromOpenAPIDoc";
+import { printZodSchemasToFile } from "./zod/printZodSchemasToFile";
 
 const DEFAULT_GENERATE_OPTIONS = { schemaSuffix: "Schema" };
 
@@ -34,20 +32,12 @@ function getEntitiesFromOpenAPIDoc({
   openApiDoc: OpenAPIV3.Document;
   options: GenerateOptions;
 }) {
-  const resolver = new OpenAPISchemaResolver(openApiDoc, options.schemaSuffix);
+  const resolver = new SchemaResolver(openApiDoc, options.schemaSuffix);
 
-  const { zodSchemas: zodSchemasFromEndpoints, endpoints } = getEndpointsFromOpenAPIDoc({
-    resolver,
-    openApiDoc,
-    options,
-  });
-  const zodSchemasFromDocSchemas = getZodSchemasFromOpenAPIDocSchemas({
-    resolver,
-    docSchemas: openApiDoc.components?.schemas ?? {},
-    options,
-  });
+  const { endpoints, ctx } = getEndpointsFromOpenAPIDoc({ resolver, openApiDoc, options });
+  const zodSchemasFromDocSchemas = getZodSchemasFromOpenAPIDoc({ resolver, openApiDoc, options });
 
-  let zodSchemas = { ...zodSchemasFromDocSchemas, ...zodSchemasFromEndpoints };
+  let zodSchemas = { ...zodSchemasFromDocSchemas, ...ctx.getState().zodSchemas };
   zodSchemas = wrapCircularZodSchemasWithLazy({ resolver, zodSchemas, options });
   zodSchemas = sortZodSchemasByTopology({ resolver, zodSchemas });
 

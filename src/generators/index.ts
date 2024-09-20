@@ -1,1 +1,0 @@
-export { generateCodeFromOpenAPIDoc } from "./generate";

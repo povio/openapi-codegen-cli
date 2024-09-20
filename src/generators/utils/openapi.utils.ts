@@ -1,8 +1,17 @@
 import { OpenAPIV3 } from "openapi-types";
 import { match, P } from "ts-pattern";
-import { snakeToCamel } from "../string.utils";
+import { PrimitiveType, SingleType } from "../types/openapi";
+import { snakeToCamel } from "./string.utils";
 
-export const asComponentSchema = (name: string) => `#/components/schemas/${name}`;
+const ALLOWED_PARAM_MEDIA_TYPES = [
+  "application/octet-stream",
+  "multipart/form-data",
+  "application/x-www-form-urlencoded",
+  "*/*",
+];
+const PRIMITIVE_TYPE_LIST = ["string", "number", "integer", "boolean"];
+
+export const getSchemaRef = (schemaName: string) => `#/components/schemas/${schemaName}`;
 
 export const autocorrectRef = (ref: string) => (ref[1] === "/" ? ref : "#/" + ref.slice(1));
 
@@ -29,6 +38,15 @@ export function wrapWithQuotesIfNeeded(str: string) {
   return `"${str}"`;
 }
 
+// TODO OA prefixItems -> z.tuple
+export function unwrapQuotesIfNeeded(value: string | number) {
+  if (typeof value === "string" && value.startsWith('"') && value.endsWith('"')) {
+    return value.slice(1, -1);
+  }
+
+  return value;
+}
+
 function prefixStringStartingWithNumberIfNeeded(str: string) {
   const firstAsNumber = Number(str[0]);
   if (typeof firstAsNumber === "number" && !Number.isNaN(firstAsNumber)) {
@@ -44,11 +62,7 @@ export function pathParamToVariableName(name: string) {
   return snakeToCamel(preserveUnderscore.replaceAll("-", "_")).replaceAll("#", "_");
 }
 
-type SingleType = Exclude<OpenAPIV3.SchemaObject["type"], any[] | undefined>;
 export const isPrimitiveType = (type: SingleType): type is PrimitiveType => PRIMITIVE_TYPE_LIST.includes(type as any);
-
-const PRIMITIVE_TYPE_LIST = ["string", "number", "integer", "boolean"] as const;
-export type PrimitiveType = (typeof PRIMITIVE_TYPE_LIST)[number];
 
 export function primitiveTypeToTsType(type: PrimitiveType): string {
   return match(type)
@@ -78,3 +92,13 @@ export const toBoolean = (value: undefined | string | boolean, defaultValue: boo
     .with(P.string.regex(/^false$/i), false, () => false)
     .with(P.string.regex(/^true$/i), true, () => true)
     .otherwise(() => defaultValue);
+
+export function isAllowedParamMediaType(
+  mediaType: string,
+): mediaType is (typeof ALLOWED_PARAM_MEDIA_TYPES)[number] | `application/${string}json${string}` | `text/${string}` {
+  return (
+    (mediaType.includes("application/") && mediaType.includes("json")) ||
+    ALLOWED_PARAM_MEDIA_TYPES.includes(mediaType as any) ||
+    mediaType.includes("text/")
+  );
+}

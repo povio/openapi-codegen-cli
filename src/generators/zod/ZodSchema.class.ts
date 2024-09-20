@@ -1,7 +1,7 @@
 import { OpenAPIV3 } from "openapi-types";
-import { getOpenAPISchemaComplexity } from "../openapi/openapi-schema-complexity.utils";
-import { OpenAPISchemaResolver } from "../openapi/openapi-schema-resolver.class";
-import { isReferenceObject } from "../openapi/openapi.utils";
+import { SchemaResolver } from "../SchemaResolver.class";
+import { getOpenAPISchemaComplexity } from "../openapi/getOpenAPISchemaComplexity";
+import { isReferenceObject } from "../utils/openapi.utils";
 
 export type ZodSchemaMetaData = {
   isRequired?: boolean;
@@ -10,20 +10,17 @@ export type ZodSchemaMetaData = {
   referencedBy?: ZodSchema[];
 };
 
-type DefinedZodSchemaMetaDataProps = "referencedBy";
-type DefinedZodSchemaMetaData = Pick<Required<ZodSchemaMetaData>, DefinedZodSchemaMetaDataProps> &
-  Omit<ZodSchemaMetaData, DefinedZodSchemaMetaDataProps>;
-
 export class ZodSchema {
   private code?: string;
+
   ref?: string;
   children: ZodSchema[] = [];
-  meta: DefinedZodSchemaMetaData;
+  meta: ZodSchemaMetaData & Required<Pick<ZodSchemaMetaData, "referencedBy">>;
 
   constructor(
     public schema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject,
-    public resolver?: OpenAPISchemaResolver,
-    meta: ZodSchemaMetaData = {},
+    public resolver?: SchemaResolver,
+    meta: ZodSchemaMetaData = { referencedBy: [] },
   ) {
     if (isReferenceObject(schema)) {
       this.ref = schema.$ref;
@@ -43,7 +40,7 @@ export class ZodSchema {
     if (this.code) {
       return this.code;
     }
-    return this.resolver ? this.resolver.resolveRef(this.ref!).normalized : this.ref!;
+    return this.resolver?.getZodSchemaNameByRef(this.ref!) ?? this.ref!;
   }
 
   get complexity(): number {

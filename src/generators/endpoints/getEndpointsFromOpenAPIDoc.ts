@@ -1,56 +1,57 @@
 import { OpenAPIV3 } from "openapi-types";
-import { GenerateContext } from "src/generators/types/context";
 import { Endpoint } from "src/generators/types/endpoint";
 import { GenerateOptions } from "src/generators/types/options";
 import { match } from "ts-pattern";
-import { pick } from "../object.utils";
-import { getOpenAPISchemaComplexity } from "../openapi/openapi-schema-complexity.utils";
-import { OpenAPISchemaResolver } from "../openapi/openapi-schema-resolver.class";
-import { isReferenceObject, pathParamToVariableName } from "../openapi/openapi.utils";
-import { snakeToCamel } from "../string.utils";
-import { getZodChain, getZodSchema } from "../zod/zod-schema-extraction.utils";
-import { ZodSchema } from "../zod/zod-schema.class";
-import { getZodSchemaNormalizedName, isNamedZodSchema } from "../zod/zod-schema.utils";
+import { GenerateContext } from "../GenerateContext.class";
+import { getOpenAPISchemaComplexity } from "../openapi/getOpenAPISchemaComplexity";
+import { SchemaResolver } from "../SchemaResolver.class";
 import {
   getOperationAlias,
   isErrorStatus,
   isMainResponseStatus,
   isMediaTypeAllowed,
   replaceHyphenatedPath,
-} from "./endpoint.utils";
+} from "../utils/endpoint.utils";
+import { pick } from "../utils/object.utils";
+import { isAllowedParamMediaType, isReferenceObject, pathParamToVariableName } from "../utils/openapi.utils";
+import {
+  getBodyZodSchemaName,
+  getErrorResponseZodSchemaName,
+  getMainResponseZodSchemaName,
+  getParamZodSchemaName,
+  getZodSchemaName,
+  isNamedZodSchema,
+  VOID_SCHEMA,
+} from "../utils/zod-schema.utils";
+import { getZodChain } from "../zod/getZodChain";
+import { getZodSchema } from "../zod/getZodSchema";
+import { ZodSchema } from "../zod/ZodSchema.class";
 
+const COMPLEXITY_THRESHOLD = 2;
 const ALLOWED_PATH_IN_VALUES = ["query", "header", "path"] as Array<OpenAPIV3.ParameterObject["in"]>;
-const ALLOWED_PARAM_MEDIA_TYPES = [
-  "application/octet-stream",
-  "multipart/form-data",
-  "application/x-www-form-urlencoded",
-  "*/*",
-] as const;
-const VOID_SCHEMA = "z.void()";
 
 export function getEndpointsFromOpenAPIDoc({
   resolver,
   openApiDoc,
   options,
 }: {
-  resolver: OpenAPISchemaResolver;
+  resolver: SchemaResolver;
   openApiDoc: OpenAPIV3.Document;
   options: GenerateOptions;
 }) {
+  const ctx = new GenerateContext();
   const endpoints = [];
-  const ctx: GenerateContext = { zodSchemas: {}, schemas: {} };
-  const complexityThreshold = 2;
 
   const resolveZodSchema = (input: ZodSchema, fallbackName?: string) => {
     const result = input.toString();
 
     if ((!isNamedZodSchema(result) || input.ref === undefined) && fallbackName) {
       // result is simple enough that it doesn't need to be assigned to a variable
-      if (input.complexity < complexityThreshold) {
+      if (input.complexity < COMPLEXITY_THRESHOLD) {
         return result;
       }
 
-      const safeName = getZodSchemaNormalizedName(fallbackName, options.schemaSuffix);
+      const safeName = getZodSchemaName(fallbackName, options.schemaSuffix);
 
       // result is complex and would benefit from being re-used
       let formatedName = safeName;
@@ -58,11 +59,11 @@ export function getEndpointsFromOpenAPIDoc({
       // iteratively add suffix number to prevent overwriting
       let reuseCount = 1;
       let zodSchemaNameExists = false;
-      while ((zodSchemaNameExists = Boolean(ctx.zodSchemas[formatedName]))) {
+      while ((zodSchemaNameExists = Boolean(ctx.getZodSchemaByName(formatedName)))) {
         if (zodSchemaNameExists) {
-          if (ctx.schemas?.[result]?.includes(formatedName)) {
+          if (ctx.getSchemaNamesByCode(result)?.includes(formatedName)) {
             return formatedName;
-          } else if (ctx.zodSchemas[formatedName] === safeName) {
+          } else if (ctx.getZodSchemaByName(formatedName) === safeName) {
             return formatedName;
           } else {
             reuseCount += 1;
@@ -71,25 +72,24 @@ export function getEndpointsFromOpenAPIDoc({
         }
       }
 
-      ctx.zodSchemas[formatedName] = result;
-      ctx.schemas[result] = (ctx.schemas[result] ?? []).concat(formatedName);
+      ctx.setZodSchema(formatedName, result);
+      ctx.addSchemaName(result, formatedName);
 
       return formatedName;
     }
 
     // result is a reference to another schema
-    let schema = ctx.zodSchemas[result];
+    let schema = ctx.getZodSchemaByName(result);
     if (!schema && input.ref) {
-      const refInfo = resolver.resolveRef(input.ref);
-      schema = ctx.zodSchemas[refInfo.name];
+      schema = ctx.getZodSchemaByName(resolver.getZodSchemaNameByRef(input.ref));
     }
 
     if (input.ref && schema) {
       const complexity = getOpenAPISchemaComplexity({ current: 0, schema: resolver.getSchemaByRef(input.ref) });
 
       // ref result is simple enough that it doesn't need to be assigned to a variable
-      if (complexity < complexityThreshold) {
-        return ctx.zodSchemas[result]!;
+      if (complexity < COMPLEXITY_THRESHOLD) {
+        return ctx.getZodSchemaByName(result)!;
       }
 
       return result;
@@ -114,8 +114,12 @@ export function getEndpointsFromOpenAPIDoc({
 
     for (const method in pathItem) {
       const operation = pathItem[method as keyof typeof pathItem] as OpenAPIV3.OperationObject | undefined;
-      if (!operation) continue;
-      if (options?.withDeprecatedEndpoints ? false : operation.deprecated) continue;
+      if (!operation) {
+        continue;
+      }
+      if (options?.withDeprecatedEndpoints ? false : operation.deprecated) {
+        continue;
+      }
 
       const parameters = Object.entries({
         ...parametersMap,
@@ -160,7 +164,7 @@ export function getEndpointsFromOpenAPIDoc({
             type: "Body",
             description: requestBody.description!,
             schema:
-              resolveZodSchema(bodyCode, bodyZodSchemaName(operationName)) +
+              resolveZodSchema(bodyCode, getBodyZodSchemaName(operationName)) +
               getZodChain({
                 schema: isReferenceObject(bodySchema) ? resolver.getSchemaByRef(bodySchema.$ref) : bodySchema,
                 meta: bodyCode.meta,
@@ -228,7 +232,7 @@ export function getEndpointsFromOpenAPIDoc({
               paramCode.assign(
                 paramCode.toString() + getZodChain({ schema: paramSchema, meta: paramCode.meta, options }),
               ),
-              paramZodSchemaName(operationName, paramItem.name),
+              getParamZodSchemaName(operationName, paramItem.name),
             ),
             openApiObject: paramItem,
           });
@@ -288,43 +292,19 @@ export function getEndpointsFromOpenAPIDoc({
     }
   }
 
-  return {
-    endpoints,
-    schemas: ctx.schemas,
-    zodSchemas: ctx.zodSchemas,
-  };
+  return { endpoints, ctx };
 }
-
-const bodyZodSchemaName = (operationName: string) => snakeToCamel(`${operationName}_Body`);
-
-const paramZodSchemaName = (operationName: string, paramName: string) =>
-  snakeToCamel(`${operationName}_${paramName}_Param`);
-
-const responseZodSchemaName = (operationName: string) => snakeToCamel(`${operationName}_Response`);
-
-const errorResponseZodSchemaName = (operationName: string, statusCode: string) =>
-  snakeToCamel(`${operationName}_${statusCode}_ErrorResponse`);
 
 function getResponseZodSchemaName(statusCode: string, endpoint: Endpoint): string {
   const status = Number(statusCode);
   if ((!isMainResponseStatus(status) || endpoint.response) && statusCode !== "default" && isErrorStatus(status)) {
-    return errorResponseZodSchemaName(endpoint.alias, statusCode);
+    return getErrorResponseZodSchemaName(endpoint.alias, statusCode);
   }
-  return responseZodSchemaName(endpoint.alias);
+  return getMainResponseZodSchemaName(endpoint.alias);
 }
 
 function getParametersMap(parameters: NonNullable<OpenAPIV3.PathItemObject["parameters"]>) {
   return Object.fromEntries(
     (parameters ?? []).map((param) => [isReferenceObject(param) ? param.$ref : param.name, param] as const),
-  );
-}
-
-function isAllowedParamMediaType(
-  mediaType: string,
-): mediaType is (typeof ALLOWED_PARAM_MEDIA_TYPES)[number] | `application/${string}json${string}` | `text/${string}` {
-  return (
-    (mediaType.includes("application/") && mediaType.includes("json")) ||
-    ALLOWED_PARAM_MEDIA_TYPES.includes(mediaType as any) ||
-    mediaType.includes("text/")
   );
 }

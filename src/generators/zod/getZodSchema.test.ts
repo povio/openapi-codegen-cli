@@ -1,15 +1,16 @@
 import { OpenAPIV3 } from "openapi-types";
 import { describe, expect, test } from "vitest";
-import { OpenAPISchemaResolver } from "../openapi/openapi-schema-resolver.class";
-import { asComponentSchema } from "../openapi/openapi.utils";
-import { getZodSchema } from "./zod-schema-extraction.utils";
-import { ZodSchemaMetaData } from "./zod-schema.class";
+import { GenerateContext } from "../GenerateContext.class";
+import { SchemaResolver } from "../SchemaResolver.class";
+import { getSchemaRef } from "../utils/openapi.utils";
+import { ZodSchemaMetaData } from "./ZodSchema.class";
+import { getZodSchema } from "./getZodSchema";
 
 const makeSchema = (schema: OpenAPIV3.SchemaObject) => schema;
 const getZodSchemaString = (schema: OpenAPIV3.SchemaObject, meta?: ZodSchemaMetaData | undefined) =>
   getZodSchema({ schema: makeSchema(schema), meta }).toString();
 
-describe("Utils: zod-schema-extraction", () => {
+describe("getZodSchema", () => {
   test("getZodSchemaString", () => {
     expect(getZodSchemaString({ type: "boolean" })).toMatchInlineSnapshot('"z.boolean()"');
     expect(getZodSchemaString({ type: "string" })).toMatchInlineSnapshot('"z.string()"');
@@ -322,7 +323,7 @@ describe("Utils: zod-schema-extraction", () => {
             },
           },
         }),
-        resolver: new OpenAPISchemaResolver({ components: { schemas: {} } } as any),
+        resolver: new SchemaResolver({ components: { schemas: {} } } as any, ""),
       }),
     ).toThrowErrorMatchingInlineSnapshot("[Error: Schema Example not found]");
   });
@@ -337,8 +338,8 @@ describe("Utils: zod-schema-extraction", () => {
         },
       },
     } as Record<string, OpenAPIV3.SchemaObject>;
-    const resolver = new OpenAPISchemaResolver({ components: { schemas } } as any);
-    Object.keys(schemas).forEach((key) => resolver.getSchemaByRef(asComponentSchema(key)));
+    const resolver = new SchemaResolver({ components: { schemas } } as any, "");
+    Object.keys(schemas).forEach((key) => resolver.getSchemaByRef(getSchemaRef(key)));
 
     const code = getZodSchema({
       schema: makeSchema({
@@ -388,12 +389,9 @@ describe("Utils: zod-schema-extraction", () => {
       },
       DeepNested: { type: "object", properties: { deep: { type: "boolean" } } },
     } as Record<string, OpenAPIV3.SchemaObject>;
-    const resolver = new OpenAPISchemaResolver({ components: { schemas } } as any);
-    const ctx = {
-      zodSchemas: {},
-      schemas: {},
-    };
-    Object.keys(schemas).forEach((key) => resolver.getSchemaByRef(asComponentSchema(key)));
+    const resolver = new SchemaResolver({ components: { schemas } } as any, "");
+    const ctx = new GenerateContext();
+    Object.keys(schemas).forEach((key) => resolver.getSchemaByRef(getSchemaRef(key)));
 
     const code = getZodSchema({
       schema: makeSchema({
@@ -430,13 +428,13 @@ describe("Utils: zod-schema-extraction", () => {
         "Basic",
     ]
   `);
-    expect(ctx.zodSchemas).toStrictEqual({
+    expect(ctx.getState().zodSchemas).toStrictEqual({
       Basic: "z.object({ prop: z.string(), second: z.number() }).partial().passthrough()",
       DeepNested: "z.object({ deep: z.boolean() }).partial().passthrough()",
       ObjectWithArrayOfRef:
         "z.object({ exampleProp: z.string(), another: z.number(), link: z.array(WithNested), someReference: Basic }).partial().passthrough()",
       WithNested: "z.object({ nested: z.string(), nestedRef: DeepNested }).partial().passthrough()",
     });
-    expect(ctx.schemas).toStrictEqual({});
+    expect(ctx.getState().schemas).toStrictEqual({});
   });
 });

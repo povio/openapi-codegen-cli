@@ -1,5 +1,5 @@
 import { OpenAPIV3 } from "openapi-types";
-import { isReferenceObject } from "./openapi.utils";
+import { isReferenceObject } from "../utils/openapi.utils";
 
 export const getOpenAPISchemaDependencyGraph = (
   schemaRef: string[],
@@ -7,6 +7,7 @@ export const getOpenAPISchemaDependencyGraph = (
 ) => {
   const refsDependencyGraph = getRefsDependencyGraph(schemaRef, getSchemaByRef);
   const deepDependencyGraph = getDeepDependencyGraph(schemaRef, refsDependencyGraph);
+
   return { refsDependencyGraph, deepDependencyGraph };
 };
 

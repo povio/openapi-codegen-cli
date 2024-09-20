@@ -1,16 +1,12 @@
 import { OpenAPIV3 } from "openapi-types";
-import { GenerateContext } from "src/generators/types/context";
 import { ZodSchemasGenerateOptions } from "src/generators/types/options";
 import { match } from "ts-pattern";
-import { OpenAPISchemaResolver } from "../openapi/openapi-schema-resolver.class";
-import { inferRequiredSchema, isArraySchemaObject, isSchemaObject } from "../openapi/openapi-schema.utils";
-import {
-  escapeControlCharacters,
-  isPrimitiveType,
-  isReferenceObject,
-  wrapWithQuotesIfNeeded,
-} from "../openapi/openapi.utils";
-import { ZodSchema, ZodSchemaMetaData } from "./zod-schema.class";
+import { GenerateContext } from "../GenerateContext.class";
+import { SchemaResolver } from "../SchemaResolver.class";
+import { inferRequiredSchema, isArraySchemaObject, isSchemaObject } from "../utils/openapi-schema.utils";
+import { isPrimitiveType, isReferenceObject, wrapWithQuotesIfNeeded } from "../utils/openapi.utils";
+import { ZodSchema, ZodSchemaMetaData } from "./ZodSchema.class";
+import { getZodChain } from "./getZodChain";
 
 /**
  * @see https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.3.md#schemaObject
@@ -19,12 +15,12 @@ import { ZodSchema, ZodSchemaMetaData } from "./zod-schema.class";
 export function getZodSchema({
   schema: $schema,
   resolver,
-  ctx = { zodSchemas: {}, schemas: {} },
+  ctx,
   meta: inheritedMeta,
   options,
 }: {
   schema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject;
-  resolver?: OpenAPISchemaResolver;
+  resolver?: SchemaResolver;
   ctx?: GenerateContext;
   meta?: ZodSchemaMetaData;
   options?: ZodSchemasGenerateOptions;
@@ -32,6 +28,8 @@ export function getZodSchema({
   if (!$schema) {
     throw new Error("Schema is required");
   }
+
+  ctx = ctx ?? new GenerateContext();
 
   const schema = $schema;
   const code = new ZodSchema(schema, resolver, inheritedMeta);
@@ -43,21 +41,21 @@ export function getZodSchema({
 
   const refsPath = code.meta.referencedBy
     .slice(0, -1)
-    .map((prev) => resolver?.resolveRef(prev.ref!).normalized ?? prev.ref!);
+    .map((prev) => resolver?.getZodSchemaNameByRef(prev.ref!) ?? prev.ref!);
 
   if (isReferenceObject(schema)) {
     if (!resolver) {
       throw new Error("Resolver is required");
     }
 
-    const schemaName = resolver.resolveRef(schema.$ref)?.normalized;
+    const zodSchemaName = resolver.getZodSchemaNameByRef(schema.$ref);
 
     // circular(=recursive) reference
-    if (refsPath.length > 1 && refsPath.includes(schemaName)) {
-      return code.assign(ctx.zodSchemas[code.ref!]!);
+    if (refsPath.length > 1 && refsPath.includes(zodSchemaName)) {
+      return code.assign(ctx.getZodSchemaByName(code.ref!)!);
     }
 
-    let result = ctx.zodSchemas[schema.$ref];
+    let result = ctx.getZodSchemaByName(schema.$ref);
     if (!result) {
       const actualSchema = resolver.getSchemaByRef(schema.$ref);
       if (!actualSchema) {
@@ -67,11 +65,11 @@ export function getZodSchema({
       result = getZodSchema({ ...params, schema: actualSchema }).toString();
     }
 
-    if (ctx.zodSchemas[schemaName]) {
+    if (ctx.getZodSchemaByName(zodSchemaName)) {
       return code;
     }
 
-    ctx.zodSchemas[schemaName] = result;
+    ctx.setZodSchema(zodSchemaName, result);
 
     return code;
   }
@@ -288,169 +286,9 @@ export function getZodSchema({
     return code.assign(`z.object(${properties})${partial}${strict}${additionalPropsSchema}${readonly}`);
   }
 
-  if (!schemaType) return code.assign("z.unknown()");
+  if (!schemaType) {
+    return code.assign("z.unknown()");
+  }
 
   throw new Error(`Unsupported schema type: ${schemaType}`);
 }
-
-type ZodChainArgs = { schema: OpenAPIV3.SchemaObject; meta?: ZodSchemaMetaData; options?: ZodSchemasGenerateOptions };
-
-export const getZodChain = ({ schema, meta, options }: ZodChainArgs) => {
-  const chains: string[] = [];
-
-  match(schema.type)
-    .with("string", () => chains.push(getZodChainableStringValidations(schema)))
-    .with("number", "integer", () => chains.push(getZodChainableNumberValidations(schema)))
-    .with("array", () => chains.push(getZodChainableArrayValidations(schema)))
-    .otherwise(() => void 0);
-
-  if (typeof schema.description === "string" && schema.description !== "" && options?.withDescription) {
-    if (["\n", "\r", "\r\n"].some((c) => String.prototype.includes.call(schema.description, c))) {
-      chains.push(`describe(\`${schema.description}\`)`);
-    } else {
-      chains.push(`describe("${schema.description}")`);
-    }
-  }
-
-  const output = chains
-    .concat(
-      getZodChainablePresence(schema, meta),
-      options?.withDefaultValues !== false ? getZodChainableDefault(schema) : [],
-    )
-    .filter(Boolean)
-    .join(".");
-  return output ? `.${output}` : "";
-};
-
-const getZodChainablePresence = (schema: OpenAPIV3.SchemaObject, meta?: ZodSchemaMetaData) => {
-  if (schema.nullable && !meta?.isRequired) {
-    return "nullish()";
-  }
-
-  if (schema.nullable) {
-    return "nullable()";
-  }
-
-  if (!meta?.isRequired) {
-    return "optional()";
-  }
-
-  return "";
-};
-
-// TODO OA prefixItems -> z.tuple
-const unwrapQuotesIfNeeded = (value: string | number) => {
-  if (typeof value === "string" && value.startsWith('"') && value.endsWith('"')) {
-    return value.slice(1, -1);
-  }
-
-  return value;
-};
-
-const getZodChainableDefault = (schema: OpenAPIV3.SchemaObject) => {
-  if (schema.default !== undefined) {
-    const value = match(schema.type)
-      .with("number", "integer", () => unwrapQuotesIfNeeded(schema.default))
-      .otherwise(() => JSON.stringify(schema.default));
-    return `default(${value})`;
-  }
-
-  return "";
-};
-
-const formatPatternIfNeeded = (pattern: string) => {
-  if (pattern.startsWith("/") && pattern.endsWith("/")) {
-    pattern = pattern.slice(1, -1);
-  }
-
-  pattern = escapeControlCharacters(pattern);
-
-  return `/${pattern}/`;
-};
-
-const getZodChainableStringValidations = (schema: OpenAPIV3.SchemaObject) => {
-  const validations: string[] = [];
-
-  if (!schema.enum) {
-    if (schema.minLength !== undefined) {
-      validations.push(`min(${schema.minLength})`);
-    }
-
-    if (schema.maxLength !== undefined) {
-      validations.push(`max(${schema.maxLength})`);
-    }
-  }
-
-  if (schema.pattern) {
-    validations.push(`regex(${formatPatternIfNeeded(schema.pattern)})`);
-  }
-
-  if (schema.format) {
-    const chain = match(schema.format)
-      .with("email", () => "email()")
-      .with("hostname", () => "url()")
-      .with("uri", () => "url()")
-      .with("uuid", () => "uuid()")
-      .with("date-time", () => "datetime({ offset: true })")
-      .otherwise(() => "");
-
-    if (chain) {
-      validations.push(chain);
-    }
-  }
-
-  return validations.join(".");
-};
-
-const getZodChainableNumberValidations = (schema: OpenAPIV3.SchemaObject) => {
-  const validations: string[] = [];
-
-  // none of the chains are valid for enums
-  if (schema.enum) {
-    return "";
-  }
-
-  if (schema.type === "integer") {
-    validations.push("int()");
-  }
-
-  if (schema.minimum !== undefined) {
-    if (schema.exclusiveMinimum === true) {
-      validations.push(`gt(${schema.minimum})`);
-    } else {
-      validations.push(`gte(${schema.minimum})`);
-    }
-  } else if (typeof schema.exclusiveMinimum === "number") {
-    validations.push(`gt(${schema.exclusiveMinimum})`);
-  }
-
-  if (schema.maximum !== undefined) {
-    if (schema.exclusiveMaximum === true) {
-      validations.push(`lt(${schema.maximum})`);
-    } else {
-      validations.push(`lte(${schema.maximum})`);
-    }
-  } else if (typeof schema.exclusiveMaximum === "number") {
-    validations.push(`lt(${schema.exclusiveMaximum})`);
-  }
-
-  if (schema.multipleOf) {
-    validations.push(`multipleOf(${schema.multipleOf})`);
-  }
-
-  return validations.join(".");
-};
-
-const getZodChainableArrayValidations = (schema: OpenAPIV3.SchemaObject) => {
-  const validations: string[] = [];
-
-  if (schema.minItems) {
-    validations.push(`min(${schema.minItems})`);
-  }
-
-  if (schema.maxItems) {
-    validations.push(`max(${schema.maxItems})`);
-  }
-
-  return validations.join(".");
-};

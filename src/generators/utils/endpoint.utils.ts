@@ -1,6 +1,6 @@
 import { OpenAPIV3 } from "openapi-types";
-import { pathParamToVariableName } from "../openapi/openapi.utils";
-import { capitalize, kebabToCamel } from "../string.utils";
+import { pathParamToVariableName } from "./openapi.utils";
+import { capitalize, kebabToCamel } from "./string.utils";
 
 export function isMainResponseStatus(status: number) {
   return status >= 200 && status < 300;
