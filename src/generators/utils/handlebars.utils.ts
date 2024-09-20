@@ -1,6 +1,8 @@
 import Handlebars from "handlebars";
 import { OpenAPIV3 } from "openapi-types";
 import { Endpoint, EndpointParameter } from "../types/endpoint";
+import { isSchemaObject } from "./openapi/openapi-schema.utils";
+import { isPrimitiveType, primitiveTypeToTsType } from "./openapi/openapi.utils";
 import { decapitalize, snakeToCamel } from "./string.utils";
 import { getZodSchemaInferedTypeName, isNamedZodSchema } from "./zod/zod-schema.utils";
 
@@ -16,13 +18,25 @@ export function setEndpointNameHelper() {
 
 export function setEndpointParamsHelper(schemaSuffix: string) {
   Handlebars.registerHelper("getEndpointParams", (endpointParams: EndpointParameter[]) =>
-    endpointParams.map((param) => ({
-      name: param.name,
-      type: isNamedZodSchema(param.schema)
-        ? getZodSchemaInferedTypeName(param.schema, schemaSuffix)
-        : (param.openApiObject?.schema as OpenAPIV3.SchemaObject)?.type ?? "string",
-      required: param.openApiObject?.required ?? true,
-    })),
+    endpointParams
+      .map((param) => {
+        let type = "string";
+        if (isNamedZodSchema(param.schema)) {
+          type = getZodSchemaInferedTypeName(param.schema, schemaSuffix);
+        } else if (param.openApiObject?.schema && isSchemaObject(param.openApiObject.schema)) {
+          const openApiSchemaType = (param.openApiObject?.schema as OpenAPIV3.SchemaObject)?.type;
+          if (openApiSchemaType && isPrimitiveType(openApiSchemaType)) {
+            type = primitiveTypeToTsType(openApiSchemaType);
+          }
+        }
+
+        return {
+          name: param.name,
+          type,
+          required: param.openApiObject?.required ?? true,
+        };
+      })
+      .sort((a, b) => (a.required === b.required ? 0 : a.required ? -1 : 1)),
   );
 }
 

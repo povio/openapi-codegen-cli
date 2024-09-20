@@ -50,6 +50,15 @@ export const isPrimitiveType = (type: SingleType): type is PrimitiveType => PRIM
 const PRIMITIVE_TYPE_LIST = ["string", "number", "integer", "boolean"] as const;
 export type PrimitiveType = (typeof PRIMITIVE_TYPE_LIST)[number];
 
+export function primitiveTypeToTsType(type: PrimitiveType): string {
+  return match(type)
+    .with("string", () => "string")
+    .with("number", () => "number")
+    .with("integer", () => "number")
+    .with("boolean", () => "boolean")
+    .exhaustive();
+}
+
 export function escapeControlCharacters(str: string): string {
   return str
     .replace(/\t/g, "\\t") // U+0009
