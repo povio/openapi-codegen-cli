@@ -46,7 +46,9 @@ export function getZodSchema({
     .map((prev) => resolver?.resolveRef(prev.ref!).normalized ?? prev.ref!);
 
   if (isReferenceObject(schema)) {
-    if (!resolver) throw new Error("Resolver is required");
+    if (!resolver) {
+      throw new Error("Resolver is required");
+    }
 
     const schemaName = resolver.resolveRef(schema.$ref)?.normalized;
 

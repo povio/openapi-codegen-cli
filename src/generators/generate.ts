@@ -1,5 +1,5 @@
 import { OpenAPIV3 } from "openapi-types";
-import { printEndpointsToFile, printZodSchemasToFile } from "./code-print";
+import { printEndpointsToFile, printZodSchemasToFile } from "./print";
 import { GenerateOptions } from "./types/options";
 import { getEndpointsFromOpenAPIDoc } from "./utils/endpoint/endpoints-extraction.utils";
 import { OpenAPISchemaResolver } from "./utils/openapi/openapi-schema-resolver.class";

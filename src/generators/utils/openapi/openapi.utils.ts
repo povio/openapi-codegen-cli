@@ -21,28 +21,28 @@ export function normalizeString(text: string) {
     .replace(/--+/g, "-"); // Replace multiple - with single -
 }
 
-export const wrapWithQuotesIfNeeded = (str: string) => {
+export function wrapWithQuotesIfNeeded(str: string) {
   if (/^[a-zA-Z]\w*$/.test(str)) {
     return str;
   }
 
   return `"${str}"`;
-};
+}
 
-const prefixStringStartingWithNumberIfNeeded = (str: string) => {
+function prefixStringStartingWithNumberIfNeeded(str: string) {
   const firstAsNumber = Number(str[0]);
   if (typeof firstAsNumber === "number" && !Number.isNaN(firstAsNumber)) {
     return "_" + str;
   }
 
   return str;
-};
+}
 
-export const pathParamToVariableName = (name: string) => {
+export function pathParamToVariableName(name: string) {
   // Replace all underscores with # to preserve them when doing snakeToCamel
   const preserveUnderscore = name.replaceAll("_", "#");
   return snakeToCamel(preserveUnderscore.replaceAll("-", "_")).replaceAll("#", "_");
-};
+}
 
 type SingleType = Exclude<OpenAPIV3.SchemaObject["type"], any[] | undefined>;
 export const isPrimitiveType = (type: SingleType): type is PrimitiveType => PRIMITIVE_TYPE_LIST.includes(type as any);
@@ -50,7 +50,7 @@ export const isPrimitiveType = (type: SingleType): type is PrimitiveType => PRIM
 const PRIMITIVE_TYPE_LIST = ["string", "number", "integer", "boolean"] as const;
 export type PrimitiveType = (typeof PRIMITIVE_TYPE_LIST)[number];
 
-export const escapeControlCharacters = (str: string): string => {
+export function escapeControlCharacters(str: string): string {
   return str
     .replace(/\t/g, "\\t") // U+0009
     .replace(/\n/g, "\\n") // U+000A
@@ -62,7 +62,7 @@ export const escapeControlCharacters = (str: string): string => {
       return `\\u${`0000${hex}`.slice(-4)}`;
     })
     .replace(/\//g, "\\/");
-};
+}
 
 export const toBoolean = (value: undefined | string | boolean, defaultValue: boolean) =>
   match(value)

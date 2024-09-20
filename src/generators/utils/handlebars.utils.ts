@@ -4,17 +4,17 @@ import { Endpoint, EndpointParameter } from "../types/endpoint";
 import { decapitalize, snakeToCamel } from "./string.utils";
 import { getZodSchemaInferedTypeName, isNamedZodSchema } from "./zod/zod-schema.utils";
 
-export const setZodSchemaInferedTypeNameHelper = (schemaSuffix: string) => {
+export function setZodSchemaInferedTypeNameHelper(schemaSuffix: string) {
   Handlebars.registerHelper("getZodSchemaInferedTypeName", (zodSchema: string) =>
     getZodSchemaInferedTypeName(zodSchema, schemaSuffix),
   );
-};
+}
 
-export const setEndpointNameHelper = () => {
+export function setEndpointNameHelper() {
   Handlebars.registerHelper("getEndpointName", (alias: string) => decapitalize(snakeToCamel(alias)));
-};
+}
 
-export const setEndpointParamsHelper = (schemaSuffix: string) => {
+export function setEndpointParamsHelper(schemaSuffix: string) {
   Handlebars.registerHelper("getEndpointParams", (endpointParams: EndpointParameter[]) =>
     endpointParams.map((param) => ({
       name: param.name,
@@ -24,19 +24,19 @@ export const setEndpointParamsHelper = (schemaSuffix: string) => {
       required: param.openApiObject?.required ?? true,
     })),
   );
-};
+}
 
-export const setEndpointPathHelper = () => {
+export function setEndpointPathHelper() {
   Handlebars.registerHelper("getEndpointPath", (path: string) => path.replace(/:([a-zA-Z0-9_]+)/g, "${$1}"));
-};
+}
 
-export const setEndpointBodyHelper = () => {
+export function setEndpointBodyHelper() {
   Handlebars.registerHelper("getEndpointBody", (endpointParams: EndpointParameter[]) =>
     endpointParams.find((params) => params.type === "Body"),
   );
-};
+}
 
-export const setEndpointConfigHelper = () => {
+export function setEndpointConfigHelper() {
   Handlebars.registerHelper("getEndpointConfig", (endpoint: Endpoint) => {
     const params = endpoint.parameters.filter((param) => param.type === "Query");
     const headers = {
@@ -45,4 +45,4 @@ export const setEndpointConfigHelper = () => {
     };
     return { params, headers };
   });
-};
+}

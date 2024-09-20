@@ -76,6 +76,20 @@ function getDeepDependencyGraph(schemaRef: string[], refsDependencyGraph: Record
   const visitedDeepRefs = {} as Record<string, boolean>;
   const deepDependencyGraph = {} as Record<string, Set<string>>;
 
+  const visit = (dep: string, ref: string) => {
+    deepDependencyGraph[ref]!.add(dep);
+    if (refsDependencyGraph[dep] && ref !== dep) {
+      refsDependencyGraph[dep]!.forEach((transitive) => {
+        const refName = `${ref}__${transitive}`;
+        if (visitedDeepRefs[refName]) {
+          return;
+        }
+        visitedDeepRefs[refName] = true;
+        visit(transitive, ref);
+      });
+    }
+  };
+
   schemaRef.forEach((ref) => {
     const deps = refsDependencyGraph[ref];
     if (!deps) {
@@ -84,20 +98,7 @@ function getDeepDependencyGraph(schemaRef: string[], refsDependencyGraph: Record
     if (!deepDependencyGraph[ref]) {
       deepDependencyGraph[ref] = new Set();
     }
-    const visit = (dep: string) => {
-      deepDependencyGraph[ref]!.add(dep);
-      if (refsDependencyGraph[dep] && ref !== dep) {
-        refsDependencyGraph[dep]!.forEach((transitive) => {
-          if (visitedDeepRefs[ref + "__" + transitive]) {
-            return;
-          }
-          visitedDeepRefs[ref + "__" + transitive] = true;
-          visit(transitive);
-        });
-      }
-    };
-
-    deps.forEach((dep) => visit(dep));
+    deps.forEach((dep) => visit(dep, ref));
   });
 
   return deepDependencyGraph;

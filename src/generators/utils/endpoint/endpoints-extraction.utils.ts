@@ -17,7 +17,7 @@ import {
   isMainResponseStatus,
   isMediaTypeAllowed,
   replaceHyphenatedPath,
-} from "./endpoint";
+} from "./endpoint.utils";
 
 const ALLOWED_PATH_IN_VALUES = ["query", "header", "path"] as Array<OpenAPIV3.ParameterObject["in"]>;
 const ALLOWED_PARAM_MEDIA_TYPES = [

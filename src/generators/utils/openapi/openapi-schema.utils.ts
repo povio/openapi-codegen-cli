@@ -32,14 +32,10 @@ export function inferRequiredSchema(schema: OpenAPIV3.SchemaObject) {
   const composedRequiredSchema = {
     properties: standaloneRequisites.reduce(
       (acc, cur) => {
-        acc[cur] = {
-          // type: "unknown" as SchemaObject["type"],
-        } as OpenAPIV3.SchemaObject;
+        acc[cur] = {} as OpenAPIV3.SchemaObject;
         return acc;
       },
-      {} as {
-        [propertyName: string]: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject;
-      },
+      {} as { [propertyName: string]: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject },
     ),
     type: "object" as const,
     required: standaloneRequisites,
@@ -74,7 +70,7 @@ export function inferRequiredSchema(schema: OpenAPIV3.SchemaObject) {
 const isBrokenAllOfItem = (
   item: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject,
 ): item is OpenAPIV3.SchemaObject => {
-  if (
+  return (
     !isReferenceObject(item) &&
     !!item.required &&
     !item.type &&
@@ -82,8 +78,5 @@ const isBrokenAllOfItem = (
     !item?.allOf &&
     !item?.anyOf &&
     !item.oneOf
-  ) {
-    return true;
-  }
-  return false;
+  );
 };

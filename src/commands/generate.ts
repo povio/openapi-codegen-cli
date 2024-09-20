@@ -1,6 +1,6 @@
 import SwaggerParser from "@apidevtools/swagger-parser";
 import { OpenAPIV3 } from "openapi-types";
-import { generateCodeFromOpenAPIDoc } from "src/generators/code-generation";
+import { generateCodeFromOpenAPIDoc } from "src/generators";
 import { logInfo, logSuccess } from "src/helpers/cli.helper";
 
 export type GenerateParams = {

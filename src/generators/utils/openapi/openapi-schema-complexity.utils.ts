@@ -11,8 +11,13 @@ export function getOpenAPISchemaComplexity({
   current: number;
   schema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject | undefined;
 }): number {
-  if (!schema) return current;
-  if (isReferenceObject(schema)) return current + 2;
+  if (!schema) {
+    return current;
+  }
+
+  if (isReferenceObject(schema)) {
+    return current + 2;
+  }
 
   if (Array.isArray(schema.type)) {
     if (schema.type.length === 1) {
@@ -66,7 +71,9 @@ export function getOpenAPISchemaComplexity({
     );
   }
 
-  if (!schema.type) return current;
+  if (!schema.type) {
+    return current;
+  }
 
   if (isPrimitiveType(schema.type)) {
     if (schema.enum) {
@@ -120,7 +127,9 @@ const getSum = (arr: number[]) => arr.reduce((acc, item) => acc + item, 0);
 
 const complexityByType = (schema: OpenAPIV3.SchemaObject & { type: PrimitiveType }) => {
   const type = schema.type;
-  if (!type) return 0;
+  if (!type) {
+    return 0;
+  }
 
   return match(type)
     .with("string", () => 1)
@@ -131,7 +140,9 @@ const complexityByType = (schema: OpenAPIV3.SchemaObject & { type: PrimitiveType
 };
 
 const complexityByComposite = (from?: CompositeType | undefined) => {
-  if (!from) return 0;
+  if (!from) {
+    return 0;
+  }
 
   return match(from)
     .with("oneOf", () => 2)
