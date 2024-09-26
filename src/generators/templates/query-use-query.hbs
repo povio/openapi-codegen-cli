@@ -1,0 +1,6 @@
+export const {{getQueryName endpoint}} = ({{{generateEndpointParams endpoint}}}) => {
+  return useQuery({
+    queryKey: keys.{{getEndpointName endpoint}}({{{generateEndpointArgs endpoint}}}),
+    queryFn: {{#if (getEndpointParams endpoint)}}() => {{getEndpointName endpoint}}({{{generateEndpointArgs endpoint}}}){{else}}{{getEndpointName endpoint}}{{/if}},
+  });
+};

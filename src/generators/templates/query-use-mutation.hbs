@@ -1,0 +1,5 @@
+export const {{getQueryName endpoint}} = () => {
+  return useMutation({
+    mutationFn: {{#if (hasMoreThanOneParameter endpoint)}}({ {{{generateEndpointArgs endpoint}}} }: { {{{generateEndpointParams endpoint}}} }) => {{getEndpointName endpoint}}({{{generateEndpointArgs endpoint}}}){{else}}{{getEndpointName endpoint}}{{/if}},
+  });
+};

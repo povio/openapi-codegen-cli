@@ -1,15 +1,8 @@
 import { OpenAPIV3 } from "openapi-types";
 import { match, P } from "ts-pattern";
+import { ALLOWED_PARAM_MEDIA_TYPES, PRIMITIVE_TYPE_LIST } from "../const/openapi.const";
 import { PrimitiveType, SingleType } from "../types/openapi";
 import { snakeToCamel } from "./string.utils";
-
-const ALLOWED_PARAM_MEDIA_TYPES = [
-  "application/octet-stream",
-  "multipart/form-data",
-  "application/x-www-form-urlencoded",
-  "*/*",
-];
-const PRIMITIVE_TYPE_LIST = ["string", "number", "integer", "boolean"];
 
 export const getSchemaRef = (schemaName: string) => `#/components/schemas/${schemaName}`;
 

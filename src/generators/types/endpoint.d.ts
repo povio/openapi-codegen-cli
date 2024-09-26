@@ -17,7 +17,7 @@ export type EndpointResponse = {
 export type Endpoint = {
   method: OpenAPIV3.HttpMethods;
   path: string;
-  alias: string;
+  operationName: string;
   description?: string;
   requestFormat: string;
   responseFormat?: string;

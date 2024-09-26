@@ -1,8 +1,8 @@
 import { OpenAPIV3 } from "openapi-types";
 import { describe, expect, test } from "vitest";
+import { getSchemaRef } from "../../utils/openapi.utils";
 import { GenerateContext } from "../GenerateContext.class";
 import { SchemaResolver } from "../SchemaResolver.class";
-import { getSchemaRef } from "../utils/openapi.utils";
 import { ZodSchemaMetaData } from "./ZodSchema.class";
 import { getZodSchema } from "./getZodSchema";
 

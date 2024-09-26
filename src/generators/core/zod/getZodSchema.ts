@@ -1,10 +1,10 @@
 import { OpenAPIV3 } from "openapi-types";
 import { ZodSchemasGenerateOptions } from "src/generators/types/options";
 import { match } from "ts-pattern";
+import { inferRequiredSchema, isArraySchemaObject, isSchemaObject } from "../../utils/openapi-schema.utils";
+import { isPrimitiveType, isReferenceObject, wrapWithQuotesIfNeeded } from "../../utils/openapi.utils";
 import { GenerateContext } from "../GenerateContext.class";
 import { SchemaResolver } from "../SchemaResolver.class";
-import { inferRequiredSchema, isArraySchemaObject, isSchemaObject } from "../utils/openapi-schema.utils";
-import { isPrimitiveType, isReferenceObject, wrapWithQuotesIfNeeded } from "../utils/openapi.utils";
 import { ZodSchema, ZodSchemaMetaData } from "./ZodSchema.class";
 import { getZodChain } from "./getZodChain";
 
@@ -13,7 +13,7 @@ import { getZodChain } from "./getZodChain";
  * @see https://github.com/colinhacks/zod
  */
 export function getZodSchema({
-  schema: $schema,
+  schema,
   resolver,
   ctx,
   meta: inheritedMeta,
@@ -25,21 +25,20 @@ export function getZodSchema({
   meta?: ZodSchemaMetaData;
   options?: ZodSchemasGenerateOptions;
 }): ZodSchema {
-  if (!$schema) {
+  if (!schema) {
     throw new Error("Schema is required");
   }
 
   ctx = ctx ?? new GenerateContext();
 
-  const schema = $schema;
-  const code = new ZodSchema(schema, resolver, inheritedMeta);
+  const zodSchema = new ZodSchema(schema, resolver, inheritedMeta);
   const meta = {
-    parent: code.inherit(inheritedMeta?.parent),
-    referencedBy: [...code.meta.referencedBy],
+    parent: zodSchema.inherit(inheritedMeta?.parent),
+    referencedBy: [...zodSchema.meta.referencedBy],
   };
   const params = { resolver, ctx, meta, options };
 
-  const refsPath = code.meta.referencedBy
+  const refsPath = zodSchema.meta.referencedBy
     .slice(0, -1)
     .map((prev) => resolver?.getZodSchemaNameByRef(prev.ref!) ?? prev.ref!);
 
@@ -52,7 +51,7 @@ export function getZodSchema({
 
     // circular(=recursive) reference
     if (refsPath.length > 1 && refsPath.includes(zodSchemaName)) {
-      return code.assign(ctx.getZodSchemaByName(code.ref!)!);
+      return zodSchema.assign(ctx.getZodSchemaByName(zodSchema.ref!)!);
     }
 
     let result = ctx.getZodSchemaByName(schema.$ref);
@@ -66,12 +65,12 @@ export function getZodSchema({
     }
 
     if (ctx.getZodSchemaByName(zodSchemaName)) {
-      return code;
+      return zodSchema;
     }
 
     ctx.setZodSchema(zodSchemaName, result);
 
-    return code;
+    return zodSchema;
   }
 
   if (Array.isArray(schema.type)) {
@@ -79,7 +78,7 @@ export function getZodSchema({
       return getZodSchema({ ...params, schema: { ...schema, type: schema.type[0]! } });
     }
 
-    return code.assign(
+    return zodSchema.assign(
       `z.union([${schema.type
         .map((prop) => getZodSchema({ ...params, schema: { ...schema, type: prop } }))
         .join(", ")}])`,
@@ -89,7 +88,7 @@ export function getZodSchema({
   if (schema.oneOf) {
     if (schema.oneOf.length === 1) {
       const type = getZodSchema({ ...params, schema: schema.oneOf[0]! });
-      return code.assign(type.toString());
+      return zodSchema.assign(type.toString());
     }
 
     /* when there are multiple allOf we are unable to use a discriminatedUnion as this library adds an
@@ -98,14 +97,14 @@ export function getZodSchema({
     if (schema.discriminator && !hasMultipleAllOf) {
       const propertyName = schema.discriminator.propertyName;
 
-      return code.assign(`
+      return zodSchema.assign(`
         z.discriminatedUnion("${propertyName}", [${schema.oneOf
           .map((prop) => getZodSchema({ ...params, schema: prop }))
           .join(", ")}])
           `);
     }
 
-    return code.assign(
+    return zodSchema.assign(
       `z.union([${schema.oneOf.map((prop) => getZodSchema({ ...params, schema: prop })).join(", ")}])`,
     );
   }
@@ -114,7 +113,7 @@ export function getZodSchema({
   if (schema.anyOf) {
     if (schema.anyOf.length === 1) {
       const type = getZodSchema({ ...params, schema: schema.anyOf[0]! });
-      return code.assign(type.toString());
+      return zodSchema.assign(type.toString());
     }
 
     const types = schema.anyOf
@@ -135,13 +134,13 @@ export function getZodSchema({
       })
       .join(", ");
 
-    return code.assign(`z.union([${types}])`);
+    return zodSchema.assign(`z.union([${types}])`);
   }
 
   if (schema.allOf) {
     if (schema.allOf.length === 1) {
       const type = getZodSchema({ ...params, schema: schema.allOf[0]! });
-      return code.assign(type.toString());
+      return zodSchema.assign(type.toString());
     }
     const { patchRequiredSchemaInLoop, noRequiredOnlyAllof, composedRequiredSchema } = inferRequiredSchema(schema);
 
@@ -160,7 +159,7 @@ export function getZodSchema({
       .map((type) => `and(${type.toString()})`)
       .join(".");
 
-    return code.assign(`${first.toString()}.${rest}`);
+    return zodSchema.assign(`${first.toString()}.${rest}`);
   }
 
   const schemaType = schema.type ? (schema.type.toLowerCase() as NonNullable<typeof schema.type>) : undefined;
@@ -170,29 +169,29 @@ export function getZodSchema({
         if (schema.enum.length === 1) {
           const value = schema.enum[0];
           const valueString = value === null ? "null" : `"${value}"`;
-          return code.assign(`z.literal(${valueString})`);
+          return zodSchema.assign(`z.literal(${valueString})`);
         }
 
-        return code.assign(
+        return zodSchema.assign(
           `z.enum([${schema.enum.map((value) => (value === null ? "null" : `"${value}"`)).join(", ")}])`,
         );
       }
 
       if (schema.enum.some((e) => typeof e === "string")) {
-        return code.assign("z.never()");
+        return zodSchema.assign("z.never()");
       }
 
       if (schema.enum.length === 1) {
         const value = schema.enum[0];
-        return code.assign(`z.literal(${value === null ? "null" : value})`);
+        return zodSchema.assign(`z.literal(${value === null ? "null" : value})`);
       }
 
-      return code.assign(
+      return zodSchema.assign(
         `z.union([${schema.enum.map((value) => `z.literal(${value === null ? "null" : value})`).join(", ")}])`,
       );
     }
 
-    return code.assign(
+    return zodSchema.assign(
       match(schemaType)
         .with("integer", () => "z.number()")
         .with("string", () =>
@@ -208,7 +207,7 @@ export function getZodSchema({
 
   if (isArraySchemaObject(schema)) {
     if (schema.items) {
-      return code.assign(
+      return zodSchema.assign(
         `z.array(${getZodSchema({ ...params, schema: schema.items }).toString()}${getZodChain({
           schema: schema.items as OpenAPIV3.SchemaObject,
           meta: { ...meta, isRequired: true },
@@ -217,7 +216,7 @@ export function getZodSchema({
       );
     }
 
-    return code.assign(`z.array(z.any())${readonly}`);
+    return zodSchema.assign(`z.array(z.any())${readonly}`);
   }
 
   if (schemaType === "object" || schema.properties || schema.additionalProperties) {
@@ -231,7 +230,7 @@ export function getZodSchema({
     const additionalPropsSchema = additionalProps === false ? "" : ".passthrough()";
 
     if (typeof schema.additionalProperties === "object" && Object.keys(schema.additionalProperties).length > 0) {
-      return code.assign(
+      return zodSchema.assign(
         `z.record(${(
           getZodSchema({ ...params, schema: schema.additionalProperties }) +
           getZodChain({
@@ -268,11 +267,11 @@ export function getZodSchema({
           }
         }
 
-        const propCode =
+        const propzodSchema =
           getZodSchema({ ...params, schema: propSchema, meta: propMetadata }) +
           getZodChain({ schema: propActualSchema as OpenAPIV3.SchemaObject, meta: propMetadata, options });
 
-        return [prop, propCode.toString()];
+        return [prop, propzodSchema.toString()];
       });
 
       properties =
@@ -283,11 +282,11 @@ export function getZodSchema({
 
     const partial = isPartial ? ".partial()" : "";
     const strict = options?.strictObjects ? ".strict()" : "";
-    return code.assign(`z.object(${properties})${partial}${strict}${additionalPropsSchema}${readonly}`);
+    return zodSchema.assign(`z.object(${properties})${partial}${strict}${additionalPropsSchema}${readonly}`);
   }
 
   if (!schemaType) {
-    return code.assign("z.unknown()");
+    return zodSchema.assign("z.unknown()");
   }
 
   throw new Error(`Unsupported schema type: ${schemaType}`);

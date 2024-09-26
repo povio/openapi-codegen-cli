@@ -1,6 +1,6 @@
 import { OpenAPIV3 } from "openapi-types";
 import { describe, expect, test } from "vitest";
-import { topologicalSort } from "../utils/sort.utils";
+import { topologicalSort } from "../../utils/sort.utils";
 import { getOpenAPISchemaDependencyGraph } from "./getOpenAPISchemaDependencyGraph";
 
 describe("getOpenAPISchemaDependencyGraph", () => {

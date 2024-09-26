@@ -120,7 +120,6 @@ describe("getEndpointsFromOpenAPIDoc", () => {
     const result = getEndpoints(doc);
     expect(result.endpoints).toStrictEqual([
       {
-        alias: "placeOrder",
         description: "Place a new order in the store",
         errors: [
           {
@@ -130,6 +129,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         ],
         method: "post",
+        operationName: "placeOrder",
         parameters: [
           {
             description: undefined,
@@ -219,7 +219,6 @@ describe("getEndpointsFromOpenAPIDoc", () => {
     const result = getEndpoints(doc);
     expect(result.endpoints).toStrictEqual([
       {
-        alias: "updatePet",
         description: "Update an existing pet by Id",
         errors: [
           {
@@ -239,6 +238,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         ],
         method: "put",
+        operationName: "updatePet",
         parameters: [
           {
             description: "Update an existent pet in the store",
@@ -253,7 +253,6 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         responseFormat: "application/json",
       },
       {
-        alias: "addPet",
         description: "Add a new pet to the store",
         errors: [
           {
@@ -263,6 +262,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         ],
         method: "post",
+        operationName: "addPet",
         parameters: [
           {
             description: "Create a new pet in the store",
@@ -343,7 +343,6 @@ describe("getEndpointsFromOpenAPIDoc", () => {
     const result = getEndpoints(doc);
     expect(result.endpoints).toStrictEqual([
       {
-        alias: "updatePet",
         description: "Update an existing pet by Id",
         errors: [
           {
@@ -363,6 +362,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         ],
         method: "put",
+        operationName: "updatePet",
         parameters: [
           {
             description: "Update an existent pet in the store",
@@ -511,7 +511,6 @@ describe("getEndpointsFromOpenAPIDoc", () => {
     const result = getEndpoints(doc);
     expect(result.endpoints).toStrictEqual([
       {
-        alias: "findPetsByStatus",
         description: "Multiple status values can be provided with comma separated strings",
         errors: [
           {
@@ -521,6 +520,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         ],
         method: "get",
+        operationName: "findPetsByStatus",
         parameters: [
           {
             name: "status",
@@ -546,7 +546,6 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         responseFormat: "application/json",
       },
       {
-        alias: "findPetsByTags",
         description: "Multiple tags can be provided with comma separated strings. Use tag1, tag2, tag3 for testing.",
         errors: [
           {
@@ -556,6 +555,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         ],
         method: "get",
+        operationName: "findPetsByTags",
         parameters: [
           {
             name: "tags",
@@ -605,7 +605,6 @@ describe("getEndpointsFromOpenAPIDoc", () => {
     const result = getEndpoints(openApiDoc);
     expect(result.endpoints).toStrictEqual([
       {
-        alias: "updatePet",
         description: "Update an existing pet by Id",
         errors: [
           {
@@ -625,6 +624,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         ],
         method: "put",
+        operationName: "updatePet",
         parameters: [
           {
             description: "Update an existent pet in the store",
@@ -639,7 +639,6 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         responseFormat: "application/json",
       },
       {
-        alias: "addPet",
         description: "Add a new pet to the store",
         errors: [
           {
@@ -649,6 +648,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         ],
         method: "post",
+        operationName: "addPet",
         parameters: [
           {
             description: "Create a new pet in the store",
@@ -663,7 +663,6 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         responseFormat: "application/json",
       },
       {
-        alias: "findPetsByStatus",
         description: "Multiple status values can be provided with comma separated strings",
         errors: [
           {
@@ -673,6 +672,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         ],
         method: "get",
+        operationName: "findPetsByStatus",
         parameters: [
           {
             name: "status",
@@ -698,7 +698,6 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         responseFormat: "application/json",
       },
       {
-        alias: "findPetsByTags",
         description: "Multiple tags can be provided with comma separated strings. Use tag1, tag2, tag3 for testing.",
         errors: [
           {
@@ -708,6 +707,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         ],
         method: "get",
+        operationName: "findPetsByTags",
         parameters: [
           {
             name: "tags",
@@ -734,7 +734,6 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         responseFormat: "application/json",
       },
       {
-        alias: "getPetById",
         description: "Returns a single pet",
         errors: [
           {
@@ -749,6 +748,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         ],
         method: "get",
+        operationName: "getPetById",
         parameters: [
           {
             name: "petId",
@@ -772,7 +772,6 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         responseFormat: "application/json",
       },
       {
-        alias: "updatePetWithForm",
         description: "",
         errors: [
           {
@@ -782,6 +781,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         ],
         method: "post",
+        operationName: "updatePetWithForm",
         parameters: [
           {
             name: "petId",
@@ -830,7 +830,6 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         response: "z.void()",
       },
       {
-        alias: "deletePet",
         description: "delete a pet",
         errors: [
           {
@@ -840,6 +839,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         ],
         method: "delete",
+        operationName: "deletePet",
         parameters: [
           {
             name: "api_key",
@@ -876,10 +876,10 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         response: "z.void()",
       },
       {
-        alias: "uploadFile",
         description: "",
         errors: [],
         method: "post",
+        operationName: "uploadFile",
         parameters: [
           {
             description: undefined,
@@ -923,10 +923,10 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         responseFormat: "application/json",
       },
       {
-        alias: "getInventory",
         description: "Returns a map of status codes to quantities",
         errors: [],
         method: "get",
+        operationName: "getInventory",
         parameters: [],
         path: "/store/inventory",
         requestFormat: "application/json",
@@ -934,7 +934,6 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         responseFormat: "application/json",
       },
       {
-        alias: "placeOrder",
         description: "Place a new order in the store",
         errors: [
           {
@@ -944,6 +943,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         ],
         method: "post",
+        operationName: "placeOrder",
         parameters: [
           {
             description: undefined,
@@ -958,7 +958,6 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         responseFormat: "application/json",
       },
       {
-        alias: "getOrderById",
         description:
           "For valid response try integer IDs with value <= 5 or > 10. Other values will generate exceptions.",
         errors: [
@@ -974,6 +973,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         ],
         method: "get",
+        operationName: "getOrderById",
         parameters: [
           {
             name: "orderId",
@@ -997,7 +997,6 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         responseFormat: "application/json",
       },
       {
-        alias: "deleteOrder",
         description:
           "For valid response try integer IDs with value < 1000. Anything above 1000 or nonintegers will generate API errors",
         errors: [
@@ -1013,6 +1012,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         ],
         method: "delete",
+        operationName: "deleteOrder",
         parameters: [
           {
             name: "orderId",
@@ -1035,10 +1035,10 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         response: "z.void()",
       },
       {
-        alias: "createUser",
         description: "This can only be done by the logged in user.",
         errors: [],
         method: "post",
+        operationName: "createUser",
         parameters: [
           {
             description: "Created user object",
@@ -1053,10 +1053,10 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         responseFormat: "application/json",
       },
       {
-        alias: "createUsersWithListInput",
         description: "Creates list of users with given input array",
         errors: [],
         method: "post",
+        operationName: "createUsersWithListInput",
         parameters: [
           {
             description: undefined,
@@ -1071,7 +1071,6 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         responseFormat: "application/json",
       },
       {
-        alias: "loginUser",
         description: "",
         errors: [
           {
@@ -1081,6 +1080,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         ],
         method: "get",
+        operationName: "loginUser",
         parameters: [
           {
             name: "username",
@@ -1117,17 +1117,16 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         responseFormat: "application/json",
       },
       {
-        alias: "logoutUser",
         description: "",
         errors: [],
         method: "get",
+        operationName: "logoutUser",
         parameters: [],
         path: "/user/logout",
         requestFormat: "application/json",
         response: "z.void()",
       },
       {
-        alias: "getUserByName",
         description: "",
         errors: [
           {
@@ -1142,6 +1141,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         ],
         method: "get",
+        operationName: "getUserByName",
         parameters: [
           {
             name: "username",
@@ -1164,10 +1164,10 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         responseFormat: "application/json",
       },
       {
-        alias: "updateUser",
         description: "This can only be done by the logged in user.",
         errors: [],
         method: "put",
+        operationName: "updateUser",
         parameters: [
           {
             description: "Update an existent user in the store",
@@ -1195,7 +1195,6 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         response: "z.void()",
       },
       {
-        alias: "deleteUser",
         description: "This can only be done by the logged in user.",
         errors: [
           {
@@ -1210,6 +1209,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         ],
         method: "delete",
+        operationName: "deleteUser",
         parameters: [
           {
             name: "username",
@@ -1330,7 +1330,6 @@ describe("getEndpointsFromOpenAPIDoc", () => {
     const result = getEndpoints(doc);
     expect(result.endpoints).toStrictEqual([
       {
-        alias: "findPetsByStatus",
         description: "Multiple status values can be provided with comma separated strings",
         errors: [
           {
@@ -1345,6 +1344,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         ],
         method: "get",
+        operationName: "findPetsByStatus",
         parameters: [],
         path: "/pet/findByStatus",
         requestFormat: "application/json",
@@ -1352,7 +1352,6 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         responseFormat: "application/json",
       },
       {
-        alias: "findPetsByTags",
         description: "Multiple tags can be provided with comma separated strings. Use tag1, tag2, tag3 for testing.",
         errors: [
           {
@@ -1362,6 +1361,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         ],
         method: "get",
+        operationName: "findPetsByTags",
         parameters: [],
         path: "/pet/findByTags",
         requestFormat: "application/json",

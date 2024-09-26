@@ -1,0 +1,28 @@
+
+import {
+     {{! Infered zod schemas types imports }}
+    {{#each zodSchemaTypeImports as | zodSchemaTypeImport |}}
+    {{zodSchemaTypeImport}},
+    {{/each}}
+} from "./zod-schemas";
+import { 
+    {{! React query imports }}
+    {{#each reactQueryImports as | reactQueryImport |}}
+    {{reactQueryImport}},
+    {{/each}}
+} from "@tanstack/react-query";
+import {
+    {{! Type imports }}
+    {{#each endpoints as | endpoint |}}
+    {{getEndpointName endpoint}},
+    {{/each}}
+} from "./endpoints";
+
+{{! Query keys export}}
+{{{generateQueryKeys queryEndpoints}}}
+
+{{! Query export }}
+{{#each endpoints as | endpoint |}}
+{{{generateQuery endpoint}}}
+
+{{/each}}

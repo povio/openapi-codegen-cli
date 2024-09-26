@@ -1,7 +1,7 @@
 import { OpenAPIV3 } from "openapi-types";
+import { autocorrectRef, getSchemaRef } from "../utils/openapi.utils";
+import { getZodSchemaName } from "../utils/zod-schema.utils";
 import { getOpenAPISchemaDependencyGraph } from "./openapi/getOpenAPISchemaDependencyGraph";
-import { autocorrectRef, getSchemaRef } from "./utils/openapi.utils";
-import { getZodSchemaName } from "./utils/zod-schema.utils";
 
 type SchemaInfo = {
   ref: string;

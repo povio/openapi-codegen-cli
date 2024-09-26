@@ -1,8 +1,8 @@
 import { OpenAPIV3 } from "openapi-types";
 import { match } from "ts-pattern";
-import { CompositeType, PrimitiveType } from "../types/openapi";
-import { sum } from "../utils/math.utils";
-import { isPrimitiveType, isReferenceObject } from "../utils/openapi.utils";
+import { CompositeType, PrimitiveType } from "../../types/openapi";
+import { sum } from "../../utils/math.utils";
+import { isPrimitiveType, isReferenceObject } from "../../utils/openapi.utils";
 
 export function getOpenAPISchemaComplexity({
   current,

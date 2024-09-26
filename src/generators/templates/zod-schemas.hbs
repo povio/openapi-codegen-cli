@@ -1,10 +1,9 @@
 import { z } from "zod";
 
-{{#each zodSchemas}}
+{{#each zodSchemas as | zodSchema |}}
 {{! Zod schema export }}
-export const {{@key}} = {{{this}}};
+export const {{@key}} = {{{zodSchema}}};
 {{! Zod schema infered type export }}
 export type {{getZodSchemaInferedTypeName @key}} = z.infer<typeof {{@key}}>;
 
 {{/each}}
-

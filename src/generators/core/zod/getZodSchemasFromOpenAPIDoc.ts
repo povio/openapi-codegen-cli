@@ -1,7 +1,7 @@
 import { OpenAPIV3 } from "openapi-types";
+import { ZodSchemasGenerateOptions } from "../../types/options";
+import { getZodSchemaName } from "../../utils/zod-schema.utils";
 import { SchemaResolver } from "../SchemaResolver.class";
-import { ZodSchemasGenerateOptions } from "../types/options";
-import { getZodSchemaName } from "../utils/zod-schema.utils";
 import { getZodSchema } from "./getZodSchema";
 
 export function getZodSchemasFromOpenAPIDoc({

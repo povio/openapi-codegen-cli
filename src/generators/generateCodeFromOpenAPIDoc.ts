@@ -1,13 +1,15 @@
 import { OpenAPIV3 } from "openapi-types";
-import { SchemaResolver } from "./SchemaResolver.class";
-import { getEndpointsFromOpenAPIDoc } from "./endpoints/getEndpointsFromOpenAPIDoc";
-import { printEndpointsToFile } from "./endpoints/printEndpointsToFile";
+import { DEFAULT_GENERATE_OPTIONS } from "./const/generate.const";
+import { SchemaResolver } from "./core/SchemaResolver.class";
+import { getEndpointsFromOpenAPIDoc } from "./core/endpoints/getEndpointsFromOpenAPIDoc";
+import { getZodSchemasFromOpenAPIDoc } from "./core/zod/getZodSchemasFromOpenAPIDoc";
+import { sortZodSchemasByTopology } from "./core/zod/sortZodSchemasByTopology";
+import { wrapCircularZodSchemas } from "./core/zod/wrapCircularZodSchemas";
+import { generateEndpoints } from "./generate/generateEndpoints";
+import { generateQueries } from "./generate/generateQueries";
+import { generateZodSchemas } from "./generate/generateZodSchemas";
 import { GenerateOptions } from "./types/options";
-import { sortZodSchemasByTopology, wrapCircularZodSchemasWithLazy } from "./utils/zod-schemas.utils";
-import { getZodSchemasFromOpenAPIDoc } from "./zod/getZodSchemasFromOpenAPIDoc";
-import { printZodSchemasToFile } from "./zod/printZodSchemasToFile";
-
-const DEFAULT_GENERATE_OPTIONS = { schemaSuffix: "Schema" };
+import { writeTsFileSync } from "./utils/file.utils";
 
 export function generateCodeFromOpenAPIDoc({
   openApiDoc,
@@ -19,10 +21,16 @@ export function generateCodeFromOpenAPIDoc({
   options?: GenerateOptions;
 }) {
   options = { ...DEFAULT_GENERATE_OPTIONS, ...options };
+
   const { zodSchemas, endpoints } = getEntitiesFromOpenAPIDoc({ openApiDoc, options });
 
-  printZodSchemasToFile({ zodSchemas, output, options });
-  printEndpointsToFile({ endpoints, output, options });
+  const zodSchemasCode = generateZodSchemas({ zodSchemas, options });
+  const endpointsCode = generateEndpoints({ endpoints, options });
+  const queriesCode = generateQueries({ endpoints, options });
+
+  writeTsFileSync({ output, fileName: "zod-schemas", content: zodSchemasCode });
+  writeTsFileSync({ output, fileName: "endpoints", content: endpointsCode });
+  writeTsFileSync({ output, fileName: "queries", content: queriesCode });
 }
 
 function getEntitiesFromOpenAPIDoc({
@@ -38,7 +46,7 @@ function getEntitiesFromOpenAPIDoc({
   const zodSchemasFromDocSchemas = getZodSchemasFromOpenAPIDoc({ resolver, openApiDoc, options });
 
   let zodSchemas = { ...zodSchemasFromDocSchemas, ...ctx.getState().zodSchemas };
-  zodSchemas = wrapCircularZodSchemasWithLazy({ resolver, zodSchemas, options });
+  zodSchemas = wrapCircularZodSchemas({ resolver, zodSchemas, options });
   zodSchemas = sortZodSchemasByTopology({ resolver, zodSchemas });
 
   return { zodSchemas, endpoints };

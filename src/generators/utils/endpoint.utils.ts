@@ -14,7 +14,7 @@ export function isMediaTypeAllowed(mediaType: string) {
   return mediaType === "application/json";
 }
 
-export function getOperationAlias(path: string, method: string, operation: OpenAPIV3.OperationObject) {
+export function getOperationName(path: string, method: string, operation: OpenAPIV3.OperationObject) {
   return operation.operationId ?? method + pathToVariableName(path);
 }
 

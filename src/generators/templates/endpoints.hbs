@@ -1,52 +1,33 @@
-import { AppRestClient } from "@/util/rest/clients/app-rest-client";
+import { {{restClientName}} } from "{{restClientImportFrom}}";
 import {
-    {{! Referenced zod schemas imports }}
-    {{#each zodSchemaImports}}
-    {{this}},
+    {{! Zod schemas imports }}
+    {{#each zodSchemaImports as | zodSchemaImport |}}
+    {{zodSchemaImport}},
     {{/each}}
-     {{! Referenced infered zod schemas types imports }}
-    {{#each zodSchemaTypeImports}}
-    {{this}},
+     {{! Infered zod schemas types imports }}
+    {{#each zodSchemaTypeImports as | zodSchemaTypeImport |}}
+    {{zodSchemaTypeImport}},
     {{/each}}
 } from "./zod-schemas";
-{{! Optional zod import }}
+{{! Zod import }}
 {{#if hasZodImport}}
 import { z } from "zod";
 {{/if}}
 
-{{#each endpoints}}
-export const {{getEndpointName this.alias}} = (
-    {{! Parameters }}
-    {{#each (getEndpointParams this.parameters)}}
-    {{this.name}}{{#unless this.required}}?{{/unless}}: {{this.type}},
-    {{/each}}
-    ) => { 
-    return AppRestClient.{{this.method}}( 
+{{! Endpoints export }}
+{{#each endpoints as | endpoint |}}
+export const {{getEndpointName endpoint}} = ({{{generateEndpointParams endpoint}}}) => { 
+    return {{../restClientName}}.{{endpoint.method}}( 
         {{! Response }}
-        { resSchema: {{this.response}} }, 
+        { resSchema: {{endpoint.response}} }, 
         {{! Path }}
-        `{{getEndpointPath this.path}}`,
+        `{{getEndpointPath endpoint}}`,
         {{! Body }}
-        {{#with (getEndpointBody this.parameters)}}
-        {{#if this}}{{this.name}}, {{/if}}
+        {{#with (getEndpointBody endpoint) as | endpointBody |}}
+        {{#if endpointBody}}{{endpointBody.name}}, {{/if}}
         {{/with}}
         {{! Config }}
-        {{#with (getEndpointConfig this)}}
-        {
-            {{#if this.params}}
-            params: {
-                {{#each this.params}}
-                {{this.name}},
-                {{/each}}
-            },
-            {{/if}}
-            headers: {
-                {{#each this.headers}}
-                '{{@key}}': '{{this}}',
-                {{/each}}
-            },
-        }
-        {{/with}}
+        {{{generateEndpointConfig endpoint}}}
     )
 };
 

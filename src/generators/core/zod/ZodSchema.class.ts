@@ -1,7 +1,7 @@
 import { OpenAPIV3 } from "openapi-types";
+import { isReferenceObject } from "../../utils/openapi.utils";
 import { SchemaResolver } from "../SchemaResolver.class";
 import { getOpenAPISchemaComplexity } from "../openapi/getOpenAPISchemaComplexity";
-import { isReferenceObject } from "../utils/openapi.utils";
 
 export type ZodSchemaMetaData = {
   isRequired?: boolean;
