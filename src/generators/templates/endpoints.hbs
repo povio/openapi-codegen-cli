@@ -1,33 +1,27 @@
-import { {{restClientName}} } from "{{restClientImportFrom}}";
-import {
-    {{! Zod schemas imports }}
-    {{#each zodSchemaImports as | zodSchemaImport |}}
-    {{zodSchemaImport}},
-    {{/each}}
-     {{! Infered zod schemas types imports }}
-    {{#each zodSchemaTypeImports as | zodSchemaTypeImport |}}
-    {{zodSchemaTypeImport}},
-    {{/each}}
-} from "./zod-schemas";
+{{! Rest client import}}
+{{{genImport restClientImport}}}
 {{! Zod import }}
 {{#if hasZodImport}}
-import { z } from "zod";
+{{{genImport zodImport}}}
 {{/if}}
+{{! Models import }}
+{{{genImport modelsImport}}}
+
 
 {{! Endpoints export }}
 {{#each endpoints as | endpoint |}}
-export const {{getEndpointName endpoint}} = ({{{generateEndpointParams endpoint}}}) => { 
+export const {{endpointName endpoint}} = ({{{genEndpointParams endpoint}}}) => { 
     return {{../restClientName}}.{{endpoint.method}}( 
         {{! Response }}
         { resSchema: {{endpoint.response}} }, 
         {{! Path }}
-        `{{getEndpointPath endpoint}}`,
+        `{{endpointPath endpoint}}`,
         {{! Body }}
-        {{#with (getEndpointBody endpoint) as | endpointBody |}}
+        {{#with (endpointBody endpoint) as | endpointBody |}}
         {{#if endpointBody}}{{endpointBody.name}}, {{/if}}
         {{/with}}
         {{! Config }}
-        {{{generateEndpointConfig endpoint}}}
+        {{{genEndpointConfig endpoint}}}
     )
 };
 

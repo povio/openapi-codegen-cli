@@ -1,13 +1,13 @@
-import Handlebars from "handlebars";
+import { QUERY_IMPORT } from "../const/imports.const";
+import { QUERY_HOOKS } from "../const/query.const";
 import { Endpoint, EndpointParameter } from "../types/endpoint";
+import { Import } from "../types/import";
 import { GenerateOptions } from "../types/options";
-import { readHbsTemplateSync } from "../utils/file.utils";
-import { setEndpointNameHelper, setGenerateQueryHelper, setGenerateQueryKeysHelper } from "../utils/handlebars.utils";
-import { getZodSchemaInferedTypeName, isNamedZodSchema } from "../utils/zod-schema.utils";
+import { getEndpointName, getZodSchemaInferedTypeName } from "../utils/generate.utils";
+import { getHbsTemplateDelegate } from "../utils/hbs-template.utils";
+import { isNamedZodSchema } from "../utils/zod-schema.utils";
 
 export function generateQueries({ endpoints, options }: { endpoints: Endpoint[]; options: GenerateOptions }) {
-  const template = readHbsTemplateSync("queries");
-
   const queryEndpoints = endpoints.filter((endpoint) => endpoint.method === "get");
   const mutationEndpoints = endpoints.filter((endpoint) => endpoint.method !== "get");
 
@@ -25,20 +25,30 @@ export function generateQueries({ endpoints, options }: { endpoints: Endpoint[];
     ),
   ];
 
-  const reactQueryImports = [
-    ...(queryEndpoints.length > 0 ? ["useQuery"] : []),
-    ...(mutationEndpoints.length > 0 ? ["useMutation"] : []),
-  ];
+  const queryImport: Import = {
+    ...QUERY_IMPORT,
+    bindings: [
+      ...(queryEndpoints.length > 0 ? [QUERY_HOOKS.query] : []),
+      ...(mutationEndpoints.length > 0 ? [QUERY_HOOKS.mutation] : []),
+    ],
+  };
 
-  setEndpointNameHelper();
-  setGenerateQueryKeysHelper(options);
-  setGenerateQueryHelper(options);
+  const modelsImport: Import = {
+    bindings: [...zodSchemaTypeImports],
+    from: `./${options.modelsConfig.outputFileNameSuffix}`,
+  };
 
-  const hbsTemplate = Handlebars.compile(template);
+  const endpointsImport: Import = {
+    bindings: endpoints.map(getEndpointName),
+    from: `./${options.endpointsConfig.outputFileNameSuffix}`,
+  };
+
+  const hbsTemplate = getHbsTemplateDelegate({ templateName: "queries", options });
 
   return hbsTemplate({
-    zodSchemaTypeImports,
-    reactQueryImports,
+    queryImport,
+    modelsImport,
+    endpointsImport,
     endpoints,
     queryEndpoints,
   });

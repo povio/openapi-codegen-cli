@@ -1,0 +1,5 @@
+export const keys = {
+    {{#each endpoints as | endpoint |}}
+    {{endpointName endpoint}}: ({{{genEndpointParams endpoint}}}) => ["{{endpoint.path}}", {{{endpointArgs endpoint}}}] as const,
+    {{/each}}
+};

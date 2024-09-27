@@ -1,6 +1,6 @@
 import { OpenAPIV3 } from "openapi-types";
 import { ALLOWED_METHODS, ALLOWED_PATH_IN, COMPLEXITY_THRESHOLD } from "src/generators/const/openapi.const";
-import { VOID_SCHEMA } from "src/generators/const/zod-schemas.const";
+import { VOID_SCHEMA } from "src/generators/const/zod.const";
 import { match } from "ts-pattern";
 import { Endpoint } from "../../types/endpoint";
 import { GenerateOptions } from "../../types/options";

@@ -1,20 +1,13 @@
-import Handlebars from "handlebars";
-import { REST_CLIENT_IMPORT_FROM, REST_CLIENT_NAME } from "../const/endpoints.const";
+import { REST_CLIENT_NAME } from "../const/endpoints.const";
+import { REST_CLIENT_IMPORT, ZOD_IMPORT } from "../const/imports.const";
 import { Endpoint, EndpointParameter } from "../types/endpoint";
+import { Import } from "../types/import";
 import { GenerateOptions } from "../types/options";
-import { readHbsTemplateSync } from "../utils/file.utils";
-import {
-  setEndpointBodyHelper,
-  setEndpointNameHelper,
-  setEndpointPathHelper,
-  setGenerateEndpointConfigHelper,
-  setGenerateEndpointParamsHelper,
-} from "../utils/handlebars.utils";
-import { getZodSchemaInferedTypeName, isNamedZodSchema } from "../utils/zod-schema.utils";
+import { getZodSchemaInferedTypeName } from "../utils/generate.utils";
+import { getHbsTemplateDelegate } from "../utils/hbs-template.utils";
+import { isNamedZodSchema } from "../utils/zod-schema.utils";
 
 export function generateEndpoints({ endpoints, options }: { endpoints: Endpoint[]; options: GenerateOptions }) {
-  const template = readHbsTemplateSync("endpoints");
-
   const endpointResponseSchemas = endpoints.map((endpoint) => endpoint.response);
   const zodSchemaImports = [...new Set(endpointResponseSchemas.filter(isNamedZodSchema))];
   const hasZodImport = endpointResponseSchemas.some((response) => !isNamedZodSchema(response));
@@ -29,20 +22,19 @@ export function generateEndpoints({ endpoints, options }: { endpoints: Endpoint[
     ),
   ];
 
-  setEndpointNameHelper();
-  setGenerateEndpointParamsHelper(options);
-  setEndpointPathHelper();
-  setEndpointBodyHelper();
-  setGenerateEndpointConfigHelper();
+  const modelsImport: Import = {
+    bindings: [...zodSchemaImports, ...zodSchemaTypeImports],
+    from: `./${options.modelsConfig.outputFileNameSuffix}`,
+  };
 
-  const hbsTemplate = Handlebars.compile(template);
+  const hbsTemplate = getHbsTemplateDelegate({ templateName: "endpoints", options });
 
   return hbsTemplate({
-    restClientName: REST_CLIENT_NAME,
-    restClientImportFrom: REST_CLIENT_IMPORT_FROM,
-    zodSchemaImports,
-    zodSchemaTypeImports,
+    restClientImport: REST_CLIENT_IMPORT,
     hasZodImport,
+    zodImport: ZOD_IMPORT,
+    restClientName: REST_CLIENT_NAME,
+    modelsImport,
     endpoints,
   });
 }

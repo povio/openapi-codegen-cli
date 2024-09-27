@@ -1,28 +1,16 @@
+{{! React query import }}
+{{{genImport queryImport}}}
+{{! Models import }}
+{{{genImport modelsImport}}}
+{{! Endpoints import }}
+{{{genImport endpointsImport}}}
 
-import {
-     {{! Infered zod schemas types imports }}
-    {{#each zodSchemaTypeImports as | zodSchemaTypeImport |}}
-    {{zodSchemaTypeImport}},
-    {{/each}}
-} from "./zod-schemas";
-import { 
-    {{! React query imports }}
-    {{#each reactQueryImports as | reactQueryImport |}}
-    {{reactQueryImport}},
-    {{/each}}
-} from "@tanstack/react-query";
-import {
-    {{! Type imports }}
-    {{#each endpoints as | endpoint |}}
-    {{getEndpointName endpoint}},
-    {{/each}}
-} from "./endpoints";
 
 {{! Query keys export}}
-{{{generateQueryKeys queryEndpoints}}}
+{{{genQueryKeys queryEndpoints}}}
 
 {{! Query export }}
 {{#each endpoints as | endpoint |}}
-{{{generateQuery endpoint}}}
+{{{genQuery endpoint}}}
 
 {{/each}}
