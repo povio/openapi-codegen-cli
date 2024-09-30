@@ -1,12 +1,12 @@
 import { OpenAPIV3 } from "openapi-types";
-import { isReferenceObject } from "../../utils/openapi.utils";
+import { getSchemaRefsDependencyGraph } from "./getSchemaRefsDependencyGraph";
 
 export function getOpenAPISchemaDependencyGraph(
   schemaRef: string[],
   getSchemaByRef: (ref: string) => OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject,
 ) {
   const refsDependencyGraph = getRefsDependencyGraph(schemaRef, getSchemaByRef);
-  const deepDependencyGraph = getDeepDependencyGraph(schemaRef, refsDependencyGraph);
+  const deepDependencyGraph = getDeepRefsDependencyGraph(schemaRef, refsDependencyGraph);
 
   return { refsDependencyGraph, deepDependencyGraph };
 }
@@ -15,65 +15,23 @@ function getRefsDependencyGraph(
   schemaRef: string[],
   getSchemaByRef: (ref: string) => OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject,
 ) {
-  const visitedsRefs = {} as Record<string, boolean>;
+  const visitedRefs = {} as Record<string, boolean>;
   const refsDependencyGraph = {} as Record<string, Set<string>>;
 
-  const visit = (schema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject, fromRef: string): void => {
-    if (!schema) {
-      return;
-    }
-
-    if (isReferenceObject(schema)) {
-      if (!refsDependencyGraph[fromRef]) {
-        refsDependencyGraph[fromRef] = new Set();
-      }
-      refsDependencyGraph[fromRef].add(schema.$ref);
-      if (visitedsRefs[schema.$ref]) {
-        return;
-      }
-      visitedsRefs[fromRef] = true;
-      visit(getSchemaByRef(schema.$ref), schema.$ref);
-      return;
-    }
-
-    const props = ["allOf", "oneOf", "anyOf"] as const;
-    for (const prop of props) {
-      if (schema[prop]) {
-        for (const item of schema[prop]!) {
-          visit(item, fromRef);
-        }
-      }
-    }
-    if (props.some((prop) => schema[prop])) {
-      return;
-    }
-
-    if (schema.type === "array") {
-      if (!schema.items) {
-        return;
-      }
-      visit(schema.items, fromRef);
-      return;
-    }
-
-    if (schema.type === "object" || schema.properties || schema.additionalProperties) {
-      if (schema.properties) {
-        for (const property in schema.properties) {
-          visit(schema.properties[property]!, fromRef);
-        }
-      }
-      if (schema.additionalProperties && typeof schema.additionalProperties === "object") {
-        visit(schema.additionalProperties, fromRef);
-      }
-    }
-  };
-
-  schemaRef.forEach((ref) => visit(getSchemaByRef(ref), ref));
+  schemaRef.forEach((ref) =>
+    getSchemaRefsDependencyGraph({
+      schema: getSchemaByRef(ref),
+      fromRef: ref,
+      getSchemaByRef,
+      visitedRefs,
+      refsDependencyGraph,
+    }),
+  );
 
   return refsDependencyGraph;
 }
 
-function getDeepDependencyGraph(schemaRef: string[], refsDependencyGraph: Record<string, Set<string>>) {
+function getDeepRefsDependencyGraph(schemaRef: string[], refsDependencyGraph: Record<string, Set<string>>) {
   const visitedDeepRefs = {} as Record<string, boolean>;
   const deepDependencyGraph = {} as Record<string, Set<string>>;
 

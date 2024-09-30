@@ -5,8 +5,9 @@
 {{{genImport zodImport}}}
 {{/if}}
 {{! Models import }}
+{{#each modelsImports as | modelsImport |}}
 {{{genImport modelsImport}}}
-
+{{/each}}
 
 {{! Endpoints export }}
 {{#each endpoints as | endpoint |}}

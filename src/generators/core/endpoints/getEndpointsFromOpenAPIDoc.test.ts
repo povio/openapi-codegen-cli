@@ -136,12 +136,24 @@ describe("getEndpointsFromOpenAPIDoc", () => {
             name: "body",
             schema: "Order",
             type: "Body",
+            bodyObject: {
+              content: {
+                "application/json": { schema: { $ref: "#/components/schemas/Order" } },
+                "application/xml": { schema: { $ref: "#/components/schemas/Order" } },
+                "application/x-www-form-urlencoded": { schema: { $ref: "#/components/schemas/Order" } },
+              },
+            },
           },
         ],
         path: "/store/order",
         requestFormat: "application/json",
         response: "Order",
         responseFormat: "application/json",
+        responseObject: {
+          content: { "application/json": { schema: { $ref: "#/components/schemas/Order" } } },
+          description: "successful operation",
+        },
+        tags: ["store"],
       },
     ]);
     expect(result.ctx.getState()).toStrictEqual({
@@ -245,12 +257,30 @@ describe("getEndpointsFromOpenAPIDoc", () => {
             name: "body",
             schema: "Pet",
             type: "Body",
+            bodyObject: {
+              content: {
+                "application/json": { schema: { $ref: "#/components/schemas/Pet" } },
+                "application/xml": { schema: { $ref: "#/components/schemas/Pet" } },
+                "application/x-www-form-urlencoded": { schema: { $ref: "#/components/schemas/Pet" } },
+              },
+              description: "Update an existent pet in the store",
+              required: true,
+            },
           },
         ],
         path: "/pet",
         requestFormat: "application/json",
         response: "Pet",
         responseFormat: "application/json",
+        responseObject: {
+          content: {
+            "application/json": { schema: { $ref: "#/components/schemas/Pet" } },
+            "application/xml": { schema: { $ref: "#/components/schemas/Pet" } },
+          },
+
+          description: "Successful operation",
+        },
+        tags: ["pet"],
       },
       {
         description: "Add a new pet to the store",
@@ -269,12 +299,29 @@ describe("getEndpointsFromOpenAPIDoc", () => {
             name: "body",
             schema: "Pet",
             type: "Body",
+            bodyObject: {
+              content: {
+                "application/json": { schema: { $ref: "#/components/schemas/Pet" } },
+                "application/xml": { schema: { $ref: "#/components/schemas/Pet" } },
+                "application/x-www-form-urlencoded": { schema: { $ref: "#/components/schemas/Pet" } },
+              },
+              description: "Create a new pet in the store",
+              required: true,
+            },
           },
         ],
         path: "/pet",
         requestFormat: "application/json",
         response: "Pet",
         responseFormat: "application/json",
+        responseObject: {
+          content: {
+            "application/json": { schema: { $ref: "#/components/schemas/Pet" } },
+            "application/xml": { schema: { $ref: "#/components/schemas/Pet" } },
+          },
+          description: "Successful operation",
+        },
+        tags: ["pet"],
       },
     ]);
     expect(result.ctx.getState()).toStrictEqual({
@@ -369,12 +416,32 @@ describe("getEndpointsFromOpenAPIDoc", () => {
             name: "body",
             schema: "UpdatePetBody",
             type: "Body",
+            bodyObject: {
+              content: {
+                "application/json": {
+                  schema: { allOf: [{ $ref: "#/components/schemas/Pet" }, { $ref: "#/components/schemas/Reason" }] },
+                },
+                "application/xml": {
+                  schema: { allOf: [{ $ref: "#/components/schemas/Pet" }, { $ref: "#/components/schemas/Reason" }] },
+                },
+              },
+              description: "Update an existent pet in the store",
+              required: true,
+            },
           },
         ],
         path: "/pet",
         requestFormat: "application/json",
         response: "Pet",
         responseFormat: "application/json",
+        responseObject: {
+          content: {
+            "application/json": { schema: { $ref: "#/components/schemas/Pet" } },
+            "application/xml": { schema: { $ref: "#/components/schemas/Pet" } },
+          },
+          description: "Successful operation",
+        },
+        tags: ["pet"],
       },
     ]);
     expect(result.ctx.getState()).toStrictEqual({
@@ -524,7 +591,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         parameters: [
           {
             name: "status",
-            openApiObject: {
+            parameterObject: {
               description: "Status values that need to be considered for filter",
               explode: true,
               in: "query",
@@ -544,6 +611,14 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         requestFormat: "application/json",
         response: "FindPetsByStatusResponse",
         responseFormat: "application/json",
+        responseObject: {
+          content: {
+            "application/json": { schema: { type: "array", items: { $ref: "#/components/schemas/Pet" } } },
+            "application/xml": { schema: { type: "array", items: { $ref: "#/components/schemas/Pet" } } },
+          },
+          description: "successful operation",
+        },
+        tags: ["pet"],
       },
       {
         description: "Multiple tags can be provided with comma separated strings. Use tag1, tag2, tag3 for testing.",
@@ -559,7 +634,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         parameters: [
           {
             name: "tags",
-            openApiObject: {
+            parameterObject: {
               description: "Tags to filter by",
               explode: true,
               in: "query",
@@ -580,6 +655,14 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         requestFormat: "application/json",
         response: "FindPetsByTagsResponse",
         responseFormat: "application/json",
+        responseObject: {
+          content: {
+            "application/json": { schema: { type: "array", items: { $ref: "#/components/schemas/Pet" } } },
+            "application/xml": { schema: { type: "array", items: { $ref: "#/components/schemas/Pet" } } },
+          },
+          description: "successful operation",
+        },
+        tags: ["pet"],
       },
     ]);
     expect(result.ctx.getState()).toStrictEqual({
@@ -631,12 +714,29 @@ describe("getEndpointsFromOpenAPIDoc", () => {
             name: "body",
             schema: "Pet",
             type: "Body",
+            bodyObject: {
+              content: {
+                "application/json": { schema: { $ref: "#/components/schemas/Pet" } },
+                "application/xml": { schema: { $ref: "#/components/schemas/Pet" } },
+                "application/x-www-form-urlencoded": { schema: { $ref: "#/components/schemas/Pet" } },
+              },
+              description: "Update an existent pet in the store",
+              required: true,
+            },
           },
         ],
         path: "/pet",
         requestFormat: "application/json",
         response: "Pet",
         responseFormat: "application/json",
+        responseObject: {
+          content: {
+            "application/json": { schema: { $ref: "#/components/schemas/Pet" } },
+            "application/xml": { schema: { $ref: "#/components/schemas/Pet" } },
+          },
+          description: "Successful operation",
+        },
+        tags: ["pet"],
       },
       {
         description: "Add a new pet to the store",
@@ -655,12 +755,29 @@ describe("getEndpointsFromOpenAPIDoc", () => {
             name: "body",
             schema: "Pet",
             type: "Body",
+            bodyObject: {
+              content: {
+                "application/json": { schema: { $ref: "#/components/schemas/Pet" } },
+                "application/xml": { schema: { $ref: "#/components/schemas/Pet" } },
+                "application/x-www-form-urlencoded": { schema: { $ref: "#/components/schemas/Pet" } },
+              },
+              description: "Create a new pet in the store",
+              required: true,
+            },
           },
         ],
         path: "/pet",
         requestFormat: "application/json",
         response: "Pet",
         responseFormat: "application/json",
+        responseObject: {
+          content: {
+            "application/json": { schema: { $ref: "#/components/schemas/Pet" } },
+            "application/xml": { schema: { $ref: "#/components/schemas/Pet" } },
+          },
+          description: "Successful operation",
+        },
+        tags: ["pet"],
       },
       {
         description: "Multiple status values can be provided with comma separated strings",
@@ -676,7 +793,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         parameters: [
           {
             name: "status",
-            openApiObject: {
+            parameterObject: {
               description: "Status values that need to be considered for filter",
               explode: true,
               in: "query",
@@ -696,6 +813,28 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         requestFormat: "application/json",
         response: "FindPetsByStatusResponse",
         responseFormat: "application/json",
+        responseObject: {
+          content: {
+            "application/json": {
+              schema: {
+                type: "array",
+                items: {
+                  $ref: "#/components/schemas/Pet",
+                },
+              },
+            },
+            "application/xml": {
+              schema: {
+                type: "array",
+                items: {
+                  $ref: "#/components/schemas/Pet",
+                },
+              },
+            },
+          },
+          description: "successful operation",
+        },
+        tags: ["pet"],
       },
       {
         description: "Multiple tags can be provided with comma separated strings. Use tag1, tag2, tag3 for testing.",
@@ -711,7 +850,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         parameters: [
           {
             name: "tags",
-            openApiObject: {
+            parameterObject: {
               description: "Tags to filter by",
               explode: true,
               in: "query",
@@ -732,6 +871,14 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         requestFormat: "application/json",
         response: "FindPetsByTagsResponse",
         responseFormat: "application/json",
+        responseObject: {
+          content: {
+            "application/json": { schema: { type: "array", items: { $ref: "#/components/schemas/Pet" } } },
+            "application/xml": { schema: { type: "array", items: { $ref: "#/components/schemas/Pet" } } },
+          },
+          description: "successful operation",
+        },
+        tags: ["pet"],
       },
       {
         description: "Returns a single pet",
@@ -752,7 +899,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         parameters: [
           {
             name: "petId",
-            openApiObject: {
+            parameterObject: {
               description: "ID of pet to return",
               in: "path",
               name: "petId",
@@ -770,6 +917,14 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         requestFormat: "application/json",
         response: "Pet",
         responseFormat: "application/json",
+        responseObject: {
+          content: {
+            "application/json": { schema: { $ref: "#/components/schemas/Pet" } },
+            "application/xml": { schema: { $ref: "#/components/schemas/Pet" } },
+          },
+          description: "successful operation",
+        },
+        tags: ["pet"],
       },
       {
         description: "",
@@ -785,7 +940,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         parameters: [
           {
             name: "petId",
-            openApiObject: {
+            parameterObject: {
               description: "ID of pet that needs to be updated",
               in: "path",
               name: "petId",
@@ -800,7 +955,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
           {
             name: "name",
-            openApiObject: {
+            parameterObject: {
               description: "Name of pet that needs to be updated",
               in: "query",
               name: "name",
@@ -813,7 +968,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
           {
             name: "status",
-            openApiObject: {
+            parameterObject: {
               description: "Status of pet that needs to be updated",
               in: "query",
               name: "status",
@@ -828,6 +983,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         path: "/pet/:petId",
         requestFormat: "application/json",
         response: "z.void()",
+        tags: ["pet"],
       },
       {
         description: "delete a pet",
@@ -843,7 +999,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         parameters: [
           {
             name: "api_key",
-            openApiObject: {
+            parameterObject: {
               description: "",
               in: "header",
               name: "api_key",
@@ -857,7 +1013,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
           {
             name: "petId",
-            openApiObject: {
+            parameterObject: {
               description: "Pet id to delete",
               in: "path",
               name: "petId",
@@ -874,6 +1030,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         path: "/pet/:petId",
         requestFormat: "application/json",
         response: "z.void()",
+        tags: ["pet"],
       },
       {
         description: "",
@@ -886,10 +1043,15 @@ describe("getEndpointsFromOpenAPIDoc", () => {
             name: "body",
             schema: "z.instanceof(File)",
             type: "Body",
+            bodyObject: {
+              content: {
+                "application/octet-stream": { schema: { type: "string", format: "binary" } },
+              },
+            },
           },
           {
             name: "petId",
-            openApiObject: {
+            parameterObject: {
               description: "ID of pet to update",
               in: "path",
               name: "petId",
@@ -904,7 +1066,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
           {
             name: "additionalMetadata",
-            openApiObject: {
+            parameterObject: {
               description: "Additional Metadata",
               in: "query",
               name: "additionalMetadata",
@@ -921,6 +1083,11 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         requestFormat: "application/octet-stream",
         response: "ApiResponse",
         responseFormat: "application/json",
+        responseObject: {
+          content: { "application/json": { schema: { $ref: "#/components/schemas/ApiResponse" } } },
+          description: "successful operation",
+        },
+        tags: ["pet"],
       },
       {
         description: "Returns a map of status codes to quantities",
@@ -932,6 +1099,21 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         requestFormat: "application/json",
         response: "GetInventoryResponse",
         responseFormat: "application/json",
+        responseObject: {
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                additionalProperties: {
+                  type: "integer",
+                  format: "int32",
+                },
+              },
+            },
+          },
+          description: "successful operation",
+        },
+        tags: ["store"],
       },
       {
         description: "Place a new order in the store",
@@ -950,12 +1132,26 @@ describe("getEndpointsFromOpenAPIDoc", () => {
             name: "body",
             schema: "Order",
             type: "Body",
+            bodyObject: {
+              content: {
+                "application/json": { schema: { $ref: "#/components/schemas/Order" } },
+                "application/xml": { schema: { $ref: "#/components/schemas/Order" } },
+                "application/x-www-form-urlencoded": { schema: { $ref: "#/components/schemas/Order" } },
+              },
+            },
           },
         ],
         path: "/store/order",
         requestFormat: "application/json",
         response: "Order",
         responseFormat: "application/json",
+        responseObject: {
+          content: {
+            "application/json": { schema: { $ref: "#/components/schemas/Order" } },
+          },
+          description: "successful operation",
+        },
+        tags: ["store"],
       },
       {
         description:
@@ -977,7 +1173,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         parameters: [
           {
             name: "orderId",
-            openApiObject: {
+            parameterObject: {
               description: "ID of order that needs to be fetched",
               in: "path",
               name: "orderId",
@@ -995,6 +1191,14 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         requestFormat: "application/json",
         response: "Order",
         responseFormat: "application/json",
+        responseObject: {
+          content: {
+            "application/json": { schema: { $ref: "#/components/schemas/Order" } },
+            "application/xml": { schema: { $ref: "#/components/schemas/Order" } },
+          },
+          description: "successful operation",
+        },
+        tags: ["store"],
       },
       {
         description:
@@ -1016,7 +1220,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         parameters: [
           {
             name: "orderId",
-            openApiObject: {
+            parameterObject: {
               description: "ID of the order that needs to be deleted",
               in: "path",
               name: "orderId",
@@ -1033,6 +1237,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         path: "/store/order/:orderId",
         requestFormat: "application/json",
         response: "z.void()",
+        tags: ["store"],
       },
       {
         description: "This can only be done by the logged in user.",
@@ -1045,12 +1250,21 @@ describe("getEndpointsFromOpenAPIDoc", () => {
             name: "body",
             schema: "User",
             type: "Body",
+            bodyObject: {
+              content: {
+                "application/json": { schema: { $ref: "#/components/schemas/User" } },
+                "application/xml": { schema: { $ref: "#/components/schemas/User" } },
+                "application/x-www-form-urlencoded": { schema: { $ref: "#/components/schemas/User" } },
+              },
+              description: "Created user object",
+            },
           },
         ],
         path: "/user",
         requestFormat: "application/json",
         response: "z.void()",
         responseFormat: "application/json",
+        tags: ["user"],
       },
       {
         description: "Creates list of users with given input array",
@@ -1063,12 +1277,25 @@ describe("getEndpointsFromOpenAPIDoc", () => {
             name: "body",
             schema: "CreateUsersWithListInputBody",
             type: "Body",
+            bodyObject: {
+              content: {
+                "application/json": { schema: { items: { $ref: "#/components/schemas/User" }, type: "array" } },
+              },
+            },
           },
         ],
         path: "/user/createWithList",
         requestFormat: "application/json",
         response: "User",
         responseFormat: "application/json",
+        responseObject: {
+          content: {
+            "application/json": { schema: { $ref: "#/components/schemas/User" } },
+            "application/xml": { schema: { $ref: "#/components/schemas/User" } },
+          },
+          description: "Successful operation",
+        },
+        tags: ["user"],
       },
       {
         description: "",
@@ -1084,7 +1311,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         parameters: [
           {
             name: "username",
-            openApiObject: {
+            parameterObject: {
               description: "The user name for login",
               in: "query",
               name: "username",
@@ -1098,7 +1325,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
           {
             name: "password",
-            openApiObject: {
+            parameterObject: {
               description: "The password for login in clear text",
               in: "query",
               name: "password",
@@ -1115,6 +1342,30 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         requestFormat: "application/json",
         response: "z.string()",
         responseFormat: "application/json",
+        responseObject: {
+          content: {
+            "application/json": { schema: { type: "string" } },
+            "application/xml": { schema: { type: "string" } },
+          },
+          description: "successful operation",
+          headers: {
+            "X-Rate-Limit": {
+              description: "calls per hour allowed by the user",
+              schema: {
+                format: "int32",
+                type: "integer",
+              },
+            },
+            "X-Expires-After": {
+              description: "date in UTC when token expires",
+              schema: {
+                format: "date-time",
+                type: "string",
+              },
+            },
+          },
+        },
+        tags: ["user"],
       },
       {
         description: "",
@@ -1125,6 +1376,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         path: "/user/logout",
         requestFormat: "application/json",
         response: "z.void()",
+        tags: ["user"],
       },
       {
         description: "",
@@ -1145,7 +1397,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         parameters: [
           {
             name: "username",
-            openApiObject: {
+            parameterObject: {
               description: "The name that needs to be fetched. Use user1 for testing. ",
               in: "path",
               name: "username",
@@ -1162,6 +1414,14 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         requestFormat: "application/json",
         response: "User",
         responseFormat: "application/json",
+        responseObject: {
+          content: {
+            "application/json": { schema: { $ref: "#/components/schemas/User" } },
+            "application/xml": { schema: { $ref: "#/components/schemas/User" } },
+          },
+          description: "successful operation",
+        },
+        tags: ["user"],
       },
       {
         description: "This can only be done by the logged in user.",
@@ -1174,10 +1434,30 @@ describe("getEndpointsFromOpenAPIDoc", () => {
             name: "body",
             schema: "User",
             type: "Body",
+            bodyObject: {
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/User",
+                  },
+                },
+                "application/x-www-form-urlencoded": {
+                  schema: {
+                    $ref: "#/components/schemas/User",
+                  },
+                },
+                "application/xml": {
+                  schema: {
+                    $ref: "#/components/schemas/User",
+                  },
+                },
+              },
+              description: "Update an existent user in the store",
+            },
           },
           {
             name: "username",
-            openApiObject: {
+            parameterObject: {
               description: "name that need to be deleted",
               in: "path",
               name: "username",
@@ -1193,6 +1473,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         path: "/user/:username",
         requestFormat: "application/json",
         response: "z.void()",
+        tags: ["user"],
       },
       {
         description: "This can only be done by the logged in user.",
@@ -1213,7 +1494,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         parameters: [
           {
             name: "username",
-            openApiObject: {
+            parameterObject: {
               description: "The name that needs to be deleted",
               in: "path",
               name: "username",
@@ -1229,6 +1510,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         path: "/user/:username",
         requestFormat: "application/json",
         response: "z.void()",
+        tags: ["user"],
       },
     ]);
     expect(result.ctx.getState()).toStrictEqual({
@@ -1350,6 +1632,13 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         requestFormat: "application/json",
         response: "FindPetsByStatusResponse",
         responseFormat: "application/json",
+        responseObject: {
+          content: {
+            "application/json": { schema: { type: "array", items: { $ref: "#/components/schemas/Pet" } } },
+          },
+          description: "successful operation",
+        },
+        tags: ["pet"],
       },
       {
         description: "Multiple tags can be provided with comma separated strings. Use tag1, tag2, tag3 for testing.",
@@ -1367,6 +1656,13 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         requestFormat: "application/json",
         response: "FindPetsByTagsResponse",
         responseFormat: "application/json",
+        tags: ["pet"],
+        responseObject: {
+          content: {
+            "application/json": { schema: { items: { $ref: "#/components/schemas/Pet" }, type: "array" } },
+          },
+          description: "successful operation",
+        },
       },
     ]);
     expect(result.ctx.getState()).toStrictEqual({

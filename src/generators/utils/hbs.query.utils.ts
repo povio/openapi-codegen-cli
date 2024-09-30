@@ -1,19 +1,14 @@
 import Handlebars from "handlebars";
-import { Endpoint } from "../types/endpoint";
-import { GenerateOptions } from "../types/options";
-import { capitalize, snakeToCamel } from "./string.utils";
+import { getQueryName } from "./generate.query.utils";
 
 enum QueryHelpers {
   QUERY_NAME = "queryName",
 }
 
-export function registerQueryHbssHelpers(options: GenerateOptions) {
+export function registerQueryHbsHelpers() {
   registerQueryNameHelper();
 }
 
 function registerQueryNameHelper() {
-  Handlebars.registerHelper(
-    QueryHelpers.QUERY_NAME,
-    (endpoint: Endpoint) => `use${capitalize(snakeToCamel(endpoint.operationName))}`,
-  );
+  Handlebars.registerHelper(QueryHelpers.QUERY_NAME, getQueryName);
 }

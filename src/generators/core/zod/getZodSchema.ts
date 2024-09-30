@@ -146,7 +146,7 @@ export function getZodSchema({
 
     const types = noRequiredOnlyAllof.map((prop) => {
       const zodSchema = getZodSchema({ ...params, schema: prop });
-      resolver && patchRequiredSchemaInLoop(prop, resolver);
+      resolver && patchRequiredSchemaInLoop(prop, resolver.getSchemaByRef.bind(resolver));
       return zodSchema;
     });
 

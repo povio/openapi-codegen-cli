@@ -1,5 +1,4 @@
 import { OpenAPIV3 } from "openapi-types";
-import { GenerateConfig } from "./generate";
 
 export type ZodSchemasGenerateOptions = {
   schemaSuffix: string;
@@ -15,9 +14,17 @@ export type EndpointsGenerateOptions = {
   withDeprecatedEndpoints?: boolean;
 };
 
-export type GenerateOptions = ZodSchemasGenerateOptions &
-  EndpointsGenerateOptions & {
-    modelsConfig: GenerateConfig;
-    endpointsConfig: GenerateConfig;
-    queriesConfig: GenerateConfig;
-  };
+type GenerateConfig = {
+  outputFileNameSuffix: string;
+};
+
+type BaseGenerateOptions = {
+  splitByTags: boolean;
+  defaultTag: string;
+  excludeTags: string[];
+  modelsConfig: GenerateConfig;
+  endpointsConfig: GenerateConfig;
+  queriesConfig: GenerateConfig;
+};
+
+export type GenerateOptions = BaseGenerateOptions & ZodSchemasGenerateOptions & EndpointsGenerateOptions;

@@ -1,6 +1,6 @@
 import Handlebars from "handlebars";
 import { GenerateOptions } from "../types/options";
-import { getZodSchemaInferedTypeName } from "./generate.utils";
+import { getZodSchemaInferedTypeName } from "./generate.zod.utils";
 
 enum ZodHelpers {
   INFERED_TYPE = "zodInferedType",

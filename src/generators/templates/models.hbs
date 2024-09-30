@@ -1,6 +1,9 @@
 {{! Zod import}}
 {{{genImport zodImport}}}
-
+{{! Models import }}
+{{#each modelsImports as | modelsImport |}}
+{{{genImport modelsImport}}}
+{{/each}}
 
 {{#each zodSchemas as | zodSchema |}}
 {{! Zod schema export }}

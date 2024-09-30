@@ -1,10 +1,13 @@
 {{! React query import }}
 {{{genImport queryImport}}}
 {{! Models import }}
+{{#each modelsImports as | modelsImport |}}
 {{{genImport modelsImport}}}
+{{/each}}
 {{! Endpoints import }}
+{{#each endpointsImports as | endpointsImport |}}
 {{{genImport endpointsImport}}}
-
+{{/each}}
 
 {{! Query keys export}}
 {{{genQueryKeys queryEndpoints}}}

@@ -3,7 +3,7 @@ import { ALLOWED_METHODS, ALLOWED_PATH_IN, COMPLEXITY_THRESHOLD } from "src/gene
 import { VOID_SCHEMA } from "src/generators/const/zod.const";
 import { match } from "ts-pattern";
 import { Endpoint } from "../../types/endpoint";
-import { GenerateOptions } from "../../types/options";
+import { EndpointsGenerateOptions, ZodSchemasGenerateOptions } from "../../types/options";
 import {
   getOperationName,
   isErrorStatus,
@@ -35,7 +35,7 @@ export function getEndpointsFromOpenAPIDoc({
 }: {
   openApiDoc: OpenAPIV3.Document;
   resolver: SchemaResolver;
-  options: GenerateOptions;
+  options: ZodSchemasGenerateOptions & EndpointsGenerateOptions;
 }) {
   const ctx = new GenerateContext();
   const endpoints = [];
@@ -61,10 +61,11 @@ export function getEndpointsFromOpenAPIDoc({
         path: replaceHyphenatedPath(path),
         operationName,
         description: operation.description,
+        tags: operation.tags,
         requestFormat: "application/json",
         parameters: [],
-        errors: [],
         response: "",
+        errors: [],
       };
 
       if (operation.requestBody) {
@@ -104,6 +105,7 @@ export function getEndpointsFromOpenAPIDoc({
             type: "Body",
             description: requestBodyObj.description,
             schema: zodSchemaName + zodChain,
+            bodyObject: requestBodyObj,
           });
         }
       }
@@ -172,7 +174,7 @@ export function getEndpointsFromOpenAPIDoc({
               .with("path", () => "Path")
               .run() as "Header" | "Query" | "Path",
             schema: zodSchemaName,
-            openApiObject: paramObj,
+            parameterObject: paramObj,
           });
         }
       }
@@ -217,6 +219,7 @@ export function getEndpointsFromOpenAPIDoc({
 
           if (isMainResponseStatus(status) && !endpoint.response) {
             endpoint.response = schema;
+            endpoint.responseObject = responseObj;
           } else if (statusCode !== "default" && isErrorStatus(status)) {
             endpoint.errors.push({
               schema,
@@ -249,7 +252,7 @@ function resolveZodSchemaName({
   fallbackName?: string;
   resolver: SchemaResolver;
   ctx: GenerateContext;
-  options: GenerateOptions;
+  options: ZodSchemasGenerateOptions & EndpointsGenerateOptions;
 }): string {
   const result = zodSchema.toString();
 

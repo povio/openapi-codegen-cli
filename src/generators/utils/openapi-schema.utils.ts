@@ -1,5 +1,4 @@
 import { OpenAPIV3 } from "openapi-types";
-import { SchemaResolver } from "../core/SchemaResolver.class";
 import { isReferenceObject } from "./openapi.utils";
 
 export function isSchemaObject(
@@ -44,9 +43,12 @@ export function inferRequiredSchema(schema: OpenAPIV3.SchemaObject) {
   return {
     noRequiredOnlyAllof,
     composedRequiredSchema,
-    patchRequiredSchemaInLoop: (prop: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject, resolver: SchemaResolver) => {
+    patchRequiredSchemaInLoop: (
+      prop: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject,
+      getSchemaByRef: (ref: string) => OpenAPIV3.SchemaObject,
+    ) => {
       if (isReferenceObject(prop)) {
-        const refType = resolver.getSchemaByRef(prop.$ref);
+        const refType = getSchemaByRef(prop.$ref);
         if (refType) {
           composedRequiredSchema.required.forEach((required) => {
             composedRequiredSchema.properties[required] = refType?.properties?.[required] ?? {};

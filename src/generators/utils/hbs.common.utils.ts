@@ -1,11 +1,10 @@
 import Handlebars from "handlebars";
-import { GenerateOptions } from "../types/options";
 
 enum CommonHelpers {
   COMMA_SEPARATED = "commaSeparated",
 }
 
-export function registerCommonHbsHelpers(options: GenerateOptions) {
+export function registerCommonHbsHelpers() {
   registerCommaSeparatedListHelper();
 }
 

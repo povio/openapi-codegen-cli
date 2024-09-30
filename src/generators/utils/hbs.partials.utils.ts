@@ -1,8 +1,8 @@
 import Handlebars from "handlebars";
-import { DEFAULT_HEADERS } from "../const/endpoints.const";
 import { QUERY_HOOKS } from "../const/query.const";
 import { Endpoint } from "../types/endpoint";
-import { Import } from "../types/import";
+import { Import } from "../types/generate";
+import { getEndpointConfig } from "./generate.endpoints.utils";
 import { getHbsTemplateDelegate } from "./hbs-template.utils";
 
 enum PartialsHelpers {
@@ -22,8 +22,8 @@ export function registerPartialsHbsHelpers() {
 }
 
 function registerImportHelper() {
-  Handlebars.registerHelper(PartialsHelpers.IMPORT, (tsImport: Import) =>
-    getHbsTemplateDelegate({ templateName: "import", partialTemplate: true })({ import: tsImport }),
+  Handlebars.registerHelper(PartialsHelpers.IMPORT, (genImport: Import) =>
+    getHbsTemplateDelegate({ templateName: "import", partialTemplate: true })({ import: genImport }),
   );
 }
 
@@ -35,30 +35,21 @@ function registerGenerateEndpointParamsHelper() {
 
 function registerGenerateEndpointConfigHelper() {
   Handlebars.registerHelper(PartialsHelpers.ENDPOINT_CONFIG, (endpoint: Endpoint) => {
-    const params = endpoint.parameters.filter((param) => param.type === "Query");
-    const headers = {
-      ...(endpoint.requestFormat !== DEFAULT_HEADERS["Content-Type"] ? { "Content-Type": endpoint.requestFormat } : {}),
-      ...(endpoint.responseFormat && endpoint.responseFormat !== DEFAULT_HEADERS.Accept
-        ? { Accept: endpoint.responseFormat }
-        : {}),
-    };
-    const endpointConfig = {
-      ...(params.length > 0 ? { params } : {}),
-      ...(Object.keys(headers).length ? { headers } : {}),
-    };
-
+    const endpointConfig = getEndpointConfig(endpoint);
     if (Object.keys(endpointConfig).length === 0) {
       return "";
     }
-
     return getHbsTemplateDelegate({ templateName: "endpoint-config", partialTemplate: true })({ endpointConfig });
   });
 }
 
 function registerGenerateQueryKeysHelper() {
-  Handlebars.registerHelper(PartialsHelpers.QUERY_KEYS, (endpoints: Endpoint[]) =>
-    getHbsTemplateDelegate({ templateName: "query-keys", partialTemplate: true })({ endpoints }),
-  );
+  Handlebars.registerHelper(PartialsHelpers.QUERY_KEYS, (endpoints: Endpoint[]) => {
+    if (endpoints.length === 0) {
+      return "";
+    }
+    return getHbsTemplateDelegate({ templateName: "query-keys", partialTemplate: true })({ endpoints });
+  });
 }
 
 function registerGenerateQueryHelper() {

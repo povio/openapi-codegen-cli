@@ -15,7 +15,9 @@
     "start:dist": "node ./dist/sh.js",
     "lint": "eslint --fix",
     "format:check": "prettier --check .",
-    "format:fix": "prettier --write ."
+    "format:fix": "prettier --write .",
+    "generate:clean": "rm -rf ./output",
+    "generate:example": "yarn generate:clean && yarn build && yarn start generate --input ./test/baby-jira.json --verbose"
   },
   "files": [
     "dist",

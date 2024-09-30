@@ -5,7 +5,8 @@ export type EndpointParameter = {
   description?: string;
   type: "Query" | "Body" | "Header" | "Path";
   schema: string;
-  openApiObject?: OpenAPIV3.ParameterObject;
+  parameterObject?: OpenAPIV3.ParameterObject;
+  bodyObject?: OpenAPIV3.RequestBodyObject;
 };
 
 export type EndpointResponse = {
@@ -19,11 +20,13 @@ export type Endpoint = {
   path: string;
   operationName: string;
   description?: string;
+  tags?: string[];
   requestFormat: string;
   responseFormat?: string;
   parameters: Array<EndpointParameter>;
   status?: number;
   response: string;
+  responseObject?: OpenAPIV3.ResponseObject;
   responseDescription?: string;
   errors: Array<{ status: number | "default"; description?: string; schema: string }>;
 };

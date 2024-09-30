@@ -1,4 +1,4 @@
-import { Import } from "../types/import";
+import { Import } from "../types/generate";
 import { REST_CLIENT_NAME } from "./endpoints.const";
 import { QUERY_HOOKS } from "./query.const";
 

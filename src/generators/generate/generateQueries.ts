@@ -1,29 +1,28 @@
 import { QUERY_IMPORT } from "../const/imports.const";
 import { QUERY_HOOKS } from "../const/query.const";
-import { Endpoint, EndpointParameter } from "../types/endpoint";
-import { Import } from "../types/import";
+import { EndpointParameter } from "../types/endpoint";
+import { GenerateData, Import } from "../types/generate";
 import { GenerateOptions } from "../types/options";
-import { getEndpointName, getZodSchemaInferedTypeName } from "../utils/generate.utils";
+import { getEndpointsImports, getModelsImports } from "../utils/generate.imports.utils";
 import { getHbsTemplateDelegate } from "../utils/hbs-template.utils";
 import { isNamedZodSchema } from "../utils/zod-schema.utils";
 
-export function generateQueries({ endpoints, options }: { endpoints: Endpoint[]; options: GenerateOptions }) {
+export function generateQueries({
+  data,
+  tag = "",
+  options,
+}: {
+  data: GenerateData;
+  tag?: string;
+  options: GenerateOptions;
+}) {
+  const endpoints = data.get(tag)?.endpoints;
+  if (!endpoints || endpoints.length === 0) {
+    return;
+  }
+
   const queryEndpoints = endpoints.filter((endpoint) => endpoint.method === "get");
   const mutationEndpoints = endpoints.filter((endpoint) => endpoint.method !== "get");
-
-  const filteredMutationEndpointParams = mutationEndpoints.filter((endpoint) => endpoint.parameters.length > 1);
-  const endpointParams = [...queryEndpoints, ...filteredMutationEndpointParams].reduce(
-    (prev, curr) => [...prev, ...curr.parameters],
-    [] as EndpointParameter[],
-  );
-  const zodSchemaTypeImports = [
-    ...new Set(
-      endpointParams
-        .map((param) => param.schema)
-        .filter(isNamedZodSchema)
-        .map((name) => getZodSchemaInferedTypeName(name, options.schemaSuffix)),
-    ),
-  ];
 
   const queryImport: Import = {
     ...QUERY_IMPORT,
@@ -33,22 +32,31 @@ export function generateQueries({ endpoints, options }: { endpoints: Endpoint[];
     ],
   };
 
-  const modelsImport: Import = {
-    bindings: [...zodSchemaTypeImports],
-    from: `./${options.modelsConfig.outputFileNameSuffix}`,
-  };
+  const filteredMutationEndpointParams = mutationEndpoints.filter((endpoint) => endpoint.parameters.length > 1);
+  const endpointParams = [...queryEndpoints, ...filteredMutationEndpointParams].reduce(
+    (prev, curr) => [...prev, ...curr.parameters],
+    [] as EndpointParameter[],
+  );
+  const modelsImports = getModelsImports({
+    data,
+    tag,
+    zodSchemasAsTypes: Array.from(new Set(endpointParams.map((param) => param.schema).filter(isNamedZodSchema))),
+    options,
+  });
 
-  const endpointsImport: Import = {
-    bindings: endpoints.map(getEndpointName),
-    from: `./${options.endpointsConfig.outputFileNameSuffix}`,
-  };
+  const endpointsImports = getEndpointsImports({
+    data,
+    tag,
+    endpoints,
+    options,
+  });
 
   const hbsTemplate = getHbsTemplateDelegate({ templateName: "queries", options });
 
   return hbsTemplate({
     queryImport,
-    modelsImport,
-    endpointsImport,
+    modelsImports,
+    endpointsImports,
     endpoints,
     queryEndpoints,
   });
