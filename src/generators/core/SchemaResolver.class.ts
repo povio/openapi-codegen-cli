@@ -62,9 +62,14 @@ export class SchemaResolver {
   }
 
   getTagByZodSchemaName(zodSchemaName: string) {
+    if (!this.options.splitByTags) {
+      return this.options.defaultTag;
+    }
+
     const schemaRef = this.getRefByZodSchemaName(zodSchemaName);
     const schemaTags = schemaRef ? this.schemaTagsByRef.get(schemaRef) ?? [] : [];
     const tags = new Set([...schemaTags, ...(this.zodSchemaTagsByName[zodSchemaName] ?? [])]);
+
     return tags.size === 1 ? tags.values().next().value : this.options.defaultTag;
   }
 

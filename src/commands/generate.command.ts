@@ -11,6 +11,18 @@ class GenerateOptions implements GenerateParams {
   @YargOption({ envAlias: "output", default: "output" })
   output!: string;
 
+  @YargOption({ envAlias: "includeNamespaces", default: false })
+  includeNamespaces!: boolean;
+
+  @YargOption({ envAlias: "splitByTags", default: false })
+  splitByTags!: boolean;
+
+  @YargOption({ envAlias: "defaultTag", default: "Common" })
+  defaultTag!: string;
+
+  @YargOption({ envAlias: "excludeTags", default: "" })
+  excludeTags!: string;
+
   @YargOption({ envAlias: "verbose", default: false })
   verbose!: boolean;
 }

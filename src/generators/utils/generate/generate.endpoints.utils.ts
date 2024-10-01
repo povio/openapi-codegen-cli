@@ -22,8 +22,12 @@ export function getImportedEndpointName(endpoint: Endpoint, options: GenerateOpt
 
 export const getEndpointPath = (endpoint: Endpoint) => endpoint.path.replace(/:([a-zA-Z0-9_]+)/g, "${$1}");
 
-export const getEndpointTag = (endpoint: Endpoint, options: GenerateOptions) =>
-  endpoint.tags?.[0] ?? options.defaultTag;
+export function getEndpointTag(endpoint: Endpoint, options: GenerateOptions) {
+  if (!options.splitByTags) {
+    return options.defaultTag;
+  }
+  return endpoint.tags?.[0] ?? options.defaultTag;
+}
 
 export function mapEndpointParamsToFunctionParams({
   resolver,
