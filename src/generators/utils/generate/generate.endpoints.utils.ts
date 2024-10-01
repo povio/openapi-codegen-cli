@@ -49,10 +49,17 @@ export function mapEndpointParamsToFunctionParams({
       return {
         name: param.name,
         type,
+        paramType: param.type,
         required: param.parameterObject?.required ?? true,
       };
     })
-    .sort((a, b) => (a.required === b.required ? 0 : a.required ? -1 : 1));
+    .sort((a, b) => {
+      if (a.required === b.required) {
+        const sortedParamTypes = ["Path", "Query", "Header", "Body"];
+        return sortedParamTypes.indexOf(a.paramType) - sortedParamTypes.indexOf(b.paramType);
+      }
+      return a.required ? -1 : 1;
+    });
 }
 
 export function getEndpointConfig(endpoint: Endpoint) {
