@@ -11,7 +11,7 @@ export function getZodChain({
 }: {
   schema: OpenAPIV3.SchemaObject;
   meta?: ZodSchemaMetaData;
-  options?: GenerateOptions;
+  options: GenerateOptions;
 }) {
   const chains: string[] = [];
 
@@ -52,6 +52,7 @@ function getZodChainablePresence(schema: OpenAPIV3.SchemaObject, meta?: ZodSchem
   if (!meta?.isRequired) {
     return "optional()";
   }
+
   return "";
 }
 

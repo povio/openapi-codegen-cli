@@ -35,7 +35,7 @@ export function getEndpointParameter({
     return;
   }
 
-  let schema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject | undefined;
+  let schema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject = {};
   if (paramObj.content) {
     const mediaTypes = Object.keys(paramObj.content ?? {});
     const matchingMediaType = mediaTypes.find(isParamMediaTypeAllowed);
@@ -53,18 +53,15 @@ export function getEndpointParameter({
     // (it should be in the mediaTypeObject.schema, not in the mediaTypeObject itself)
     // https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.3.md#style-values (just above this anchor)
     schema = mediaTypeObject?.schema ?? mediaTypeObject;
-  } else {
-    schema = isReferenceObject(paramObj.schema) ? resolver.getSchemaByRef(paramObj.schema.$ref) : paramObj.schema;
+  } else if (paramObj.schema) {
+    schema = paramObj.schema;
   }
 
   if (options?.withDescription && schema) {
     (schema as OpenAPIV3.SchemaObject).description = (paramObj.description ?? "").trim();
   }
 
-  // resolve ref if needed, and fallback to default (unknown) value if needed
-  schema = schema ? (isReferenceObject(schema) ? resolver.getSchemaByRef(schema.$ref) : schema)! : {};
-
-  const paramZodSchema = getZodSchema({
+  const zodSchema = getZodSchema({
     schema,
     resolver,
     meta: { isRequired: paramObj.in === "path" ? true : paramObj.required ?? false },
@@ -72,10 +69,14 @@ export function getEndpointParameter({
     options,
   });
 
+  const zodChain = getZodChain({
+    schema: isReferenceObject(schema) ? resolver.getSchemaByRef(schema.$ref) : schema,
+    meta: zodSchema.meta,
+    options,
+  });
+
   const zodSchemaName = resolveZodSchemaName({
-    zodSchema: paramZodSchema.assign(
-      paramZodSchema.getCodeString(tag, options) + getZodChain({ schema, meta: paramZodSchema.meta, options }),
-    ),
+    zodSchema: zodSchema.assign(zodSchema.getCodeString(tag, options) + zodChain),
     fallbackName: getParamZodSchemaName(operationName, paramObj.name),
     resolver,
     tag,

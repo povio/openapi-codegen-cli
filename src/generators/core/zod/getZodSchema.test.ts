@@ -8,48 +8,46 @@ import { getZodSchema } from "./getZodSchema";
 
 const makeSchema = (schema: OpenAPIV3.SchemaObject) => schema;
 const getZodSchemaString = (schema: OpenAPIV3.SchemaObject, meta?: ZodSchemaMetaData | undefined) =>
-  getZodSchema({ schema: makeSchema(schema), meta, tag: "", options: {} }).getCodeString();
+  getZodSchema({ schema: makeSchema(schema), meta, tag: "", options: {} })
+    .getCodeString()
+    .trim();
 
 describe("getZodSchema", () => {
   test("getZodSchemaString", () => {
-    expect(getZodSchemaString({ type: "boolean" })).toMatchInlineSnapshot('"z.boolean()"');
-    expect(getZodSchemaString({ type: "string" })).toMatchInlineSnapshot('"z.string()"');
-    expect(getZodSchemaString({ type: "number" })).toMatchInlineSnapshot('"z.number()"');
-    expect(getZodSchemaString({ type: "integer" })).toMatchInlineSnapshot('"z.number()"');
-    // expect(getZodSchemaString({ type: "string", format: "date-time" })).toMatchInlineSnapshot('"z.string().datetime()"');
-    // expect(getZodSchemaString({ type: "number", nullable: true, minimum: 0 })).toMatchInlineSnapshot('"z.number().nullable().gte(0)"');
+    expect(getZodSchemaString({ type: "boolean" })).toStrictEqual("z.boolean()");
+    expect(getZodSchemaString({ type: "string" })).toStrictEqual("z.string()");
+    expect(getZodSchemaString({ type: "number" })).toStrictEqual("z.number()");
+    expect(getZodSchemaString({ type: "integer" })).toStrictEqual("z.number()");
 
-    expect(getZodSchemaString({ type: "array", items: { type: "string" } })).toMatchInlineSnapshot(
-      '"z.array(z.string())"',
-    );
-    expect(getZodSchemaString({ type: "object" })).toMatchInlineSnapshot('"z.object({}).partial().passthrough()"');
-    expect(getZodSchemaString({ type: "object", properties: { str: { type: "string" } } })).toMatchInlineSnapshot(
-      '"z.object({ str: z.string() }).partial().passthrough()"',
+    expect(getZodSchemaString({ type: "array", items: { type: "string" } })).toStrictEqual("z.array(z.string())");
+    expect(getZodSchemaString({ type: "object" })).toStrictEqual("z.object({}).partial().passthrough()");
+    expect(getZodSchemaString({ type: "object", properties: { str: { type: "string" } } })).toStrictEqual(
+      "z.object({ str: z.string() }).partial().passthrough()",
     );
 
-    expect(getZodSchemaString({ type: "object", properties: { str: { type: "string" } } })).toMatchInlineSnapshot(
-      '"z.object({ str: z.string() }).partial().passthrough()"',
+    expect(getZodSchemaString({ type: "object", properties: { str: { type: "string" } } })).toStrictEqual(
+      "z.object({ str: z.string() }).partial().passthrough()",
     );
 
-    expect(getZodSchemaString({ type: "object", properties: { nb: { type: "integer" } } })).toMatchInlineSnapshot(
-      '"z.object({ nb: z.number().int() }).partial().passthrough()"',
+    expect(getZodSchemaString({ type: "object", properties: { nb: { type: "integer" } } })).toStrictEqual(
+      "z.object({ nb: z.number().int() }).partial().passthrough()",
     );
 
-    expect(
-      getZodSchemaString({ type: "object", properties: { pa: { type: "number", minimum: 0 } } }),
-    ).toMatchInlineSnapshot('"z.object({ pa: z.number().gte(0) }).partial().passthrough()"');
+    expect(getZodSchemaString({ type: "object", properties: { pa: { type: "number", minimum: 0 } } })).toStrictEqual(
+      "z.object({ pa: z.number().gte(0) }).partial().passthrough()",
+    );
 
     expect(
       getZodSchemaString({ type: "object", properties: { pa: { type: "number", minimum: 0, maximum: 100 } } }),
-    ).toMatchInlineSnapshot('"z.object({ pa: z.number().gte(0).lte(100) }).partial().passthrough()"');
+    ).toStrictEqual("z.object({ pa: z.number().gte(0).lte(100) }).partial().passthrough()");
 
-    expect(
-      getZodSchemaString({ type: "object", properties: { ml: { type: "string", minLength: 0 } } }),
-    ).toMatchInlineSnapshot('"z.object({ ml: z.string().min(0) }).partial().passthrough()"');
+    expect(getZodSchemaString({ type: "object", properties: { ml: { type: "string", minLength: 0 } } })).toStrictEqual(
+      "z.object({ ml: z.string().min(0) }).partial().passthrough()",
+    );
 
     expect(
       getZodSchemaString({ type: "object", properties: { dt: { type: "string", format: "date-time" } } }),
-    ).toMatchInlineSnapshot('"z.object({ dt: z.string().datetime({ offset: true }) }).partial().passthrough()"');
+    ).toStrictEqual("z.object({ dt: z.string().datetime({ offset: true }) }).partial().passthrough()");
 
     expect(
       getZodSchemaString({
@@ -65,8 +63,8 @@ describe("getZodSchema", () => {
           },
         },
       }),
-    ).toMatchInlineSnapshot(
-      '"z.object({ str: z.string(), nb: z.number(), nested: z.object({ nested_prop: z.boolean() }).partial().passthrough() }).partial().passthrough()"',
+    ).toStrictEqual(
+      "z.object({ str: z.string(), nb: z.number(), nested: z.object({ nested_prop: z.boolean() }).partial().passthrough() }).partial().passthrough()",
     );
 
     expect(
@@ -79,7 +77,7 @@ describe("getZodSchema", () => {
           },
         },
       }),
-    ).toMatchInlineSnapshot('"z.array(z.object({ str: z.string() }).partial().passthrough())"');
+    ).toStrictEqual("z.array(z.object({ str: z.string() }).partial().passthrough())");
 
     expect(
       getZodSchemaString({
@@ -91,7 +89,7 @@ describe("getZodSchema", () => {
           },
         },
       }),
-    ).toMatchInlineSnapshot('"z.array(z.array(z.string()))"');
+    ).toStrictEqual("z.array(z.array(z.string()))");
 
     expect(
       getZodSchemaString({
@@ -100,7 +98,7 @@ describe("getZodSchema", () => {
           union: { oneOf: [{ type: "string" }, { type: "number" }] },
         },
       }),
-    ).toMatchInlineSnapshot('"z.object({ union: z.union([z.string(), z.number()]) }).partial().passthrough()"');
+    ).toStrictEqual("z.object({ union: z.union([z.string(), z.number()]) }).partial().passthrough()");
 
     expect(
       getZodSchemaString({
@@ -135,11 +133,9 @@ describe("getZodSchema", () => {
         ],
         discriminator: { propertyName: "type" },
       }),
-    ).toMatchInlineSnapshot(`
-    "
-            z.discriminatedUnion("type", [z.object({ type: z.literal("a"), a: z.string() }).passthrough(), z.object({ type: z.literal("b"), b: z.string() }).passthrough()])
-              "
-  `);
+    ).toStrictEqual(
+      `z.discriminatedUnion("type", [z.object({ type: z.literal("a"), a: z.string() }).passthrough(), z.object({ type: z.literal("b"), b: z.string() }).passthrough()])`,
+    );
 
     // returns z.discriminatedUnion, when allOf has single object
     expect(
@@ -185,11 +181,9 @@ describe("getZodSchema", () => {
         ],
         discriminator: { propertyName: "type" },
       }),
-    ).toMatchInlineSnapshot(`
-  "
-          z.discriminatedUnion("type", [z.object({ type: z.literal("a"), a: z.string() }).passthrough(), z.object({ type: z.literal("b"), b: z.string() }).passthrough()])
-            "
-  `);
+    ).toStrictEqual(
+      `z.discriminatedUnion("type", [z.object({ type: z.literal("a"), a: z.string() }).passthrough(), z.object({ type: z.literal("b"), b: z.string() }).passthrough()])`,
+    );
 
     // returns z.union, when allOf has multiple objects
     expect(
@@ -261,8 +255,8 @@ describe("getZodSchema", () => {
         ],
         discriminator: { propertyName: "type" },
       }),
-    ).toMatchInlineSnapshot(
-      '"z.union([z.object({ type: z.literal("a"), a: z.string() }).passthrough().and(z.object({ type: z.literal("c"), c: z.string() }).passthrough()), z.object({ type: z.literal("b"), b: z.string() }).passthrough().and(z.object({ type: z.literal("d"), d: z.string() }).passthrough())])"',
+    ).toStrictEqual(
+      'z.union([z.object({ type: z.literal("a"), a: z.string() }).passthrough().and(z.object({ type: z.literal("c"), c: z.string() }).passthrough()), z.object({ type: z.literal("b"), b: z.string() }).passthrough().and(z.object({ type: z.literal("d"), d: z.string() }).passthrough())])',
     );
 
     expect(
@@ -272,7 +266,7 @@ describe("getZodSchema", () => {
           anyOfExample: { anyOf: [{ type: "string" }, { type: "number" }] },
         },
       }),
-    ).toMatchInlineSnapshot('"z.object({ anyOfExample: z.union([z.string(), z.number()]) }).partial().passthrough()"');
+    ).toStrictEqual("z.object({ anyOfExample: z.union([z.string(), z.number()]) }).partial().passthrough()");
 
     expect(
       getZodSchemaString({
@@ -281,28 +275,24 @@ describe("getZodSchema", () => {
           intersection: { allOf: [{ type: "string" }, { type: "number" }] },
         },
       }),
-    ).toMatchInlineSnapshot('"z.object({ intersection: z.string().and(z.number()) }).partial().passthrough()"');
+    ).toStrictEqual("z.object({ intersection: z.string().and(z.number()) }).partial().passthrough()");
 
-    expect(getZodSchemaString({ type: "string", enum: ["aaa", "bbb", "ccc"] })).toMatchInlineSnapshot(
-      '"z.enum(["aaa", "bbb", "ccc"])"',
+    expect(getZodSchemaString({ type: "string", enum: ["aaa", "bbb", "ccc"] })).toStrictEqual(
+      'z.enum(["aaa", "bbb", "ccc"])',
     );
-    expect(getZodSchemaString({ type: "number", enum: [1, 2, 3, null] })).toMatchInlineSnapshot(
-      '"z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(null)])"',
+    expect(getZodSchemaString({ type: "number", enum: [1, 2, 3, null] })).toStrictEqual(
+      "z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(null)])",
     );
-    expect(getZodSchemaString({ type: "number", enum: [1] })).toMatchInlineSnapshot('"z.literal(1)"');
-    expect(getZodSchemaString({ type: "string", enum: ["aString"] })).toMatchInlineSnapshot('"z.literal("aString")"');
+    expect(getZodSchemaString({ type: "number", enum: [1] })).toStrictEqual("z.literal(1)");
+    expect(getZodSchemaString({ type: "string", enum: ["aString"] })).toStrictEqual('z.literal("aString")');
   });
 
   test("getSchemaWithChainableAsZodString", () => {
-    expect(getZodSchemaString({ type: "string", nullable: true })).toMatchInlineSnapshot('"z.string()"');
-    expect(getZodSchemaString({ type: "string", nullable: false })).toMatchInlineSnapshot('"z.string()"');
+    expect(getZodSchemaString({ type: "string", nullable: true })).toStrictEqual("z.string()");
+    expect(getZodSchemaString({ type: "string", nullable: false })).toStrictEqual("z.string()");
 
-    expect(getZodSchemaString({ type: "string", nullable: false }, { isRequired: true })).toMatchInlineSnapshot(
-      '"z.string()"',
-    );
-    expect(getZodSchemaString({ type: "string", nullable: true }, { isRequired: true })).toMatchInlineSnapshot(
-      '"z.string()"',
-    );
+    expect(getZodSchemaString({ type: "string", nullable: false }, { isRequired: true })).toStrictEqual("z.string()");
+    expect(getZodSchemaString({ type: "string", nullable: true }, { isRequired: true })).toStrictEqual("z.string()");
   });
 
   test("ZodSchema with missing ref", () => {
@@ -369,8 +359,8 @@ describe("getZodSchema", () => {
       tag: "",
       options: {},
     });
-    expect(code.getCodeString()).toMatchInlineSnapshot(
-      '"z.object({ str: z.string(), reference: Example, inline: z.object({ nested_prop: z.boolean() }).partial().passthrough() }).partial().passthrough()"',
+    expect(code.getCodeString()).toStrictEqual(
+      "z.object({ str: z.string(), reference: Example, inline: z.object({ nested_prop: z.boolean() }).partial().passthrough() }).partial().passthrough()",
     );
     expect(code.children.map((value) => value.getCodeString())).toStrictEqual([
       "z.string()",

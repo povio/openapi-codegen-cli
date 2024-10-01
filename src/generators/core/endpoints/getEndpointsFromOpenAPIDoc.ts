@@ -109,6 +109,7 @@ export function getEndpointsFromOpenAPIDoc({
             getZodChain({
               schema: isReferenceObject(schema) ? resolver.getSchemaByRef(schema.$ref) : schema,
               meta: zodSchema.meta,
+              options,
             });
         }
 

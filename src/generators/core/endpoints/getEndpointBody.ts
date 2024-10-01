@@ -57,6 +57,7 @@ export function getEndpointBody({
   const zodChain = getZodChain({
     schema: isReferenceObject(schema) ? resolver.getSchemaByRef(schema.$ref) : schema,
     meta: zodSchema.meta,
+    options,
   });
 
   return {
