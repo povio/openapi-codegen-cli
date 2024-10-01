@@ -17,7 +17,8 @@
     "format:check": "prettier --check .",
     "format:fix": "prettier --write .",
     "generate:clean": "rm -rf ./output",
-    "generate:example": "yarn generate:clean && yarn build && yarn start generate --input ./test/baby-jira.json --verbose"
+    "generate:example-baby-jira": "yarn generate:clean && yarn build && yarn start generate --input ./test/baby-jira.json --verbose",
+    "generate:example-petstore": "yarn generate:clean && yarn build && yarn start generate --input ./test/petstore.yaml --verbose"
   },
   "files": [
     "dist",

@@ -2,7 +2,7 @@ import { OpenAPIV3 } from "openapi-types";
 import { Endpoint } from "../types/endpoint";
 import { GenerateData } from "../types/generate";
 import { GenerateOptions } from "../types/options";
-import { getEndpointDeepRefZodSchemas } from "./endpoints/getEndpointDeepRefZodSchemas";
+import { getEndpointTag } from "../utils/generate/generate.endpoints.utils";
 import { getEndpointsFromOpenAPIDoc } from "./endpoints/getEndpointsFromOpenAPIDoc";
 import { SchemaResolver } from "./SchemaResolver.class";
 import { getZodSchemasFromOpenAPIDoc } from "./zod/getZodSchemasFromOpenAPIDoc";
@@ -16,12 +16,12 @@ export function generateDataFromOpenAPIDoc({
   openApiDoc: OpenAPIV3.Document;
   options: GenerateOptions;
 }) {
-  const resolver = new SchemaResolver(openApiDoc, options.schemaSuffix);
+  const resolver = new SchemaResolver(openApiDoc, options);
 
-  const { endpoints, ctx } = getEndpointsFromOpenAPIDoc({ resolver, openApiDoc, options });
+  const endpoints = getEndpointsFromOpenAPIDoc({ resolver, openApiDoc, options });
   const zodSchemasFromDocSchemas = getZodSchemasFromOpenAPIDoc({ resolver, openApiDoc, options });
 
-  let zodSchemas = { ...zodSchemasFromDocSchemas, ...ctx.getState().zodSchemas };
+  let zodSchemas = { ...zodSchemasFromDocSchemas, ...resolver.getZodSchemas() };
   zodSchemas = wrapCircularZodSchemas({ resolver, zodSchemas, options });
   zodSchemas = sortZodSchemasByTopology({ resolver, zodSchemas });
 
@@ -45,25 +45,18 @@ function splitDataByTags({
   const data: GenerateData = new Map();
 
   if (!options.splitByTags) {
-    data.set("", { endpoints, zodSchemas });
+    data.set(options.defaultTag, { endpoints, zodSchemas });
     return data;
   }
 
-  const zodSchemaTags = new Map<string, Set<string>>();
-  Object.keys(zodSchemas).forEach((zodSchemaName) => zodSchemaTags.set(zodSchemaName, new Set()));
   endpoints.forEach((endpoint) => {
-    const tag = endpoint.tags?.[0] ?? options.defaultTag;
-
+    const tag = getEndpointTag(endpoint, options);
     getTagElement(tag, data).endpoints.push(endpoint);
-
-    const deepRefZodSchemas = getEndpointDeepRefZodSchemas({ endpoint, resolver });
-    deepRefZodSchemas.forEach((zodSchema) => zodSchemaTags.get(zodSchema)!.add(tag));
   });
 
-  zodSchemaTags.forEach((tags, zodSchemaName) => {
-    const tag = tags.size === 1 ? tags.values().next().value : options.defaultTag;
-
-    getTagElement(tag, data).zodSchemas[zodSchemaName] = zodSchemas[zodSchemaName];
+  Object.entries(zodSchemas).forEach(([zodSchemaName, zodSchemaCode]) => {
+    const tag = resolver.getTagByZodSchemaName(zodSchemaName);
+    getTagElement(tag, data).zodSchemas[zodSchemaName] = zodSchemaCode;
   });
 
   return data;

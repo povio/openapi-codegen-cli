@@ -1,4 +1,4 @@
-import { ZodSchemasGenerateOptions } from "../../types/options";
+import { GenerateOptions } from "../../types/options";
 import { getZodSchemaName } from "../../utils/zod-schema.utils";
 import { SchemaResolver } from "../SchemaResolver.class";
 
@@ -9,7 +9,7 @@ export function wrapCircularZodSchemas({
 }: {
   resolver: SchemaResolver;
   zodSchemas: Record<string, string>;
-  options: ZodSchemasGenerateOptions;
+  options: GenerateOptions;
 }) {
   const schemas = {} as Record<string, string>;
 

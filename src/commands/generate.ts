@@ -18,7 +18,7 @@ export async function generate({ input, output, verbose }: GenerateParams) {
   if (verbose) {
     logInfo("Generating code from OpenAPI spec");
   }
-  generateCodeFromOpenAPIDoc({ openApiDoc, output });
+  generateCodeFromOpenAPIDoc({ openApiDoc, options: { output } });
   if (verbose) {
     logSuccess("Generated code successfully");
   }

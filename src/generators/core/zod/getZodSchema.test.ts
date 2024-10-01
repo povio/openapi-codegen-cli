@@ -1,14 +1,14 @@
 import { OpenAPIV3 } from "openapi-types";
 import { describe, expect, test } from "vitest";
+import { GenerateOptions } from "../../types/options";
 import { getSchemaRef } from "../../utils/openapi.utils";
-import { GenerateContext } from "../GenerateContext.class";
 import { SchemaResolver } from "../SchemaResolver.class";
 import { ZodSchemaMetaData } from "./ZodSchema.class";
 import { getZodSchema } from "./getZodSchema";
 
 const makeSchema = (schema: OpenAPIV3.SchemaObject) => schema;
 const getZodSchemaString = (schema: OpenAPIV3.SchemaObject, meta?: ZodSchemaMetaData | undefined) =>
-  getZodSchema({ schema: makeSchema(schema), meta }).toString();
+  getZodSchema({ schema: makeSchema(schema), meta, tag: "", options: {} }).getCodeString();
 
 describe("getZodSchema", () => {
   test("getZodSchemaString", () => {
@@ -323,7 +323,12 @@ describe("getZodSchema", () => {
             },
           },
         }),
-        resolver: new SchemaResolver({ components: { schemas: {} } } as any, ""),
+        resolver: new SchemaResolver(
+          { components: { schemas: {} } } as OpenAPIV3.Document,
+          { schemaSuffix: "" } as GenerateOptions,
+        ),
+        tag: "",
+        options: {},
       }),
     ).toThrowErrorMatchingInlineSnapshot("[Error: Schema Example not found]");
   });
@@ -338,7 +343,10 @@ describe("getZodSchema", () => {
         },
       },
     } as Record<string, OpenAPIV3.SchemaObject>;
-    const resolver = new SchemaResolver({ components: { schemas } } as any, "");
+    const resolver = new SchemaResolver(
+      { components: { schemas } } as OpenAPIV3.Document,
+      { schemaSuffix: "" } as GenerateOptions,
+    );
     Object.keys(schemas).forEach((key) => resolver.getSchemaByRef(getSchemaRef(key)));
 
     const code = getZodSchema({
@@ -358,17 +366,17 @@ describe("getZodSchema", () => {
         },
       }),
       resolver,
+      tag: "",
+      options: {},
     });
-    expect(code.toString()).toMatchInlineSnapshot(
+    expect(code.getCodeString()).toMatchInlineSnapshot(
       '"z.object({ str: z.string(), reference: Example, inline: z.object({ nested_prop: z.boolean() }).partial().passthrough() }).partial().passthrough()"',
     );
-    expect(code.children).toMatchInlineSnapshot(`
-    [
-        "z.string()",
-        "Example",
-        "z.object({ nested_prop: z.boolean() }).partial().passthrough()",
-    ]
-  `);
+    expect(code.children.map((value) => value.getCodeString())).toStrictEqual([
+      "z.string()",
+      "Example",
+      "z.object({ nested_prop: z.boolean() }).partial().passthrough()",
+    ]);
   });
 
   test("ZodSchema with nested refs", () => {
@@ -389,8 +397,10 @@ describe("getZodSchema", () => {
       },
       DeepNested: { type: "object", properties: { deep: { type: "boolean" } } },
     } as Record<string, OpenAPIV3.SchemaObject>;
-    const resolver = new SchemaResolver({ components: { schemas } } as any, "");
-    const ctx = new GenerateContext();
+    const resolver = new SchemaResolver(
+      { components: { schemas } } as OpenAPIV3.Document,
+      { schemaSuffix: "" } as GenerateOptions,
+    );
     Object.keys(schemas).forEach((key) => resolver.getSchemaByRef(getSchemaRef(key)));
 
     const code = getZodSchema({
@@ -413,28 +423,27 @@ describe("getZodSchema", () => {
         },
       }),
       resolver,
-      ctx,
+      tag: "",
+      options: {},
     });
-    expect(code.toString()).toMatchInlineSnapshot(
+    expect(code.getCodeString()).toMatchInlineSnapshot(
       '"z.object({ str: z.string(), reference: ObjectWithArrayOfRef, inline: z.object({ nested_prop: z.boolean() }).partial().passthrough(), another: WithNested, basic: Basic, differentPropSameRef: Basic }).partial().passthrough()"',
     );
-    expect(code.children).toMatchInlineSnapshot(`
-    [
-        "z.string()",
-        "ObjectWithArrayOfRef",
-        "z.object({ nested_prop: z.boolean() }).partial().passthrough()",
-        "WithNested",
-        "Basic",
-        "Basic",
-    ]
-  `);
-    expect(ctx.getState().zodSchemas).toStrictEqual({
+    expect(code.children.map((value) => value.getCodeString())).toMatchInlineSnapshot([
+      "z.string()",
+      "ObjectWithArrayOfRef",
+      "z.object({ nested_prop: z.boolean() }).partial().passthrough()",
+      "WithNested",
+      "Basic",
+      "Basic",
+    ]);
+    expect(resolver.getZodSchemas()).toStrictEqual({
       Basic: "z.object({ prop: z.string(), second: z.number() }).partial().passthrough()",
       DeepNested: "z.object({ deep: z.boolean() }).partial().passthrough()",
       ObjectWithArrayOfRef:
         "z.object({ exampleProp: z.string(), another: z.number(), link: z.array(WithNested), someReference: Basic }).partial().passthrough()",
       WithNested: "z.object({ nested: z.string(), nestedRef: DeepNested }).partial().passthrough()",
     });
-    expect(ctx.getState().schemas).toStrictEqual({});
+    expect(resolver["zodSchemaNamesByDiscriminatorCode"]).toStrictEqual({});
   });
 });

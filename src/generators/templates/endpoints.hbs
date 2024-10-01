@@ -9,12 +9,15 @@
 {{{genImport modelsImport}}}
 {{/each}}
 
+{{#if includeNamespace}}
+export namespace {{namespace}} {
+{{/if}}
 {{! Endpoints export }}
 {{#each endpoints as | endpoint |}}
 export const {{endpointName endpoint}} = ({{{genEndpointParams endpoint}}}) => { 
     return {{../restClientName}}.{{endpoint.method}}( 
         {{! Response }}
-        { resSchema: {{endpoint.response}} }, 
+        { resSchema: {{importedZodSchemaName endpoint.response}} }, 
         {{! Path }}
         `{{endpointPath endpoint}}`,
         {{! Body }}
@@ -27,3 +30,6 @@ export const {{endpointName endpoint}} = ({{{genEndpointParams endpoint}}}) => {
 };
 
 {{/each}}
+{{#if includeNamespace}}
+}
+{{/if}}

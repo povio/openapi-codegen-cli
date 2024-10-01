@@ -1,22 +1,23 @@
 import { OpenAPIV3 } from "openapi-types";
 import { DEFAULT_GENERATE_OPTIONS } from "./const/options.const";
 import { generateDataFromOpenAPIDoc } from "./core/generateDataFromOpenAPIDoc";
+import { SchemaResolver } from "./core/SchemaResolver.class";
 import { generateEndpoints } from "./generate/generateEndpoints";
 import { generateModels } from "./generate/generateModels";
 import { generateQueries } from "./generate/generateQueries";
+import { GenerateData, GenerateType } from "./types/generate";
 import { GenerateOptions } from "./types/options";
-import { getTagFileName, writeTsFileSync } from "./utils/file.utils";
+import { writeTsFileSync } from "./utils/file.utils";
+import { getTagFileName } from "./utils/generate/generate.utils";
 
 export function generateCodeFromOpenAPIDoc({
   openApiDoc,
-  output,
-  options,
+  options: cliOptions,
 }: {
   openApiDoc: OpenAPIV3.Document;
-  output: string;
-  options?: GenerateOptions;
+  options?: Partial<GenerateOptions>;
 }) {
-  options = { ...DEFAULT_GENERATE_OPTIONS, ...options };
+  const options = { ...DEFAULT_GENERATE_OPTIONS, ...cliOptions } as GenerateOptions;
 
   const { resolver, data } = generateDataFromOpenAPIDoc({ openApiDoc, options });
 
@@ -27,31 +28,44 @@ export function generateCodeFromOpenAPIDoc({
       return;
     }
 
-    const zodSchemasCode = generateModels({ resolver, data, tag, options });
-    if (zodSchemasCode) {
-      writeTsFileSync({
-        output,
-        fileName: getTagFileName(tag, options.modelsConfig.outputFileNameSuffix),
-        data: zodSchemasCode,
-      });
-    }
-
-    const endpointsCode = generateEndpoints({ data, tag, options });
-    if (endpointsCode) {
-      writeTsFileSync({
-        output,
-        fileName: getTagFileName(tag, options.endpointsConfig.outputFileNameSuffix),
-        data: endpointsCode,
-      });
-    }
-
-    const queriesCode = generateQueries({ data, tag, options });
-    if (queriesCode) {
-      writeTsFileSync({
-        output,
-        fileName: getTagFileName(tag, options.queriesConfig.outputFileNameSuffix),
-        data: queriesCode,
-      });
-    }
+    generateCodeByType({ resolver, data, type: GenerateType.Models, tag, options });
+    generateCodeByType({ resolver, data, type: GenerateType.Endpoints, tag, options });
+    generateCodeByType({ resolver, data, type: GenerateType.Queries, tag, options });
   });
+}
+
+function generateCodeByType({
+  resolver,
+  data,
+  type,
+  tag,
+  options,
+}: {
+  resolver: SchemaResolver;
+  data: GenerateData;
+  type: GenerateType;
+  tag: string;
+  options: GenerateOptions;
+}) {
+  let code: string | undefined;
+
+  switch (type) {
+    case GenerateType.Models:
+      code = generateModels({ resolver, data, tag, options });
+      break;
+    case GenerateType.Endpoints:
+      code = generateEndpoints({ resolver, data, tag, options });
+      break;
+    case GenerateType.Queries:
+      code = generateQueries({ resolver, data, tag, options });
+      break;
+  }
+
+  if (code) {
+    writeTsFileSync({
+      output: options.output,
+      fileName: getTagFileName({ tag, type, options }),
+      data: code,
+    });
+  }
 }

@@ -1,17 +1,21 @@
-import { REST_CLIENT_NAME } from "../const/endpoints.const";
-import { REST_CLIENT_IMPORT, ZOD_IMPORT } from "../const/imports.const";
+import { REST_CLIENT_IMPORT, REST_CLIENT_NAME } from "../const/endpoints.const";
+import { ZOD_IMPORT } from "../const/zod.const";
+import { SchemaResolver } from "../core/SchemaResolver.class";
 import { EndpointParameter } from "../types/endpoint";
-import { GenerateData } from "../types/generate";
+import { GenerateData, GenerateType } from "../types/generate";
 import { GenerateOptions } from "../types/options";
-import { getModelsImports } from "../utils/generate.imports.utils";
-import { getHbsTemplateDelegate } from "../utils/hbs-template.utils";
+import { getModelsImports } from "../utils/generate/generate.imports.utils";
+import { getNamespaceName } from "../utils/generate/generate.utils";
+import { getHbsTemplateDelegate } from "../utils/hbs/hbs-template.utils";
 import { isNamedZodSchema } from "../utils/zod-schema.utils";
 
 export function generateEndpoints({
+  resolver,
   data,
   tag = "",
   options,
 }: {
+  resolver: SchemaResolver;
   data: GenerateData;
   tag?: string;
   options: GenerateOptions;
@@ -26,20 +30,22 @@ export function generateEndpoints({
 
   const endpointParams = endpoints.reduce((prev, curr) => [...prev, ...curr.parameters], [] as EndpointParameter[]);
   const modelsImports = getModelsImports({
-    data,
+    resolver,
     tag,
     zodSchemas: Array.from(new Set(endpointResponseSchemas.filter(isNamedZodSchema))),
-    zodSchemasAsTypes: Array.from(new Set(endpointParams.map((param) => param.schema).filter(isNamedZodSchema))),
+    zodSchemasAsTypes: Array.from(new Set(endpointParams.map((param) => param.zodSchema).filter(isNamedZodSchema))),
     options,
   });
 
-  const hbsTemplate = getHbsTemplateDelegate({ templateName: "endpoints", options });
+  const hbsTemplate = getHbsTemplateDelegate({ resolver, templateName: "endpoints", options });
 
   return hbsTemplate({
     restClientImport: REST_CLIENT_IMPORT,
     hasZodImport,
     zodImport: ZOD_IMPORT,
     modelsImports,
+    includeNamespace: options.includeNamespaces,
+    namespace: getNamespaceName({ type: GenerateType.Endpoints, tag, options }),
     restClientName: REST_CLIENT_NAME,
     endpoints,
   });

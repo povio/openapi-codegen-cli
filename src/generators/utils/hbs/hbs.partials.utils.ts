@@ -1,9 +1,9 @@
 import Handlebars from "handlebars";
-import { QUERY_HOOKS } from "../const/query.const";
-import { Endpoint } from "../types/endpoint";
-import { Import } from "../types/generate";
-import { getEndpointConfig } from "./generate.endpoints.utils";
-import { getHbsTemplateDelegate } from "./hbs-template.utils";
+import { QUERY_HOOKS } from "../../const/query.const";
+import { Endpoint } from "../../types/endpoint";
+import { Import } from "../../types/generate";
+import { getEndpointConfig } from "../generate/generate.endpoints.utils";
+import { getHbsPartialTemplateDelegate } from "../hbs/hbs-template.utils";
 
 enum PartialsHelpers {
   IMPORT = "genImport",
@@ -23,13 +23,13 @@ export function registerPartialsHbsHelpers() {
 
 function registerImportHelper() {
   Handlebars.registerHelper(PartialsHelpers.IMPORT, (genImport: Import) =>
-    getHbsTemplateDelegate({ templateName: "import", partialTemplate: true })({ import: genImport }),
+    getHbsPartialTemplateDelegate("import")({ import: genImport }),
   );
 }
 
 function registerGenerateEndpointParamsHelper() {
   Handlebars.registerHelper(PartialsHelpers.ENDPOINT_PARAMS, (endpoint: Endpoint) =>
-    getHbsTemplateDelegate({ templateName: "endpoint-params", partialTemplate: true })({ endpoint }),
+    getHbsPartialTemplateDelegate("endpoint-params")({ endpoint }),
   );
 }
 
@@ -39,7 +39,7 @@ function registerGenerateEndpointConfigHelper() {
     if (Object.keys(endpointConfig).length === 0) {
       return "";
     }
-    return getHbsTemplateDelegate({ templateName: "endpoint-config", partialTemplate: true })({ endpointConfig });
+    return getHbsPartialTemplateDelegate("endpoint-config")({ endpointConfig });
   });
 }
 
@@ -48,7 +48,7 @@ function registerGenerateQueryKeysHelper() {
     if (endpoints.length === 0) {
       return "";
     }
-    return getHbsTemplateDelegate({ templateName: "query-keys", partialTemplate: true })({ endpoints });
+    return getHbsPartialTemplateDelegate("query-keys")({ endpoints });
   });
 }
 
@@ -65,6 +65,6 @@ function registerGenerateQueryHelper() {
       queryHook = QUERY_HOOKS.mutation;
     }
 
-    return getHbsTemplateDelegate({ templateName, partialTemplate: true })({ endpoint, queryHook });
+    return getHbsPartialTemplateDelegate(templateName)({ endpoint, queryHook });
   });
 }

@@ -1,5 +1,5 @@
 export const {{queryName endpoint}} = () => {
   return {{queryHook}}({
-    mutationFn: {{#if (moreThanOneParameter endpoint)}}({ {{{endpointArgs endpoint}}} }: { {{{genEndpointParams endpoint}}} }) => {{endpointName endpoint}}({{{endpointArgs endpoint}}}){{else}}{{endpointName endpoint}}{{/if}},
+    mutationFn: {{#if (moreThanOneParameter endpoint)}}({ {{{endpointArgs endpoint}}} }: { {{{genEndpointParams endpoint}}} }) => {{importedEndpointName endpoint}}({{{endpointArgs endpoint}}}){{else}}{{importedEndpointName endpoint}}{{/if}},
   });
 };

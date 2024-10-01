@@ -1,16 +1,8 @@
 import fs from "fs";
 import path from "path";
-import { decapitalize } from "./string.utils";
 
 export function readHbsTemplateSync(fileName: string) {
   return fs.readFileSync(`src/generators/templates/${fileName}.hbs`, "utf-8");
-}
-
-export function getTagFileName(tag: string, fileNameSuffix: string, includeTagDir = true) {
-  if (!tag) {
-    return fileNameSuffix;
-  }
-  return `${includeTagDir ? `${decapitalize(tag)}/` : ""}${decapitalize(tag)}.${fileNameSuffix}`;
 }
 
 export function writeTsFileSync({ output, fileName, data }: { output: string; fileName: string; data: string }) {

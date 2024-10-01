@@ -2,11 +2,14 @@ import { OpenAPIV3 } from "openapi-types";
 import { match, P } from "ts-pattern";
 import { ALLOWED_PARAM_MEDIA_TYPES, PRIMITIVE_TYPE_LIST } from "../const/openapi.const";
 import { PrimitiveType, SingleType } from "../types/openapi";
-import { snakeToCamel } from "./string.utils";
+import { GenerateOptions } from "../types/options";
+import { capitalize, kebabToCamel, snakeToCamel } from "./string.utils";
 
 export const getSchemaRef = (schemaName: string) => `#/components/schemas/${schemaName}`;
 
 export const autocorrectRef = (ref: string) => (ref[1] === "/" ? ref : "#/" + ref.slice(1));
+
+export const getSchemaNameByRef = (ref: string) => autocorrectRef(ref).split("/").at(-1)!;
 
 export function isReferenceObject(obj: any): obj is OpenAPIV3.ReferenceObject {
   return obj != null && Object.prototype.hasOwnProperty.call(obj, "$ref");
@@ -86,7 +89,7 @@ export const toBoolean = (value: undefined | string | boolean, defaultValue: boo
     .with(P.string.regex(/^true$/i), true, () => true)
     .otherwise(() => defaultValue);
 
-export function isAllowedParamMediaType(
+export function isParamMediaTypeAllowed(
   mediaType: string,
 ): mediaType is (typeof ALLOWED_PARAM_MEDIA_TYPES)[number] | `application/${string}json${string}` | `text/${string}` {
   return (
@@ -94,4 +97,47 @@ export function isAllowedParamMediaType(
     ALLOWED_PARAM_MEDIA_TYPES.includes(mediaType as any) ||
     mediaType.includes("text/")
   );
+}
+
+export function isMainResponseStatus(status: number) {
+  return status >= 200 && status < 300;
+}
+
+export function isErrorStatus(status: number) {
+  return !(status >= 200 && status < 300);
+}
+
+export function isMediaTypeAllowed(mediaType: string) {
+  return mediaType === "application/json";
+}
+
+export function getOperationName(path: string, method: string, operation: OpenAPIV3.OperationObject) {
+  return operation.operationId ?? method + pathToVariableName(path);
+}
+
+export function getOperationTag(operation: OpenAPIV3.OperationObject, options: GenerateOptions) {
+  return operation.tags?.[0] ?? options.defaultTag;
+}
+
+const PATH_PARAM_WITH_BRACKETS_REGEX = /({\w+})/g;
+const WORD_PRECEDED_BY_NON_WORD_CHARACTER = /[^\w\-]+/g;
+/** @example turns `/media-objects/{id}` into `MediaObjectsId` */
+export function pathToVariableName(path: string) {
+  return capitalize(kebabToCamel(path.replaceAll("/", "-")).replaceAll("-", "")) // /media-objects/{id} -> MediaObjects{id}
+    .replace(PATH_PARAM_WITH_BRACKETS_REGEX, (group) => capitalize(group.slice(1, -1))) // {id} -> Id
+    .replace(WORD_PRECEDED_BY_NON_WORD_CHARACTER, "_"); // "/robots.txt" -> "/robots_txt"
+}
+
+const MATCHER_REGEX = /{(\b\w+(?:-\w+)*\b)}/g;
+export function replaceHyphenatedPath(path: string) {
+  const matches = path.match(MATCHER_REGEX);
+  if (matches === null) {
+    return path.replaceAll(MATCHER_REGEX, ":$1");
+  }
+
+  matches.forEach((match) => {
+    const replacement = pathParamToVariableName(match.replaceAll(MATCHER_REGEX, ":$1"));
+    path = path.replaceAll(match, replacement);
+  });
+  return path;
 }

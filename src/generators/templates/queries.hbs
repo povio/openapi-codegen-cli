@@ -9,6 +9,9 @@
 {{{genImport endpointsImport}}}
 {{/each}}
 
+{{#if includeNamespace}}
+export namespace {{namespace}} {
+{{/if}}
 {{! Query keys export}}
 {{{genQueryKeys queryEndpoints}}}
 
@@ -17,3 +20,7 @@
 {{{genQuery endpoint}}}
 
 {{/each}}
+
+{{#if includeNamespace}}
+}
+{{/if}}

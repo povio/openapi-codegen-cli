@@ -1,6 +1,7 @@
 import SwaggerParser from "@apidevtools/swagger-parser";
 import { OpenAPIV3 } from "openapi-types";
 import { describe, expect, test } from "vitest";
+import { GenerateOptions } from "../../types/options";
 import { SchemaResolver } from "../SchemaResolver.class";
 import { getEndpointsFromOpenAPIDoc } from "./getEndpointsFromOpenAPIDoc";
 
@@ -81,14 +82,9 @@ const schemas = {
   } as OpenAPIV3.SchemaObject,
 } as const;
 
-const getEndpoints = (openApiDoc: OpenAPIV3.Document) => {
-  const resolver = new SchemaResolver(openApiDoc, "");
-  return getEndpointsFromOpenAPIDoc({ resolver, openApiDoc, options: { schemaSuffix: "" } });
-};
-
 describe("getEndpointsFromOpenAPIDoc", () => {
   test("getEndpointsFromOpenAPIDocPaths /store/order", () => {
-    const doc: OpenAPIV3.Document = {
+    const openApiDoc: OpenAPIV3.Document = {
       ...baseDoc,
       components: { schemas: { Order: schemas.Order } },
       paths: {
@@ -117,14 +113,20 @@ describe("getEndpointsFromOpenAPIDoc", () => {
       },
     };
 
-    const result = getEndpoints(doc);
-    expect(result.endpoints).toStrictEqual([
+    const resolver = new SchemaResolver(openApiDoc, { schemaSuffix: "" } as GenerateOptions);
+    const endpoints = getEndpointsFromOpenAPIDoc({
+      resolver,
+      openApiDoc,
+      options: { schemaSuffix: "" } as GenerateOptions,
+    });
+
+    expect(endpoints).toStrictEqual([
       {
         description: "Place a new order in the store",
         errors: [
           {
             description: "Invalid input",
-            schema: "z.void()",
+            zodSchema: "z.void()",
             status: 405,
           },
         ],
@@ -134,7 +136,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           {
             description: undefined,
             name: "body",
-            schema: "Order",
+            zodSchema: "Order",
             type: "Body",
             bodyObject: {
               content: {
@@ -156,16 +158,14 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         tags: ["store"],
       },
     ]);
-    expect(result.ctx.getState()).toStrictEqual({
-      schemas: {},
-      zodSchemas: {
-        Order: `z.object({ id: z.number().int(), petId: z.number().int(), quantity: z.number().int(), shipDate: z.string().datetime({ offset: true }), status: z.enum(["placed", "approved", "delivered"]), complete: z.boolean() }).partial().passthrough()`,
-      },
+    expect(resolver.getZodSchemas()).toStrictEqual({
+      Order: `z.object({ id: z.number().int(), petId: z.number().int(), quantity: z.number().int(), shipDate: z.string().datetime({ offset: true }), status: z.enum(["placed", "approved", "delivered"]), complete: z.boolean() }).partial().passthrough()`,
     });
+    expect(resolver["zodSchemaNamesByDiscriminatorCode"]).toStrictEqual({});
   });
 
   test("getEndpointsFromOpenAPIDocPaths /pet", () => {
-    const doc: OpenAPIV3.Document = {
+    const openApiDoc: OpenAPIV3.Document = {
       ...baseDoc,
       components: { schemas: { Pet: schemas.Pet, Category: schemas.Category, Tag: schemas.Tag } },
       paths: {
@@ -228,24 +228,30 @@ describe("getEndpointsFromOpenAPIDoc", () => {
       },
     };
 
-    const result = getEndpoints(doc);
-    expect(result.endpoints).toStrictEqual([
+    const resolver = new SchemaResolver(openApiDoc, { schemaSuffix: "" } as GenerateOptions);
+    const endpoints = getEndpointsFromOpenAPIDoc({
+      resolver,
+      openApiDoc,
+      options: { schemaSuffix: "" } as GenerateOptions,
+    });
+
+    expect(endpoints).toStrictEqual([
       {
         description: "Update an existing pet by Id",
         errors: [
           {
             description: "Invalid ID supplied",
-            schema: "z.void()",
+            zodSchema: "z.void()",
             status: 400,
           },
           {
             description: "Pet not found",
-            schema: "z.void()",
+            zodSchema: "z.void()",
             status: 404,
           },
           {
             description: "Validation exception",
-            schema: "z.void()",
+            zodSchema: "z.void()",
             status: 405,
           },
         ],
@@ -255,7 +261,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           {
             description: "Update an existent pet in the store",
             name: "body",
-            schema: "Pet",
+            zodSchema: "Pet",
             type: "Body",
             bodyObject: {
               content: {
@@ -287,7 +293,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         errors: [
           {
             description: "Invalid input",
-            schema: "z.void()",
+            zodSchema: "z.void()",
             status: 405,
           },
         ],
@@ -297,7 +303,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           {
             description: "Create a new pet in the store",
             name: "body",
-            schema: "Pet",
+            zodSchema: "Pet",
             type: "Body",
             bodyObject: {
               content: {
@@ -324,18 +330,16 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         tags: ["pet"],
       },
     ]);
-    expect(result.ctx.getState()).toStrictEqual({
-      schemas: {},
-      zodSchemas: {
-        Category: "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
-        Pet: `z.object({ id: z.number().int().optional(), name: z.string(), category: Category.optional(), photoUrls: z.array(z.string()), tags: z.array(Tag).optional(), status: z.enum(["available", "pending", "sold"]).optional() }).passthrough()`,
-        Tag: "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
-      },
+    expect(resolver.getZodSchemas()).toStrictEqual({
+      Category: "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
+      Pet: `z.object({ id: z.number().int().optional(), name: z.string(), category: Category.optional(), photoUrls: z.array(z.string()), tags: z.array(Tag).optional(), status: z.enum(["available", "pending", "sold"]).optional() }).passthrough()`,
+      Tag: "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
     });
+    expect(resolver["zodSchemaNamesByDiscriminatorCode"]).toStrictEqual({});
   });
 
   test("getEndpointsFromOpenAPIDocPaths /pet without schema ref", () => {
-    const doc: OpenAPIV3.Document = {
+    const openApiDoc: OpenAPIV3.Document = {
       ...baseDoc,
       components: {
         schemas: {
@@ -387,24 +391,29 @@ describe("getEndpointsFromOpenAPIDoc", () => {
       },
     };
 
-    const result = getEndpoints(doc);
-    expect(result.endpoints).toStrictEqual([
+    const resolver = new SchemaResolver(openApiDoc, { schemaSuffix: "" } as GenerateOptions);
+    const endpoints = getEndpointsFromOpenAPIDoc({
+      resolver,
+      openApiDoc,
+      options: { schemaSuffix: "" } as GenerateOptions,
+    });
+    expect(endpoints).toStrictEqual([
       {
         description: "Update an existing pet by Id",
         errors: [
           {
             description: "Invalid ID supplied",
-            schema: "z.void()",
+            zodSchema: "z.void()",
             status: 400,
           },
           {
             description: "Pet not found",
-            schema: "z.void()",
+            zodSchema: "z.void()",
             status: 404,
           },
           {
             description: "Validation exception",
-            schema: "z.void()",
+            zodSchema: "z.void()",
             status: 405,
           },
         ],
@@ -414,7 +423,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           {
             description: "Update an existent pet in the store",
             name: "body",
-            schema: "UpdatePetBody",
+            zodSchema: "UpdatePetBody",
             type: "Body",
             bodyObject: {
               content: {
@@ -444,23 +453,21 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         tags: ["pet"],
       },
     ]);
-    expect(result.ctx.getState()).toStrictEqual({
-      schemas: {
-        "Pet.and(Reason)": ["UpdatePetBody"],
-      },
-      zodSchemas: {
-        Category: "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
-        Pet: `z.object({ id: z.number().int().optional(), name: z.string(), category: Category.optional(), photoUrls: z.array(z.string()), tags: z.array(Tag).optional(), status: z.enum(["available", "pending", "sold"]).optional() }).passthrough()`,
-        Reason: "z.object({ reason: ReasonDetails }).passthrough()",
-        ReasonDetails: "z.object({ details: z.string() }).passthrough()",
-        Tag: "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
-        UpdatePetBody: "Pet.and(Reason)",
-      },
+    expect(resolver.getZodSchemas()).toStrictEqual({
+      Category: "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
+      Pet: `z.object({ id: z.number().int().optional(), name: z.string(), category: Category.optional(), photoUrls: z.array(z.string()), tags: z.array(Tag).optional(), status: z.enum(["available", "pending", "sold"]).optional() }).passthrough()`,
+      Reason: "z.object({ reason: ReasonDetails }).passthrough()",
+      ReasonDetails: "z.object({ details: z.string() }).passthrough()",
+      Tag: "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
+      UpdatePetBody: "Pet.and(Reason)",
+    });
+    expect(resolver["zodSchemaNamesByDiscriminatorCode"]).toStrictEqual({
+      "Pet.and(Reason)": ["UpdatePetBody"],
     });
   });
 
   test("getEndpointsFromOpenAPIDocPaths /pet/findXXX", () => {
-    const doc: OpenAPIV3.Document = {
+    const openApiDoc: OpenAPIV3.Document = {
       ...baseDoc,
       components: { schemas: { Pet: schemas.Pet, Category: schemas.Category, Tag: schemas.Tag } },
       paths: {
@@ -575,14 +582,19 @@ describe("getEndpointsFromOpenAPIDoc", () => {
       },
     };
 
-    const result = getEndpoints(doc);
-    expect(result.endpoints).toStrictEqual([
+    const resolver = new SchemaResolver(openApiDoc, { schemaSuffix: "" } as GenerateOptions);
+    const endpoints = getEndpointsFromOpenAPIDoc({
+      resolver,
+      openApiDoc,
+      options: { schemaSuffix: "" } as GenerateOptions,
+    });
+    expect(endpoints).toStrictEqual([
       {
         description: "Multiple status values can be provided with comma separated strings",
         errors: [
           {
             description: "Invalid status value",
-            schema: "z.void()",
+            zodSchema: "z.void()",
             status: 400,
           },
         ],
@@ -603,7 +615,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
                 type: "string",
               },
             },
-            schema: "FindPetsByStatusStatusParam",
+            zodSchema: "FindPetsByStatusStatusParam",
             type: "Query",
           },
         ],
@@ -625,7 +637,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         errors: [
           {
             description: "Invalid tag value",
-            schema: "z.void()",
+            zodSchema: "z.void()",
             status: 400,
           },
         ],
@@ -647,7 +659,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
                 type: "array",
               },
             },
-            schema: "FindPetsByTagsTagsParam",
+            zodSchema: "FindPetsByTagsTagsParam",
             type: "Query",
           },
         ],
@@ -665,44 +677,47 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         tags: ["pet"],
       },
     ]);
-    expect(result.ctx.getState()).toStrictEqual({
-      schemas: {
-        "z.array(Pet)": ["FindPetsByStatusResponse", "FindPetsByTagsResponse"],
-        "z.array(z.string()).optional()": ["FindPetsByTagsTagsParam"],
-        'z.enum(["available", "pending", "sold"]).optional().default("available")': ["FindPetsByStatusStatusParam"],
-      },
-      zodSchemas: {
-        Category: "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
-        FindPetsByStatusResponse: "z.array(Pet)",
-        FindPetsByStatusStatusParam: `z.enum(["available", "pending", "sold"]).optional().default("available")`,
-        FindPetsByTagsResponse: "z.array(Pet)",
-        FindPetsByTagsTagsParam: "z.array(z.string()).optional()",
-        Pet: `z.object({ id: z.number().int().optional(), name: z.string(), category: Category.optional(), photoUrls: z.array(z.string()), tags: z.array(Tag).optional(), status: z.enum(["available", "pending", "sold"]).optional() }).passthrough()`,
-        Tag: "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
-      },
+    expect(resolver.getZodSchemas()).toStrictEqual({
+      Category: "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
+      FindPetsByStatusResponse: "z.array(Pet)",
+      FindPetsByStatusStatusParam: `z.enum(["available", "pending", "sold"]).optional().default("available")`,
+      FindPetsByTagsResponse: "z.array(Pet)",
+      FindPetsByTagsTagsParam: "z.array(z.string()).optional()",
+      Pet: `z.object({ id: z.number().int().optional(), name: z.string(), category: Category.optional(), photoUrls: z.array(z.string()), tags: z.array(Tag).optional(), status: z.enum(["available", "pending", "sold"]).optional() }).passthrough()`,
+      Tag: "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
+    });
+    expect(resolver["zodSchemaNamesByDiscriminatorCode"]).toStrictEqual({
+      "z.array(Pet)": ["FindPetsByStatusResponse", "FindPetsByTagsResponse"],
+      "z.array(z.string()).optional()": ["FindPetsByTagsTagsParam"],
+      'z.enum(["available", "pending", "sold"]).optional().default("available")': ["FindPetsByStatusStatusParam"],
     });
   });
 
   test("petstore.yaml", async () => {
     const openApiDoc = (await SwaggerParser.parse("./test/petstore.yaml")) as OpenAPIV3.Document;
-    const result = getEndpoints(openApiDoc);
-    expect(result.endpoints).toStrictEqual([
+    const resolver = new SchemaResolver(openApiDoc, { schemaSuffix: "" } as GenerateOptions);
+    const endpoints = getEndpointsFromOpenAPIDoc({
+      resolver,
+      openApiDoc,
+      options: { schemaSuffix: "" } as GenerateOptions,
+    });
+    expect(endpoints).toStrictEqual([
       {
         description: "Update an existing pet by Id",
         errors: [
           {
             description: "Invalid ID supplied",
-            schema: "z.void()",
+            zodSchema: "z.void()",
             status: 400,
           },
           {
             description: "Pet not found",
-            schema: "z.void()",
+            zodSchema: "z.void()",
             status: 404,
           },
           {
             description: "Validation exception",
-            schema: "z.void()",
+            zodSchema: "z.void()",
             status: 405,
           },
         ],
@@ -712,7 +727,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           {
             description: "Update an existent pet in the store",
             name: "body",
-            schema: "Pet",
+            zodSchema: "Pet",
             type: "Body",
             bodyObject: {
               content: {
@@ -743,7 +758,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         errors: [
           {
             description: "Invalid input",
-            schema: "z.void()",
+            zodSchema: "z.void()",
             status: 405,
           },
         ],
@@ -753,7 +768,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           {
             description: "Create a new pet in the store",
             name: "body",
-            schema: "Pet",
+            zodSchema: "Pet",
             type: "Body",
             bodyObject: {
               content: {
@@ -784,7 +799,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         errors: [
           {
             description: "Invalid status value",
-            schema: "z.void()",
+            zodSchema: "z.void()",
             status: 400,
           },
         ],
@@ -805,7 +820,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
                 type: "string",
               },
             },
-            schema: "FindPetsByStatusStatusParam",
+            zodSchema: "FindPetsByStatusStatusParam",
             type: "Query",
           },
         ],
@@ -841,7 +856,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         errors: [
           {
             description: "Invalid tag value",
-            schema: "z.void()",
+            zodSchema: "z.void()",
             status: 400,
           },
         ],
@@ -863,7 +878,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
                 type: "array",
               },
             },
-            schema: "FindPetsByTagsTagsParam",
+            zodSchema: "FindPetsByTagsTagsParam",
             type: "Query",
           },
         ],
@@ -885,12 +900,12 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         errors: [
           {
             description: "Invalid ID supplied",
-            schema: "z.void()",
+            zodSchema: "z.void()",
             status: 400,
           },
           {
             description: "Pet not found",
-            schema: "z.void()",
+            zodSchema: "z.void()",
             status: 404,
           },
         ],
@@ -909,7 +924,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
                 type: "integer",
               },
             },
-            schema: "z.number().int()",
+            zodSchema: "z.number().int()",
             type: "Path",
           },
         ],
@@ -931,7 +946,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         errors: [
           {
             description: "Invalid input",
-            schema: "z.void()",
+            zodSchema: "z.void()",
             status: 405,
           },
         ],
@@ -950,7 +965,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
                 type: "integer",
               },
             },
-            schema: "z.number().int()",
+            zodSchema: "z.number().int()",
             type: "Path",
           },
           {
@@ -963,7 +978,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
                 type: "string",
               },
             },
-            schema: "z.string().optional()",
+            zodSchema: "z.string().optional()",
             type: "Query",
           },
           {
@@ -976,7 +991,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
                 type: "string",
               },
             },
-            schema: "z.string().optional()",
+            zodSchema: "z.string().optional()",
             type: "Query",
           },
         ],
@@ -990,7 +1005,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         errors: [
           {
             description: "Invalid pet value",
-            schema: "z.void()",
+            zodSchema: "z.void()",
             status: 400,
           },
         ],
@@ -1008,7 +1023,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
                 type: "string",
               },
             },
-            schema: "z.string().optional()",
+            zodSchema: "z.string().optional()",
             type: "Header",
           },
           {
@@ -1023,7 +1038,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
                 type: "integer",
               },
             },
-            schema: "z.number().int()",
+            zodSchema: "z.number().int()",
             type: "Path",
           },
         ],
@@ -1041,7 +1056,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           {
             description: undefined,
             name: "body",
-            schema: "z.instanceof(File)",
+            zodSchema: "z.instanceof(File)",
             type: "Body",
             bodyObject: {
               content: {
@@ -1061,7 +1076,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
                 type: "integer",
               },
             },
-            schema: "z.number().int()",
+            zodSchema: "z.number().int()",
             type: "Path",
           },
           {
@@ -1075,7 +1090,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
                 type: "string",
               },
             },
-            schema: "z.string().optional()",
+            zodSchema: "z.string().optional()",
             type: "Query",
           },
         ],
@@ -1120,7 +1135,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         errors: [
           {
             description: "Invalid input",
-            schema: "z.void()",
+            zodSchema: "z.void()",
             status: 405,
           },
         ],
@@ -1130,7 +1145,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           {
             description: undefined,
             name: "body",
-            schema: "Order",
+            zodSchema: "Order",
             type: "Body",
             bodyObject: {
               content: {
@@ -1159,12 +1174,12 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         errors: [
           {
             description: "Invalid ID supplied",
-            schema: "z.void()",
+            zodSchema: "z.void()",
             status: 400,
           },
           {
             description: "Order not found",
-            schema: "z.void()",
+            zodSchema: "z.void()",
             status: 404,
           },
         ],
@@ -1183,7 +1198,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
                 type: "integer",
               },
             },
-            schema: "z.number().int()",
+            zodSchema: "z.number().int()",
             type: "Path",
           },
         ],
@@ -1206,12 +1221,12 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         errors: [
           {
             description: "Invalid ID supplied",
-            schema: "z.void()",
+            zodSchema: "z.void()",
             status: 400,
           },
           {
             description: "Order not found",
-            schema: "z.void()",
+            zodSchema: "z.void()",
             status: 404,
           },
         ],
@@ -1230,7 +1245,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
                 type: "integer",
               },
             },
-            schema: "z.number().int()",
+            zodSchema: "z.number().int()",
             type: "Path",
           },
         ],
@@ -1248,7 +1263,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           {
             description: "Created user object",
             name: "body",
-            schema: "User",
+            zodSchema: "User",
             type: "Body",
             bodyObject: {
               content: {
@@ -1275,7 +1290,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           {
             description: undefined,
             name: "body",
-            schema: "CreateUsersWithListInputBody",
+            zodSchema: "CreateUsersWithListInputBody",
             type: "Body",
             bodyObject: {
               content: {
@@ -1302,7 +1317,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         errors: [
           {
             description: "Invalid username/password supplied",
-            schema: "z.void()",
+            zodSchema: "z.void()",
             status: 400,
           },
         ],
@@ -1320,7 +1335,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
                 type: "string",
               },
             },
-            schema: "z.string().optional()",
+            zodSchema: "z.string().optional()",
             type: "Query",
           },
           {
@@ -1334,7 +1349,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
                 type: "string",
               },
             },
-            schema: "z.string().optional()",
+            zodSchema: "z.string().optional()",
             type: "Query",
           },
         ],
@@ -1383,12 +1398,12 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         errors: [
           {
             description: "Invalid username supplied",
-            schema: "z.void()",
+            zodSchema: "z.void()",
             status: 400,
           },
           {
             description: "User not found",
-            schema: "z.void()",
+            zodSchema: "z.void()",
             status: 404,
           },
         ],
@@ -1406,7 +1421,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
                 type: "string",
               },
             },
-            schema: "z.string()",
+            zodSchema: "z.string()",
             type: "Path",
           },
         ],
@@ -1432,7 +1447,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           {
             description: "Update an existent user in the store",
             name: "body",
-            schema: "User",
+            zodSchema: "User",
             type: "Body",
             bodyObject: {
               content: {
@@ -1466,7 +1481,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
                 type: "string",
               },
             },
-            schema: "z.string()",
+            zodSchema: "z.string()",
             type: "Path",
           },
         ],
@@ -1480,12 +1495,12 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         errors: [
           {
             description: "Invalid username supplied",
-            schema: "z.void()",
+            zodSchema: "z.void()",
             status: 400,
           },
           {
             description: "User not found",
-            schema: "z.void()",
+            zodSchema: "z.void()",
             status: 404,
           },
         ],
@@ -1503,7 +1518,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
                 type: "string",
               },
             },
-            schema: "z.string()",
+            zodSchema: "z.string()",
             type: "Path",
           },
         ],
@@ -1513,34 +1528,32 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         tags: ["user"],
       },
     ]);
-    expect(result.ctx.getState()).toStrictEqual({
-      schemas: {
-        "z.array(Pet)": ["FindPetsByStatusResponse", "FindPetsByTagsResponse"],
-        "z.array(User)": ["CreateUsersWithListInputBody"],
-        "z.array(z.string()).optional()": ["FindPetsByTagsTagsParam"],
-        'z.enum(["available", "pending", "sold"]).optional().default("available")': ["FindPetsByStatusStatusParam"],
-        "z.record(z.number().int())": ["GetInventoryResponse"],
-      },
-      zodSchemas: {
-        ApiResponse:
-          "z.object({ code: z.number().int(), type: z.string(), message: z.string() }).partial().passthrough()",
-        Category: "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
-        CreateUsersWithListInputBody: "z.array(User)",
-        FindPetsByStatusResponse: "z.array(Pet)",
-        FindPetsByStatusStatusParam: `z.enum(["available", "pending", "sold"]).optional().default("available")`,
-        FindPetsByTagsResponse: "z.array(Pet)",
-        FindPetsByTagsTagsParam: "z.array(z.string()).optional()",
-        GetInventoryResponse: "z.record(z.number().int())",
-        Order: `z.object({ id: z.number().int(), petId: z.number().int(), quantity: z.number().int(), shipDate: z.string().datetime({ offset: true }), status: z.enum(["placed", "approved", "delivered"]), complete: z.boolean() }).partial().passthrough()`,
-        Pet: `z.object({ id: z.number().int().optional(), name: z.string(), category: Category.optional(), photoUrls: z.array(z.string()), tags: z.array(Tag).optional(), status: z.enum(["available", "pending", "sold"]).optional() }).passthrough()`,
-        Tag: "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
-        User: "z.object({ id: z.number().int(), username: z.string(), firstName: z.string(), lastName: z.string(), email: z.string(), password: z.string(), phone: z.string(), userStatus: z.number().int() }).partial().passthrough()",
-      },
+    expect(resolver.getZodSchemas()).toStrictEqual({
+      ApiResponse:
+        "z.object({ code: z.number().int(), type: z.string(), message: z.string() }).partial().passthrough()",
+      Category: "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
+      CreateUsersWithListInputBody: "z.array(User)",
+      FindPetsByStatusResponse: "z.array(Pet)",
+      FindPetsByStatusStatusParam: `z.enum(["available", "pending", "sold"]).optional().default("available")`,
+      FindPetsByTagsResponse: "z.array(Pet)",
+      FindPetsByTagsTagsParam: "z.array(z.string()).optional()",
+      GetInventoryResponse: "z.record(z.number().int())",
+      Order: `z.object({ id: z.number().int(), petId: z.number().int(), quantity: z.number().int(), shipDate: z.string().datetime({ offset: true }), status: z.enum(["placed", "approved", "delivered"]), complete: z.boolean() }).partial().passthrough()`,
+      Pet: `z.object({ id: z.number().int().optional(), name: z.string(), category: Category.optional(), photoUrls: z.array(z.string()), tags: z.array(Tag).optional(), status: z.enum(["available", "pending", "sold"]).optional() }).passthrough()`,
+      Tag: "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
+      User: "z.object({ id: z.number().int(), username: z.string(), firstName: z.string(), lastName: z.string(), email: z.string(), password: z.string(), phone: z.string(), userStatus: z.number().int() }).partial().passthrough()",
+    });
+    expect(resolver["zodSchemaNamesByDiscriminatorCode"]).toStrictEqual({
+      "z.array(Pet)": ["FindPetsByStatusResponse", "FindPetsByTagsResponse"],
+      "z.array(User)": ["CreateUsersWithListInputBody"],
+      "z.array(z.string()).optional()": ["FindPetsByTagsTagsParam"],
+      'z.enum(["available", "pending", "sold"]).optional().default("available")': ["FindPetsByStatusStatusParam"],
+      "z.record(z.number().int())": ["GetInventoryResponse"],
     });
   });
 
   test("getEndpointsFromOpenAPIDocPaths should return responses", () => {
-    const doc: OpenAPIV3.Document = {
+    const openApiDoc: OpenAPIV3.Document = {
       ...baseDoc,
       components: { schemas: { Pet: schemas.Pet, Category: schemas.Category, Tag: schemas.Tag } },
       paths: {
@@ -1609,19 +1622,24 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         },
       },
     };
-    const result = getEndpoints(doc);
-    expect(result.endpoints).toStrictEqual([
+    const resolver = new SchemaResolver(openApiDoc, { schemaSuffix: "" } as GenerateOptions);
+    const endpoints = getEndpointsFromOpenAPIDoc({
+      resolver,
+      openApiDoc,
+      options: { schemaSuffix: "" } as GenerateOptions,
+    });
+    expect(endpoints).toStrictEqual([
       {
         description: "Multiple status values can be provided with comma separated strings",
         errors: [
           {
             description: "Invalid status value",
-            schema: "z.string()",
+            zodSchema: "z.string()",
             status: 400,
           },
           {
             description: "Network error",
-            schema: "z.void()",
+            zodSchema: "z.void()",
             status: 500,
           },
         ],
@@ -1645,7 +1663,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         errors: [
           {
             description: "Invalid tag value",
-            schema: "z.void()",
+            zodSchema: "z.void()",
             status: 400,
           },
         ],
@@ -1665,17 +1683,15 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         },
       },
     ]);
-    expect(result.ctx.getState()).toStrictEqual({
-      schemas: {
-        "z.array(Pet)": ["FindPetsByStatusResponse", "FindPetsByTagsResponse"],
-      },
-      zodSchemas: {
-        Category: "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
-        FindPetsByStatusResponse: "z.array(Pet)",
-        FindPetsByTagsResponse: "z.array(Pet)",
-        Pet: `z.object({ id: z.number().int().optional(), name: z.string(), category: Category.optional(), photoUrls: z.array(z.string()), tags: z.array(Tag).optional(), status: z.enum(["available", "pending", "sold"]).optional() }).passthrough()`,
-        Tag: "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
-      },
+    expect(resolver.getZodSchemas()).toStrictEqual({
+      Category: "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
+      FindPetsByStatusResponse: "z.array(Pet)",
+      FindPetsByTagsResponse: "z.array(Pet)",
+      Pet: `z.object({ id: z.number().int().optional(), name: z.string(), category: Category.optional(), photoUrls: z.array(z.string()), tags: z.array(Tag).optional(), status: z.enum(["available", "pending", "sold"]).optional() }).passthrough()`,
+      Tag: "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
+    });
+    expect(resolver["zodSchemaNamesByDiscriminatorCode"]).toStrictEqual({
+      "z.array(Pet)": ["FindPetsByStatusResponse", "FindPetsByTagsResponse"],
     });
   });
 });

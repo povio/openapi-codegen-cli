@@ -1,19 +1,30 @@
+import { GenerateType } from "../types/generate";
 import { GenerateOptions } from "../types/options";
 import { SCHEMA_SUFFIX } from "./zod.const";
 
 export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
-  schemaSuffix: SCHEMA_SUFFIX,
-  additionalPropertiesDefaultValue: false,
+  // Base options
+  output: "output",
   splitByTags: true,
   defaultTag: "Common",
-  excludeTags: [],
-  modelsConfig: {
-    outputFileNameSuffix: "models",
+  excludeTags: [], // TODO: Only works for isolated tags
+  includeNamespaces: true,
+  configs: {
+    [GenerateType.Models]: {
+      outputFileNameSuffix: "models",
+      namespaceSuffix: "Models",
+    },
+    [GenerateType.Endpoints]: {
+      outputFileNameSuffix: "api",
+      namespaceSuffix: "Api",
+    },
+    [GenerateType.Queries]: {
+      outputFileNameSuffix: "queries",
+      namespaceSuffix: "Queries",
+    },
   },
-  endpointsConfig: {
-    outputFileNameSuffix: "api",
-  },
-  queriesConfig: {
-    outputFileNameSuffix: "queries",
-  },
+  // Zod options
+  schemaSuffix: SCHEMA_SUFFIX,
+  additionalPropertiesDefaultValue: false,
+  // Endpoints options
 };

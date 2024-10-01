@@ -4,7 +4,7 @@ export type EndpointParameter = {
   name: string;
   description?: string;
   type: "Query" | "Body" | "Header" | "Path";
-  schema: string;
+  zodSchema: string;
   parameterObject?: OpenAPIV3.ParameterObject;
   bodyObject?: OpenAPIV3.RequestBodyObject;
 };
@@ -12,7 +12,13 @@ export type EndpointParameter = {
 export type EndpointResponse = {
   statusCode: string;
   description?: string;
-  schema: string;
+  zodSchema: string;
+};
+
+type EndpointError = {
+  status: number | "default";
+  description?: string;
+  zodSchema: string;
 };
 
 export type Endpoint = {
@@ -28,5 +34,5 @@ export type Endpoint = {
   response: string;
   responseObject?: OpenAPIV3.ResponseObject;
   responseDescription?: string;
-  errors: Array<{ status: number | "default"; description?: string; schema: string }>;
+  errors: Array<EndpointError>;
 };

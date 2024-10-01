@@ -5,6 +5,9 @@
 {{{genImport modelsImport}}}
 {{/each}}
 
+{{#if includeNamespace}}
+export namespace {{namespace}} {
+{{/if}}
 {{#each zodSchemas as | zodSchema |}}
 {{! Zod schema export }}
 export const {{@key}} = {{{zodSchema}}};
@@ -12,3 +15,6 @@ export const {{@key}} = {{{zodSchema}}};
 export type {{zodInferedType @key}} = z.infer<typeof {{@key}}>;
 
 {{/each}}
+{{#if includeNamespace}}
+}
+{{/if}}

@@ -1,6 +1,6 @@
 import { OpenAPIV3 } from "openapi-types";
 import { match } from "ts-pattern";
-import { ZodSchemasGenerateOptions } from "../../types/options";
+import { GenerateOptions } from "../../types/options";
 import { escapeControlCharacters, unwrapQuotesIfNeeded } from "../../utils/openapi.utils";
 import { ZodSchemaMetaData } from "./ZodSchema.class";
 
@@ -11,7 +11,7 @@ export function getZodChain({
 }: {
   schema: OpenAPIV3.SchemaObject;
   meta?: ZodSchemaMetaData;
-  options?: ZodSchemasGenerateOptions;
+  options?: GenerateOptions;
 }) {
   const chains: string[] = [];
 

@@ -1,6 +1,7 @@
 import { OpenAPIV3 } from "openapi-types";
+import { GenerateType } from "./generate";
 
-export type ZodSchemasGenerateOptions = {
+type ZodGenerateOptions = {
   schemaSuffix: string;
   withImplicitRequiredProps?: boolean;
   withDefaultValues?: boolean;
@@ -10,21 +11,22 @@ export type ZodSchemasGenerateOptions = {
   additionalPropertiesDefaultValue?: boolean | OpenAPIV3.SchemaObject;
 };
 
-export type EndpointsGenerateOptions = {
+type EndpointsGenerateOptions = {
   withDeprecatedEndpoints?: boolean;
 };
 
 type GenerateConfig = {
   outputFileNameSuffix: string;
+  namespaceSuffix: string;
 };
 
 type BaseGenerateOptions = {
+  output: string;
   splitByTags: boolean;
   defaultTag: string;
   excludeTags: string[];
-  modelsConfig: GenerateConfig;
-  endpointsConfig: GenerateConfig;
-  queriesConfig: GenerateConfig;
+  includeNamespaces: boolean;
+  configs: Record<GenerateType, GenerateConfig>;
 };
 
-export type GenerateOptions = BaseGenerateOptions & ZodSchemasGenerateOptions & EndpointsGenerateOptions;
+export type GenerateOptions = BaseGenerateOptions & ZodGenerateOptions & EndpointsGenerateOptions;

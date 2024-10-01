@@ -1,5 +1,5 @@
 import Handlebars from "handlebars";
-import { getQueryName } from "./generate.query.utils";
+import { getQueryName } from "../generate/generate.query.utils";
 
 enum QueryHelpers {
   QUERY_NAME = "queryName",

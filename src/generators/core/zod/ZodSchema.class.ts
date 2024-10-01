@@ -1,4 +1,7 @@
 import { OpenAPIV3 } from "openapi-types";
+import { GenerateType } from "src/generators/types/generate";
+import { GenerateOptions } from "src/generators/types/options";
+import { getNamespaceName } from "src/generators/utils/generate/generate.utils";
 import { isReferenceObject } from "../../utils/openapi.utils";
 import { SchemaResolver } from "../SchemaResolver.class";
 import { getOpenAPISchemaComplexity } from "../openapi/getOpenAPISchemaComplexity";
@@ -36,11 +39,22 @@ export class ZodSchema {
     }
   }
 
-  get codeString(): string {
-    if (this.code) {
+  getCodeString(tag?: string, options?: GenerateOptions): string {
+    if ((!this.ref || !this.resolver) && this.code) {
       return this.code;
     }
-    return this.resolver?.getZodSchemaNameByRef(this.ref!) ?? this.ref!;
+
+    const zodSchemaName = this.resolver?.getZodSchemaNameByRef(this.ref!);
+    if (!zodSchemaName) {
+      return this.ref!;
+    }
+
+    const zodSchemaTag = this.resolver?.getTagByZodSchemaName(zodSchemaName);
+    if (options?.includeNamespaces && zodSchemaTag !== tag) {
+      return `${getNamespaceName({ type: GenerateType.Models, tag: zodSchemaTag, options })}.${zodSchemaName}`;
+    }
+
+    return zodSchemaName;
   }
 
   get complexity(): number {
@@ -57,13 +71,5 @@ export class ZodSchema {
       parent.children.push(this);
     }
     return this;
-  }
-
-  toString() {
-    return this.codeString;
-  }
-
-  toJSON() {
-    return this.codeString;
   }
 }

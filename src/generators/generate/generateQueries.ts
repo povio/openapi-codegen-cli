@@ -1,17 +1,20 @@
-import { QUERY_IMPORT } from "../const/imports.const";
-import { QUERY_HOOKS } from "../const/query.const";
+import { QUERY_HOOKS, QUERY_IMPORT } from "../const/query.const";
+import { SchemaResolver } from "../core/SchemaResolver.class";
 import { EndpointParameter } from "../types/endpoint";
-import { GenerateData, Import } from "../types/generate";
+import { GenerateData, GenerateType, Import } from "../types/generate";
 import { GenerateOptions } from "../types/options";
-import { getEndpointsImports, getModelsImports } from "../utils/generate.imports.utils";
-import { getHbsTemplateDelegate } from "../utils/hbs-template.utils";
+import { getEndpointsImports, getModelsImports } from "../utils/generate/generate.imports.utils";
+import { getNamespaceName } from "../utils/generate/generate.utils";
+import { getHbsTemplateDelegate } from "../utils/hbs/hbs-template.utils";
 import { isNamedZodSchema } from "../utils/zod-schema.utils";
 
 export function generateQueries({
+  resolver,
   data,
   tag = "",
   options,
 }: {
+  resolver: SchemaResolver;
   data: GenerateData;
   tag?: string;
   options: GenerateOptions;
@@ -38,25 +41,26 @@ export function generateQueries({
     [] as EndpointParameter[],
   );
   const modelsImports = getModelsImports({
-    data,
+    resolver,
     tag,
-    zodSchemasAsTypes: Array.from(new Set(endpointParams.map((param) => param.schema).filter(isNamedZodSchema))),
+    zodSchemasAsTypes: Array.from(new Set(endpointParams.map((param) => param.zodSchema).filter(isNamedZodSchema))),
     options,
   });
 
   const endpointsImports = getEndpointsImports({
-    data,
     tag,
     endpoints,
     options,
   });
 
-  const hbsTemplate = getHbsTemplateDelegate({ templateName: "queries", options });
+  const hbsTemplate = getHbsTemplateDelegate({ resolver, templateName: "queries", options });
 
   return hbsTemplate({
     queryImport,
     modelsImports,
     endpointsImports,
+    includeNamespace: options.includeNamespaces,
+    namespace: getNamespaceName({ type: GenerateType.Queries, tag, options }),
     endpoints,
     queryEndpoints,
   });

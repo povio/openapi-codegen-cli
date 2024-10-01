@@ -1,10 +1,11 @@
-import { ZOD_IMPORT } from "../const/imports.const";
+import { ZOD_IMPORT } from "../const/zod.const";
 import { SchemaResolver } from "../core/SchemaResolver.class";
 import { getZodSchemaRefs } from "../core/zod/getZodSchemaRefs";
-import { GenerateData } from "../types/generate";
+import { GenerateData, GenerateType } from "../types/generate";
 import { GenerateOptions } from "../types/options";
-import { getModelsImports } from "../utils/generate.imports.utils";
-import { getHbsTemplateDelegate } from "../utils/hbs-template.utils";
+import { getModelsImports } from "../utils/generate/generate.imports.utils";
+import { getNamespaceName } from "../utils/generate/generate.utils";
+import { getHbsTemplateDelegate } from "../utils/hbs/hbs-template.utils";
 
 export function generateModels({
   resolver,
@@ -27,17 +28,19 @@ export function generateModels({
     .filter((zodSchema) => !zodSchemas.hasOwnProperty(zodSchema));
 
   const modelsImports = getModelsImports({
+    resolver,
     tag,
-    data,
     zodSchemas: refZodSchemas,
     options,
   });
 
-  const hbsTemplate = getHbsTemplateDelegate({ templateName: "models", options });
+  const hbsTemplate = getHbsTemplateDelegate({ resolver, templateName: "models", options });
 
   return hbsTemplate({
     zodImport: ZOD_IMPORT,
     modelsImports,
+    includeNamespace: options.includeNamespaces,
+    namespace: getNamespaceName({ type: GenerateType.Models, tag, options }),
     zodSchemas,
   });
 }
