@@ -416,10 +416,10 @@ describe("getZodSchema", () => {
       tag: "",
       options: {},
     });
-    expect(code.getCodeString()).toMatchInlineSnapshot(
-      '"z.object({ str: z.string(), reference: ObjectWithArrayOfRef, inline: z.object({ nested_prop: z.boolean() }).partial().passthrough(), another: WithNested, basic: Basic, differentPropSameRef: Basic }).partial().passthrough()"',
+    expect(code.getCodeString()).toStrictEqual(
+      "z.object({ str: z.string(), reference: ObjectWithArrayOfRef, inline: z.object({ nested_prop: z.boolean() }).partial().passthrough(), another: WithNested, basic: Basic, differentPropSameRef: Basic }).partial().passthrough()",
     );
-    expect(code.children.map((value) => value.getCodeString())).toMatchInlineSnapshot([
+    expect(code.children.map((value) => value.getCodeString())).toStrictEqual([
       "z.string()",
       "ObjectWithArrayOfRef",
       "z.object({ nested_prop: z.boolean() }).partial().passthrough()",

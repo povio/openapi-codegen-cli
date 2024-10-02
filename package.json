@@ -1,6 +1,6 @@
 {
-  "name": "@povio/openapi-codegen-cli",
-  "version": "0.0.1",
+  "name": "@poviolabs/openapi-codegen-cli",
+  "version": "0.0.4",
   "bin": {
     "openapi-codegen": "./dist/sh.js"
   },
@@ -28,11 +28,14 @@
     "zod",
     "react-query"
   ],
-  "homepage": "https://github.com/povio/openapi-codegen-cli",
-  "bugs": "https://github.com/povio/openapi-codegen-cli/issues",
+  "homepage": "https://github.com/poviolabs/openapi-codegen-cli",
+  "bugs": "https://github.com/poviolabs/openapi-codegen-cli/issues",
   "repository": {
-    "url": "git+https://github.com/povio/openapi-codegen-cli.git",
+    "url": "git+https://github.com/poviolabs/openapi-codegen-cli.git",
     "type": "git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   },
   "author": "Monika Bozhinova <monika.bozhinova@povio.com>",
   "license": "BSD-3-Clause",

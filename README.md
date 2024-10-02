@@ -7,7 +7,7 @@ It generates Zod schemas (uses code from https://github.com/astahmer/openapi-zod
 # Setup
 
 ```bash
-yarn add @povio/openapi-codegen-cli
+yarn add @poviolabs/openapi-codegen-cli
 ```
 
 ### Example
