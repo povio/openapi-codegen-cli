@@ -1,6 +1,6 @@
 {
   "name": "@poviolabs/openapi-codegen-cli",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "bin": {
     "openapi-codegen": "./dist/sh.js"
   },
@@ -18,8 +18,8 @@
     "format:fix": "prettier --write ."
   },
   "files": [
-    "dist",
-    "src/generators/templates",
+    "dist/*",
+    "src/generators/templates/**",
     "README.md"
   ],
   "keywords": [
