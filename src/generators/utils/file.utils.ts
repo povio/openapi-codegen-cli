@@ -1,8 +1,17 @@
 import fs from "fs";
-import path from "path";
+import path, { dirname } from "path";
+import { fileURLToPath } from "url";
 
 export function readHbsTemplateSync(fileName: string) {
-  return fs.readFileSync(`src/generators/templates/${fileName}.hbs`, "utf-8");
+  const templatePath = `src/generators/templates/${fileName}.hbs`;
+
+  if (process.env.NODE_ENV === "production") {
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = dirname(__filename);
+    return fs.readFileSync(path.join(__dirname, `../${templatePath}`), "utf-8");
+  }
+
+  return fs.readFileSync(templatePath, "utf-8");
 }
 
 export function writeTsFileSync({ output, fileName, data }: { output: string; fileName: string; data: string }) {

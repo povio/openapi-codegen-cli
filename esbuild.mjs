@@ -10,7 +10,7 @@ await build({
   platform: "node",
   minify: true,
   metafile: false,
-  format: "cjs",
+  format: "esm",
   keepNames: true,
   external: packageJson.dependencies ? Object.keys(packageJson.dependencies) : [],
   banner: {
@@ -22,5 +22,6 @@ await build({
   outfile: "./dist/sh.js",
   define: {
     "process.env.OPENAPI_CODEGEN_VERSION": `"${packageJson.version}"`,
+    "process.env.NODE_ENV": `"production"`,
   },
 });
