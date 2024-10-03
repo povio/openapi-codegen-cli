@@ -6,7 +6,6 @@
 !.yarn/releases
 !.yarn/sdks
 
-/dist
 /output
 
 node_modules

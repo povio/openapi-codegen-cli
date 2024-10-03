@@ -11,10 +11,10 @@ class GenerateOptions implements GenerateParams {
   @YargOption({ envAlias: "output", default: "output" })
   output!: string;
 
-  @YargOption({ envAlias: "includeNamespaces", default: false })
+  @YargOption({ envAlias: "includeNamespaces", default: true, type: "boolean" })
   includeNamespaces!: boolean;
 
-  @YargOption({ envAlias: "splitByTags", default: false })
+  @YargOption({ envAlias: "splitByTags", default: true, type: "boolean" })
   splitByTags!: boolean;
 
   @YargOption({ envAlias: "defaultTag", default: "Common" })
@@ -23,7 +23,10 @@ class GenerateOptions implements GenerateParams {
   @YargOption({ envAlias: "excludeTags", default: "" })
   excludeTags!: string;
 
-  @YargOption({ envAlias: "verbose", default: false })
+  @YargOption({ envAlias: "prettier", default: true, type: "boolean" })
+  prettier!: boolean;
+
+  @YargOption({ envAlias: "verbose", default: false, type: "boolean" })
   verbose!: boolean;
 }
 

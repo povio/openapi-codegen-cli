@@ -30,12 +30,12 @@ yarn test
 
 # run sources with tsx
 yarn start --help
-yarn start generate --input ./test/baby-jira.json --splitByTags --includeNamespaces --excludeTags=auth
+yarn start generate --input ./test/baby-jira.json --verbose
 
 # build new version
 yarn build
 
 # test build
 yarn start --help
-yarn start:dist generate --input ./test/baby-jira.json --splitByTags --includeNamespaces --excludeTags=auth
+yarn start:dist generate --input ./test/baby-jira.json --verbose
 ```

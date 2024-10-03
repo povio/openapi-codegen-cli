@@ -1,7 +1,8 @@
 import SwaggerParser from "@apidevtools/swagger-parser";
+import { exec } from "child_process";
 import { OpenAPIV3 } from "openapi-types";
 import { generateCodeFromOpenAPIDoc } from "src/generators/generateCodeFromOpenAPIDoc";
-import { logInfo, logSuccess } from "src/helpers/cli.helper";
+import { logError, logInfo, logSuccess } from "src/helpers/cli.helper";
 
 export type GenerateParams = {
   input: string;
@@ -10,6 +11,7 @@ export type GenerateParams = {
   splitByTags: boolean;
   defaultTag: string;
   excludeTags: string;
+  prettier: boolean;
   verbose: boolean;
 };
 
@@ -20,6 +22,7 @@ export async function generate({
   splitByTags,
   defaultTag,
   excludeTags,
+  prettier,
   verbose,
 }: GenerateParams) {
   if (verbose) {
@@ -43,4 +46,21 @@ export async function generate({
   if (verbose) {
     logSuccess("Generated code successfully");
   }
+
+  if (prettier) {
+    execPrettier({ output, verbose });
+  }
+}
+
+function execPrettier({ output, verbose }: Pick<GenerateParams, "output" | "verbose">) {
+  if (verbose) {
+    logInfo("Running Prettier");
+  }
+  exec(`prettier --write ${output}`, (error) => {
+    if (error) {
+      logError("Prettier not found");
+    } else {
+      logSuccess("Ran Prettier successfully");
+    }
+  });
 }
