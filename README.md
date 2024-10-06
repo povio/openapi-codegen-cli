@@ -1,24 +1,41 @@
 # OpenAPI code generation CLI
 
-Use this tool to generate code from OpenAPI v3 specification.
+**NOTE:** This CLI tool is specifically designed for custom usage within our organization. The generated code output is in alignment with our internal templates.
 
-It generates Zod schemas (uses code from https://github.com/astahmer/openapi-zod-client v1.18.2), API definitions adjusted to the rest client wrapper inside nextjs-template and react queries.
+Use this tool to generate code (Zod schemas, API definitions and React queries) from OpenAPI v3 specification. API definitions are customized to fit the REST client wrapper used in our Next.js template. React queries are generated in alignment with our code standards, without the need for explicit types.
 
-# Setup
+The tool partially leverages code from [openapi-zod-client](https://github.com/astahmer/openapi-zod-client) repository.
+
+## Setup
 
 ```bash
 yarn add @poviolabs/openapi-codegen-cli
 ```
 
-### Example
+## Example
 
 ```bash
 yarn openapi-codegen generate --input http://localhost:3001/docs-json
 ```
 
-# Development
+## Options
 
-## Test locally
+### Generate command
+
+```sh
+  --input <path>            Path/url to OpenAPI/Swagger document as json/yaml
+  --output <path>           Output path (default: 'output')
+  --includeNamespaces       Include namespaces inside generated files (default: true)
+  --splitByTags             Split output into directories based on tags in OpenAPI operations (default: true)
+  --defaultTag              Default tag name for code shared accross multiple tags (default: 'Common')
+  --excludeTags             Comma separated list of tags excluded from the output
+  --prettier                Run prettier command on output after code generation (default: true)
+  --verbose                 Show log messages during execution
+```
+
+## Development
+
+### Test locally
 
 ```bash
 # prerequisites
