@@ -1,5 +1,5 @@
 {
-  "name": "@poviolabs/openapi-codegen-cli",
+  "name": "@povio/openapi-codegen-cli",
   "version": "0.0.7",
   "bin": {
     "openapi-codegen": "./dist/sh.js"
@@ -15,7 +15,8 @@
     "start:dist": "node ./dist/sh.js",
     "lint": "eslint --fix",
     "format:check": "prettier --check .",
-    "format:fix": "prettier --write ."
+    "format:fix": "prettier --write .",
+    "push": "yarn exec ./scripts/publish.sh"
   },
   "files": [
     "dist/*",
@@ -35,10 +36,6 @@
     "url": "git+https://github.com/poviolabs/openapi-codegen-cli.git",
     "type": "git"
   },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
-  },
-  "author": "Monika Bozhinova <monika.bozhinova@povio.com>",
   "license": "BSD-3-Clause",
   "devDependencies": {
     "@apidevtools/swagger-parser": "^10.1.0",
