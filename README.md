@@ -47,12 +47,12 @@ yarn test
 
 # run sources with tsx
 yarn start --help
-yarn start generate --input ./test/baby-jira.json --verbose
+yarn start generate --input ./test/petstore.yaml --verbose
 
 # build new version
 yarn build
 
 # test build
 yarn start --help
-yarn start:dist generate --input ./test/baby-jira.json --verbose
+yarn start:dist generate --input ./test/petstore.yaml --verbose
 ```
