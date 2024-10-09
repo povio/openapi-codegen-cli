@@ -9,7 +9,7 @@ The tool partially leverages code from [openapi-zod-client](https://github.com/a
 ## Setup
 
 ```bash
-yarn add @poviolabs/openapi-codegen-cli
+yarn add @povio/openapi-codegen-cli
 ```
 
 ## Example
