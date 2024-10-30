@@ -5,6 +5,7 @@ import { Endpoint } from "../../types/endpoint";
 import { GenerateOptions } from "../../types/options";
 import { pick } from "../../utils/object.utils";
 import {
+  formatTag,
   getOperationName,
   getOperationTag,
   isErrorStatus,
@@ -46,7 +47,7 @@ export function getEndpointsFromOpenAPIDoc({
       const parameters = Object.entries({
         ...pathParameters,
         ...getParameters(operation.parameters ?? []),
-      }).map(([_, param]) => param);
+      }).map(([, param]) => param);
       const operationName = getOperationName(path, method, operation);
       const tag = getOperationTag(operation, options);
       const endpoint: Endpoint = {
@@ -54,7 +55,7 @@ export function getEndpointsFromOpenAPIDoc({
         path: replaceHyphenatedPath(path),
         operationName,
         description: operation.description,
-        tags: operation.tags,
+        tags: operation.tags?.map(formatTag),
         requestFormat: "application/json",
         parameters: [],
         response: "",
