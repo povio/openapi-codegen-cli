@@ -5,7 +5,7 @@ import { GenerateOptions } from "src/generators/types/options";
 import { DEFAULT_HEADERS } from "../../const/endpoints.const";
 import { Endpoint } from "../../types/endpoint";
 import { isSchemaObject } from "../openapi-schema.utils";
-import { isPrimitiveType, primitiveTypeToTsType } from "../openapi.utils";
+import { formatTag, isPrimitiveType, primitiveTypeToTsType } from "../openapi.utils";
 import { decapitalize, snakeToCamel } from "../string.utils";
 import { isNamedZodSchema } from "../zod-schema.utils";
 import { getNamespaceName } from "./generate.utils";
@@ -23,10 +23,8 @@ export function getImportedEndpointName(endpoint: Endpoint, options: GenerateOpt
 export const getEndpointPath = (endpoint: Endpoint) => endpoint.path.replace(/:([a-zA-Z0-9_]+)/g, "${$1}");
 
 export function getEndpointTag(endpoint: Endpoint, options: GenerateOptions) {
-  if (!options.splitByTags) {
-    return options.defaultTag;
-  }
-  return endpoint.tags?.[0] ?? options.defaultTag;
+  const tag = options.splitByTags ? endpoint.tags?.[0] : options.defaultTag;
+  return formatTag(tag ?? options.defaultTag);
 }
 
 export function mapEndpointParamsToFunctionParams({

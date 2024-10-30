@@ -4,6 +4,7 @@ import { GenerateOptions } from "../types/options";
 import { pick } from "../utils/object.utils";
 import {
   autocorrectRef,
+  formatTag,
   getOperationTag,
   getSchemaNameByRef,
   getSchemaRef,
@@ -62,15 +63,16 @@ export class SchemaResolver {
   }
 
   getTagByZodSchemaName(zodSchemaName: string) {
-    if (!this.options.splitByTags) {
-      return this.options.defaultTag;
+    let tag: string | undefined;
+
+    if (this.options.splitByTags) {
+      const schemaRef = this.getRefByZodSchemaName(zodSchemaName);
+      const schemaTags = schemaRef ? this.schemaTagsByRef.get(schemaRef) ?? [] : [];
+      const tags = new Set([...schemaTags, ...(this.zodSchemaTagsByName[zodSchemaName] ?? [])]);
+      tag = tags.size === 1 ? tags.values().next().value : this.options.defaultTag;
     }
 
-    const schemaRef = this.getRefByZodSchemaName(zodSchemaName);
-    const schemaTags = schemaRef ? this.schemaTagsByRef.get(schemaRef) ?? [] : [];
-    const tags = new Set([...schemaTags, ...(this.zodSchemaTagsByName[zodSchemaName] ?? [])]);
-
-    return tags.size === 1 ? tags.values().next().value : this.options.defaultTag;
+    return formatTag(tag ?? this.options.defaultTag);
   }
 
   getCodeByZodSchemaName(name: string) {
