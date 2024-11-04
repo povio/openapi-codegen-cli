@@ -3,6 +3,6 @@ import { nonWordCharactersToCamel } from "./string.utils";
 
 describe("Utils: string", () => {
   test("nonWordCharactersToCamel", () => {
-    expect(nonWordCharactersToCamel("test word_Another -word")).toEqual("testWordAnotherWord");
+    expect(nonWordCharactersToCamel("test word_Another -word-")).toEqual("testWordAnotherWord");
   });
 });
