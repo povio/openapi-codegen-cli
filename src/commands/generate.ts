@@ -59,7 +59,7 @@ function execPrettier({ output, verbose }: Pick<GenerateParams, "output" | "verb
   exec(`prettier --write ${output}`, (error) => {
     if (verbose) {
       if (error) {
-        logError("Prettier not found");
+        logError(error, "Prettier error");
       } else {
         logSuccess("Ran Prettier successfully");
       }

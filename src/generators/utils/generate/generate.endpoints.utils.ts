@@ -4,8 +4,9 @@ import { GenerateType } from "src/generators/types/generate";
 import { GenerateOptions } from "src/generators/types/options";
 import { DEFAULT_HEADERS } from "../../const/endpoints.const";
 import { Endpoint } from "../../types/endpoint";
+import { invalidVariableNameCharactersToCamel, isValidPropertyName } from "../js.utils";
 import { isSchemaObject } from "../openapi-schema.utils";
-import { isPrimitiveType, primitiveTypeToTsType } from "../openapi.utils";
+import { formatTag, isPrimitiveType, primitiveTypeToTsType } from "../openapi.utils";
 import { decapitalize, snakeToCamel } from "../string.utils";
 import { isNamedZodSchema } from "../zod-schema.utils";
 import { getNamespaceName } from "./generate.utils";
@@ -23,10 +24,8 @@ export function getImportedEndpointName(endpoint: Endpoint, options: GenerateOpt
 export const getEndpointPath = (endpoint: Endpoint) => endpoint.path.replace(/:([a-zA-Z0-9_]+)/g, "${$1}");
 
 export function getEndpointTag(endpoint: Endpoint, options: GenerateOptions) {
-  if (!options.splitByTags) {
-    return options.defaultTag;
-  }
-  return endpoint.tags?.[0] ?? options.defaultTag;
+  const tag = options.splitByTags ? endpoint.tags?.[0] : options.defaultTag;
+  return formatTag(tag ?? options.defaultTag);
 }
 
 export function mapEndpointParamsToFunctionParams({
@@ -51,7 +50,7 @@ export function mapEndpointParamsToFunctionParams({
       }
 
       return {
-        name: param.name,
+        name: invalidVariableNameCharactersToCamel(param.name),
         type,
         paramType: param.type,
         required: param.parameterObject?.required ?? true,
@@ -67,7 +66,17 @@ export function mapEndpointParamsToFunctionParams({
 }
 
 export function getEndpointConfig(endpoint: Endpoint) {
-  const params = endpoint.parameters.filter((param) => param.type === "Query");
+  const params = endpoint.parameters
+    .filter((param) => param.type === "Query")
+    .map((param) => {
+      const paramPropertyName = isValidPropertyName(param.name) ? param.name : `"${param.name}"`;
+      const paramVariableName = invalidVariableNameCharactersToCamel(param.name);
+      return {
+        ...param,
+        name: paramPropertyName,
+        value: paramVariableName,
+      };
+    });
   const headers = {
     ...(endpoint.requestFormat !== DEFAULT_HEADERS["Content-Type"] ? { "Content-Type": endpoint.requestFormat } : {}),
     ...(endpoint.responseFormat && endpoint.responseFormat !== DEFAULT_HEADERS.Accept

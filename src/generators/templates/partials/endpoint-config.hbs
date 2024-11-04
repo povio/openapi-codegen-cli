@@ -3,7 +3,11 @@
     {{#if endpointConfig.params}}
     params: {
         {{#each endpointConfig.params as | param |}}
-        {{param.name}},
+        {{#if (isEqual param.name param.value) }}
+        {{{param.name}}},
+        {{else}}
+        {{{param.name}}}: {{param.value}},
+        {{/if}}
         {{/each}}
     },
     {{/if}}

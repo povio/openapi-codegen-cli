@@ -82,6 +82,11 @@ const schemas = {
   } as OpenAPIV3.SchemaObject,
 } as const;
 
+const generateOptions = {
+  schemaSuffix: "",
+  defaultTag: "",
+} as GenerateOptions;
+
 describe("getEndpointsFromOpenAPIDoc", () => {
   test("getEndpointsFromOpenAPIDocPaths /store/order", () => {
     const openApiDoc: OpenAPIV3.Document = {
@@ -113,11 +118,11 @@ describe("getEndpointsFromOpenAPIDoc", () => {
       },
     };
 
-    const resolver = new SchemaResolver(openApiDoc, { schemaSuffix: "" } as GenerateOptions);
+    const resolver = new SchemaResolver(openApiDoc, generateOptions);
     const endpoints = getEndpointsFromOpenAPIDoc({
       resolver,
       openApiDoc,
-      options: { schemaSuffix: "" } as GenerateOptions,
+      options: generateOptions,
     });
 
     expect(endpoints).toStrictEqual([
@@ -161,7 +166,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
     expect(resolver.getZodSchemas()).toStrictEqual({
       Order: `z.object({ id: z.number().int(), petId: z.number().int(), quantity: z.number().int(), shipDate: z.string().datetime({ offset: true }), status: z.enum(["placed", "approved", "delivered"]), complete: z.boolean() }).partial().passthrough()`,
     });
-    expect(resolver["zodSchemaNamesByDiscriminatorCode"]).toStrictEqual({});
+    expect(resolver["discriminatorZodSchemaData"]).toStrictEqual([]);
   });
 
   test("getEndpointsFromOpenAPIDocPaths /pet", () => {
@@ -228,11 +233,11 @@ describe("getEndpointsFromOpenAPIDoc", () => {
       },
     };
 
-    const resolver = new SchemaResolver(openApiDoc, { schemaSuffix: "" } as GenerateOptions);
+    const resolver = new SchemaResolver(openApiDoc, generateOptions);
     const endpoints = getEndpointsFromOpenAPIDoc({
       resolver,
       openApiDoc,
-      options: { schemaSuffix: "" } as GenerateOptions,
+      options: generateOptions,
     });
 
     expect(endpoints).toStrictEqual([
@@ -335,7 +340,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
       Pet: `z.object({ id: z.number().int().optional(), name: z.string(), category: Category.optional(), photoUrls: z.array(z.string()), tags: z.array(Tag).optional(), status: z.enum(["available", "pending", "sold"]).optional() }).passthrough()`,
       Tag: "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
     });
-    expect(resolver["zodSchemaNamesByDiscriminatorCode"]).toStrictEqual({});
+    expect(resolver["discriminatorZodSchemaData"]).toStrictEqual([]);
   });
 
   test("getEndpointsFromOpenAPIDocPaths /pet without schema ref", () => {
@@ -391,11 +396,11 @@ describe("getEndpointsFromOpenAPIDoc", () => {
       },
     };
 
-    const resolver = new SchemaResolver(openApiDoc, { schemaSuffix: "" } as GenerateOptions);
+    const resolver = new SchemaResolver(openApiDoc, generateOptions);
     const endpoints = getEndpointsFromOpenAPIDoc({
       resolver,
       openApiDoc,
-      options: { schemaSuffix: "" } as GenerateOptions,
+      options: generateOptions,
     });
     expect(endpoints).toStrictEqual([
       {
@@ -461,9 +466,13 @@ describe("getEndpointsFromOpenAPIDoc", () => {
       Tag: "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
       UpdatePetBody: "Pet.and(Reason)",
     });
-    expect(resolver["zodSchemaNamesByDiscriminatorCode"]).toStrictEqual({
-      "Pet.and(Reason)": ["UpdatePetBody"],
-    });
+
+    expect(resolver["discriminatorZodSchemaData"]).toStrictEqual([
+      {
+        code: "Pet.and(Reason)",
+        zodSchemas: expect.arrayContaining([expect.objectContaining({ zodSchemaName: "UpdatePetBody" })]),
+      },
+    ]);
   });
 
   test("getEndpointsFromOpenAPIDocPaths /pet/findXXX", () => {
@@ -582,11 +591,11 @@ describe("getEndpointsFromOpenAPIDoc", () => {
       },
     };
 
-    const resolver = new SchemaResolver(openApiDoc, { schemaSuffix: "" } as GenerateOptions);
+    const resolver = new SchemaResolver(openApiDoc, generateOptions);
     const endpoints = getEndpointsFromOpenAPIDoc({
       resolver,
       openApiDoc,
-      options: { schemaSuffix: "" } as GenerateOptions,
+      options: generateOptions,
     });
     expect(endpoints).toStrictEqual([
       {
@@ -686,20 +695,36 @@ describe("getEndpointsFromOpenAPIDoc", () => {
       Pet: `z.object({ id: z.number().int().optional(), name: z.string(), category: Category.optional(), photoUrls: z.array(z.string()), tags: z.array(Tag).optional(), status: z.enum(["available", "pending", "sold"]).optional() }).passthrough()`,
       Tag: "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
     });
-    expect(resolver["zodSchemaNamesByDiscriminatorCode"]).toStrictEqual({
-      "z.array(Pet)": ["FindPetsByStatusResponse", "FindPetsByTagsResponse"],
-      "z.array(z.string()).optional()": ["FindPetsByTagsTagsParam"],
-      'z.enum(["available", "pending", "sold"]).optional().default("available")': ["FindPetsByStatusStatusParam"],
-    });
+    expect(resolver["discriminatorZodSchemaData"]).toStrictEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: "z.array(Pet)",
+          zodSchemas: expect.arrayContaining([
+            expect.objectContaining({ zodSchemaName: "FindPetsByStatusResponse" }),
+            expect.objectContaining({ zodSchemaName: "FindPetsByTagsResponse" }),
+          ]),
+        }),
+        expect.objectContaining({
+          code: "z.array(z.string()).optional()",
+          zodSchemas: expect.arrayContaining([expect.objectContaining({ zodSchemaName: "FindPetsByTagsTagsParam" })]),
+        }),
+        expect.objectContaining({
+          code: 'z.enum(["available", "pending", "sold"]).optional().default("available")',
+          zodSchemas: expect.arrayContaining([
+            expect.objectContaining({ zodSchemaName: "FindPetsByStatusStatusParam" }),
+          ]),
+        }),
+      ]),
+    );
   });
 
   test("petstore.yaml", async () => {
     const openApiDoc = (await SwaggerParser.parse("./test/petstore.yaml")) as OpenAPIV3.Document;
-    const resolver = new SchemaResolver(openApiDoc, { schemaSuffix: "" } as GenerateOptions);
+    const resolver = new SchemaResolver(openApiDoc, generateOptions);
     const endpoints = getEndpointsFromOpenAPIDoc({
       resolver,
       openApiDoc,
-      options: { schemaSuffix: "" } as GenerateOptions,
+      options: generateOptions,
     });
     expect(endpoints).toStrictEqual([
       {
@@ -1543,13 +1568,37 @@ describe("getEndpointsFromOpenAPIDoc", () => {
       Tag: "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
       User: "z.object({ id: z.number().int(), username: z.string(), firstName: z.string(), lastName: z.string(), email: z.string(), password: z.string(), phone: z.string(), userStatus: z.number().int() }).partial().passthrough()",
     });
-    expect(resolver["zodSchemaNamesByDiscriminatorCode"]).toStrictEqual({
-      "z.array(Pet)": ["FindPetsByStatusResponse", "FindPetsByTagsResponse"],
-      "z.array(User)": ["CreateUsersWithListInputBody"],
-      "z.array(z.string()).optional()": ["FindPetsByTagsTagsParam"],
-      'z.enum(["available", "pending", "sold"]).optional().default("available")': ["FindPetsByStatusStatusParam"],
-      "z.record(z.number().int())": ["GetInventoryResponse"],
-    });
+    expect(resolver["discriminatorZodSchemaData"]).toStrictEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: "z.array(Pet)",
+          zodSchemas: expect.arrayContaining([
+            expect.objectContaining({ zodSchemaName: "FindPetsByStatusResponse" }),
+            expect.objectContaining({ zodSchemaName: "FindPetsByTagsResponse" }),
+          ]),
+        }),
+        expect.objectContaining({
+          code: "z.array(User)",
+          zodSchemas: expect.arrayContaining([
+            expect.objectContaining({ zodSchemaName: "CreateUsersWithListInputBody" }),
+          ]),
+        }),
+        expect.objectContaining({
+          code: "z.array(z.string()).optional()",
+          zodSchemas: expect.arrayContaining([expect.objectContaining({ zodSchemaName: "FindPetsByTagsTagsParam" })]),
+        }),
+        expect.objectContaining({
+          code: 'z.enum(["available", "pending", "sold"]).optional().default("available")',
+          zodSchemas: expect.arrayContaining([
+            expect.objectContaining({ zodSchemaName: "FindPetsByStatusStatusParam" }),
+          ]),
+        }),
+        expect.objectContaining({
+          code: "z.record(z.number().int())",
+          zodSchemas: expect.arrayContaining([expect.objectContaining({ zodSchemaName: "GetInventoryResponse" })]),
+        }),
+      ]),
+    );
   });
 
   test("getEndpointsFromOpenAPIDocPaths should return responses", () => {
@@ -1622,11 +1671,11 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         },
       },
     };
-    const resolver = new SchemaResolver(openApiDoc, { schemaSuffix: "" } as GenerateOptions);
+    const resolver = new SchemaResolver(openApiDoc, generateOptions);
     const endpoints = getEndpointsFromOpenAPIDoc({
       resolver,
       openApiDoc,
-      options: { schemaSuffix: "" } as GenerateOptions,
+      options: generateOptions,
     });
     expect(endpoints).toStrictEqual([
       {
@@ -1690,8 +1739,16 @@ describe("getEndpointsFromOpenAPIDoc", () => {
       Pet: `z.object({ id: z.number().int().optional(), name: z.string(), category: Category.optional(), photoUrls: z.array(z.string()), tags: z.array(Tag).optional(), status: z.enum(["available", "pending", "sold"]).optional() }).passthrough()`,
       Tag: "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
     });
-    expect(resolver["zodSchemaNamesByDiscriminatorCode"]).toStrictEqual({
-      "z.array(Pet)": ["FindPetsByStatusResponse", "FindPetsByTagsResponse"],
-    });
+    expect(resolver["discriminatorZodSchemaData"]).toStrictEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: "z.array(Pet)",
+          zodSchemas: expect.arrayContaining([
+            expect.objectContaining({ zodSchemaName: "FindPetsByStatusResponse" }),
+            expect.objectContaining({ zodSchemaName: "FindPetsByTagsResponse" }),
+          ]),
+        }),
+      ]),
+    );
   });
 });

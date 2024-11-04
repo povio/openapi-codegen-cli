@@ -56,7 +56,9 @@ function splitDataByTags({
 
   Object.entries(zodSchemas).forEach(([zodSchemaName, zodSchemaCode]) => {
     const tag = resolver.getTagByZodSchemaName(zodSchemaName);
-    getTagElement(tag, data).zodSchemas[zodSchemaName] = zodSchemaCode;
+    if (tag) {
+      getTagElement(tag, data).zodSchemas[zodSchemaName] = zodSchemaCode;
+    }
   });
 
   return data;

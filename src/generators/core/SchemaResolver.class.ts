@@ -4,6 +4,7 @@ import { GenerateOptions } from "../types/options";
 import { pick } from "../utils/object.utils";
 import {
   autocorrectRef,
+  formatTag,
   getOperationTag,
   getSchemaNameByRef,
   getSchemaRef,
@@ -13,23 +14,35 @@ import {
 } from "../utils/openapi.utils";
 import { getZodSchemaName } from "../utils/zod-schema.utils";
 import { getOpenAPISchemaDependencyGraph } from "./openapi/getOpenAPISchemaDependencyGraph";
+import { ZodSchema } from "./zod/ZodSchema.class";
 
-type SchemaInfo = {
+type SchemaData = {
   ref: string;
   name: string;
   zodSchemaName: string;
+  tags: string[];
+};
+
+type ZodSchemaData = {
+  zodSchemaName: string;
+  code: string;
+  tags: string[];
+};
+
+type DiscriminatorZodSchemaData = {
+  code: string;
+  zodSchemas: {
+    zodSchemaName: string;
+    zodSchema: ZodSchema;
+  }[];
 };
 
 export class SchemaResolver {
-  private schemaInfoByRef = new Map<string, SchemaInfo>();
-  private schemaInfoByName = new Map<string, SchemaInfo>();
-  private schemaTagsByRef = new Map<string, string[]>();
+  private schemaData: SchemaData[] = [];
+  private zodSchemaData: ZodSchemaData[] = [];
+  private discriminatorZodSchemaData: DiscriminatorZodSchemaData[] = [];
 
-  private zodSchemaCodeByName: Record<string, string> = {};
-  private zodSchemaTagsByName: Record<string, string[]> = {};
-  private zodSchemaNamesByDiscriminatorCode: Record<string, string[]> = {};
-
-  dependencyGraph: ReturnType<typeof getOpenAPISchemaDependencyGraph>;
+  readonly dependencyGraph: ReturnType<typeof getOpenAPISchemaDependencyGraph>;
 
   private get docSchemas() {
     return this.openApiDoc.components?.schemas ?? {};
@@ -54,46 +67,65 @@ export class SchemaResolver {
   }
 
   getZodSchemaNameByRef(ref: string) {
-    return this.schemaInfoByRef.get(autocorrectRef(ref))!.zodSchemaName;
+    return this.schemaData.find((data) => data.ref === autocorrectRef(ref))!.zodSchemaName;
   }
 
   getRefByZodSchemaName(zodSchemaName: string) {
-    return this.schemaInfoByName.get(zodSchemaName)?.ref;
+    return this.schemaData.find((data) => data.zodSchemaName === zodSchemaName)?.ref;
   }
 
   getTagByZodSchemaName(zodSchemaName: string) {
-    if (!this.options.splitByTags) {
-      return this.options.defaultTag;
+    let tag: string | undefined;
+
+    if (this.options.splitByTags) {
+      const schemaRef = this.getRefByZodSchemaName(zodSchemaName);
+      const schemaTags = this.schemaData.find((data) => data.ref === schemaRef)?.tags ?? [];
+      const zodSchemaTags = this.zodSchemaData.find((data) => data.zodSchemaName === zodSchemaName)?.tags ?? [];
+      const tags = new Set([...schemaTags, ...zodSchemaTags]);
+      tag = tags.size === 1 ? tags.values().next().value : this.options.defaultTag;
     }
 
-    const schemaRef = this.getRefByZodSchemaName(zodSchemaName);
-    const schemaTags = schemaRef ? this.schemaTagsByRef.get(schemaRef) ?? [] : [];
-    const tags = new Set([...schemaTags, ...(this.zodSchemaTagsByName[zodSchemaName] ?? [])]);
-
-    return tags.size === 1 ? tags.values().next().value : this.options.defaultTag;
+    return formatTag(tag ?? this.options.defaultTag);
   }
 
   getCodeByZodSchemaName(name: string) {
-    return this.zodSchemaCodeByName[name];
+    return this.zodSchemaData.find((data) => data.zodSchemaName === name)?.code;
   }
 
   getZodSchemaNamesByDiscriminatorCode(code: string) {
-    return this.zodSchemaNamesByDiscriminatorCode[code];
+    return this.discriminatorZodSchemaData
+      .find((data) => data.code === code)
+      ?.zodSchemas.map((schema) => schema.zodSchemaName);
   }
 
   setZodSchema(name: string, code: string, tag: string) {
-    this.zodSchemaCodeByName[name] = code;
-    this.zodSchemaTagsByName[name] = (this.zodSchemaTagsByName[name] ?? []).concat(tag);
+    const zodSchema = this.zodSchemaData.find((data) => data.zodSchemaName === name);
+    if (zodSchema) {
+      zodSchema.code = code;
+      zodSchema.tags = (zodSchema.tags ?? []).concat(tag);
+    } else {
+      this.zodSchemaData.push({ zodSchemaName: name, code, tags: [tag] });
+    }
   }
 
-  addZodSchemaNameForDiscriminatorCode(code: string, zodSchemaName: string) {
-    this.zodSchemaNamesByDiscriminatorCode[code] = (this.zodSchemaNamesByDiscriminatorCode[code] ?? []).concat(
-      zodSchemaName,
+  addZodSchemaForDiscriminatorCode(code: string, zodSchema: ZodSchema, zodSchemaName: string) {
+    const discriminatorZodSchema = this.discriminatorZodSchemaData.find((data) => data.code === code);
+    if (discriminatorZodSchema) {
+      discriminatorZodSchema.zodSchemas.push({ zodSchemaName, zodSchema });
+    } else {
+      this.discriminatorZodSchemaData.push({ code, zodSchemas: [{ zodSchemaName, zodSchema }] });
+    }
+  }
+
+  getDiscriminatorZodSchemaByZodSchemaName(zodSchemaName: string) {
+    const discriminatorZodSchema = this.discriminatorZodSchemaData.find((data) =>
+      data.zodSchemas.some((schema) => schema.zodSchemaName === zodSchemaName),
     );
+    return discriminatorZodSchema?.zodSchemas.find((schema) => schema.zodSchemaName === zodSchemaName)?.zodSchema;
   }
 
   getZodSchemas() {
-    return this.zodSchemaCodeByName;
+    return this.zodSchemaData.reduce((acc, { zodSchemaName, code }) => ({ ...acc, [zodSchemaName]: code }), {});
   }
 
   private intializeSchemaInfo() {
@@ -101,10 +133,7 @@ export class SchemaResolver {
       const correctRef = autocorrectRef(ref);
       const name = getSchemaNameByRef(correctRef);
       const zodSchemaName = getZodSchemaName(name, this.options.schemaSuffix);
-      const info = { ref: correctRef, name, zodSchemaName };
-
-      this.schemaInfoByRef.set(info.ref, info);
-      this.schemaInfoByName.set(info.zodSchemaName, info);
+      this.schemaData.push({ ref: correctRef, name, zodSchemaName, tags: [] });
     });
   }
 
@@ -174,10 +203,9 @@ export class SchemaResolver {
         // Assign tags to the schema references
         const tag = getOperationTag(operation, this.options);
         deepRefs.forEach((schemaRef) => {
-          if (this.schemaTagsByRef.has(schemaRef)) {
-            this.schemaTagsByRef.get(schemaRef)!.push(tag);
-          } else {
-            this.schemaTagsByRef.set(schemaRef, [tag]);
+          const schemaData = this.schemaData.find((data) => data.ref === schemaRef);
+          if (schemaData) {
+            schemaData.tags.push(tag);
           }
         });
       }

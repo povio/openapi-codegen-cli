@@ -3,7 +3,7 @@ import { match, P } from "ts-pattern";
 import { ALLOWED_PARAM_MEDIA_TYPES, PRIMITIVE_TYPE_LIST } from "../const/openapi.const";
 import { PrimitiveType, SingleType } from "../types/openapi";
 import { GenerateOptions } from "../types/options";
-import { capitalize, kebabToCamel, snakeToCamel } from "./string.utils";
+import { capitalize, kebabToCamel, nonWordCharactersToCamel, snakeToCamel } from "./string.utils";
 
 export const getSchemaRef = (schemaName: string) => `#/components/schemas/${schemaName}`;
 
@@ -115,8 +115,13 @@ export function getOperationName(path: string, method: string, operation: OpenAP
   return operation.operationId ?? method + pathToVariableName(path);
 }
 
+export function formatTag(tag: string) {
+  return nonWordCharactersToCamel(tag);
+}
+
 export function getOperationTag(operation: OpenAPIV3.OperationObject, options: GenerateOptions) {
-  return operation.tags?.[0] ?? options.defaultTag;
+  const tag = operation.tags?.[0];
+  return formatTag(tag ?? options.defaultTag);
 }
 
 const PATH_PARAM_WITH_BRACKETS_REGEX = /({\w+})/g;

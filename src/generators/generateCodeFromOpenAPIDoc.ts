@@ -22,9 +22,11 @@ export function generateCodeFromOpenAPIDoc({
   const { resolver, data } = generateDataFromOpenAPIDoc({ openApiDoc, options });
 
   data.forEach((_, tag) => {
-    if (
-      options.excludeTags?.findIndex((excludeTag) => excludeTag.toLocaleLowerCase() === tag.toLocaleLowerCase()) !== -1
-    ) {
+    const excludedTagIndex = options.excludeTags?.findIndex(
+      (excludeTag) => excludeTag.toLocaleLowerCase() === tag.toLocaleLowerCase(),
+    );
+    const isExcludedTag = excludedTagIndex !== -1;
+    if (isExcludedTag) {
       return;
     }
 

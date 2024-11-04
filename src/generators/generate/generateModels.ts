@@ -24,8 +24,8 @@ export function generateModels({
   }
 
   const refZodSchemas = Object.keys(zodSchemas)
-    .reduce((acc, zodSchema) => [...acc, ...getZodSchemaRefs({ zodSchema, resolver })], [] as string[])
-    .filter((zodSchema) => !zodSchemas.hasOwnProperty(zodSchema));
+    .reduce((acc, zodSchema) => [...acc, ...getZodSchemaRefs({ resolver, zodSchemaName: zodSchema })], [] as string[])
+    .filter((zodSchema) => !zodSchemas[zodSchema]);
 
   const modelsImports = getModelsImports({
     resolver,
