@@ -45,7 +45,7 @@ export function resolveZodSchemaName({
     }
 
     resolver.setZodSchema(formattedZodSchemaName, result, tag);
-    resolver.addZodSchemaNameForDiscriminatorCode(result, formattedZodSchemaName);
+    resolver.addZodSchemaForDiscriminatorCode(result, zodSchema, formattedZodSchemaName);
 
     return formattedZodSchemaName;
   }

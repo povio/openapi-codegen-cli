@@ -6,6 +6,11 @@ import { SchemaResolver } from "../SchemaResolver.class";
 import { ZodSchemaMetaData } from "./ZodSchema.class";
 import { getZodSchema } from "./getZodSchema";
 
+const generateOptions = {
+  schemaSuffix: "",
+  defaultTag: "",
+} as GenerateOptions;
+
 const makeSchema = (schema: OpenAPIV3.SchemaObject) => schema;
 const getZodSchemaString = (schema: OpenAPIV3.SchemaObject, meta?: ZodSchemaMetaData | undefined) =>
   getZodSchema({ schema: makeSchema(schema), meta, tag: "", options: {} })
@@ -313,10 +318,7 @@ describe("getZodSchema", () => {
             },
           },
         }),
-        resolver: new SchemaResolver(
-          { components: { schemas: {} } } as OpenAPIV3.Document,
-          { schemaSuffix: "" } as GenerateOptions,
-        ),
+        resolver: new SchemaResolver({ components: { schemas: {} } } as OpenAPIV3.Document, generateOptions),
         tag: "",
         options: {},
       }),
@@ -333,10 +335,7 @@ describe("getZodSchema", () => {
         },
       },
     } as Record<string, OpenAPIV3.SchemaObject>;
-    const resolver = new SchemaResolver(
-      { components: { schemas } } as OpenAPIV3.Document,
-      { schemaSuffix: "" } as GenerateOptions,
-    );
+    const resolver = new SchemaResolver({ components: { schemas } } as OpenAPIV3.Document, generateOptions);
     Object.keys(schemas).forEach((key) => resolver.getSchemaByRef(getSchemaRef(key)));
 
     const code = getZodSchema({
@@ -387,10 +386,7 @@ describe("getZodSchema", () => {
       },
       DeepNested: { type: "object", properties: { deep: { type: "boolean" } } },
     } as Record<string, OpenAPIV3.SchemaObject>;
-    const resolver = new SchemaResolver(
-      { components: { schemas } } as OpenAPIV3.Document,
-      { schemaSuffix: "" } as GenerateOptions,
-    );
+    const resolver = new SchemaResolver({ components: { schemas } } as OpenAPIV3.Document, generateOptions);
     Object.keys(schemas).forEach((key) => resolver.getSchemaByRef(getSchemaRef(key)));
 
     const code = getZodSchema({
@@ -434,6 +430,6 @@ describe("getZodSchema", () => {
         "z.object({ exampleProp: z.string(), another: z.number(), link: z.array(WithNested), someReference: Basic }).partial().passthrough()",
       WithNested: "z.object({ nested: z.string(), nestedRef: DeepNested }).partial().passthrough()",
     });
-    expect(resolver["zodSchemaNamesByDiscriminatorCode"]).toStrictEqual({});
+    expect(resolver["discriminatorZodSchemaData"]).toStrictEqual([]);
   });
 });
