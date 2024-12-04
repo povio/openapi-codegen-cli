@@ -470,7 +470,12 @@ describe("getEndpointsFromOpenAPIDoc", () => {
     expect(resolver["discriminatorZodSchemaData"]).toStrictEqual([
       {
         code: "Pet.and(Reason)",
-        zodSchemas: expect.arrayContaining([expect.objectContaining({ zodSchemaName: "UpdatePetBody" })]),
+        zodSchemas: expect.arrayContaining([
+          expect.objectContaining({
+            zodSchemaName: "UpdatePetBody",
+            schema: { allOf: [{ $ref: "#/components/schemas/Pet" }, { $ref: "#/components/schemas/Reason" }] },
+          }),
+        ]),
       },
     ]);
   });
@@ -700,18 +705,41 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         expect.objectContaining({
           code: "z.array(Pet)",
           zodSchemas: expect.arrayContaining([
-            expect.objectContaining({ zodSchemaName: "FindPetsByStatusResponse" }),
-            expect.objectContaining({ zodSchemaName: "FindPetsByTagsResponse" }),
+            expect.objectContaining({
+              zodSchemaName: "FindPetsByStatusResponse",
+              schema: { type: "array", items: { $ref: "#/components/schemas/Pet" } },
+            }),
+            expect.objectContaining({
+              zodSchemaName: "FindPetsByTagsResponse",
+              schema: { type: "array", items: { $ref: "#/components/schemas/Pet" } },
+            }),
           ]),
         }),
         expect.objectContaining({
           code: "z.array(z.string()).optional()",
-          zodSchemas: expect.arrayContaining([expect.objectContaining({ zodSchemaName: "FindPetsByTagsTagsParam" })]),
+          zodSchemas: expect.arrayContaining([
+            expect.objectContaining({
+              zodSchemaName: "FindPetsByTagsTagsParam",
+              schema: {
+                items: {
+                  type: "string",
+                },
+                type: "array",
+              },
+            }),
+          ]),
         }),
         expect.objectContaining({
           code: 'z.enum(["available", "pending", "sold"]).optional().default("available")',
           zodSchemas: expect.arrayContaining([
-            expect.objectContaining({ zodSchemaName: "FindPetsByStatusStatusParam" }),
+            expect.objectContaining({
+              zodSchemaName: "FindPetsByStatusStatusParam",
+              schema: {
+                default: "available",
+                enum: ["available", "pending", "sold"],
+                type: "string",
+              },
+            }),
           ]),
         }),
       ]),
@@ -1573,8 +1601,14 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         expect.objectContaining({
           code: "z.array(Pet)",
           zodSchemas: expect.arrayContaining([
-            expect.objectContaining({ zodSchemaName: "FindPetsByStatusResponse" }),
-            expect.objectContaining({ zodSchemaName: "FindPetsByTagsResponse" }),
+            expect.objectContaining({
+              zodSchemaName: "FindPetsByStatusResponse",
+              schema: { type: "array", items: { $ref: "#/components/schemas/Pet" } },
+            }),
+            expect.objectContaining({
+              zodSchemaName: "FindPetsByTagsResponse",
+              schema: { type: "array", items: { $ref: "#/components/schemas/Pet" } },
+            }),
           ]),
         }),
         expect.objectContaining({
@@ -1744,8 +1778,14 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         expect.objectContaining({
           code: "z.array(Pet)",
           zodSchemas: expect.arrayContaining([
-            expect.objectContaining({ zodSchemaName: "FindPetsByStatusResponse" }),
-            expect.objectContaining({ zodSchemaName: "FindPetsByTagsResponse" }),
+            expect.objectContaining({
+              zodSchemaName: "FindPetsByStatusResponse",
+              schema: { type: "array", items: { $ref: "#/components/schemas/Pet" } },
+            }),
+            expect.objectContaining({
+              zodSchemaName: "FindPetsByTagsResponse",
+              schema: { type: "array", items: { $ref: "#/components/schemas/Pet" } },
+            }),
           ]),
         }),
       ]),

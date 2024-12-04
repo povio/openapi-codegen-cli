@@ -46,7 +46,10 @@ export function getEndpointBody({
     options,
   });
 
+  const schemaObject = isReferenceObject(schema) ? resolver.getSchemaByRef(schema.$ref) : schema;
+
   const zodSchemaName = resolveZodSchemaName({
+    schema: schemaObject,
     zodSchema,
     fallbackName: getBodyZodSchemaName(operationName),
     resolver,
@@ -54,11 +57,7 @@ export function getEndpointBody({
     options,
   });
 
-  const zodChain = getZodChain({
-    schema: isReferenceObject(schema) ? resolver.getSchemaByRef(schema.$ref) : schema,
-    meta: zodSchema.meta,
-    options,
-  });
+  const zodChain = getZodChain({ schema: schemaObject, meta: zodSchema.meta, options });
 
   return {
     endpointParameter: {

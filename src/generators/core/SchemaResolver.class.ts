@@ -34,6 +34,7 @@ type DiscriminatorZodSchemaData = {
   zodSchemas: {
     zodSchemaName: string;
     zodSchema: ZodSchema;
+    schema?: OpenAPIV3.SchemaObject;
   }[];
 };
 
@@ -108,12 +109,18 @@ export class SchemaResolver {
     }
   }
 
-  addZodSchemaForDiscriminatorCode(code: string, zodSchema: ZodSchema, zodSchemaName: string) {
-    const discriminatorZodSchema = this.discriminatorZodSchemaData.find((data) => data.code === code);
-    if (discriminatorZodSchema) {
-      discriminatorZodSchema.zodSchemas.push({ zodSchemaName, zodSchema });
+  addZodSchemaForDiscriminatorCode(
+    code: string,
+    zodSchema: ZodSchema,
+    zodSchemaName: string,
+    schema?: OpenAPIV3.SchemaObject,
+  ) {
+    const discriminatorZodSchema = { zodSchemaName, zodSchema, schema };
+    const discriminatorData = this.discriminatorZodSchemaData.find((data) => data.code === code);
+    if (discriminatorData) {
+      discriminatorData.zodSchemas.push(discriminatorZodSchema);
     } else {
-      this.discriminatorZodSchemaData.push({ code, zodSchemas: [{ zodSchemaName, zodSchema }] });
+      this.discriminatorZodSchemaData.push({ code, zodSchemas: [discriminatorZodSchema] });
     }
   }
 
@@ -122,6 +129,12 @@ export class SchemaResolver {
       data.zodSchemas.some((schema) => schema.zodSchemaName === zodSchemaName),
     );
     return discriminatorZodSchema?.zodSchemas.find((schema) => schema.zodSchemaName === zodSchemaName)?.zodSchema;
+  }
+
+  getSchemaByDiscriminatorZodSchemaName(discriminatorZodSchemaName: string) {
+    return this.discriminatorZodSchemaData
+      .find((data) => data.zodSchemas.some((schema) => schema.zodSchemaName === discriminatorZodSchemaName))
+      ?.zodSchemas.find((schema) => schema.zodSchemaName === discriminatorZodSchemaName)?.schema;
   }
 
   getZodSchemas() {

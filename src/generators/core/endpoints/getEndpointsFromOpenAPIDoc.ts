@@ -98,20 +98,19 @@ export function getEndpointsFromOpenAPIDoc({
 
         if (schema) {
           const zodSchema = getZodSchema({ schema, resolver, meta: { isRequired: true }, tag, options });
+
+          const schemaObject = isReferenceObject(schema) ? resolver.getSchemaByRef(schema.$ref) : schema;
+
           const zodSchemaName = resolveZodSchemaName({
+            schema: schemaObject,
             zodSchema,
             fallbackName: zodSchema.ref ? undefined : getResponseZodSchemaName(statusCode, endpoint),
             resolver,
             tag,
             options,
           });
-          responseZodSchema =
-            zodSchemaName +
-            getZodChain({
-              schema: isReferenceObject(schema) ? resolver.getSchemaByRef(schema.$ref) : schema,
-              meta: zodSchema.meta,
-              options,
-            });
+
+          responseZodSchema = zodSchemaName + getZodChain({ schema: schemaObject, meta: zodSchema.meta, options });
         }
 
         if (responseZodSchema) {

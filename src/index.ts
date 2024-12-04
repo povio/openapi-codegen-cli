@@ -1,10 +1,10 @@
 import SwaggerParser from "@apidevtools/swagger-parser";
 import { OpenAPIV3 } from "openapi-types";
 import { DEFAULT_GENERATE_OPTIONS } from "./generators/const/options.const";
-import { getDataFromOpenAPIDoc } from "./generators/core/getDataFromOpenAPIDoc";
+import { getMetadataFromOpenAPIDoc } from "./generators/core/getMetadataFromOpenAPIDoc";
 import { GenerateOptions } from "./generators/types/options";
 
-export async function getOpenAPIDocCodegenData({
+export async function getMetadata({
   input,
   options: genOptions,
 }: {
@@ -15,7 +15,5 @@ export async function getOpenAPIDocCodegenData({
 
   const openApiDoc = (await SwaggerParser.bundle(input)) as OpenAPIV3.Document;
 
-  const data = await getDataFromOpenAPIDoc({ openApiDoc, options });
-
-  return data;
+  return await getMetadataFromOpenAPIDoc({ openApiDoc, options });
 }
