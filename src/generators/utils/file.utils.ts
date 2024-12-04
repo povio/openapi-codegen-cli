@@ -1,13 +1,10 @@
 import fs from "fs";
-import path, { dirname } from "path";
-import { fileURLToPath } from "url";
+import path from "path";
 
 export function readHbsTemplateSync(fileName: string) {
   const templatePath = `src/generators/templates/${fileName}.hbs`;
 
   if (process.env.NODE_ENV === "production") {
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = dirname(__filename);
     return fs.readFileSync(path.join(__dirname, `../${templatePath}`), "utf-8");
   }
 
