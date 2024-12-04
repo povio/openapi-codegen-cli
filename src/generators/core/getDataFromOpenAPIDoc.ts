@@ -9,7 +9,7 @@ import { getZodSchemasFromOpenAPIDoc } from "./zod/getZodSchemasFromOpenAPIDoc";
 import { sortZodSchemasByTopology } from "./zod/sortZodSchemasByTopology";
 import { wrapCircularZodSchemas } from "./zod/wrapCircularZodSchemas";
 
-export function generateDataFromOpenAPIDoc({
+export function getDataFromOpenAPIDoc({
   openApiDoc,
   options,
 }: {

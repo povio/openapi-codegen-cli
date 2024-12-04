@@ -1,6 +1,6 @@
 import { OpenAPIV3 } from "openapi-types";
 import { DEFAULT_GENERATE_OPTIONS } from "./const/options.const";
-import { generateDataFromOpenAPIDoc } from "./core/generateDataFromOpenAPIDoc";
+import { getDataFromOpenAPIDoc } from "./core/getDataFromOpenAPIDoc";
 import { SchemaResolver } from "./core/SchemaResolver.class";
 import { generateEndpoints } from "./generate/generateEndpoints";
 import { generateModels } from "./generate/generateModels";
@@ -19,7 +19,7 @@ export function generateCodeFromOpenAPIDoc({
 }) {
   const options = { ...DEFAULT_GENERATE_OPTIONS, ...cliOptions } as GenerateOptions;
 
-  const { resolver, data } = generateDataFromOpenAPIDoc({ openApiDoc, options });
+  const { resolver, data } = getDataFromOpenAPIDoc({ openApiDoc, options });
 
   data.forEach((_, tag) => {
     const excludedTagIndex = options.excludeTags?.findIndex(
