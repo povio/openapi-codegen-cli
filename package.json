@@ -1,16 +1,17 @@
 {
   "name": "@povio/openapi-codegen-cli",
-  "version": "0.0.11",
+  "version": "0.0.12",
+  "main": "./dist/index.js",
   "bin": {
     "openapi-codegen": "./dist/sh.js"
   },
-  "type": "module",
   "scripts": {
     "start": "node --import tsx/esm ./src/sh.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "build:clean": "rm -rf ./dist",
-    "build": "yarn build:clean && node ./esbuild.mjs && chmod +x ./dist/sh.js",
+    "build:types": "tsc --project . --declaration --emitDeclarationOnly",
+    "build": "yarn build:clean && yarn build:types && node ./esbuild.mjs && chmod +x ./dist/sh.js",
     "build:check": "yarn tsc --project . --noEmit",
     "start:dist": "node ./dist/sh.js",
     "lint": "eslint --fix",
