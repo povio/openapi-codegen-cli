@@ -57,5 +57,7 @@ export async function getMetadataFromOpenAPIDoc({
     });
   });
 
-  return { models, queries } as GenerateMetadata;
+  const metadata: GenerateMetadata = { openApiDoc, models, queries };
+
+  return metadata;
 }

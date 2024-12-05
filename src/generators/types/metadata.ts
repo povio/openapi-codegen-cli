@@ -21,6 +21,7 @@ export interface QueryMetadata {
 }
 
 export interface GenerateMetadata {
+  openApiDoc: OpenAPIV3.Document;
   models: ModelMetadata[];
   queries: QueryMetadata[];
 }
