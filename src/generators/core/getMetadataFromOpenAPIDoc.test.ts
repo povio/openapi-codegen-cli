@@ -2,7 +2,7 @@ import SwaggerParser from "@apidevtools/swagger-parser";
 import { OpenAPIV3 } from "openapi-types";
 import { describe, expect, test } from "vitest";
 import { DEFAULT_GENERATE_OPTIONS } from "../const/options.const";
-import { ModelMetadata, QueryMetadata } from "../types/generate";
+import { ModelMetadata, QueryMetadata } from "../types/metadata";
 import { getMetadataFromOpenAPIDoc } from "./getMetadataFromOpenAPIDoc";
 
 describe("getMetadataFromOpenAPIDoc", async () => {

@@ -1,5 +1,6 @@
 import { OpenAPIV3 } from "openapi-types";
-import { GenerateMetadata, GenerateType, ModelMetadata, QueryMetadata } from "../types/generate";
+import { GenerateType } from "../types/generate";
+import { GenerateMetadata, ModelMetadata, QueryMetadata } from "../types/metadata";
 import { GenerateOptions } from "../types/options";
 import { getQueryName } from "../utils/generate/generate.query.utils";
 import { getNamespaceName, getTagFileName } from "../utils/generate/generate.utils";
