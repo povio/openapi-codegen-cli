@@ -459,7 +459,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
       },
     ];
 
-    expect(metadata.models).toEqual(metadata.models);
-    expect(metadata.queries).toEqual(metadata.queries);
+    expect(metadata.models).toEqual(models);
+    expect(metadata.queries).toEqual(queries);
   });
 });
