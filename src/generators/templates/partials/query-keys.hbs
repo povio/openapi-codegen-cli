@@ -1,5 +1,5 @@
 export const keys = {
     {{#each endpoints as | endpoint |}}
-    {{endpointName endpoint}}: ({{{genEndpointParams endpoint}}}) => ["{{endpoint.path}}", {{{endpointArgs endpoint}}}] as const,
+    {{endpointName endpoint}}: ({{#if (endpointParams endpoint)}}data: { {{{genEndpointParams endpoint}}} }{{/if}}) => ["{{endpoint.path}}", {{#if (endpointParams endpoint)}}data{{/if}}] as const,
     {{/each}}
 };

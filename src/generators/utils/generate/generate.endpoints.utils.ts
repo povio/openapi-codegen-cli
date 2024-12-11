@@ -36,7 +36,7 @@ export function mapEndpointParamsToFunctionParams({
   resolver: SchemaResolver;
   endpoint: Endpoint;
   options: GenerateOptions;
-}): { name: string; type: string; required: boolean }[] {
+}) {
   return endpoint.parameters
     .map((param) => {
       let type = "string";
