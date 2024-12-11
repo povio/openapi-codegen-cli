@@ -1,6 +1,7 @@
-export const {{queryName endpoint}} = ({{{genEndpointParams endpoint}}}) => {
+export const {{queryName endpoint}} = ({ {{{endpointArgs endpoint}}} }: { {{{genEndpointParams endpoint}}} }, options?: Omit<UseQueryOptions<Awaited<ReturnType<typeof {{importedEndpointName endpoint}}>>>, "queryKey" | "queryFn">) => {
   return {{queryHook}}({
     queryKey: keys.{{endpointName endpoint}}({{{endpointArgs endpoint}}}),
-    queryFn: {{#if (endpointParams endpoint)}}() => {{importedEndpointName endpoint}}({{{endpointArgs endpoint}}}){{else}}{{importedEndpointName endpoint}}{{/if}},
+    queryFn: {{#if (endpointParams endpoint)}}() => {{importedEndpointName endpoint}}({ {{{endpointArgs endpoint}}} }){{else}}{{importedEndpointName endpoint}}{{/if}},
+    ...options,
   });
 };

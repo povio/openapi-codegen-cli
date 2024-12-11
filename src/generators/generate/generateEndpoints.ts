@@ -1,4 +1,4 @@
-import { REST_CLIENT_IMPORT, REST_CLIENT_NAME } from "../const/endpoints.const";
+import { REST_CLIENT_IMPORT, REST_CLIENT_NAME } from "../const/template.const";
 import { ZOD_IMPORT } from "../const/zod.const";
 import { SchemaResolver } from "../core/SchemaResolver.class";
 import { EndpointParameter } from "../types/endpoint";

@@ -16,7 +16,6 @@ enum EndpointsHelpers {
   ENDPOINT_PATH = "endpointPath",
   ENDPOINT_BODY = "endpointBody",
   ENDPOINT_ARGS = "endpointArgs",
-  MORE_THAN_ONE_PARAMETER = "moreThanOneParameter",
 }
 
 export function registerEndpointsHbsHelpers(resolver: SchemaResolver, options: GenerateOptions) {
@@ -26,7 +25,6 @@ export function registerEndpointsHbsHelpers(resolver: SchemaResolver, options: G
   registerEndpointPathHelper();
   registerEndpointBodyHelper();
   registerEndpointArgsHelper(resolver, options);
-  registerMoreThanOneParameterHelper();
 }
 
 function registerEndpointNameHelper() {
@@ -60,12 +58,5 @@ function registerEndpointArgsHelper(resolver: SchemaResolver, options: GenerateO
     mapEndpointParamsToFunctionParams({ resolver, endpoint, options })
       .map((param) => param.name)
       .join(", "),
-  );
-}
-
-function registerMoreThanOneParameterHelper() {
-  Handlebars.registerHelper(
-    EndpointsHelpers.MORE_THAN_ONE_PARAMETER,
-    (endpoint: Endpoint) => endpoint.parameters.length > 1,
   );
 }

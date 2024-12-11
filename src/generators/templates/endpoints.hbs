@@ -14,7 +14,7 @@ export namespace {{namespace}} {
 {{/if}}
 {{! Endpoints export }}
 {{#each endpoints as | endpoint |}}
-export const {{endpointName endpoint}} = ({{{genEndpointParams endpoint}}}) => { 
+export const {{endpointName endpoint}} = ({ {{{endpointArgs endpoint}}} }: { {{{genEndpointParams endpoint}}} }) => { 
     return {{../restClientName}}.{{endpoint.method}}( 
         {{! Response }}
         { resSchema: {{importedZodSchemaName endpoint.response}} }, 

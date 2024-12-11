@@ -1,5 +1,9 @@
 {{! React query import }}
 {{{genImport queryImport}}}
+{{! Error handling import }}
+{{#if errorHandlingImport}}
+{{{genImport errorHandlingImport}}}
+{{/if}}
 {{! Models import }}
 {{#each modelsImports as | modelsImport |}}
 {{{genImport modelsImport}}}

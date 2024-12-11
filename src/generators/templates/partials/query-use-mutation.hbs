@@ -1,5 +1,6 @@
-export const {{queryName endpoint}} = () => {
+export const {{queryName endpoint}} = (options?: Omit<UseMutationOptions<Awaited<ReturnType<typeof {{importedEndpointName endpoint}}>>, ApplicationException<GeneralErrorCodes>, { {{{genEndpointParams endpoint}}} }>, "mutationFn">) => {
   return {{queryHook}}({
-    mutationFn: {{#if (moreThanOneParameter endpoint)}}({ {{{endpointArgs endpoint}}} }: { {{{genEndpointParams endpoint}}} }) => {{importedEndpointName endpoint}}({{{endpointArgs endpoint}}}){{else}}{{importedEndpointName endpoint}}{{/if}},
+    mutationFn: {{importedEndpointName endpoint}},
+    ...options,
   });
 };
