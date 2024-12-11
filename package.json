@@ -6,7 +6,7 @@
     "openapi-codegen": "./dist/sh.js"
   },
   "scripts": {
-    "start": "node --import tsx/esm ./src/sh.ts",
+    "start": "node --import tsx ./src/sh.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "build:clean": "rm -rf ./dist",
