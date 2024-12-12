@@ -58,7 +58,7 @@ export function mapEndpointParamsToFunctionParams({
     })
     .sort((a, b) => {
       if (a.required === b.required) {
-        const sortedParamTypes = ["Path", "Query", "Header", "Body"];
+        const sortedParamTypes = ["Path", "Body", "Query", "Header"];
         return sortedParamTypes.indexOf(a.paramType) - sortedParamTypes.indexOf(b.paramType);
       }
       return a.required ? -1 : 1;

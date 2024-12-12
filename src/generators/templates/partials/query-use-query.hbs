@@ -1,7 +1,7 @@
-export const {{queryName endpoint}} = <TData>({{#if (endpointParams endpoint)}}data: { {{{genEndpointParams endpoint}}} }, {{/if}}options?: Omit<UseQueryOptions<Awaited<ReturnType<typeof {{importedEndpointName endpoint}}>>, ApplicationException<GeneralErrorCodes>, TData>, "queryKey" | "queryFn">) => {
+export const {{queryName endpoint}} = <TData>({{#if (endpointParams endpoint)}}{ {{{endpointArgs endpoint}}} }: { {{{genEndpointParams endpoint}}} }, {{/if}}options?: AppQueryOptions<typeof {{importedEndpointName endpoint}}, TData>) => {
   return {{queryHook}}({
-    queryKey: keys.{{endpointName endpoint}}({{#if (endpointParams endpoint)}}data{{/if}}),
-    queryFn: {{#if (endpointParams endpoint)}}() => {{importedEndpointName endpoint}}(data){{else}}{{importedEndpointName endpoint}}{{/if}},
+    queryKey: keys.{{endpointName endpoint}}({{#if (endpointParams endpoint)}}{{{endpointArgs endpoint}}}{{/if}}),
+    queryFn: {{#if (endpointParams endpoint)}}() => {{importedEndpointName endpoint}}({{{endpointArgs endpoint}}}){{else}}{{importedEndpointName endpoint}}{{/if}},
     ...options,
   });
 };

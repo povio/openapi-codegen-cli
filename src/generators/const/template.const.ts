@@ -9,7 +9,11 @@ export const REST_CLIENT_IMPORT: Import = {
   from: "@/util/rest/clients/app-rest-client",
 };
 
-export const ERROR_HANDLING_IMPORT: Import = {
-  bindings: ["ApplicationException", "GeneralErrorCodes"],
-  from: "@/util/vendor/error-handling",
+export const QUERY_OPTIONS_TYPES = {
+  query: "AppQueryOptions",
+  mutation: "AppMutationOptions",
+};
+export const QUERY_TYPES_IMPORT: Import = {
+  bindings: [QUERY_OPTIONS_TYPES.query, QUERY_OPTIONS_TYPES.mutation],
+  from: "@/types/react-query",
 };

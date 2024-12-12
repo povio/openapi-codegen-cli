@@ -1,4 +1,5 @@
 import { OpenAPIV3 } from "openapi-types";
+import { BODY_PARAMETER_NAME } from "src/generators/const/endpoints.const";
 import { EndpointParameter } from "src/generators/types/endpoint";
 import { GenerateOptions } from "src/generators/types/options";
 import { isParamMediaTypeAllowed, isReferenceObject } from "src/generators/utils/openapi.utils";
@@ -61,7 +62,7 @@ export function getEndpointBody({
 
   return {
     endpointParameter: {
-      name: "body",
+      name: BODY_PARAMETER_NAME,
       type: "Body",
       description: requestBodyObj.description,
       zodSchema: zodSchemaName + zodChain,

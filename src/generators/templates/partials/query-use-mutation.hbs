@@ -1,6 +1,6 @@
-export const {{queryName endpoint}} = (options?: Omit<UseMutationOptions<Awaited<ReturnType<typeof {{importedEndpointName endpoint}}>>, ApplicationException<GeneralErrorCodes>, { {{{genEndpointParams endpoint}}} }>, "mutationFn">) => {
+export const {{queryName endpoint}} = (options?: AppMutationOptions<typeof {{importedEndpointName endpoint}}, { {{{genEndpointParams endpoint}}} }>) => {
   return {{queryHook}}({
-    mutationFn: {{importedEndpointName endpoint}},
+    mutationFn: ({ {{{endpointArgs endpoint}}} }) => {{importedEndpointName endpoint}}({{{endpointArgs endpoint}}}),
     ...options,
   });
 };
