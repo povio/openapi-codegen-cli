@@ -7,6 +7,7 @@ import { getQueryName } from "../utils/generate/generate.query.utils";
 import { getNamespaceName, getTagFileName } from "../utils/generate/generate.utils";
 import { getZodSchemaInferedTypeName } from "../utils/generate/generate.zod.utils";
 import { formatTag } from "../utils/openapi.utils";
+import { getSchemaTsProperties } from "../utils/ts.utils";
 import { getDataFromOpenAPIDoc } from "./getDataFromOpenAPIDoc";
 
 export async function getMetadataFromOpenAPIDoc({
@@ -43,7 +44,12 @@ export async function getMetadataFromOpenAPIDoc({
         ? resolver.getSchemaByRef(ref)
         : resolver.getSchemaByDiscriminatorZodSchemaName(zodSchemaName);
 
-      models.push({ name, zodSchemaName, filePath, namespace, openApiSchema });
+      models.push({
+        name,
+        filePath,
+        namespace,
+        properties: openApiSchema ? getSchemaTsProperties(openApiSchema) : [],
+      });
     });
 
     endpoints.forEach((endpoint) => {

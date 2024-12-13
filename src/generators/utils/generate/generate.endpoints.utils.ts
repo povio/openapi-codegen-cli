@@ -1,13 +1,14 @@
 import { OpenAPIV3 } from "openapi-types";
 import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
-import { GenerateType } from "src/generators/types/generate";
+import { GenerateType, TsFieldDescriptor } from "src/generators/types/generate";
 import { GenerateOptions } from "src/generators/types/options";
 import { DEFAULT_HEADERS } from "../../const/endpoints.const";
 import { Endpoint } from "../../types/endpoint";
 import { invalidVariableNameCharactersToCamel, isValidPropertyName } from "../js.utils";
 import { isSchemaObject } from "../openapi-schema.utils";
-import { formatTag, isPrimitiveType, primitiveTypeToTsType } from "../openapi.utils";
+import { formatTag, isPrimitiveType } from "../openapi.utils";
 import { decapitalize, snakeToCamel } from "../string.utils";
+import { primitiveTypeToTsType } from "../ts.utils";
 import { isNamedZodSchema } from "../zod-schema.utils";
 import { getNamespaceName } from "./generate.utils";
 import { getImportedZodSchemaInferedTypeName } from "./generate.zod.utils";
@@ -36,7 +37,7 @@ export function mapEndpointParamsToFunctionParams({
   resolver: SchemaResolver;
   endpoint: Endpoint;
   options: GenerateOptions;
-}) {
+}): TsFieldDescriptor[] {
   return endpoint.parameters
     .map((param) => {
       let type = "string";

@@ -1,9 +1,9 @@
 import { Endpoint } from "./endpoint";
 
-export type Import = {
+export interface Import {
   bindings: string[];
   from: string;
-};
+}
 
 export enum GenerateType {
   Models = "models",
@@ -11,7 +11,7 @@ export enum GenerateType {
   Queries = "queries",
 }
 
-export interface FunctionParam {
+export interface TsFieldDescriptor {
   name: string;
   type: string;
   required: boolean;

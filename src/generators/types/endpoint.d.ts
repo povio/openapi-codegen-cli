@@ -1,27 +1,27 @@
 import { OpenAPIV3 } from "openapi-types";
 
-export type EndpointParameter = {
+export interface EndpointParameter {
   name: string;
   description?: string;
   type: "Query" | "Body" | "Header" | "Path";
   zodSchema: string;
   parameterObject?: OpenAPIV3.ParameterObject;
   bodyObject?: OpenAPIV3.RequestBodyObject;
-};
+}
 
-export type EndpointResponse = {
+export interface EndpointResponse {
   statusCode: string;
   description?: string;
   zodSchema: string;
-};
+}
 
-type EndpointError = {
+interface EndpointError {
   status: number | "default";
   description?: string;
   zodSchema: string;
-};
+}
 
-export type Endpoint = {
+export interface Endpoint {
   method: OpenAPIV3.HttpMethods;
   path: string;
   operationName: string;
@@ -35,4 +35,4 @@ export type Endpoint = {
   responseObject?: OpenAPIV3.ResponseObject;
   responseDescription?: string;
   errors: Array<EndpointError>;
-};
+}

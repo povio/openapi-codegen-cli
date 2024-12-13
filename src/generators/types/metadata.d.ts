@@ -1,5 +1,5 @@
 import { OpenAPIV3 } from "openapi-types";
-import { FunctionParam } from "./generate";
+import { TsFieldDescriptor } from "./generate";
 import { GenerateOptions } from "./options";
 
 export interface GenerateMetadataParams {
@@ -7,20 +7,19 @@ export interface GenerateMetadataParams {
   options?: Partial<GenerateOptions>;
 }
 
-export interface ModelMetadata {
+export interface BaseMetadata {
   name: string;
-  zodSchemaName: string;
   filePath: string;
   namespace?: string;
-  openApiSchema?: OpenAPIV3.SchemaObject;
 }
 
-export interface QueryMetadata {
-  name: string;
-  filePath: string;
-  namespace?: string;
-  params: FunctionParam[];
-}
+export type ModelMetadata = BaseMetadata & {
+  properties: TsFieldDescriptor[];
+};
+
+export type QueryMetadata = BaseMetadata & {
+  params: TsFieldDescriptor[];
+};
 
 export interface GenerateMetadata {
   openApiDoc: OpenAPIV3.Document;
