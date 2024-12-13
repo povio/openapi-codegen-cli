@@ -13,4 +13,5 @@ export async function getGenerateMetadata({ input, options: genOptions }: Genera
   return await getMetadataFromOpenAPIDoc({ openApiDoc, options });
 }
 
+export { TsFieldDescriptor } from "./generators/types/generate";
 export * from "./generators/types/metadata";
