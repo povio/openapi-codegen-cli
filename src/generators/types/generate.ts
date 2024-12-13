@@ -11,12 +11,6 @@ export enum GenerateType {
   Queries = "queries",
 }
 
-export interface TsFieldDescriptor {
-  name: string;
-  type: string;
-  required: boolean;
-}
-
 export type GenerateData = Map<
   string,
   {

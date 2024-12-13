@@ -32,12 +32,12 @@ export async function getMetadataFromOpenAPIDoc({
     }
 
     Object.keys(zodSchemas).forEach((zodSchemaName) => {
-      const type = GenerateType.Models;
+      const generateType = GenerateType.Models;
       const tag = formatTag(dataTag);
 
       const name = getZodSchemaInferedTypeName(zodSchemaName, options);
-      const filePath = getTagFileName({ type, tag, includeTagDir: true, options });
-      const namespace = options.includeNamespaces ? getNamespaceName({ type, tag, options }) : undefined;
+      const filePath = getTagFileName({ type: generateType, tag, includeTagDir: true, options });
+      const namespace = options.includeNamespaces ? getNamespaceName({ type: generateType, tag, options }) : undefined;
 
       const ref = resolver.getRefByZodSchemaName(zodSchemaName);
       const openApiSchema = ref
@@ -48,27 +48,36 @@ export async function getMetadataFromOpenAPIDoc({
         name,
         filePath,
         namespace,
-        properties: openApiSchema ? getSchemaTsProperties(openApiSchema) : [],
+        properties: openApiSchema ? getSchemaTsProperties({ schema: openApiSchema, resolver, options }) : [],
       });
     });
 
     endpoints.forEach((endpoint) => {
-      const type = GenerateType.Queries;
+      const generateType = GenerateType.Queries;
       const tag = formatTag(dataTag);
 
       const name = getQueryName(endpoint);
-      const filePath = getTagFileName({ type, tag, includeTagDir: true, options });
-      const namespace = options.includeNamespaces ? getNamespaceName({ type, tag, options }) : undefined;
+      const filePath = getTagFileName({ type: generateType, tag, includeTagDir: true, options });
+      const namespace = options.includeNamespaces ? getNamespaceName({ type: generateType, tag, options }) : undefined;
 
       queries.push({
         name,
         filePath,
         namespace,
-        params: mapEndpointParamsToFunctionParams({ resolver, endpoint, options }).map(({ name, type, required }) => ({
-          name,
-          type,
-          required,
-        })),
+        params: mapEndpointParamsToFunctionParams({ resolver, endpoint, options }).map(
+          ({ name, type, required, tag }) => {
+            const splitType = type.split(".");
+            return {
+              name,
+              type: splitType[splitType.length - 1],
+              namespace: splitType.length > 1 ? splitType[0] : undefined,
+              required,
+              filePath: tag
+                ? getTagFileName({ type: GenerateType.Models, tag, includeTagDir: true, options })
+                : undefined,
+            };
+          },
+        ),
       });
     });
   });

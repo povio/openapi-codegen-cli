@@ -37,9 +37,9 @@ describe("getMetadataFromOpenAPIDoc", async () => {
         properties: [
           { name: "id", type: "number", required: false },
           { name: "name", type: "string", required: true },
-          { name: "category", type: "Category", required: false },
+          { name: "category", type: "Category", required: false, namespace: "PetModels", filePath: "pet/pet.models" },
           { name: "photoUrls", type: "string[]", required: true },
-          { name: "tags", type: "Tag[]", required: false },
+          { name: "tags", type: "Tag[]", required: false, namespace: "PetModels", filePath: "pet/pet.models" },
           { name: "status", type: "string", required: false },
         ],
       },
@@ -135,7 +135,13 @@ describe("getMetadataFromOpenAPIDoc", async () => {
         properties: [
           { name: "id", type: "number", required: false },
           { name: "username", type: "string", required: false },
-          { name: "address", type: "Address[]", required: false },
+          {
+            name: "address",
+            type: "Address[]",
+            required: false,
+            namespace: "CommonModels",
+            filePath: "common/common.models",
+          },
         ],
       },
     ];
@@ -145,25 +151,41 @@ describe("getMetadataFromOpenAPIDoc", async () => {
         name: "useUpdatePet",
         filePath: "pet/pet.queries",
         namespace: "PetQueries",
-        params: [{ name: "data", type: "PetModels.Pet", required: true }],
+        params: [{ name: "data", type: "Pet", required: true, namespace: "PetModels", filePath: "pet/pet.models" }],
       },
       {
         name: "useAddPet",
         filePath: "pet/pet.queries",
         namespace: "PetQueries",
-        params: [{ name: "data", type: "PetModels.Pet", required: true }],
+        params: [{ name: "data", type: "Pet", required: true, namespace: "PetModels", filePath: "pet/pet.models" }],
       },
       {
         name: "useFindPetsByStatus",
         filePath: "pet/pet.queries",
         namespace: "PetQueries",
-        params: [{ name: "status", type: "PetModels.FindPetsByStatusStatusParam", required: false }],
+        params: [
+          {
+            name: "status",
+            type: "FindPetsByStatusStatusParam",
+            required: false,
+            namespace: "PetModels",
+            filePath: "pet/pet.models",
+          },
+        ],
       },
       {
         name: "useFindPetsByTags",
         filePath: "pet/pet.queries",
         namespace: "PetQueries",
-        params: [{ name: "tags", type: "PetModels.FindPetsByTagsTagsParam", required: false }],
+        params: [
+          {
+            name: "tags",
+            type: "FindPetsByTagsTagsParam",
+            required: false,
+            namespace: "PetModels",
+            filePath: "pet/pet.models",
+          },
+        ],
       },
       {
         name: "useGetPetById",
@@ -210,7 +232,9 @@ describe("getMetadataFromOpenAPIDoc", async () => {
         name: "usePlaceOrder",
         filePath: "store/store.queries",
         namespace: "StoreQueries",
-        params: [{ name: "data", type: "StoreModels.Order", required: true }],
+        params: [
+          { name: "data", type: "Order", required: true, namespace: "StoreModels", filePath: "store/store.models" },
+        ],
       },
       {
         name: "useGetOrderById",
@@ -228,13 +252,29 @@ describe("getMetadataFromOpenAPIDoc", async () => {
         name: "useCreateUser",
         filePath: "user/user.queries",
         namespace: "UserQueries",
-        params: [{ name: "data", type: "UserModels.User", required: true }],
+        params: [
+          {
+            name: "data",
+            type: "User",
+            required: true,
+            namespace: "UserModels",
+            filePath: "user/user.models",
+          },
+        ],
       },
       {
         name: "useCreateUsersWithListInput",
         filePath: "user/user.queries",
         namespace: "UserQueries",
-        params: [{ name: "data", type: "UserModels.CreateUsersWithListInputBody", required: true }],
+        params: [
+          {
+            name: "data",
+            type: "CreateUsersWithListInputBody",
+            required: true,
+            namespace: "UserModels",
+            filePath: "user/user.models",
+          },
+        ],
       },
       {
         name: "useLoginUser",
@@ -263,7 +303,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
         namespace: "UserQueries",
         params: [
           { name: "username", type: "string", required: true },
-          { name: "data", type: "UserModels.User", required: true },
+          { name: "data", type: "User", required: true, namespace: "UserModels", filePath: "user/user.models" },
         ],
       },
       {

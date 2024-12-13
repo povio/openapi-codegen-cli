@@ -1,11 +1,18 @@
 import { OpenAPIV3 } from "openapi-types";
-import { TsFieldDescriptor } from "./generate";
 import { GenerateOptions } from "./options";
 
 export interface GenerateMetadataParams {
   input: string;
   options?: Partial<GenerateOptions>;
 }
+
+export type TsFieldDescriptor = {
+  name: string;
+  type: string;
+  required: boolean;
+  namespace?: string;
+  filePath?: string;
+};
 
 export interface BaseMetadata {
   name: string;
