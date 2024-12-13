@@ -1,7 +1,7 @@
 import { OpenAPIV3 } from "openapi-types";
 import { GenerateType } from "./generate";
 
-type ZodGenerateOptions = {
+interface ZodGenerateOptions {
   schemaSuffix: string;
   withImplicitRequiredProps?: boolean;
   withDefaultValues?: boolean;
@@ -9,24 +9,24 @@ type ZodGenerateOptions = {
   allReadonly?: boolean;
   strictObjects?: boolean;
   additionalPropertiesDefaultValue?: boolean | OpenAPIV3.SchemaObject;
-};
+}
 
-type EndpointsGenerateOptions = {
+interface EndpointsGenerateOptions {
   withDeprecatedEndpoints?: boolean;
-};
+}
 
-type GenerateConfig = {
+interface GenerateConfig {
   outputFileNameSuffix: string;
   namespaceSuffix: string;
-};
+}
 
-type BaseGenerateOptions = {
+interface BaseGenerateOptions {
   output: string;
   splitByTags: boolean;
   defaultTag: string;
   excludeTags: string[];
   includeNamespaces: boolean;
   configs: Record<GenerateType, GenerateConfig>;
-};
+}
 
 export type GenerateOptions = BaseGenerateOptions & ZodGenerateOptions & EndpointsGenerateOptions;

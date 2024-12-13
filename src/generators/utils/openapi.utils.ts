@@ -58,16 +58,8 @@ export function pathParamToVariableName(name: string) {
   return snakeToCamel(preserveUnderscore.replaceAll("-", "_")).replaceAll("#", "_");
 }
 
-export const isPrimitiveType = (type: SingleType): type is PrimitiveType => PRIMITIVE_TYPE_LIST.includes(type as any);
-
-export function primitiveTypeToTsType(type: PrimitiveType): string {
-  return match(type)
-    .with("string", () => "string")
-    .with("number", () => "number")
-    .with("integer", () => "number")
-    .with("boolean", () => "boolean")
-    .exhaustive();
-}
+export const isPrimitiveType = (type: SingleType | undefined): type is PrimitiveType =>
+  PRIMITIVE_TYPE_LIST.includes(type as any);
 
 export function escapeControlCharacters(str: string): string {
   return str
