@@ -7,6 +7,7 @@ import { GenerateOptions } from "../types/options";
 import { getEndpointsImports, getModelsImports } from "../utils/generate/generate.imports.utils";
 import { getNamespaceName } from "../utils/generate/generate.utils";
 import { getHbsTemplateDelegate } from "../utils/hbs/hbs-template.utils";
+import { isMutation, isQuery } from "../utils/queries.utils";
 import { isNamedZodSchema } from "../utils/zod-schema.utils";
 
 export function generateQueries({
@@ -25,8 +26,8 @@ export function generateQueries({
     return;
   }
 
-  const queryEndpoints = endpoints.filter((endpoint) => endpoint.method === "get");
-  const mutationEndpoints = endpoints.filter((endpoint) => endpoint.method !== "get");
+  const queryEndpoints = endpoints.filter(isQuery);
+  const mutationEndpoints = endpoints.filter(isMutation);
 
   const queryImport: Import = {
     ...QUERY_IMPORT,

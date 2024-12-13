@@ -151,18 +151,24 @@ describe("getMetadataFromOpenAPIDoc", async () => {
         name: "useUpdatePet",
         filePath: "pet/pet.queries",
         namespace: "PetQueries",
+        isQuery: false,
+        isMutation: true,
         params: [{ name: "data", type: "Pet", required: true, namespace: "PetModels", filePath: "pet/pet.models" }],
       },
       {
         name: "useAddPet",
         filePath: "pet/pet.queries",
         namespace: "PetQueries",
+        isQuery: false,
+        isMutation: true,
         params: [{ name: "data", type: "Pet", required: true, namespace: "PetModels", filePath: "pet/pet.models" }],
       },
       {
         name: "useFindPetsByStatus",
         filePath: "pet/pet.queries",
         namespace: "PetQueries",
+        isQuery: true,
+        isMutation: false,
         params: [
           {
             name: "status",
@@ -177,6 +183,8 @@ describe("getMetadataFromOpenAPIDoc", async () => {
         name: "useFindPetsByTags",
         filePath: "pet/pet.queries",
         namespace: "PetQueries",
+        isQuery: true,
+        isMutation: false,
         params: [
           {
             name: "tags",
@@ -191,12 +199,16 @@ describe("getMetadataFromOpenAPIDoc", async () => {
         name: "useGetPetById",
         filePath: "pet/pet.queries",
         namespace: "PetQueries",
+        isQuery: true,
+        isMutation: false,
         params: [{ name: "petId", type: "number", required: true }],
       },
       {
         name: "useUpdatePetWithForm",
         filePath: "pet/pet.queries",
         namespace: "PetQueries",
+        isQuery: false,
+        isMutation: true,
         params: [
           { name: "petId", type: "number", required: true },
           { name: "name", type: "string", required: true },
@@ -207,6 +219,8 @@ describe("getMetadataFromOpenAPIDoc", async () => {
         name: "useDeletePet",
         filePath: "pet/pet.queries",
         namespace: "PetQueries",
+        isQuery: false,
+        isMutation: true,
         params: [
           { name: "petId", type: "number", required: true },
           { name: "api_key", type: "string", required: false },
@@ -216,6 +230,8 @@ describe("getMetadataFromOpenAPIDoc", async () => {
         name: "useUploadFile",
         filePath: "pet/pet.queries",
         namespace: "PetQueries",
+        isQuery: false,
+        isMutation: true,
         params: [
           { name: "petId", type: "number", required: true },
           { name: "data", type: "string", required: true },
@@ -226,12 +242,16 @@ describe("getMetadataFromOpenAPIDoc", async () => {
         name: "useGetInventory",
         filePath: "store/store.queries",
         namespace: "StoreQueries",
+        isQuery: true,
+        isMutation: false,
         params: [],
       },
       {
         name: "usePlaceOrder",
         filePath: "store/store.queries",
         namespace: "StoreQueries",
+        isQuery: false,
+        isMutation: true,
         params: [
           { name: "data", type: "Order", required: true, namespace: "StoreModels", filePath: "store/store.models" },
         ],
@@ -240,18 +260,24 @@ describe("getMetadataFromOpenAPIDoc", async () => {
         name: "useGetOrderById",
         filePath: "store/store.queries",
         namespace: "StoreQueries",
+        isQuery: true,
+        isMutation: false,
         params: [{ name: "orderId", type: "number", required: true }],
       },
       {
         name: "useDeleteOrder",
         filePath: "store/store.queries",
         namespace: "StoreQueries",
+        isQuery: false,
+        isMutation: true,
         params: [{ name: "orderId", type: "number", required: true }],
       },
       {
         name: "useCreateUser",
         filePath: "user/user.queries",
         namespace: "UserQueries",
+        isQuery: false,
+        isMutation: true,
         params: [
           {
             name: "data",
@@ -266,6 +292,8 @@ describe("getMetadataFromOpenAPIDoc", async () => {
         name: "useCreateUsersWithListInput",
         filePath: "user/user.queries",
         namespace: "UserQueries",
+        isQuery: false,
+        isMutation: true,
         params: [
           {
             name: "data",
@@ -280,6 +308,8 @@ describe("getMetadataFromOpenAPIDoc", async () => {
         name: "useLoginUser",
         filePath: "user/user.queries",
         namespace: "UserQueries",
+        isQuery: true,
+        isMutation: false,
         params: [
           { name: "username", type: "string", required: false },
           { name: "password", type: "string", required: false },
@@ -289,18 +319,24 @@ describe("getMetadataFromOpenAPIDoc", async () => {
         name: "useLogoutUser",
         filePath: "user/user.queries",
         namespace: "UserQueries",
+        isQuery: true,
+        isMutation: false,
         params: [],
       },
       {
         name: "useGetUserByName",
         filePath: "user/user.queries",
         namespace: "UserQueries",
+        isQuery: true,
+        isMutation: false,
         params: [{ name: "username", type: "string", required: true }],
       },
       {
         name: "useUpdateUser",
         filePath: "user/user.queries",
         namespace: "UserQueries",
+        isQuery: false,
+        isMutation: true,
         params: [
           { name: "username", type: "string", required: true },
           { name: "data", type: "User", required: true, namespace: "UserModels", filePath: "user/user.models" },
@@ -310,6 +346,8 @@ describe("getMetadataFromOpenAPIDoc", async () => {
         name: "useDeleteUser",
         filePath: "user/user.queries",
         namespace: "UserQueries",
+        isQuery: false,
+        isMutation: true,
         params: [{ name: "username", type: "string", required: true }],
       },
     ];

@@ -4,6 +4,7 @@ import { Endpoint } from "../../types/endpoint";
 import { Import } from "../../types/generate";
 import { getEndpointConfig } from "../generate/generate.endpoints.utils";
 import { getHbsPartialTemplateDelegate } from "../hbs/hbs-template.utils";
+import { isQuery } from "../queries.utils";
 
 enum PartialsHelpers {
   IMPORT = "genImport",
@@ -57,7 +58,7 @@ function registerGenerateQueryHelper() {
     let templateName: string;
     let queryHook: string;
 
-    if (endpoint.method === "get") {
+    if (isQuery(endpoint)) {
       templateName = "query-use-query";
       queryHook = QUERY_HOOKS.query;
     } else {

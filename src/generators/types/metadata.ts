@@ -25,6 +25,8 @@ export type ModelMetadata = BaseMetadata & {
 };
 
 export type QueryMetadata = BaseMetadata & {
+  isQuery: boolean;
+  isMutation: boolean;
   params: TsFieldDescriptor[];
 };
 

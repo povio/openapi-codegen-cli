@@ -7,6 +7,7 @@ import { getQueryName } from "../utils/generate/generate.query.utils";
 import { getNamespaceName, getTagFileName } from "../utils/generate/generate.utils";
 import { getZodSchemaInferedTypeName } from "../utils/generate/generate.zod.utils";
 import { formatTag } from "../utils/openapi.utils";
+import { isMutation, isQuery } from "../utils/queries.utils";
 import { getSchemaTsProperties } from "../utils/ts.utils";
 import { getDataFromOpenAPIDoc } from "./getDataFromOpenAPIDoc";
 
@@ -60,10 +61,13 @@ export async function getMetadataFromOpenAPIDoc({
       const filePath = getTagFileName({ type: generateType, tag, includeTagDir: true, options });
       const namespace = options.includeNamespaces ? getNamespaceName({ type: generateType, tag, options }) : undefined;
 
+      console.log(name, endpoint.method, isQuery(endpoint));
       queries.push({
         name,
         filePath,
         namespace,
+        isQuery: isQuery(endpoint),
+        isMutation: isMutation(endpoint),
         params: mapEndpointParamsToFunctionParams({ resolver, endpoint, options }).map(
           ({ name, type, required, tag }) => {
             const splitType = type.split(".");
