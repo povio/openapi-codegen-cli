@@ -2,6 +2,7 @@ import { OpenAPIV3 } from "openapi-types";
 import { GenerateType } from "../types/generate";
 import { GenerateMetadata, ModelMetadata, QueryMetadata } from "../types/metadata";
 import { GenerateOptions } from "../types/options";
+import { mapEndpointParamsToFunctionParams } from "../utils/generate/generate.endpoints.utils";
 import { getQueryName } from "../utils/generate/generate.query.utils";
 import { getNamespaceName, getTagFileName } from "../utils/generate/generate.utils";
 import { getZodSchemaInferedTypeName } from "../utils/generate/generate.zod.utils";
@@ -53,7 +54,16 @@ export async function getMetadataFromOpenAPIDoc({
       const filePath = getTagFileName({ type, tag, includeTagDir: true, options });
       const namespace = options.includeNamespaces ? getNamespaceName({ type, tag, options }) : undefined;
 
-      queries.push({ name, filePath, namespace });
+      queries.push({
+        name,
+        filePath,
+        namespace,
+        params: mapEndpointParamsToFunctionParams({ resolver, endpoint, options }).map(({ name, type, required }) => ({
+          name,
+          type,
+          required,
+        })),
+      });
     });
   });
 

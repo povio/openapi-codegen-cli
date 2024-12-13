@@ -1,3 +1,4 @@
+import { DATA_FILE_PATH, DATA_TS_PATH } from "src/generators/const/template.const";
 import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
 import { Endpoint } from "../../types/endpoint";
 import { GenerateType, Import } from "../../types/generate";
@@ -62,6 +63,14 @@ export function getEndpointsImports({
   });
 }
 
+export function getTsPath(options: Pick<GenerateOptions, "output">) {
+  const tsPath = options.output.includes(DATA_FILE_PATH)
+    ? `${options.output.replace(DATA_FILE_PATH, DATA_TS_PATH)}/`
+    : "../";
+  const normalizedTsPath = tsPath.replace(/\/\//g, "/");
+  return normalizedTsPath;
+}
+
 function getImports<T>({
   type = GenerateType.Models,
   tag: currentTag,
@@ -84,7 +93,7 @@ function getImports<T>({
       const sameTagDir = currentTag === tag;
       imports.set(tag, {
         bindings: [options.includeNamespaces ? getNamespaceName({ type, tag, options }) : getEntityName(entity)],
-        from: `${sameTagDir ? "./" : "../"}${getTagFileName({ type, tag, includeTagDir: !sameTagDir, options })}`,
+        from: `${sameTagDir ? "./" : getTsPath(options)}${getTagFileName({ type, tag, includeTagDir: !sameTagDir, options })}`,
       });
     } else if (!options.includeNamespaces) {
       imports.get(tag)!.bindings.push(getEntityName(entity));

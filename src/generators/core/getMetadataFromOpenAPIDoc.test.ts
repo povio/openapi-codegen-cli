@@ -366,96 +366,132 @@ describe("getMetadataFromOpenAPIDoc", async () => {
         name: "useUpdatePet",
         filePath: "pet/pet.queries",
         namespace: "PetQueries",
+        params: [{ name: "data", type: "PetModels.Pet", required: true }],
       },
       {
         name: "useAddPet",
         filePath: "pet/pet.queries",
         namespace: "PetQueries",
+        params: [{ name: "data", type: "PetModels.Pet", required: true }],
       },
       {
         name: "useFindPetsByStatus",
         filePath: "pet/pet.queries",
         namespace: "PetQueries",
+        params: [{ name: "status", type: "PetModels.FindPetsByStatusStatusParam", required: false }],
       },
       {
         name: "useFindPetsByTags",
         filePath: "pet/pet.queries",
         namespace: "PetQueries",
+        params: [{ name: "tags", type: "PetModels.FindPetsByTagsTagsParam", required: false }],
       },
       {
         name: "useGetPetById",
         filePath: "pet/pet.queries",
         namespace: "PetQueries",
+        params: [{ name: "petId", type: "number", required: true }],
       },
       {
         name: "useUpdatePetWithForm",
         filePath: "pet/pet.queries",
         namespace: "PetQueries",
+        params: [
+          { name: "petId", type: "number", required: true },
+          { name: "name", type: "string", required: true },
+          { name: "status", type: "string", required: true },
+        ],
       },
       {
         name: "useDeletePet",
         filePath: "pet/pet.queries",
         namespace: "PetQueries",
+        params: [
+          { name: "petId", type: "number", required: true },
+          { name: "api_key", type: "string", required: false },
+        ],
       },
       {
         name: "useUploadFile",
         filePath: "pet/pet.queries",
         namespace: "PetQueries",
+        params: [
+          { name: "petId", type: "number", required: true },
+          { name: "data", type: "string", required: true },
+          { name: "additionalMetadata", type: "string", required: false },
+        ],
       },
       {
         name: "useGetInventory",
         filePath: "store/store.queries",
         namespace: "StoreQueries",
+        params: [],
       },
       {
         name: "usePlaceOrder",
         filePath: "store/store.queries",
         namespace: "StoreQueries",
+        params: [{ name: "data", type: "StoreModels.Order", required: true }],
       },
       {
         name: "useGetOrderById",
         filePath: "store/store.queries",
         namespace: "StoreQueries",
+        params: [{ name: "orderId", type: "number", required: true }],
       },
       {
         name: "useDeleteOrder",
         filePath: "store/store.queries",
         namespace: "StoreQueries",
+        params: [{ name: "orderId", type: "number", required: true }],
       },
       {
         name: "useCreateUser",
         filePath: "user/user.queries",
         namespace: "UserQueries",
+        params: [{ name: "data", type: "UserModels.User", required: true }],
       },
       {
         name: "useCreateUsersWithListInput",
         filePath: "user/user.queries",
         namespace: "UserQueries",
+        params: [{ name: "data", type: "UserModels.CreateUsersWithListInputBody", required: true }],
       },
       {
         name: "useLoginUser",
         filePath: "user/user.queries",
         namespace: "UserQueries",
+        params: [
+          { name: "username", type: "string", required: false },
+          { name: "password", type: "string", required: false },
+        ],
       },
       {
         name: "useLogoutUser",
         filePath: "user/user.queries",
         namespace: "UserQueries",
+        params: [],
       },
       {
         name: "useGetUserByName",
         filePath: "user/user.queries",
         namespace: "UserQueries",
+        params: [{ name: "username", type: "string", required: true }],
       },
       {
         name: "useUpdateUser",
         filePath: "user/user.queries",
         namespace: "UserQueries",
+        params: [
+          { name: "username", type: "string", required: true },
+          { name: "data", type: "UserModels.User", required: true },
+        ],
       },
       {
         name: "useDeleteUser",
         filePath: "user/user.queries",
         namespace: "UserQueries",
+        params: [{ name: "username", type: "string", required: true }],
       },
     ];
 

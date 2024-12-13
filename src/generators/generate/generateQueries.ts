@@ -1,4 +1,5 @@
 import { QUERY_HOOKS, QUERY_IMPORT } from "../const/query.const";
+import { QUERY_OPTIONS_TYPES, QUERY_TYPES_IMPORT } from "../const/template.const";
 import { SchemaResolver } from "../core/SchemaResolver.class";
 import { EndpointParameter } from "../types/endpoint";
 import { GenerateData, GenerateType, Import } from "../types/generate";
@@ -35,8 +36,15 @@ export function generateQueries({
     ],
   };
 
-  const filteredMutationEndpointParams = mutationEndpoints.filter((endpoint) => endpoint.parameters.length > 1);
-  const endpointParams = [...queryEndpoints, ...filteredMutationEndpointParams].reduce(
+  const queryTypesImport: Import = {
+    ...QUERY_TYPES_IMPORT,
+    bindings: [
+      ...(queryEndpoints.length > 0 ? [QUERY_OPTIONS_TYPES.query] : []),
+      ...(mutationEndpoints.length > 0 ? [QUERY_OPTIONS_TYPES.mutation] : []),
+    ],
+  };
+
+  const endpointParams = [...queryEndpoints, ...mutationEndpoints].reduce(
     (prev, curr) => [...prev, ...curr.parameters],
     [] as EndpointParameter[],
   );
@@ -57,6 +65,7 @@ export function generateQueries({
 
   return hbsTemplate({
     queryImport,
+    queryTypesImport,
     modelsImports,
     endpointsImports,
     includeNamespace: options.includeNamespaces,

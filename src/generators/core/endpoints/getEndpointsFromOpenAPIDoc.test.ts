@@ -140,7 +140,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         parameters: [
           {
             description: undefined,
-            name: "body",
+            name: "data",
             zodSchema: "Order",
             type: "Body",
             bodyObject: {
@@ -265,7 +265,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         parameters: [
           {
             description: "Update an existent pet in the store",
-            name: "body",
+            name: "data",
             zodSchema: "Pet",
             type: "Body",
             bodyObject: {
@@ -307,7 +307,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         parameters: [
           {
             description: "Create a new pet in the store",
-            name: "body",
+            name: "data",
             zodSchema: "Pet",
             type: "Body",
             bodyObject: {
@@ -427,7 +427,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         parameters: [
           {
             description: "Update an existent pet in the store",
-            name: "body",
+            name: "data",
             zodSchema: "UpdatePetBody",
             type: "Body",
             bodyObject: {
@@ -779,7 +779,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         parameters: [
           {
             description: "Update an existent pet in the store",
-            name: "body",
+            name: "data",
             zodSchema: "Pet",
             type: "Body",
             bodyObject: {
@@ -820,7 +820,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         parameters: [
           {
             description: "Create a new pet in the store",
-            name: "body",
+            name: "data",
             zodSchema: "Pet",
             type: "Body",
             bodyObject: {
@@ -1108,7 +1108,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         parameters: [
           {
             description: undefined,
-            name: "body",
+            name: "data",
             zodSchema: "z.instanceof(File)",
             type: "Body",
             bodyObject: {
@@ -1197,7 +1197,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         parameters: [
           {
             description: undefined,
-            name: "body",
+            name: "data",
             zodSchema: "Order",
             type: "Body",
             bodyObject: {
@@ -1315,7 +1315,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         parameters: [
           {
             description: "Created user object",
-            name: "body",
+            name: "data",
             zodSchema: "User",
             type: "Body",
             bodyObject: {
@@ -1342,7 +1342,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         parameters: [
           {
             description: undefined,
-            name: "body",
+            name: "data",
             zodSchema: "CreateUsersWithListInputBody",
             type: "Body",
             bodyObject: {
@@ -1499,7 +1499,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         parameters: [
           {
             description: "Update an existent user in the store",
-            name: "body",
+            name: "data",
             zodSchema: "User",
             type: "Body",
             bodyObject: {
