@@ -62,6 +62,14 @@ describe("Utils: js", () => {
       expect(invalidVariableNameCharactersToCamel(validVariableName)).toEqual(validVariableName);
     });
 
-    expect(invalidVariableNameCharactersToCamel("order[createdAt]")).toEqual("orderCreatedAt");
+    const invalidVariableNames = [
+      { input: "order[createdAt]", output: "orderCreatedAt" },
+      { input: "123name", output: "name" },
+      { input: "with@invalid#chars", output: "withInvalidChars" },
+      { input: "-12^3~startswithinvalidchars", output: "startswithinvalidchars" },
+    ];
+    invalidVariableNames.forEach(({ input, output }) => {
+      expect(invalidVariableNameCharactersToCamel(input)).toEqual(output);
+    });
   });
 });
