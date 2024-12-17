@@ -1,8 +1,9 @@
 import { OpenAPIV3 } from "openapi-types";
 import { match, P } from "ts-pattern";
-import { ALLOWED_PARAM_MEDIA_TYPES, PRIMITIVE_TYPE_LIST } from "../const/openapi.const";
+import { ALLOWED_METHODS, ALLOWED_PARAM_MEDIA_TYPES, PRIMITIVE_TYPE_LIST } from "../const/openapi.const";
 import { PrimitiveType, SingleType } from "../types/openapi";
 import { GenerateOptions } from "../types/options";
+import { pick } from "./object.utils";
 import { capitalize, kebabToCamel, nonWordCharactersToCamel, snakeToCamel } from "./string.utils";
 
 export const getSchemaRef = (schemaName: string) => `#/components/schemas/${schemaName}`;
@@ -103,8 +104,80 @@ export function isMediaTypeAllowed(mediaType: string) {
   return mediaType === "application/json";
 }
 
-export function getOperationName(path: string, method: string, operation: OpenAPIV3.OperationObject) {
-  return operation.operationId ?? method + pathToVariableName(path);
+export function getOperationName({
+  path,
+  method,
+  operation,
+  options,
+  keepOperationPrefixWithoutEnding,
+}: {
+  path: string;
+  method: string;
+  operation: OpenAPIV3.OperationObject;
+  options: GenerateOptions;
+  keepOperationPrefixWithoutEnding?: boolean;
+}) {
+  let operationName = operation.operationId ?? method + pathToVariableName(path);
+
+  if (options.removeOperationPrefixEndingWith && keepOperationPrefixWithoutEnding) {
+    const splits = operationName.split(options.removeOperationPrefixEndingWith);
+    return splits.map((split, index) => (index === 0 ? split : capitalize(split))).join("");
+  }
+
+  if (options.removeOperationPrefixEndingWith && !keepOperationPrefixWithoutEnding) {
+    const regex = new RegExp(`^.*${options.removeOperationPrefixEndingWith}`);
+    operationName = operationName.replace(regex, "");
+  }
+
+  return operationName;
+}
+
+export function getUniqueOperationName({
+  path,
+  method,
+  operation,
+  openApiDoc,
+  options,
+}: {
+  path: string;
+  method: string;
+  operation: OpenAPIV3.OperationObject;
+  openApiDoc: OpenAPIV3.Document;
+  options: GenerateOptions;
+}) {
+  const operationsByTag = getOperationsByTag(openApiDoc, options);
+  const tag = options.splitByTags ? getOperationTag(operation, options) : options.defaultTag;
+  const operationName = getOperationName({ path, method, operation, options });
+  const operationsWithName = operationsByTag[tag].filter(
+    (operation) => getOperationName({ path, method, operation, options }) === operationName,
+  );
+  if (operationsWithName.length === 1) {
+    return operationName;
+  }
+
+  return getOperationName({ path, method, operation, options, keepOperationPrefixWithoutEnding: true });
+}
+
+function getOperationsByTag(openApiDoc: OpenAPIV3.Document, options: GenerateOptions) {
+  const operationsByTag: Record<string, OpenAPIV3.OperationObject[]> = {};
+  for (const path in openApiDoc.paths) {
+    const pathItemObj = openApiDoc.paths[path] as OpenAPIV3.PathItemObject;
+    const pathItem = pick(pathItemObj, ALLOWED_METHODS);
+
+    for (const method in pathItem) {
+      const operation = pathItem[method as keyof typeof pathItem] as OpenAPIV3.OperationObject | undefined;
+      if (!operation || (operation.deprecated && !options?.withDeprecatedEndpoints)) {
+        continue;
+      }
+
+      const tag = options.splitByTags ? getOperationTag(operation, options) : options.defaultTag;
+      if (!operationsByTag[tag]) {
+        operationsByTag[tag] = [];
+      }
+      operationsByTag[tag].push(operation);
+    }
+  }
+  return operationsByTag;
 }
 
 export function formatTag(tag: string) {

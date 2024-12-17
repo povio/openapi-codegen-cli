@@ -61,7 +61,6 @@ export async function getMetadataFromOpenAPIDoc({
       const filePath = getTagFileName({ type: generateType, tag, includeTagDir: true, options });
       const namespace = options.includeNamespaces ? getNamespaceName({ type: generateType, tag, options }) : undefined;
 
-      console.log(name, endpoint.method, isQuery(endpoint));
       queries.push({
         name,
         filePath,

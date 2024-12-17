@@ -11,6 +11,7 @@ export type GenerateParams = {
   splitByTags: boolean;
   defaultTag: string;
   excludeTags: string;
+  removeOperationPrefixEndingWith: string;
   prettier: boolean;
   verbose: boolean;
 };
@@ -22,6 +23,7 @@ export async function generate({
   splitByTags,
   defaultTag,
   excludeTags,
+  removeOperationPrefixEndingWith,
   prettier,
   verbose,
 }: GenerateParams) {
@@ -41,6 +43,7 @@ export async function generate({
       splitByTags,
       defaultTag,
       excludeTags: excludeTags.split(","),
+      removeOperationPrefixEndingWith,
     },
   });
   if (verbose) {
