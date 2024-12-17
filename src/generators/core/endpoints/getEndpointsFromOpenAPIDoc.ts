@@ -6,8 +6,8 @@ import { GenerateOptions } from "../../types/options";
 import { pick } from "../../utils/object.utils";
 import {
   formatTag,
-  getOperationName,
   getOperationTag,
+  getUniqueOperationName,
   isErrorStatus,
   isMainResponseStatus,
   isMediaTypeAllowed,
@@ -48,7 +48,7 @@ export function getEndpointsFromOpenAPIDoc({
         ...pathParameters,
         ...getParameters(operation.parameters ?? []),
       }).map(([, param]) => param);
-      const operationName = getOperationName(path, method, operation);
+      const operationName = getUniqueOperationName({ path, method, operation, openApiDoc, options });
       const tag = getOperationTag(operation, options);
       const endpoint: Endpoint = {
         method: method as OpenAPIV3.HttpMethods,

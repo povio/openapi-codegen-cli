@@ -13,6 +13,7 @@ interface ZodGenerateOptions {
 
 interface EndpointsGenerateOptions {
   withDeprecatedEndpoints?: boolean;
+  removeOperationPrefixEndingWith?: string;
 }
 
 interface GenerateConfig {

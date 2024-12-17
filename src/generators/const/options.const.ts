@@ -27,4 +27,5 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   schemaSuffix: SCHEMA_SUFFIX,
   additionalPropertiesDefaultValue: false,
   // Endpoints options
+  removeOperationPrefixEndingWith: "Controller_",
 };

@@ -23,6 +23,9 @@ class GenerateOptions implements GenerateParams {
   @YargOption({ envAlias: "excludeTags", default: "" })
   excludeTags!: string;
 
+  @YargOption({ envAlias: "removeOperationPrefixEndingWith", default: "Controller_" })
+  removeOperationPrefixEndingWith!: string;
+
   @YargOption({ envAlias: "prettier", default: true, type: "boolean" })
   prettier!: boolean;
 
