@@ -31,7 +31,7 @@ function visit({
   getSchemaByRef: (ref: string) => OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject;
   visitedRefs: Record<string, boolean>;
   refsDependencyGraph: Record<string, Set<string>>;
-}): void {
+}) {
   if (!schema) {
     return;
   }

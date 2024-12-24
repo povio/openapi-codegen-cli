@@ -1,15 +1,17 @@
 import { OpenAPIV3 } from "openapi-types";
+import { Endpoint, EndpointParameter } from "../types/endpoint";
 import { GenerateType } from "../types/generate";
-import { GenerateMetadata, ModelMetadata, QueryMetadata } from "../types/metadata";
+import { GenerateMetadata, ModelMetadata, QueryMetadata, TsNestedDataType } from "../types/metadata";
 import { GenerateOptions } from "../types/options";
-import { mapEndpointParamsToFunctionParams } from "../utils/generate/generate.endpoints.utils";
 import { getQueryName } from "../utils/generate/generate.query.utils";
 import { getNamespaceName, getTagFileName } from "../utils/generate/generate.utils";
-import { getZodSchemaInferedTypeName } from "../utils/generate/generate.zod.utils";
-import { formatTag } from "../utils/openapi.utils";
+import { invalidVariableNameCharactersToCamel } from "../utils/js.utils";
+import { isSchemaObject } from "../utils/openapi-schema.utils";
+import { formatTag, isMediaTypeAllowed, isParamMediaTypeAllowed, isReferenceObject } from "../utils/openapi.utils";
 import { isMutation, isQuery } from "../utils/queries.utils";
-import { getSchemaTsProperties } from "../utils/ts.utils";
+import { getSchemaTsNestedDataType, getTypeInfo } from "../utils/ts.utils";
 import { getDataFromOpenAPIDoc } from "./getDataFromOpenAPIDoc";
+import { SchemaResolver } from "./SchemaResolver.class";
 
 export async function getMetadataFromOpenAPIDoc({
   openApiDoc,
@@ -33,54 +35,31 @@ export async function getMetadataFromOpenAPIDoc({
     }
 
     Object.keys(zodSchemas).forEach((zodSchemaName) => {
-      const generateType = GenerateType.Models;
-      const tag = formatTag(dataTag);
-
-      const name = getZodSchemaInferedTypeName(zodSchemaName, options);
-      const filePath = getTagFileName({ type: generateType, tag, includeTagDir: true, options });
-      const namespace = options.includeNamespaces ? getNamespaceName({ type: generateType, tag, options }) : undefined;
-
       const ref = resolver.getRefByZodSchemaName(zodSchemaName);
-      const openApiSchema = ref
-        ? resolver.getSchemaByRef(ref)
-        : resolver.getSchemaByDiscriminatorZodSchemaName(zodSchemaName);
+      const schema = ref ? resolver.getSchemaByRef(ref) : resolver.getSchemaByDiscriminatorZodSchemaName(zodSchemaName);
 
-      models.push({
-        name,
-        filePath,
-        namespace,
-        properties: openApiSchema ? getSchemaTsProperties({ schema: openApiSchema, resolver, options }) : [],
-      });
+      const typeInfo = getTypeInfo({ zodSchemaName, schema, resolver, options });
+
+      let tsNestedDataType: TsNestedDataType | undefined;
+      if (schema) {
+        tsNestedDataType = getSchemaTsNestedDataType({ schema, resolver, options });
+      }
+
+      models.push({ ...typeInfo, dataType: "primitive", ...tsNestedDataType });
     });
 
     endpoints.forEach((endpoint) => {
       const generateType = GenerateType.Queries;
       const tag = formatTag(dataTag);
 
-      const name = getQueryName(endpoint);
-      const filePath = getTagFileName({ type: generateType, tag, includeTagDir: true, options });
-      const namespace = options.includeNamespaces ? getNamespaceName({ type: generateType, tag, options }) : undefined;
-
       queries.push({
-        name,
-        filePath,
-        namespace,
+        name: getQueryName(endpoint),
+        filePath: getTagFileName({ type: generateType, tag, includeTagDir: true, options }),
+        namespace: options.includeNamespaces ? getNamespaceName({ type: generateType, tag, options }) : undefined,
         isQuery: isQuery(endpoint),
         isMutation: isMutation(endpoint),
-        params: mapEndpointParamsToFunctionParams({ resolver, endpoint, options }).map(
-          ({ name, type, required, tag }) => {
-            const splitType = type.split(".");
-            return {
-              name,
-              type: splitType[splitType.length - 1],
-              namespace: splitType.length > 1 ? splitType[0] : undefined,
-              required,
-              filePath: tag
-                ? getTagFileName({ type: GenerateType.Models, tag, includeTagDir: true, options })
-                : undefined,
-            };
-          },
-        ),
+        params: getQueryMetadataParams({ resolver, endpoint, options }),
+        response: getQueryMetadataResponse({ resolver, endpoint, options }),
       });
     });
   });
@@ -88,4 +67,78 @@ export async function getMetadataFromOpenAPIDoc({
   const metadata: GenerateMetadata = { openApiDoc, models, queries };
 
   return metadata;
+}
+
+function getQueryMetadataParams({
+  resolver,
+  endpoint,
+  options,
+}: {
+  resolver: SchemaResolver;
+  endpoint: Endpoint;
+  options: GenerateOptions;
+}): QueryMetadata["params"] {
+  return endpoint.parameters
+    .map((param) => {
+      let schema: OpenAPIV3.SchemaObject | undefined;
+      if (param.parameterObject?.schema && isSchemaObject(param.parameterObject.schema)) {
+        schema = param.parameterObject?.schema as OpenAPIV3.SchemaObject;
+      } else if (param.bodyObject) {
+        const mediaTypes = Object.keys(param.bodyObject.content ?? {});
+        const matchingMediaType = mediaTypes.find(isParamMediaTypeAllowed);
+        if (matchingMediaType) {
+          const obj = param.bodyObject.content?.[matchingMediaType]?.schema;
+          schema = isReferenceObject(obj) ? resolver.getSchemaByRef(obj.$ref) : obj;
+        }
+      }
+
+      const typeInfo = getTypeInfo({ zodSchemaName: param.zodSchema, schema, resolver, options });
+
+      let tsNestedDataType: TsNestedDataType | undefined;
+      if (schema) {
+        tsNestedDataType = getSchemaTsNestedDataType({ schema, resolver, options });
+      }
+
+      return {
+        name: invalidVariableNameCharactersToCamel(param.name),
+        isRequired: param.parameterObject?.required ?? true,
+        ...typeInfo,
+        ...tsNestedDataType,
+        paramType: param.type,
+      } as QueryMetadata["params"][0] & { paramType: EndpointParameter["type"] };
+    })
+    .sort((a, b) => {
+      if (a.isRequired === b.isRequired) {
+        const sortedParamTypes = ["Path", "Body", "Query", "Header"];
+        return sortedParamTypes.indexOf(a.paramType) - sortedParamTypes.indexOf(b.paramType);
+      }
+      return a.isRequired ? -1 : 1;
+    })
+    .map(({ paramType, ...queryParam }) => queryParam);
+}
+
+function getQueryMetadataResponse({
+  resolver,
+  endpoint,
+  options,
+}: {
+  resolver: SchemaResolver;
+  endpoint: Endpoint;
+  options: GenerateOptions;
+}): QueryMetadata["response"] {
+  let schema: OpenAPIV3.SchemaObject | undefined;
+  const matchingMediaType = Object.keys(endpoint.responseObject?.content ?? {}).find(isMediaTypeAllowed);
+  if (matchingMediaType) {
+    const obj = endpoint.responseObject?.content?.[matchingMediaType]?.schema;
+    schema = isReferenceObject(obj) ? resolver.getSchemaByRef(obj.$ref) : obj;
+  }
+
+  const typeInfo = getTypeInfo({ zodSchemaName: endpoint.response, schema, resolver, options });
+
+  let tsNestedDataType: TsNestedDataType | undefined;
+  if (schema) {
+    tsNestedDataType = getSchemaTsNestedDataType({ schema, resolver, options });
+  }
+
+  return { ...typeInfo, dataType: "primitive", ...tsNestedDataType };
 }
