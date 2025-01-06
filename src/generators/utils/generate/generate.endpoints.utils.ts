@@ -41,10 +41,8 @@ export function mapEndpointParamsToFunctionParams({
   return endpoint.parameters
     .map((param) => {
       let type = "string";
-      let tag: string | undefined;
       if (isNamedZodSchema(param.zodSchema)) {
         type = getImportedZodSchemaInferedTypeName({ resolver, zodSchemaName: param.zodSchema, options });
-        tag = resolver.getTagByZodSchemaName(param.zodSchema);
       } else if (param.parameterObject?.schema && isSchemaObject(param.parameterObject.schema)) {
         const openApiSchemaType = (param.parameterObject?.schema as OpenAPIV3.SchemaObject)?.type;
         if (openApiSchemaType && isPrimitiveType(openApiSchemaType)) {
@@ -57,7 +55,6 @@ export function mapEndpointParamsToFunctionParams({
         type,
         paramType: param.type,
         required: param.parameterObject?.required ?? true,
-        tag,
       };
     })
     .sort((a, b) => {

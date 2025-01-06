@@ -6,28 +6,36 @@ export interface GenerateMetadataParams {
   options?: Partial<GenerateOptions>;
 }
 
-export type TsFieldDescriptor = {
-  name: string;
+export type TsType = {
   type: string;
-  required: boolean;
   namespace?: string;
   filePath?: string;
 };
 
-export interface BaseMetadata {
+export type TsNestedType = TsType & TsNestedDataType;
+
+export type TsProperty = {
+  name: string;
+  isRequired: boolean;
+} & TsType;
+
+export type TsNestedProperty = TsProperty & TsNestedDataType;
+
+export type TsNestedDataType =
+  | { dataType: "primitive" }
+  | { dataType: "object"; objectProperties: TsNestedProperty[]; isCircular?: boolean }
+  | { dataType: "array"; arrayType: TsNestedType };
+
+export type ModelMetadata = TsNestedType;
+
+export type QueryMetadata = {
   name: string;
   filePath: string;
   namespace?: string;
-}
-
-export type ModelMetadata = BaseMetadata & {
-  properties: TsFieldDescriptor[];
-};
-
-export type QueryMetadata = BaseMetadata & {
   isQuery: boolean;
   isMutation: boolean;
-  params: TsFieldDescriptor[];
+  params: TsNestedProperty[];
+  response: TsNestedType;
 };
 
 export interface GenerateMetadata {
