@@ -1,7 +1,7 @@
 import { OpenAPIV3 } from "openapi-types";
 import { describe, expect, test } from "vitest";
 import { GenerateOptions } from "../types/options";
-import { getOperationName, getUniqueOperationName, toBoolean } from "./openapi.utils";
+import { getOperationName, getUniqueOperationName, pathToVariableName, toBoolean } from "./openapi.utils";
 
 const path = "/auth/provider/local/login";
 const method = "post";
@@ -226,6 +226,23 @@ describe("Utils: openapi", () => {
           options: { ...options, splitByTags: false },
         }),
       ).toEqual("LocalAuthnPasswordRegister");
+    });
+  });
+
+  describe("pathToVariableName", () => {
+    test("no path parameters", () => {
+      expect(pathToVariableName("/business-partners")).toEqual("BusinessPartners");
+    });
+
+    test("one path parameter", () => {
+      expect(pathToVariableName("/business-partners/{id}")).toEqual("BusinessPartnersById");
+      expect(pathToVariableName("/business-partners/{id}/remarks")).toEqual("BusinessPartnersRemarksById");
+    });
+
+    test("multiple path parameters", () => {
+      expect(pathToVariableName("/business-partners/{id}/remarks/{remarkId}")).toEqual(
+        "BusinessPartnersRemarksByRemarkId",
+      );
     });
   });
 });
