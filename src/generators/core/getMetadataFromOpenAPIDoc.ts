@@ -42,7 +42,7 @@ export async function getMetadataFromOpenAPIDoc({
 
       let tsNestedDataType: TsNestedDataType | undefined;
       if (schema) {
-        tsNestedDataType = getSchemaTsNestedDataType({ schema, resolver, options });
+        tsNestedDataType = getSchemaTsNestedDataType({ schema, parentTypes: [typeInfo], resolver, options });
       }
 
       models.push({ ...typeInfo, dataType: "primitive", ...tsNestedDataType });
@@ -96,7 +96,7 @@ function getQueryMetadataParams({
 
       let tsNestedDataType: TsNestedDataType | undefined;
       if (schema) {
-        tsNestedDataType = getSchemaTsNestedDataType({ schema, resolver, options });
+        tsNestedDataType = getSchemaTsNestedDataType({ schema, parentTypes: [typeInfo], resolver, options });
       }
 
       return {
@@ -137,7 +137,7 @@ function getQueryMetadataResponse({
 
   let tsNestedDataType: TsNestedDataType | undefined;
   if (schema) {
-    tsNestedDataType = getSchemaTsNestedDataType({ schema, resolver, options });
+    tsNestedDataType = getSchemaTsNestedDataType({ schema, parentTypes: [typeInfo], resolver, options });
   }
 
   return { ...typeInfo, dataType: "primitive", ...tsNestedDataType };

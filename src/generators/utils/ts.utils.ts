@@ -2,12 +2,12 @@ import { OpenAPIV3 } from "openapi-types";
 import { match } from "ts-pattern";
 import { SchemaResolver } from "../core/SchemaResolver.class";
 import { GenerateType } from "../types/generate";
-import { TsNestedDataType, TsNestedProperty, TsNestedType, TsProperty, TsType } from "../types/metadata";
+import { TsNestedDataType, TsNestedProperty, TsNestedType, TsType } from "../types/metadata";
 import { PrimitiveType } from "../types/openapi";
 import { GenerateOptions } from "../types/options";
-import { getNamespaceName, getTagFileName } from "./generate/generate.utils";
+import { getTagFileName } from "./generate/generate.utils";
 import { getImportedZodSchemaInferedTypeName } from "./generate/generate.zod.utils";
-import { getSchemaNameByRef, isPrimitiveType, isReferenceObject } from "./openapi.utils";
+import { isPrimitiveType, isReferenceObject } from "./openapi.utils";
 import { isNamedZodSchema } from "./zod-schema.utils";
 
 export function primitiveTypeToTsType(type: PrimitiveType): string {
@@ -17,50 +17,6 @@ export function primitiveTypeToTsType(type: PrimitiveType): string {
     .with("integer", () => "number")
     .with("boolean", () => "boolean")
     .exhaustive();
-}
-
-export function getSchemaTsProperties({
-  schema,
-  resolver,
-  options,
-}: {
-  schema: OpenAPIV3.SchemaObject;
-  resolver: SchemaResolver;
-  options: GenerateOptions;
-}): TsProperty[] {
-  return Object.entries(schema.properties ?? {}).map(([name, obj]) => ({
-    name,
-    isRequired: schema.required?.includes(name) || false,
-    ...getObjTsPropertyType({ obj, resolver, options }),
-  }));
-}
-
-function getObjTsPropertyType({
-  obj,
-  resolver,
-  options,
-}: {
-  obj: OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject;
-  resolver: SchemaResolver;
-  options: GenerateOptions;
-}): Pick<TsProperty, "type" | "namespace" | "filePath"> {
-  if (isReferenceObject(obj)) {
-    const schemaName = getSchemaNameByRef(obj.$ref);
-    const tag = resolver.getTagByZodSchemaName(resolver.getZodSchemaNameByRef(obj.$ref));
-    return {
-      type: schemaName,
-      namespace: getNamespaceName({ type: GenerateType.Models, tag, options }),
-      filePath: getTagFileName({ type: GenerateType.Models, tag, includeTagDir: true, options }),
-    };
-  }
-  if (obj.type === "array") {
-    const itemsFieldType = getObjTsPropertyType({ obj: obj.items as OpenAPIV3.SchemaObject, resolver, options });
-    return { ...itemsFieldType, type: `${itemsFieldType.type}[]` };
-  } else if (isPrimitiveType(obj.type)) {
-    return { type: primitiveTypeToTsType(obj.type) };
-  }
-
-  return { type: "void" };
 }
 
 export function getTypeInfo({
@@ -73,7 +29,7 @@ export function getTypeInfo({
   schema?: OpenAPIV3.SchemaObject;
   resolver: SchemaResolver;
   options: GenerateOptions;
-}): Omit<TsType, "isRequired"> {
+}): TsType {
   let type = "void";
   let tag: string | undefined;
   if (zodSchemaName && isNamedZodSchema(zodSchemaName)) {
@@ -93,10 +49,14 @@ export function getTypeInfo({
 
 export function getSchemaTsNestedDataType({
   schema,
+  isCircular,
+  parentTypes,
   resolver,
   options,
 }: {
   schema?: OpenAPIV3.SchemaObject;
+  isCircular?: boolean;
+  parentTypes: TsType[];
   resolver: SchemaResolver;
   options: GenerateOptions;
 }): TsNestedDataType {
@@ -107,10 +67,13 @@ export function getSchemaTsNestedDataType({
       arraySchema: schema as OpenAPIV3.ArraySchemaObject,
       resolver,
       options,
+      parentTypes,
     });
     return { dataType, arrayType };
+  } else if (dataType === "object" && isCircular) {
+    return { dataType, objectProperties: [], isCircular: true };
   } else if (dataType === "object") {
-    const objectProperties = getSchemaTsNestedProperties({ schema, resolver, options });
+    const objectProperties = getSchemaTsNestedProperties({ schema, parentTypes, resolver, options });
     return { dataType, objectProperties };
   }
 
@@ -120,10 +83,12 @@ export function getSchemaTsNestedDataType({
 function getArraySchemaTsNestedType({
   arraySchema,
   resolver,
+  parentTypes,
   options,
 }: {
   arraySchema: OpenAPIV3.ArraySchemaObject;
   resolver: SchemaResolver;
+  parentTypes: TsType[];
   options: GenerateOptions;
 }): TsNestedType {
   let zodSchemaName: string | undefined;
@@ -137,16 +102,25 @@ function getArraySchemaTsNestedType({
   }
 
   const typeInfo = getTypeInfo({ zodSchemaName, schema, resolver, options });
-  const tsNestedDataType = getSchemaTsNestedDataType({ schema, resolver, options });
+  const isCircular = getIsCircular(typeInfo, parentTypes);
+  const tsNestedDataType = getSchemaTsNestedDataType({
+    schema,
+    isCircular,
+    parentTypes: [...parentTypes, typeInfo],
+    resolver,
+    options,
+  });
   return { ...typeInfo, ...tsNestedDataType };
 }
 
 function getSchemaTsNestedProperties({
   schema,
   resolver,
+  parentTypes,
   options,
 }: {
   schema?: OpenAPIV3.SchemaObject | undefined;
+  parentTypes: TsType[];
   resolver: SchemaResolver;
   options: GenerateOptions;
 }): TsNestedProperty[] {
@@ -157,11 +131,19 @@ function getSchemaTsNestedProperties({
       const zodSchemaName = resolver.getZodSchemaNameByRef(property.$ref);
       const schema = resolver.getSchemaByRef(property.$ref);
       const typeInfo = getTypeInfo({ zodSchemaName, schema, resolver, options });
-      const tsNestedDataType = getSchemaTsNestedDataType({ schema, resolver, options });
+      const isCircular = getIsCircular(typeInfo, parentTypes);
+      const tsNestedDataType = getSchemaTsNestedDataType({
+        schema,
+        isCircular,
+        parentTypes: [...parentTypes, typeInfo],
+        resolver,
+        options,
+      });
       return { name, isRequired, ...typeInfo, ...tsNestedDataType };
     } else if (property.type === "array") {
       const arrayType = getArraySchemaTsNestedType({
         arraySchema: property as OpenAPIV3.ArraySchemaObject,
+        parentTypes,
         resolver,
         options,
       });
@@ -172,4 +154,8 @@ function getSchemaTsNestedProperties({
 
     return { name, isRequired, type: "void", dataType: "primitive" };
   });
+}
+
+function getIsCircular(tsType: TsType, parentTypes: TsType[]) {
+  return parentTypes.findIndex(({ type, namespace }) => type === tsType.type && namespace === tsType.namespace) > -1;
 }

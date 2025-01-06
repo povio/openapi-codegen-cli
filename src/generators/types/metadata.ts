@@ -8,22 +8,22 @@ export interface GenerateMetadataParams {
 
 export type TsType = {
   type: string;
-  isRequired: boolean;
   namespace?: string;
   filePath?: string;
 };
 
-export type TsNestedType = Omit<TsType, "isRequired"> & TsNestedDataType;
+export type TsNestedType = TsType & TsNestedDataType;
 
 export type TsProperty = {
   name: string;
+  isRequired: boolean;
 } & TsType;
 
 export type TsNestedProperty = TsProperty & TsNestedDataType;
 
 export type TsNestedDataType =
   | { dataType: "primitive" }
-  | { dataType: "object"; objectProperties: TsNestedProperty[] }
+  | { dataType: "object"; objectProperties: TsNestedProperty[]; isCircular?: boolean }
   | { dataType: "array"; arrayType: TsNestedType };
 
 export type ModelMetadata = TsNestedType;
