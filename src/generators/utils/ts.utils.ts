@@ -2,7 +2,7 @@ import { OpenAPIV3 } from "openapi-types";
 import { match } from "ts-pattern";
 import { SchemaResolver } from "../core/SchemaResolver.class";
 import { GenerateType } from "../types/generate";
-import { TsNestedDataType, TsNestedProperty, TsNestedType, TsType } from "../types/metadata";
+import { TsMetaType, TsNestedProperty, TsNestedType, TsObjectMetaType, TsType } from "../types/metadata";
 import { PrimitiveType } from "../types/openapi";
 import { GenerateOptions } from "../types/options";
 import { getTagFileName } from "./generate/generate.utils";
@@ -19,7 +19,7 @@ export function primitiveTypeToTsType(type: PrimitiveType): string {
     .exhaustive();
 }
 
-export function getTypeInfo({
+export function getTsType({
   zodSchemaName,
   schema,
   resolver,
@@ -47,7 +47,7 @@ export function getTypeInfo({
   };
 }
 
-export function getSchemaTsNestedDataType({
+export function getSchemaTsMetaType({
   schema,
   isCircular,
   parentTypes,
@@ -59,36 +59,68 @@ export function getSchemaTsNestedDataType({
   parentTypes: TsType[];
   resolver: SchemaResolver;
   options: GenerateOptions;
-}): TsNestedDataType {
-  const dataType = schema?.type;
+}): TsMetaType {
+  if (!schema) {
+    return { metaType: "primitive" };
+  }
 
-  if (dataType === "array") {
+  const compositeKeywords = ["allOf", "anyOf", "oneOf"] as (keyof OpenAPIV3.SchemaObject)[];
+  for (const compositeKeyword of compositeKeywords) {
+    const compositeObjs = schema[compositeKeyword] as (OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject)[];
+    if (!compositeObjs) {
+      continue;
+    }
+    if (compositeObjs.length > 1) {
+      const metaTypes = compositeObjs.map((compositeObj) => {
+        const compositeSchema = resolver.resolveObject(compositeObj);
+        return getSchemaTsMetaType({ schema: compositeSchema, parentTypes, resolver, options });
+      });
+      if (metaTypes.every(({ metaType }) => metaType === "object")) {
+        return {
+          metaType: "object",
+          objectProperties: (metaTypes as TsObjectMetaType[]).reduce((acc, { objectProperties }) => {
+            const objectPropertyNames = objectProperties.map(({ name }) => name);
+            return [...acc.filter(({ name }) => !objectPropertyNames.includes(name)), ...objectProperties];
+          }, [] as TsNestedProperty[]),
+        };
+      } else {
+        return {
+          metaType: "composite",
+          [compositeKeyword]: metaTypes,
+        };
+      }
+    } else {
+      schema = resolver.resolveObject(compositeObjs[0]);
+    }
+  }
+
+  if (schema.type === "array") {
     const arrayType = getArraySchemaTsNestedType({
       arraySchema: schema as OpenAPIV3.ArraySchemaObject,
       resolver,
       options,
       parentTypes,
     });
-    return { dataType, arrayType };
-  } else if (dataType === "object" && isCircular) {
-    return { dataType, objectProperties: [], isCircular: true };
-  } else if (dataType === "object") {
+    return { metaType: "array", arrayType };
+  } else if ((schema.type === "object" || schema.properties) && isCircular) {
+    return { metaType: "object", objectProperties: [], isCircular: true };
+  } else if (schema.type === "object" || schema.properties) {
     const objectProperties = getSchemaTsNestedProperties({ schema, parentTypes, resolver, options });
-    return { dataType, objectProperties };
+    return { metaType: "object", objectProperties };
   }
 
-  return { dataType: "primitive" };
+  return { metaType: "primitive" };
 }
 
 function getArraySchemaTsNestedType({
   arraySchema,
-  resolver,
   parentTypes,
+  resolver,
   options,
 }: {
   arraySchema: OpenAPIV3.ArraySchemaObject;
-  resolver: SchemaResolver;
   parentTypes: TsType[];
+  resolver: SchemaResolver;
   options: GenerateOptions;
 }): TsNestedType {
   let zodSchemaName: string | undefined;
@@ -101,22 +133,22 @@ function getArraySchemaTsNestedType({
     schema = arraySchema.items as OpenAPIV3.SchemaObject;
   }
 
-  const typeInfo = getTypeInfo({ zodSchemaName, schema, resolver, options });
-  const isCircular = getIsCircular(typeInfo, parentTypes);
-  const tsNestedDataType = getSchemaTsNestedDataType({
+  const tsType = getTsType({ zodSchemaName, schema, resolver, options });
+  const isCircular = getIsCircular(tsType, parentTypes);
+  const tsMetaType = getSchemaTsMetaType({
     schema,
     isCircular,
-    parentTypes: [...parentTypes, typeInfo],
+    parentTypes: [...parentTypes, tsType],
     resolver,
     options,
   });
-  return { ...typeInfo, ...tsNestedDataType };
+  return { ...tsType, ...tsMetaType };
 }
 
 function getSchemaTsNestedProperties({
   schema,
-  resolver,
   parentTypes,
+  resolver,
   options,
 }: {
   schema?: OpenAPIV3.SchemaObject | undefined;
@@ -130,16 +162,16 @@ function getSchemaTsNestedProperties({
     if (isReferenceObject(property)) {
       const zodSchemaName = resolver.getZodSchemaNameByRef(property.$ref);
       const schema = resolver.getSchemaByRef(property.$ref);
-      const typeInfo = getTypeInfo({ zodSchemaName, schema, resolver, options });
-      const isCircular = getIsCircular(typeInfo, parentTypes);
-      const tsNestedDataType = getSchemaTsNestedDataType({
+      const tsType = getTsType({ zodSchemaName, schema, resolver, options });
+      const isCircular = getIsCircular(tsType, parentTypes);
+      const tsMetaType = getSchemaTsMetaType({
         schema,
         isCircular,
-        parentTypes: [...parentTypes, typeInfo],
+        parentTypes: [...parentTypes, tsType],
         resolver,
         options,
       });
-      return { name, isRequired, ...typeInfo, ...tsNestedDataType };
+      return { name, isRequired, ...tsType, ...tsMetaType };
     } else if (property.type === "array") {
       const arrayType = getArraySchemaTsNestedType({
         arraySchema: property as OpenAPIV3.ArraySchemaObject,
@@ -147,12 +179,12 @@ function getSchemaTsNestedProperties({
         resolver,
         options,
       });
-      return { name, isRequired, type: "array", dataType: "array", arrayType };
+      return { name, isRequired, type: "array", metaType: "array", arrayType };
     } else if (isPrimitiveType(property.type)) {
-      return { name, isRequired, type: primitiveTypeToTsType(property.type), dataType: "primitive" };
+      return { name, isRequired, type: primitiveTypeToTsType(property.type), metaType: "primitive" };
     }
 
-    return { name, isRequired, type: "void", dataType: "primitive" };
+    return { name, isRequired, type: "void", metaType: "primitive" };
   });
 }
 

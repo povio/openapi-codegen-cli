@@ -6,25 +6,44 @@ export interface GenerateMetadataParams {
   options?: Partial<GenerateOptions>;
 }
 
-export type TsType = {
+export interface TsType {
   type: string;
   namespace?: string;
   filePath?: string;
-};
+}
 
-export type TsNestedType = TsType & TsNestedDataType;
+export type TsNestedType = TsType & TsMetaType;
 
 export type TsProperty = {
   name: string;
   isRequired: boolean;
 } & TsType;
 
-export type TsNestedProperty = TsProperty & TsNestedDataType;
+export type TsNestedProperty = TsProperty & TsMetaType;
 
-export type TsNestedDataType =
-  | { dataType: "primitive" }
-  | { dataType: "object"; objectProperties: TsNestedProperty[]; isCircular?: boolean }
-  | { dataType: "array"; arrayType: TsNestedType };
+export interface TsPrimitiveMetaType {
+  metaType: "primitive";
+}
+
+export interface TsObjectMetaType {
+  metaType: "object";
+  objectProperties: TsNestedProperty[];
+  isCircular?: boolean;
+}
+
+export interface TsArrayMetaType {
+  metaType: "array";
+  arrayType: TsNestedType;
+}
+
+export interface TsCompositeMetaType {
+  metaType: "composite";
+  allOf?: TsNestedType;
+  oneOf?: TsNestedType;
+  anyOf?: TsNestedType;
+}
+
+export type TsMetaType = TsPrimitiveMetaType | TsObjectMetaType | TsArrayMetaType | TsCompositeMetaType;
 
 export type ModelMetadata = TsNestedType;
 

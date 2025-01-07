@@ -1,15 +1,14 @@
 import { OpenAPIV3 } from "openapi-types";
 import { Endpoint, EndpointParameter } from "../types/endpoint";
 import { GenerateType } from "../types/generate";
-import { GenerateMetadata, ModelMetadata, QueryMetadata, TsNestedDataType } from "../types/metadata";
+import { GenerateMetadata, ModelMetadata, QueryMetadata, TsMetaType } from "../types/metadata";
 import { GenerateOptions } from "../types/options";
 import { getQueryName } from "../utils/generate/generate.query.utils";
 import { getNamespaceName, getTagFileName } from "../utils/generate/generate.utils";
 import { invalidVariableNameCharactersToCamel } from "../utils/js.utils";
-import { isSchemaObject } from "../utils/openapi-schema.utils";
 import { formatTag, isMediaTypeAllowed, isParamMediaTypeAllowed } from "../utils/openapi.utils";
 import { isMutation, isQuery } from "../utils/queries.utils";
-import { getSchemaTsNestedDataType, getTypeInfo } from "../utils/ts.utils";
+import { getSchemaTsMetaType, getTsType } from "../utils/ts.utils";
 import { getDataFromOpenAPIDoc } from "./getDataFromOpenAPIDoc";
 import { SchemaResolver } from "./SchemaResolver.class";
 
@@ -38,14 +37,14 @@ export async function getMetadataFromOpenAPIDoc({
       const ref = resolver.getRefByZodSchemaName(zodSchemaName);
       const schema = ref ? resolver.getSchemaByRef(ref) : resolver.getSchemaByCompositeZodSchemaName(zodSchemaName);
 
-      const typeInfo = getTypeInfo({ zodSchemaName, schema, resolver, options });
+      const tsType = getTsType({ zodSchemaName, schema, resolver, options });
 
-      let tsNestedDataType: TsNestedDataType | undefined;
+      let tsMetaType: TsMetaType | undefined;
       if (schema) {
-        tsNestedDataType = getSchemaTsNestedDataType({ schema, parentTypes: [typeInfo], resolver, options });
+        tsMetaType = getSchemaTsMetaType({ schema, parentTypes: [tsType], resolver, options });
       }
 
-      models.push({ ...typeInfo, dataType: "primitive", ...tsNestedDataType });
+      models.push({ ...tsType, metaType: "primitive", ...tsMetaType });
     });
 
     endpoints.forEach((endpoint) => {
@@ -81,8 +80,8 @@ function getQueryMetadataParams({
   return endpoint.parameters
     .map((param) => {
       let schema: OpenAPIV3.SchemaObject | undefined;
-      if (param.parameterObject?.schema && isSchemaObject(param.parameterObject.schema)) {
-        schema = param.parameterObject?.schema as OpenAPIV3.SchemaObject;
+      if (param.parameterObject?.schema) {
+        schema = resolver.resolveObject(param.parameterObject.schema);
       } else if (param.bodyObject) {
         const mediaTypes = Object.keys(param.bodyObject.content ?? {});
         const matchingMediaType = mediaTypes.find(isParamMediaTypeAllowed);
@@ -91,18 +90,18 @@ function getQueryMetadataParams({
         }
       }
 
-      const typeInfo = getTypeInfo({ zodSchemaName: param.zodSchema, schema, resolver, options });
+      const tsType = getTsType({ zodSchemaName: param.zodSchema, schema, resolver, options });
 
-      let tsNestedDataType: TsNestedDataType | undefined;
+      let tsMetaType: TsMetaType | undefined;
       if (schema) {
-        tsNestedDataType = getSchemaTsNestedDataType({ schema, parentTypes: [typeInfo], resolver, options });
+        tsMetaType = getSchemaTsMetaType({ schema, parentTypes: [tsType], resolver, options });
       }
 
       return {
         name: invalidVariableNameCharactersToCamel(param.name),
         isRequired: param.parameterObject?.required ?? true,
-        ...typeInfo,
-        ...tsNestedDataType,
+        ...tsType,
+        ...tsMetaType,
         paramType: param.type,
       } as QueryMetadata["params"][0] & { paramType: EndpointParameter["type"] };
     })
@@ -131,12 +130,12 @@ function getQueryMetadataResponse({
     schema = resolver.resolveObject(endpoint.responseObject?.content?.[matchingMediaType]?.schema);
   }
 
-  const typeInfo = getTypeInfo({ zodSchemaName: endpoint.response, schema, resolver, options });
+  const tsType = getTsType({ zodSchemaName: endpoint.response, schema, resolver, options });
 
-  let tsNestedDataType: TsNestedDataType | undefined;
+  let tsMetaType: TsMetaType | undefined;
   if (schema) {
-    tsNestedDataType = getSchemaTsNestedDataType({ schema, parentTypes: [typeInfo], resolver, options });
+    tsMetaType = getSchemaTsMetaType({ schema, parentTypes: [tsType], resolver, options });
   }
 
-  return { ...typeInfo, dataType: "primitive", ...tsNestedDataType };
+  return { ...tsType, metaType: "primitive", ...tsMetaType };
 }

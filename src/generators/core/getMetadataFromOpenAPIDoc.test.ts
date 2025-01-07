@@ -15,10 +15,10 @@ describe("getMetadataFromOpenAPIDoc", async () => {
       type: "Category",
       namespace: "PetModels",
       filePath: "pet/pet.models",
-      dataType: "object",
+      metaType: "object",
       objectProperties: [
-        { name: "id", type: "number", isRequired: false, dataType: "primitive" },
-        { name: "name", type: "string", isRequired: false, dataType: "primitive" },
+        { name: "id", type: "number", isRequired: false, metaType: "primitive" },
+        { name: "name", type: "string", isRequired: false, metaType: "primitive" },
       ],
     };
 
@@ -26,10 +26,10 @@ describe("getMetadataFromOpenAPIDoc", async () => {
       type: "Tag",
       namespace: "PetModels",
       filePath: "pet/pet.models",
-      dataType: "object",
+      metaType: "object",
       objectProperties: [
-        { name: "id", type: "number", isRequired: false, dataType: "primitive" },
-        { name: "name", type: "string", isRequired: false, dataType: "primitive" },
+        { name: "id", type: "number", isRequired: false, metaType: "primitive" },
+        { name: "name", type: "string", isRequired: false, metaType: "primitive" },
       ],
     };
 
@@ -37,26 +37,26 @@ describe("getMetadataFromOpenAPIDoc", async () => {
       type: "Pet",
       namespace: "PetModels",
       filePath: "pet/pet.models",
-      dataType: "object",
+      metaType: "object",
       objectProperties: [
-        { name: "id", type: "number", isRequired: false, dataType: "primitive" },
-        { name: "name", type: "string", isRequired: true, dataType: "primitive" },
+        { name: "id", type: "number", isRequired: false, metaType: "primitive" },
+        { name: "name", type: "string", isRequired: true, metaType: "primitive" },
         { name: "category", isRequired: false, ...Category },
         {
           name: "photoUrls",
           type: "array",
           isRequired: true,
-          dataType: "array",
-          arrayType: { type: "string", dataType: "primitive" },
+          metaType: "array",
+          arrayType: { type: "string", metaType: "primitive" },
         },
         {
           name: "tags",
           type: "array",
           isRequired: false,
-          dataType: "array",
+          metaType: "array",
           arrayType: { ...Tag },
         },
-        { name: "status", type: "string", isRequired: false, dataType: "primitive" },
+        { name: "status", type: "string", isRequired: false, metaType: "primitive" },
       ],
     };
 
@@ -64,11 +64,11 @@ describe("getMetadataFromOpenAPIDoc", async () => {
       type: "ApiResponse",
       namespace: "PetModels",
       filePath: "pet/pet.models",
-      dataType: "object",
+      metaType: "object",
       objectProperties: [
-        { name: "code", type: "number", isRequired: false, dataType: "primitive" },
-        { name: "type", type: "string", isRequired: false, dataType: "primitive" },
-        { name: "message", type: "string", isRequired: false, dataType: "primitive" },
+        { name: "code", type: "number", isRequired: false, metaType: "primitive" },
+        { name: "type", type: "string", isRequired: false, metaType: "primitive" },
+        { name: "message", type: "string", isRequired: false, metaType: "primitive" },
       ],
     };
 
@@ -76,14 +76,14 @@ describe("getMetadataFromOpenAPIDoc", async () => {
       type: "Order",
       namespace: "StoreModels",
       filePath: "store/store.models",
-      dataType: "object",
+      metaType: "object",
       objectProperties: [
-        { name: "id", type: "number", isRequired: false, dataType: "primitive" },
-        { name: "petId", type: "number", isRequired: false, dataType: "primitive" },
-        { name: "quantity", type: "number", isRequired: false, dataType: "primitive" },
-        { name: "shipDate", type: "string", isRequired: false, dataType: "primitive" },
-        { name: "status", type: "string", isRequired: false, dataType: "primitive" },
-        { name: "complete", type: "boolean", isRequired: false, dataType: "primitive" },
+        { name: "id", type: "number", isRequired: false, metaType: "primitive" },
+        { name: "petId", type: "number", isRequired: false, metaType: "primitive" },
+        { name: "quantity", type: "number", isRequired: false, metaType: "primitive" },
+        { name: "shipDate", type: "string", isRequired: false, metaType: "primitive" },
+        { name: "status", type: "string", isRequired: false, metaType: "primitive" },
+        { name: "complete", type: "boolean", isRequired: false, metaType: "primitive" },
       ],
     };
 
@@ -91,16 +91,16 @@ describe("getMetadataFromOpenAPIDoc", async () => {
       type: "User",
       namespace: "UserModels",
       filePath: "user/user.models",
-      dataType: "object",
+      metaType: "object",
       objectProperties: [
-        { name: "id", type: "number", isRequired: false, dataType: "primitive" },
-        { name: "username", type: "string", isRequired: false, dataType: "primitive" },
-        { name: "firstName", type: "string", isRequired: false, dataType: "primitive" },
-        { name: "lastName", type: "string", isRequired: false, dataType: "primitive" },
-        { name: "email", type: "string", isRequired: false, dataType: "primitive" },
-        { name: "password", type: "string", isRequired: false, dataType: "primitive" },
-        { name: "phone", type: "string", isRequired: false, dataType: "primitive" },
-        { name: "userStatus", type: "number", isRequired: false, dataType: "primitive" },
+        { name: "id", type: "number", isRequired: false, metaType: "primitive" },
+        { name: "username", type: "string", isRequired: false, metaType: "primitive" },
+        { name: "firstName", type: "string", isRequired: false, metaType: "primitive" },
+        { name: "lastName", type: "string", isRequired: false, metaType: "primitive" },
+        { name: "email", type: "string", isRequired: false, metaType: "primitive" },
+        { name: "password", type: "string", isRequired: false, metaType: "primitive" },
+        { name: "phone", type: "string", isRequired: false, metaType: "primitive" },
+        { name: "userStatus", type: "number", isRequired: false, metaType: "primitive" },
       ],
     };
 
@@ -108,7 +108,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
       type: "CreateUsersWithListInputBody",
       namespace: "UserModels",
       filePath: "user/user.models",
-      dataType: "array",
+      metaType: "array",
       arrayType: { ...User },
     };
 
@@ -116,14 +116,14 @@ describe("getMetadataFromOpenAPIDoc", async () => {
       type: "FindPetsByStatusStatusParam",
       filePath: "pet/pet.models",
       namespace: "PetModels",
-      dataType: "primitive",
+      metaType: "primitive",
     };
 
     const FindPetsByStatusResponse: TsNestedType = {
       type: "FindPetsByStatusResponse",
       filePath: "pet/pet.models",
       namespace: "PetModels",
-      dataType: "array",
+      metaType: "array",
       arrayType: { ...Pet },
     };
 
@@ -131,15 +131,15 @@ describe("getMetadataFromOpenAPIDoc", async () => {
       type: "FindPetsByTagsTagsParam",
       filePath: "pet/pet.models",
       namespace: "PetModels",
-      dataType: "array",
-      arrayType: { type: "string", dataType: "primitive" },
+      metaType: "array",
+      arrayType: { type: "string", metaType: "primitive" },
     };
 
     const FindPetsByTagsResponse: TsNestedType = {
       type: "FindPetsByTagsResponse",
       filePath: "pet/pet.models",
       namespace: "PetModels",
-      dataType: "array",
+      metaType: "array",
       arrayType: { ...Pet },
     };
 
@@ -147,7 +147,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
       type: "GetInventoryResponse",
       filePath: "store/store.models",
       namespace: "StoreModels",
-      dataType: "object",
+      metaType: "object",
       objectProperties: [],
     };
 
@@ -155,12 +155,12 @@ describe("getMetadataFromOpenAPIDoc", async () => {
       type: "Address",
       filePath: "common/common.models",
       namespace: "CommonModels",
-      dataType: "object",
+      metaType: "object",
       objectProperties: [
-        { name: "street", type: "string", isRequired: false, dataType: "primitive" },
-        { name: "city", type: "string", isRequired: false, dataType: "primitive" },
-        { name: "state", type: "string", isRequired: false, dataType: "primitive" },
-        { name: "zip", type: "string", isRequired: false, dataType: "primitive" },
+        { name: "street", type: "string", isRequired: false, metaType: "primitive" },
+        { name: "city", type: "string", isRequired: false, metaType: "primitive" },
+        { name: "state", type: "string", isRequired: false, metaType: "primitive" },
+        { name: "zip", type: "string", isRequired: false, metaType: "primitive" },
       ],
     };
 
@@ -168,15 +168,15 @@ describe("getMetadataFromOpenAPIDoc", async () => {
       type: "Customer",
       filePath: "common/common.models",
       namespace: "CommonModels",
-      dataType: "object",
+      metaType: "object",
       objectProperties: [
-        { name: "id", type: "number", isRequired: false, dataType: "primitive" },
-        { name: "username", type: "string", isRequired: false, dataType: "primitive" },
+        { name: "id", type: "number", isRequired: false, metaType: "primitive" },
+        { name: "username", type: "string", isRequired: false, metaType: "primitive" },
         {
           name: "address",
           type: "array",
           isRequired: false,
-          dataType: "array",
+          metaType: "array",
           arrayType: { ...Address },
         },
       ],
@@ -242,7 +242,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
         namespace: "PetQueries",
         isQuery: true,
         isMutation: false,
-        params: [{ name: "petId", type: "number", isRequired: true, dataType: "primitive" }],
+        params: [{ name: "petId", type: "number", isRequired: true, metaType: "primitive" }],
         response: { ...Pet },
       },
       {
@@ -252,11 +252,11 @@ describe("getMetadataFromOpenAPIDoc", async () => {
         isQuery: false,
         isMutation: true,
         params: [
-          { name: "petId", type: "number", isRequired: true, dataType: "primitive" },
-          { name: "name", type: "string", isRequired: true, dataType: "primitive" },
-          { name: "status", type: "string", isRequired: true, dataType: "primitive" },
+          { name: "petId", type: "number", isRequired: true, metaType: "primitive" },
+          { name: "name", type: "string", isRequired: true, metaType: "primitive" },
+          { name: "status", type: "string", isRequired: true, metaType: "primitive" },
         ],
-        response: { type: "void", dataType: "primitive" },
+        response: { type: "void", metaType: "primitive" },
       },
       {
         name: "useDeletePet",
@@ -265,10 +265,10 @@ describe("getMetadataFromOpenAPIDoc", async () => {
         isQuery: false,
         isMutation: true,
         params: [
-          { name: "petId", type: "number", isRequired: true, dataType: "primitive" },
-          { name: "api_key", type: "string", isRequired: false, dataType: "primitive" },
+          { name: "petId", type: "number", isRequired: true, metaType: "primitive" },
+          { name: "api_key", type: "string", isRequired: false, metaType: "primitive" },
         ],
-        response: { type: "void", dataType: "primitive" },
+        response: { type: "void", metaType: "primitive" },
       },
       {
         name: "useUploadFile",
@@ -277,9 +277,9 @@ describe("getMetadataFromOpenAPIDoc", async () => {
         isQuery: false,
         isMutation: true,
         params: [
-          { name: "petId", type: "number", isRequired: true, dataType: "primitive" },
-          { name: "data", type: "string", isRequired: true, dataType: "primitive" },
-          { name: "additionalMetadata", type: "string", isRequired: false, dataType: "primitive" },
+          { name: "petId", type: "number", isRequired: true, metaType: "primitive" },
+          { name: "data", type: "string", isRequired: true, metaType: "primitive" },
+          { name: "additionalMetadata", type: "string", isRequired: false, metaType: "primitive" },
         ],
         response: { ...ApiResponse },
       },
@@ -307,7 +307,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
         namespace: "StoreQueries",
         isQuery: true,
         isMutation: false,
-        params: [{ name: "orderId", type: "number", isRequired: true, dataType: "primitive" }],
+        params: [{ name: "orderId", type: "number", isRequired: true, metaType: "primitive" }],
         response: { ...Order },
       },
       {
@@ -316,8 +316,8 @@ describe("getMetadataFromOpenAPIDoc", async () => {
         namespace: "StoreQueries",
         isQuery: false,
         isMutation: true,
-        params: [{ name: "orderId", type: "number", isRequired: true, dataType: "primitive" }],
-        response: { type: "void", dataType: "primitive" },
+        params: [{ name: "orderId", type: "number", isRequired: true, metaType: "primitive" }],
+        response: { type: "void", metaType: "primitive" },
       },
       {
         name: "useCreateUser",
@@ -326,7 +326,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
         isQuery: false,
         isMutation: true,
         params: [{ name: "data", isRequired: true, ...User }],
-        response: { type: "void", dataType: "primitive" },
+        response: { type: "void", metaType: "primitive" },
       },
       {
         name: "useCreateUsersWithListInput",
@@ -344,10 +344,10 @@ describe("getMetadataFromOpenAPIDoc", async () => {
         isQuery: true,
         isMutation: false,
         params: [
-          { name: "username", type: "string", isRequired: false, dataType: "primitive" },
-          { name: "password", type: "string", isRequired: false, dataType: "primitive" },
+          { name: "username", type: "string", isRequired: false, metaType: "primitive" },
+          { name: "password", type: "string", isRequired: false, metaType: "primitive" },
         ],
-        response: { type: "string", dataType: "primitive" },
+        response: { type: "string", metaType: "primitive" },
       },
       {
         name: "useLogoutUser",
@@ -356,7 +356,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
         isQuery: true,
         isMutation: false,
         params: [],
-        response: { type: "void", dataType: "primitive" },
+        response: { type: "void", metaType: "primitive" },
       },
       {
         name: "useGetUserByName",
@@ -364,7 +364,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
         namespace: "UserQueries",
         isQuery: true,
         isMutation: false,
-        params: [{ name: "username", type: "string", isRequired: true, dataType: "primitive" }],
+        params: [{ name: "username", type: "string", isRequired: true, metaType: "primitive" }],
         response: { ...User },
       },
       {
@@ -374,10 +374,10 @@ describe("getMetadataFromOpenAPIDoc", async () => {
         isQuery: false,
         isMutation: true,
         params: [
-          { name: "username", type: "string", isRequired: true, dataType: "primitive" },
+          { name: "username", type: "string", isRequired: true, metaType: "primitive" },
           { name: "data", isRequired: true, ...User },
         ],
-        response: { type: "void", dataType: "primitive" },
+        response: { type: "void", metaType: "primitive" },
       },
       {
         name: "useDeleteUser",
@@ -385,8 +385,8 @@ describe("getMetadataFromOpenAPIDoc", async () => {
         namespace: "UserQueries",
         isQuery: false,
         isMutation: true,
-        params: [{ name: "username", type: "string", isRequired: true, dataType: "primitive" }],
-        response: { type: "void", dataType: "primitive" },
+        params: [{ name: "username", type: "string", isRequired: true, metaType: "primitive" }],
+        response: { type: "void", metaType: "primitive" },
       },
     ];
 
