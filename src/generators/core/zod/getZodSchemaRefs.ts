@@ -9,7 +9,7 @@ export function getZodSchemaRefs({ resolver, zodSchemaName }: { resolver: Schema
     );
   }
 
-  const zodSchema = resolver.getDiscriminatorZodSchemaByZodSchemaName(zodSchemaName);
+  const zodSchema = resolver.getCompositeZodSchemaByZodSchemaName(zodSchemaName);
   if (zodSchema) {
     return Array.from(getSchemaRefs(zodSchema)).map((schemaRef) =>
       resolver.getZodSchemaNameByRef(schemaRef),

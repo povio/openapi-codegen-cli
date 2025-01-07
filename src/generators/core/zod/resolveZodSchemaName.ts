@@ -37,7 +37,7 @@ export function resolveZodSchemaName({
     // iteratively add suffix number to prevent overwriting
     let reuseCount = 1;
     while (resolver.getCodeByZodSchemaName(formattedZodSchemaName)) {
-      if (resolver.getZodSchemaNamesByDiscriminatorCode(result)?.includes(formattedZodSchemaName)) {
+      if (resolver.getZodSchemaNamesByCompositeCode(result)?.includes(formattedZodSchemaName)) {
         return formattedZodSchemaName;
       } else if (resolver.getCodeByZodSchemaName(formattedZodSchemaName) === zodSchemaName) {
         return formattedZodSchemaName;
@@ -48,7 +48,7 @@ export function resolveZodSchemaName({
     }
 
     resolver.setZodSchema(formattedZodSchemaName, result, tag);
-    resolver.addZodSchemaForDiscriminatorCode(result, zodSchema, formattedZodSchemaName, schema);
+    resolver.addZodSchemaForCompositeCode(result, zodSchema, formattedZodSchemaName, schema);
 
     return formattedZodSchemaName;
   }

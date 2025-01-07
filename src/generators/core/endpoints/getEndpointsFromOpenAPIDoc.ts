@@ -78,12 +78,7 @@ export function getEndpointsFromOpenAPIDoc({
       }
 
       for (const statusCode in operation.responses) {
-        const responseObj = (
-          isReferenceObject(operation.responses[statusCode])
-            ? resolver.getSchemaByRef((operation.responses[statusCode] as OpenAPIV3.ReferenceObject).$ref)
-            : operation.responses[statusCode]
-        ) as OpenAPIV3.ResponseObject;
-
+        const responseObj = <OpenAPIV3.ResponseObject>resolver.resolveObject(operation.responses[statusCode]);
         const mediaTypes = Object.keys(responseObj.content ?? {});
         const matchingMediaType = mediaTypes.find(isMediaTypeAllowed);
 
@@ -99,7 +94,7 @@ export function getEndpointsFromOpenAPIDoc({
         if (schema) {
           const zodSchema = getZodSchema({ schema, resolver, meta: { isRequired: true }, tag, options });
 
-          const schemaObject = isReferenceObject(schema) ? resolver.getSchemaByRef(schema.$ref) : schema;
+          const schemaObject = resolver.resolveObject(schema);
 
           const zodSchemaName = resolveZodSchemaName({
             schema: schemaObject,

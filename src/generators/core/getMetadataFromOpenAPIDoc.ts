@@ -7,7 +7,7 @@ import { getQueryName } from "../utils/generate/generate.query.utils";
 import { getNamespaceName, getTagFileName } from "../utils/generate/generate.utils";
 import { invalidVariableNameCharactersToCamel } from "../utils/js.utils";
 import { isSchemaObject } from "../utils/openapi-schema.utils";
-import { formatTag, isMediaTypeAllowed, isParamMediaTypeAllowed, isReferenceObject } from "../utils/openapi.utils";
+import { formatTag, isMediaTypeAllowed, isParamMediaTypeAllowed } from "../utils/openapi.utils";
 import { isMutation, isQuery } from "../utils/queries.utils";
 import { getSchemaTsNestedDataType, getTypeInfo } from "../utils/ts.utils";
 import { getDataFromOpenAPIDoc } from "./getDataFromOpenAPIDoc";
@@ -36,7 +36,7 @@ export async function getMetadataFromOpenAPIDoc({
 
     Object.keys(zodSchemas).forEach((zodSchemaName) => {
       const ref = resolver.getRefByZodSchemaName(zodSchemaName);
-      const schema = ref ? resolver.getSchemaByRef(ref) : resolver.getSchemaByDiscriminatorZodSchemaName(zodSchemaName);
+      const schema = ref ? resolver.getSchemaByRef(ref) : resolver.getSchemaByCompositeZodSchemaName(zodSchemaName);
 
       const typeInfo = getTypeInfo({ zodSchemaName, schema, resolver, options });
 
@@ -87,8 +87,7 @@ function getQueryMetadataParams({
         const mediaTypes = Object.keys(param.bodyObject.content ?? {});
         const matchingMediaType = mediaTypes.find(isParamMediaTypeAllowed);
         if (matchingMediaType) {
-          const obj = param.bodyObject.content?.[matchingMediaType]?.schema;
-          schema = isReferenceObject(obj) ? resolver.getSchemaByRef(obj.$ref) : obj;
+          schema = resolver.resolveObject(param.bodyObject.content?.[matchingMediaType]?.schema);
         }
       }
 
@@ -129,8 +128,7 @@ function getQueryMetadataResponse({
   let schema: OpenAPIV3.SchemaObject | undefined;
   const matchingMediaType = Object.keys(endpoint.responseObject?.content ?? {}).find(isMediaTypeAllowed);
   if (matchingMediaType) {
-    const obj = endpoint.responseObject?.content?.[matchingMediaType]?.schema;
-    schema = isReferenceObject(obj) ? resolver.getSchemaByRef(obj.$ref) : obj;
+    schema = resolver.resolveObject(endpoint.responseObject?.content?.[matchingMediaType]?.schema);
   }
 
   const typeInfo = getTypeInfo({ zodSchemaName: endpoint.response, schema, resolver, options });

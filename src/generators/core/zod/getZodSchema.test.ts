@@ -430,6 +430,6 @@ describe("getZodSchema", () => {
         "z.object({ exampleProp: z.string(), another: z.number(), link: z.array(WithNested), someReference: Basic }).partial().passthrough()",
       WithNested: "z.object({ nested: z.string(), nestedRef: DeepNested }).partial().passthrough()",
     });
-    expect(resolver["discriminatorZodSchemaData"]).toStrictEqual([]);
+    expect(resolver["compositeZodSchemaData"]).toStrictEqual([]);
   });
 });
