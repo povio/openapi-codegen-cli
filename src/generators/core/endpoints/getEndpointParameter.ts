@@ -2,11 +2,7 @@ import { OpenAPIV3 } from "openapi-types";
 import { ALLOWED_PATH_IN } from "src/generators/const/openapi.const";
 import { EndpointParameter } from "src/generators/types/endpoint";
 import { GenerateOptions } from "src/generators/types/options";
-import {
-  isParamMediaTypeAllowed,
-  isReferenceObject,
-  pathParamToVariableName,
-} from "src/generators/utils/openapi.utils";
+import { isParamMediaTypeAllowed, pathParamToVariableName } from "src/generators/utils/openapi.utils";
 import { getParamZodSchemaName } from "src/generators/utils/zod-schema.utils";
 import { match } from "ts-pattern";
 import { SchemaResolver } from "../SchemaResolver.class";
@@ -27,10 +23,7 @@ export function getEndpointParameter({
   tag: string;
   options: GenerateOptions;
 }): EndpointParameter | undefined {
-  const paramObj = (
-    isReferenceObject(param) ? resolver.getSchemaByRef(param.$ref) : param
-  ) as OpenAPIV3.ParameterObject;
-
+  const paramObj = resolver.resolveObject(param);
   if (!ALLOWED_PATH_IN.includes(paramObj.in)) {
     return;
   }
@@ -69,7 +62,7 @@ export function getEndpointParameter({
     options,
   });
 
-  const schemaObject = isReferenceObject(schema) ? resolver.getSchemaByRef(schema.$ref) : schema;
+  const schemaObject = resolver.resolveObject(schema);
 
   const zodChain = getZodChain({ schema: schemaObject, meta: zodSchema.meta, options });
 

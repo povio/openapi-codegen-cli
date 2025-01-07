@@ -29,7 +29,7 @@ type ZodSchemaData = {
   tags: string[];
 };
 
-type DiscriminatorZodSchemaData = {
+type CompositeZodSchemaData = {
   code: string;
   zodSchemas: {
     zodSchemaName: string;
@@ -41,7 +41,7 @@ type DiscriminatorZodSchemaData = {
 export class SchemaResolver {
   private schemaData: SchemaData[] = [];
   private zodSchemaData: ZodSchemaData[] = [];
-  private discriminatorZodSchemaData: DiscriminatorZodSchemaData[] = [];
+  private compositeZodSchemaData: CompositeZodSchemaData[] = [];
 
   readonly dependencyGraph: ReturnType<typeof getOpenAPISchemaDependencyGraph>;
 
@@ -93,8 +93,8 @@ export class SchemaResolver {
     return this.zodSchemaData.find((data) => data.zodSchemaName === name)?.code;
   }
 
-  getZodSchemaNamesByDiscriminatorCode(code: string) {
-    return this.discriminatorZodSchemaData
+  getZodSchemaNamesByCompositeCode(code: string) {
+    return this.compositeZodSchemaData
       .find((data) => data.code === code)
       ?.zodSchemas.map((schema) => schema.zodSchemaName);
   }
@@ -109,36 +109,40 @@ export class SchemaResolver {
     }
   }
 
-  addZodSchemaForDiscriminatorCode(
+  addZodSchemaForCompositeCode(
     code: string,
     zodSchema: ZodSchema,
     zodSchemaName: string,
     schema?: OpenAPIV3.SchemaObject,
   ) {
-    const discriminatorZodSchema = { zodSchemaName, zodSchema, schema };
-    const discriminatorData = this.discriminatorZodSchemaData.find((data) => data.code === code);
-    if (discriminatorData) {
-      discriminatorData.zodSchemas.push(discriminatorZodSchema);
+    const compositeZodSchema = { zodSchemaName, zodSchema, schema };
+    const compositeData = this.compositeZodSchemaData.find((data) => data.code === code);
+    if (compositeData) {
+      compositeData.zodSchemas.push(compositeZodSchema);
     } else {
-      this.discriminatorZodSchemaData.push({ code, zodSchemas: [discriminatorZodSchema] });
+      this.compositeZodSchemaData.push({ code, zodSchemas: [compositeZodSchema] });
     }
   }
 
-  getDiscriminatorZodSchemaByZodSchemaName(zodSchemaName: string) {
-    const discriminatorZodSchema = this.discriminatorZodSchemaData.find((data) =>
+  getCompositeZodSchemaByZodSchemaName(zodSchemaName: string) {
+    const compositeZodSchema = this.compositeZodSchemaData.find((data) =>
       data.zodSchemas.some((schema) => schema.zodSchemaName === zodSchemaName),
     );
-    return discriminatorZodSchema?.zodSchemas.find((schema) => schema.zodSchemaName === zodSchemaName)?.zodSchema;
+    return compositeZodSchema?.zodSchemas.find((schema) => schema.zodSchemaName === zodSchemaName)?.zodSchema;
   }
 
-  getSchemaByDiscriminatorZodSchemaName(discriminatorZodSchemaName: string) {
-    return this.discriminatorZodSchemaData
-      .find((data) => data.zodSchemas.some((schema) => schema.zodSchemaName === discriminatorZodSchemaName))
-      ?.zodSchemas.find((schema) => schema.zodSchemaName === discriminatorZodSchemaName)?.schema;
+  getSchemaByCompositeZodSchemaName(compositeZodSchemaName: string) {
+    return this.compositeZodSchemaData
+      .find((data) => data.zodSchemas.some((schema) => schema.zodSchemaName === compositeZodSchemaName))
+      ?.zodSchemas.find((schema) => schema.zodSchemaName === compositeZodSchemaName)?.schema;
   }
 
   getZodSchemas() {
     return this.zodSchemaData.reduce((acc, { zodSchemaName, code }) => ({ ...acc, [zodSchemaName]: code }), {});
+  }
+
+  resolveObject<T>(obj: OpenAPIV3.ReferenceObject | T): T {
+    return isReferenceObject(obj) ? (this.getSchemaByRef(obj.$ref) as T) : obj;
   }
 
   private intializeSchemaInfo() {
@@ -172,12 +176,7 @@ export class SchemaResolver {
 
         // Collect all requestBody objects that are references
         if (operation.requestBody) {
-          const requestBodyObj = (
-            isReferenceObject(operation.requestBody)
-              ? this.getSchemaByRef(operation.requestBody.$ref)
-              : operation.requestBody
-          ) as OpenAPIV3.RequestBodyObject;
-
+          const requestBodyObj = this.resolveObject(operation.requestBody);
           const mediaTypes = Object.keys(requestBodyObj.content ?? {});
           const matchingMediaType = mediaTypes.find(isParamMediaTypeAllowed);
           if (matchingMediaType) {
@@ -190,12 +189,7 @@ export class SchemaResolver {
 
         // Collect all main response objects that are references
         for (const statusCode in operation.responses) {
-          const responseObj = (
-            isReferenceObject(operation.responses[statusCode])
-              ? this.getSchemaByRef((operation.responses[statusCode] as OpenAPIV3.ReferenceObject).$ref)
-              : operation.responses[statusCode]
-          ) as OpenAPIV3.ResponseObject;
-
+          const responseObj = <OpenAPIV3.ResponseObject>this.resolveObject(operation.responses[statusCode]);
           const mediaTypes = Object.keys(responseObj.content ?? {});
           const matchingMediaType = mediaTypes.find(isMediaTypeAllowed);
           if (matchingMediaType) {
