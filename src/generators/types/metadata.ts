@@ -38,9 +38,9 @@ export interface TsArrayMetaType {
 
 export interface TsCompositeMetaType {
   metaType: "composite";
-  allOf?: TsNestedType;
-  oneOf?: TsNestedType;
-  anyOf?: TsNestedType;
+  allOf?: TsNestedType[];
+  oneOf?: TsNestedType[];
+  anyOf?: TsNestedType[];
 }
 
 export type TsMetaType = TsPrimitiveMetaType | TsObjectMetaType | TsArrayMetaType | TsCompositeMetaType;
