@@ -8,7 +8,7 @@ import { getNamespaceName, getTagFileName } from "../utils/generate/generate.uti
 import { invalidVariableNameCharactersToCamel } from "../utils/js.utils";
 import { formatTag, isMediaTypeAllowed, isParamMediaTypeAllowed } from "../utils/openapi.utils";
 import { isMutation, isQuery } from "../utils/queries.utils";
-import { getSchemaTsMetaType, getTsType } from "../utils/ts.utils";
+import { getSchemaTsMetaType, getTsTypeBase } from "../utils/ts.utils";
 import { getDataFromOpenAPIDoc } from "./getDataFromOpenAPIDoc";
 import { SchemaResolver } from "./SchemaResolver.class";
 
@@ -37,14 +37,14 @@ export async function getMetadataFromOpenAPIDoc({
       const ref = resolver.getRefByZodSchemaName(zodSchemaName);
       const schema = ref ? resolver.getSchemaByRef(ref) : resolver.getSchemaByCompositeZodSchemaName(zodSchemaName);
 
-      const tsType = getTsType({ zodSchemaName, schema, resolver, options });
+      const tsTypeInfo = getTsTypeBase({ zodSchemaName, schema, resolver, options });
 
       let tsMetaType: TsMetaType | undefined;
       if (schema) {
-        tsMetaType = getSchemaTsMetaType({ schema, parentTypes: [tsType], resolver, options });
+        tsMetaType = getSchemaTsMetaType({ schema, parentTypes: [tsTypeInfo], resolver, options });
       }
 
-      models.push({ ...tsType, metaType: "primitive", ...tsMetaType });
+      models.push({ ...tsTypeInfo, metaType: "primitive", ...tsMetaType });
     });
 
     endpoints.forEach((endpoint) => {
@@ -90,17 +90,17 @@ function getQueryMetadataParams({
         }
       }
 
-      const tsType = getTsType({ zodSchemaName: param.zodSchema, schema, resolver, options });
+      const tsTypeInfo = getTsTypeBase({ zodSchemaName: param.zodSchema, schema, resolver, options });
 
       let tsMetaType: TsMetaType | undefined;
       if (schema) {
-        tsMetaType = getSchemaTsMetaType({ schema, parentTypes: [tsType], resolver, options });
+        tsMetaType = getSchemaTsMetaType({ schema, parentTypes: [tsTypeInfo], resolver, options });
       }
 
       return {
         name: invalidVariableNameCharactersToCamel(param.name),
         isRequired: param.parameterObject?.required ?? true,
-        ...tsType,
+        ...tsTypeInfo,
         ...tsMetaType,
         paramType: param.type,
       } as QueryMetadata["params"][0] & { paramType: EndpointParameter["type"] };
@@ -130,12 +130,12 @@ function getQueryMetadataResponse({
     schema = resolver.resolveObject(endpoint.responseObject?.content?.[matchingMediaType]?.schema);
   }
 
-  const tsType = getTsType({ zodSchemaName: endpoint.response, schema, resolver, options });
+  const tsTypeInfo = getTsTypeBase({ zodSchemaName: endpoint.response, schema, resolver, options });
 
   let tsMetaType: TsMetaType | undefined;
   if (schema) {
-    tsMetaType = getSchemaTsMetaType({ schema, parentTypes: [tsType], resolver, options });
+    tsMetaType = getSchemaTsMetaType({ schema, parentTypes: [tsTypeInfo], resolver, options });
   }
 
-  return { ...tsType, metaType: "primitive", ...tsMetaType };
+  return { ...tsTypeInfo, metaType: "primitive", ...tsMetaType };
 }

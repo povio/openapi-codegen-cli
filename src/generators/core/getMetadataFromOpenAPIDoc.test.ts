@@ -2,7 +2,7 @@ import SwaggerParser from "@apidevtools/swagger-parser";
 import { OpenAPIV3 } from "openapi-types";
 import { describe, expect, test } from "vitest";
 import { DEFAULT_GENERATE_OPTIONS } from "../const/options.const";
-import { ModelMetadata, QueryMetadata, TsNestedType } from "../types/metadata";
+import { ModelMetadata, QueryMetadata, TsType } from "../types/metadata";
 import { getMetadataFromOpenAPIDoc } from "./getMetadataFromOpenAPIDoc";
 
 describe("getMetadataFromOpenAPIDoc", async () => {
@@ -11,7 +11,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
   test("getMetadataFromOpenAPIDoc", async () => {
     const metadata = await getMetadataFromOpenAPIDoc({ openApiDoc, options: DEFAULT_GENERATE_OPTIONS });
 
-    const Category: TsNestedType = {
+    const Category: TsType = {
       type: "Category",
       namespace: "PetModels",
       filePath: "pet/pet.models",
@@ -22,7 +22,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
       ],
     };
 
-    const Tag: TsNestedType = {
+    const Tag: TsType = {
       type: "Tag",
       namespace: "PetModels",
       filePath: "pet/pet.models",
@@ -33,7 +33,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
       ],
     };
 
-    const Pet: TsNestedType = {
+    const Pet: TsType = {
       type: "Pet",
       namespace: "PetModels",
       filePath: "pet/pet.models",
@@ -60,7 +60,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
       ],
     };
 
-    const ApiResponse: TsNestedType = {
+    const ApiResponse: TsType = {
       type: "ApiResponse",
       namespace: "PetModels",
       filePath: "pet/pet.models",
@@ -72,7 +72,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
       ],
     };
 
-    const Order: TsNestedType = {
+    const Order: TsType = {
       type: "Order",
       namespace: "StoreModels",
       filePath: "store/store.models",
@@ -87,7 +87,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
       ],
     };
 
-    const User: TsNestedType = {
+    const User: TsType = {
       type: "User",
       namespace: "UserModels",
       filePath: "user/user.models",
@@ -104,7 +104,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
       ],
     };
 
-    const CreateUsersWithListInputBody: TsNestedType = {
+    const CreateUsersWithListInputBody: TsType = {
       type: "CreateUsersWithListInputBody",
       namespace: "UserModels",
       filePath: "user/user.models",
@@ -112,14 +112,14 @@ describe("getMetadataFromOpenAPIDoc", async () => {
       arrayType: { ...User },
     };
 
-    const FindPetsByStatusStatusParam: TsNestedType = {
+    const FindPetsByStatusStatusParam: TsType = {
       type: "FindPetsByStatusStatusParam",
       filePath: "pet/pet.models",
       namespace: "PetModels",
       metaType: "primitive",
     };
 
-    const FindPetsByStatusResponse: TsNestedType = {
+    const FindPetsByStatusResponse: TsType = {
       type: "FindPetsByStatusResponse",
       filePath: "pet/pet.models",
       namespace: "PetModels",
@@ -127,7 +127,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
       arrayType: { ...Pet },
     };
 
-    const FindPetsByTagsTagsParam: TsNestedType = {
+    const FindPetsByTagsTagsParam: TsType = {
       type: "FindPetsByTagsTagsParam",
       filePath: "pet/pet.models",
       namespace: "PetModels",
@@ -135,7 +135,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
       arrayType: { type: "string", metaType: "primitive" },
     };
 
-    const FindPetsByTagsResponse: TsNestedType = {
+    const FindPetsByTagsResponse: TsType = {
       type: "FindPetsByTagsResponse",
       filePath: "pet/pet.models",
       namespace: "PetModels",
@@ -143,7 +143,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
       arrayType: { ...Pet },
     };
 
-    const GetInventoryResponse: TsNestedType = {
+    const GetInventoryResponse: TsType = {
       type: "GetInventoryResponse",
       filePath: "store/store.models",
       namespace: "StoreModels",
@@ -151,7 +151,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
       objectProperties: [],
     };
 
-    const Address: TsNestedType = {
+    const Address: TsType = {
       type: "Address",
       filePath: "common/common.models",
       namespace: "CommonModels",
@@ -164,7 +164,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
       ],
     };
 
-    const Customer: TsNestedType = {
+    const Customer: TsType = {
       type: "Customer",
       filePath: "common/common.models",
       namespace: "CommonModels",
