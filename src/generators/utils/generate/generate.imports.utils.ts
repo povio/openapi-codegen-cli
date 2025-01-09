@@ -63,12 +63,12 @@ export function getEndpointsImports({
   });
 }
 
-export function getTsPath(options: Pick<GenerateOptions, "output">) {
+export function getImportPath(options: Pick<GenerateOptions, "output" | "useRelativeImports">) {
   const tsPath = options.output.includes(DATA_FILE_PATH)
-    ? `${options.output.replace(DATA_FILE_PATH, DATA_TS_PATH)}/`
-    : "../";
-  const normalizedTsPath = tsPath.replace(/\/\//g, "/");
-  return normalizedTsPath;
+    ? options.output.replace(DATA_FILE_PATH, DATA_TS_PATH)
+    : DATA_TS_PATH;
+  const importPath = options.useRelativeImports ? "../" : `${tsPath}/`.replace(/\/\//g, "/");
+  return importPath;
 }
 
 function getImports<T>({
@@ -93,7 +93,7 @@ function getImports<T>({
       const sameTagDir = currentTag === tag;
       imports.set(tag, {
         bindings: [options.includeNamespaces ? getNamespaceName({ type, tag, options }) : getEntityName(entity)],
-        from: `${sameTagDir ? "./" : getTsPath(options)}${getTagFileName({ type, tag, includeTagDir: !sameTagDir, options })}`,
+        from: `${sameTagDir ? "./" : getImportPath(options)}${getTagFileName({ type, tag, includeTagDir: !sameTagDir, options })}`,
       });
     } else if (!options.includeNamespaces) {
       imports.get(tag)!.bindings.push(getEntityName(entity));

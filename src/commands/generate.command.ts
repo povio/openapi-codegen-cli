@@ -23,6 +23,9 @@ class GenerateOptions implements GenerateParams {
   @YargOption({ envAlias: "excludeTags", default: "" })
   excludeTags!: string;
 
+  @YargOption({ envAlias: "useRelativeImports", default: false, type: "boolean" })
+  useRelativeImports!: boolean;
+
   @YargOption({ envAlias: "removeOperationPrefixEndingWith", default: "Controller_" })
   removeOperationPrefixEndingWith!: string;
 
