@@ -261,7 +261,7 @@ describe("getZodSchema", () => {
         discriminator: { propertyName: "type" },
       }),
     ).toStrictEqual(
-      'z.union([z.object({ type: z.literal("a"), a: z.string() }).passthrough().and(z.object({ type: z.literal("c"), c: z.string() }).passthrough()), z.object({ type: z.literal("b"), b: z.string() }).passthrough().and(z.object({ type: z.literal("d"), d: z.string() }).passthrough())])',
+      'z.union([z.object({ type: z.literal("a"), a: z.string() }).passthrough().merge(z.object({ type: z.literal("c"), c: z.string() }).passthrough()), z.object({ type: z.literal("b"), b: z.string() }).passthrough().merge(z.object({ type: z.literal("d"), d: z.string() }).passthrough())])',
     );
 
     expect(
@@ -280,7 +280,7 @@ describe("getZodSchema", () => {
           intersection: { allOf: [{ type: "string" }, { type: "number" }] },
         },
       }),
-    ).toStrictEqual("z.object({ intersection: z.string().and(z.number()) }).partial().passthrough()");
+    ).toStrictEqual("z.object({ intersection: z.string().merge(z.number()) }).partial().passthrough()");
 
     expect(getZodSchemaString({ type: "string", enum: ["aaa", "bbb", "ccc"] })).toStrictEqual(
       'z.enum(["aaa", "bbb", "ccc"])',

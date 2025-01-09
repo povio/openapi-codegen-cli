@@ -464,12 +464,12 @@ describe("getEndpointsFromOpenAPIDoc", () => {
       Reason: "z.object({ reason: ReasonDetails }).passthrough()",
       ReasonDetails: "z.object({ details: z.string() }).passthrough()",
       Tag: "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
-      UpdatePetBody: "Pet.and(Reason)",
+      UpdatePetBody: "Pet.merge(Reason)",
     });
 
     expect(resolver["compositeZodSchemaData"]).toStrictEqual([
       {
-        code: "Pet.and(Reason)",
+        code: "Pet.merge(Reason)",
         zodSchemas: expect.arrayContaining([
           expect.objectContaining({
             zodSchemaName: "UpdatePetBody",
