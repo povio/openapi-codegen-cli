@@ -1,6 +1,6 @@
 export const {{queryName endpoint}} = (options?: AppMutationOptions<typeof {{importedEndpointName endpoint}}, { {{{genEndpointParams endpoint}}} }>) => {
   return {{queryHook}}({
-    mutationFn: ({ {{{endpointArgs endpoint}}} }) => {{importedEndpointName endpoint}}({{{endpointArgs endpoint}}}),
+    mutationFn: ({{#if (endpointParams endpoint)}} { {{{endpointArgs endpoint}}} } {{/if}}) => {{importedEndpointName endpoint}}({{{endpointArgs endpoint}}}),
     ...options,
   });
 };

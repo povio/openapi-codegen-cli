@@ -8,6 +8,7 @@ export type GenerateParams = {
   input: string;
   output: string;
   includeNamespaces: boolean;
+  useRelativeImports: boolean;
   splitByTags: boolean;
   defaultTag: string;
   excludeTags: string;
@@ -20,6 +21,7 @@ export async function generate({
   input,
   output,
   includeNamespaces,
+  useRelativeImports,
   splitByTags,
   defaultTag,
   excludeTags,
@@ -40,6 +42,7 @@ export async function generate({
     options: {
       output,
       includeNamespaces,
+      useRelativeImports,
       splitByTags,
       defaultTag,
       excludeTags: excludeTags.split(","),

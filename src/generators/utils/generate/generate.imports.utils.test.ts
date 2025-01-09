@@ -1,11 +1,12 @@
 import { describe, expect, test } from "vitest";
-import { getTsPath } from "./generate.imports.utils";
+import { getImportPath } from "./generate.imports.utils";
 
 describe("Utils: generate imports", () => {
-  test("getTsPath", () => {
-    expect(getTsPath({ output: "output" })).toEqual("../");
-    expect(getTsPath({ output: "some-folder" })).toEqual("../");
-    expect(getTsPath({ output: "src/data" })).toEqual("@/data/");
-    expect(getTsPath({ output: "src/data/auto-gen" })).toEqual("@/data/auto-gen/");
+  test("getImportPath", () => {
+    expect(getImportPath({ output: "output", useRelativeImports: true })).toEqual("../");
+    expect(getImportPath({ output: "some-folder", useRelativeImports: true })).toEqual("../");
+    expect(getImportPath({ output: "some-folder", useRelativeImports: false })).toEqual("@/data/");
+    expect(getImportPath({ output: "src/data", useRelativeImports: false })).toEqual("@/data/");
+    expect(getImportPath({ output: "src/data/auto-gen", useRelativeImports: false })).toEqual("@/data/auto-gen/");
   });
 });

@@ -27,6 +27,7 @@ interface BaseGenerateOptions {
   defaultTag: string;
   excludeTags: string[];
   includeNamespaces: boolean;
+  useRelativeImports: boolean;
   configs: Record<GenerateType, GenerateConfig>;
 }
 

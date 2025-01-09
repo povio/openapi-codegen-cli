@@ -6,20 +6,20 @@ export interface GenerateMetadataParams {
   options?: Partial<GenerateOptions>;
 }
 
-export interface TsType {
+export interface TsTypeBase {
   type: string;
   namespace?: string;
   filePath?: string;
 }
 
-export type TsNestedType = TsType & TsMetaType;
+export type TsType = TsTypeBase & TsMetaType;
 
-export type TsProperty = {
+export type TsPropertyBase = {
   name: string;
   isRequired: boolean;
-} & TsType;
+} & TsTypeBase;
 
-export type TsNestedProperty = TsProperty & TsMetaType;
+export type TsProperty = TsPropertyBase & TsMetaType;
 
 export interface TsPrimitiveMetaType {
   metaType: "primitive";
@@ -27,25 +27,25 @@ export interface TsPrimitiveMetaType {
 
 export interface TsObjectMetaType {
   metaType: "object";
-  objectProperties: TsNestedProperty[];
+  objectProperties: TsProperty[];
   isCircular?: boolean;
 }
 
 export interface TsArrayMetaType {
   metaType: "array";
-  arrayType: TsNestedType;
+  arrayType: TsType;
 }
 
 export interface TsCompositeMetaType {
   metaType: "composite";
-  allOf?: TsNestedType[];
-  oneOf?: TsNestedType[];
-  anyOf?: TsNestedType[];
+  allOf?: TsType[];
+  oneOf?: TsType[];
+  anyOf?: TsType[];
 }
 
 export type TsMetaType = TsPrimitiveMetaType | TsObjectMetaType | TsArrayMetaType | TsCompositeMetaType;
 
-export type ModelMetadata = TsNestedType;
+export type ModelMetadata = TsType;
 
 export type QueryMetadata = {
   name: string;
@@ -53,8 +53,8 @@ export type QueryMetadata = {
   namespace?: string;
   isQuery: boolean;
   isMutation: boolean;
-  params: TsNestedProperty[];
-  response: TsNestedType;
+  params: TsProperty[];
+  response: TsType;
 };
 
 export interface GenerateMetadata {

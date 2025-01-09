@@ -17,14 +17,14 @@ export function isReferenceObject(obj: any): obj is OpenAPIV3.ReferenceObject {
 }
 
 export function normalizeString(text: string) {
-  const prefixed = prefixStringStartingWithNumberIfNeeded(text);
-  return prefixed
+  const formatted = prefixStringStartingWithNumberIfNeeded(text)
     .normalize("NFKD") // The normalize() using NFKD method returns the Unicode Normalization Form of a given string.
     .trim() // Remove whitespace from both sides of a string (optional)
     .replace(/\s+/g, "_") // Replace spaces with _
+    .replace(/--+/g, "-") // Replace multiple - with single -
     .replace(/-+/g, "_") // Replace - with _
-    .replace(/[^\w\-]+/g, "_") // Remove all non-word chars
-    .replace(/--+/g, "-"); // Replace multiple - with single -
+    .replace(/[^\w-]+/g, "_"); // Remove all non-word chars
+  return snakeToCamel(formatted);
 }
 
 export function wrapWithQuotesIfNeeded(str: string) {
