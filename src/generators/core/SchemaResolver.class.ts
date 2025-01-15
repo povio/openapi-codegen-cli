@@ -155,7 +155,23 @@ export class SchemaResolver {
   }
 
   private initializeSchemaTags() {
-    const filterRefObjs = (objs?: unknown[]) => objs?.filter(isReferenceObject) ?? [];
+    const getSchemaRefs = (
+      schema: OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject | undefined,
+    ): OpenAPIV3.ReferenceObject[] => {
+      const schemaRefObjs: OpenAPIV3.ReferenceObject[] = [];
+      if (!schema) {
+        return schemaRefObjs;
+      }
+
+      if (isReferenceObject(schema)) {
+        schemaRefObjs.push(schema);
+      } else if (schema.allOf || schema.anyOf || schema.oneOf) {
+        const schemaObjs = schema.allOf ?? schema.anyOf ?? schema.oneOf ?? [];
+        schemaObjs.forEach((schema) => schemaRefObjs.push(...getSchemaRefs(schema)));
+      }
+
+      return schemaRefObjs;
+    };
 
     for (const path in this.openApiDoc.paths) {
       const pathItemObj = this.openApiDoc.paths[path] as OpenAPIV3.PathItemObject;
@@ -170,9 +186,9 @@ export class SchemaResolver {
 
         // Collect all parameter objects that are references
         const schemaRefObjs = [] as OpenAPIV3.ReferenceObject[];
-        schemaRefObjs.push(
-          ...filterRefObjs(operation.parameters?.map((param) => (param as OpenAPIV3.ParameterObject).schema)),
-        );
+        operation.parameters?.map((param) => {
+          schemaRefObjs.push(...getSchemaRefs((param as OpenAPIV3.ParameterObject).schema));
+        });
 
         // Collect all requestBody objects that are references
         if (operation.requestBody) {
@@ -180,10 +196,7 @@ export class SchemaResolver {
           const mediaTypes = Object.keys(requestBodyObj.content ?? {});
           const matchingMediaType = mediaTypes.find(isParamMediaTypeAllowed);
           if (matchingMediaType) {
-            const schema = requestBodyObj.content?.[matchingMediaType]?.schema;
-            if (isReferenceObject(schema)) {
-              schemaRefObjs.push(schema);
-            }
+            schemaRefObjs.push(...getSchemaRefs(requestBodyObj.content?.[matchingMediaType]?.schema));
           }
         }
 
@@ -193,10 +206,7 @@ export class SchemaResolver {
           const mediaTypes = Object.keys(responseObj.content ?? {});
           const matchingMediaType = mediaTypes.find(isMediaTypeAllowed);
           if (matchingMediaType) {
-            const schema = responseObj.content?.[matchingMediaType]?.schema;
-            if (isReferenceObject(schema)) {
-              schemaRefObjs.push(schema);
-            }
+            schemaRefObjs.push(...getSchemaRefs(responseObj.content?.[matchingMediaType]?.schema));
           }
         }
 
