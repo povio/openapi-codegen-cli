@@ -12,6 +12,9 @@ export const getZodSchemaName = (name: string, schemaSuffix: string) =>
 
 export const isNamedZodSchema = (schema: string) => !schema.startsWith("z.");
 
+export const getZodSchemaOperationName = (operationName: string, isUniqueOperationName: boolean, tag: string) =>
+  isUniqueOperationName ? operationName : `${tag}_${operationName}`;
+
 export const getBodyZodSchemaName = (operationName: string) => snakeToCamel(`${operationName}_${BODY_SCHEMA_SUFFIX}`);
 
 export const getParamZodSchemaName = (operationName: string, paramName: string) =>

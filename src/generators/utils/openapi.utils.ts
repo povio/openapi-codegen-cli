@@ -180,6 +180,29 @@ function getOperationsByTag(openApiDoc: OpenAPIV3.Document, options: GenerateOpt
   return operationsByTag;
 }
 
+export function isUniqueOperationNameWithoutSplitByTags(
+  operationName: string,
+  openApiDoc: OpenAPIV3.Document,
+  options: GenerateOptions,
+) {
+  const operationNames: string[] = [];
+  for (const path in openApiDoc.paths) {
+    const pathItemObj = openApiDoc.paths[path] as OpenAPIV3.PathItemObject;
+    const pathItem = pick(pathItemObj, ALLOWED_METHODS);
+
+    for (const method in pathItem) {
+      const operation = pathItem[method as keyof typeof pathItem] as OpenAPIV3.OperationObject | undefined;
+      if (!operation || (operation.deprecated && !options?.withDeprecatedEndpoints)) {
+        continue;
+      }
+
+      const operationName = getUniqueOperationName({ path, method, operation, openApiDoc, options });
+      operationNames.push(operationName);
+    }
+  }
+  return operationNames.filter((name) => name === operationName).length <= 1;
+}
+
 export function formatTag(tag: string) {
   return nonWordCharactersToCamel(tag);
 }

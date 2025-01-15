@@ -32,18 +32,14 @@ export function resolveZodSchemaName({
     const zodSchemaName = getZodSchemaName(fallbackName, options.schemaSuffix);
 
     // result is complex and would benefit from being re-used
-    let formattedZodSchemaName = zodSchemaName;
-
-    // iteratively add suffix number to prevent overwriting
-    let reuseCount = 1;
+    const formattedZodSchemaName = zodSchemaName;
     while (resolver.getCodeByZodSchemaName(formattedZodSchemaName)) {
       if (resolver.getZodSchemaNamesByCompositeCode(result)?.includes(formattedZodSchemaName)) {
         return formattedZodSchemaName;
       } else if (resolver.getCodeByZodSchemaName(formattedZodSchemaName) === zodSchemaName) {
         return formattedZodSchemaName;
       } else {
-        reuseCount += 1;
-        formattedZodSchemaName = `${zodSchemaName}__${reuseCount}`;
+        throw new Error(`Can't uniquely resolve zod schema name: ${formattedZodSchemaName}`);
       }
     }
 

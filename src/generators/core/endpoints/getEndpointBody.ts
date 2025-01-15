@@ -3,7 +3,7 @@ import { BODY_PARAMETER_NAME } from "src/generators/const/endpoints.const";
 import { EndpointParameter } from "src/generators/types/endpoint";
 import { GenerateOptions } from "src/generators/types/options";
 import { isParamMediaTypeAllowed } from "src/generators/utils/openapi.utils";
-import { getBodyZodSchemaName } from "src/generators/utils/zod-schema.utils";
+import { getBodyZodSchemaName, getZodSchemaOperationName } from "src/generators/utils/zod-schema.utils";
 import { SchemaResolver } from "../SchemaResolver.class";
 import { getZodChain } from "../zod/getZodChain";
 import { getZodSchema } from "../zod/getZodSchema";
@@ -13,12 +13,14 @@ export function getEndpointBody({
   resolver,
   operation,
   operationName,
+  isUniqueOperationName,
   tag,
   options,
 }: {
   resolver: SchemaResolver;
   operation: OpenAPIV3.OperationObject;
   operationName: string;
+  isUniqueOperationName: boolean;
   tag: string;
   options: GenerateOptions;
 }): { endpointParameter: EndpointParameter; requestFormat: string } | undefined {
@@ -51,7 +53,7 @@ export function getEndpointBody({
   const zodSchemaName = resolveZodSchemaName({
     schema: schemaObject,
     zodSchema,
-    fallbackName: getBodyZodSchemaName(operationName),
+    fallbackName: getBodyZodSchemaName(getZodSchemaOperationName(operationName, isUniqueOperationName, tag)),
     resolver,
     tag,
     options,
