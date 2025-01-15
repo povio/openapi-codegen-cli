@@ -3,6 +3,7 @@ import { match, P } from "ts-pattern";
 import { ALLOWED_METHODS, ALLOWED_PARAM_MEDIA_TYPES, PRIMITIVE_TYPE_LIST } from "../const/openapi.const";
 import { PrimitiveType, SingleType } from "../types/openapi";
 import { GenerateOptions } from "../types/options";
+import { RESERVED_WORDS } from "./js.utils";
 import { pick } from "./object.utils";
 import { capitalize, kebabToCamel, nonWordCharactersToCamel, snakeToCamel } from "./string.utils";
 
@@ -117,7 +118,8 @@ export function getOperationName({
   options: GenerateOptions;
   keepOperationPrefixWithoutEnding?: boolean;
 }) {
-  let operationName = operation.operationId ?? method + pathToVariableName(path);
+  const pathOperationName = `${method}${pathToVariableName(path)}`;
+  let operationName = operation.operationId ?? pathOperationName;
 
   if (options.removeOperationPrefixEndingWith && keepOperationPrefixWithoutEnding) {
     const splits = operationName.split(options.removeOperationPrefixEndingWith);
@@ -129,7 +131,7 @@ export function getOperationName({
     operationName = operationName.replace(regex, "");
   }
 
-  return operationName;
+  return RESERVED_WORDS.includes(operationName) ? pathOperationName : operationName;
 }
 
 export function getUniqueOperationName({
