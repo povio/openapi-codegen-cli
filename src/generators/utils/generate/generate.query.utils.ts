@@ -7,12 +7,11 @@ export const getAllQueryKeys = (endpoints: Endpoint[]): { path: string; name: st
   const paths = endpoints.map(({ path }) => path);
   const firstPathSegmentRegex = /^\/[^\/]*/g;
   const queryKeys = Array.from(new Set(paths.map((path) => path.match(firstPathSegmentRegex)).flat()));
+  const getQueryKeyName = (path: string) =>
+    queryKeys.length === 1 ? "all" : `all${capitalize(kebabToCamel(path.replace(/\//g, "") ?? ""))}`;
   return queryKeys
     .filter((path) => path !== null)
-    .map((path) => ({
-      path,
-      name: queryKeys.length === 1 ? "all" : `all${capitalize(kebabToCamel(path?.replace(/\//g, "") ?? ""))}`,
-    }));
+    .map((path) => ({ path, name: getQueryKeyName(path ?? "") }) as { path: string; name: string });
 };
 
 export const getEndpointPathQueryKeys = (endpoint: Endpoint, endpoints: Endpoint[]) => {
