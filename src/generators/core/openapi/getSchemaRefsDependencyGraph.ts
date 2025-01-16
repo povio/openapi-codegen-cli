@@ -1,4 +1,5 @@
 import { OpenAPIV3 } from "openapi-types";
+import { COMPOSITE_KEYWORDS } from "src/generators/const/openapi.const";
 import { isReferenceObject } from "src/generators/utils/openapi.utils";
 
 export function getSchemaRefsDependencyGraph({
@@ -51,15 +52,14 @@ function visit({
     return;
   }
 
-  const props = ["allOf", "oneOf", "anyOf"] as const;
-  for (const prop of props) {
+  for (const prop of COMPOSITE_KEYWORDS) {
     if (schema[prop]) {
       for (const item of schema[prop]!) {
         visit({ ...params, schema: item });
       }
     }
   }
-  if (props.some((prop) => schema[prop])) {
+  if (COMPOSITE_KEYWORDS.some((prop) => schema[prop])) {
     return;
   }
 

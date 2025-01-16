@@ -19,3 +19,4 @@ export const ALLOWED_METHODS = [
   "trace",
 ] as Array<OpenAPIV3.HttpMethods>;
 export const PRIMITIVE_TYPE_LIST = ["string", "number", "integer", "boolean"];
+export const COMPOSITE_KEYWORDS = ["allOf", "anyOf", "oneOf"] as (keyof OpenAPIV3.SchemaObject)[];

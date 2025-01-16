@@ -1,5 +1,6 @@
 import { OpenAPIV3 } from "openapi-types";
 import { match } from "ts-pattern";
+import { COMPOSITE_KEYWORDS } from "../const/openapi.const";
 import { SchemaResolver } from "../core/SchemaResolver.class";
 import { GenerateType } from "../types/generate";
 import { TsMetaType, TsObjectMetaType, TsProperty, TsType, TsTypeBase } from "../types/metadata";
@@ -64,8 +65,7 @@ export function getSchemaTsMetaType({
     return { metaType: "primitive" };
   }
 
-  const compositeKeywords = ["allOf", "anyOf", "oneOf"] as (keyof OpenAPIV3.SchemaObject)[];
-  for (const compositeKeyword of compositeKeywords) {
+  for (const compositeKeyword of COMPOSITE_KEYWORDS) {
     const compositeObjs = schema[compositeKeyword] as (OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject)[];
     if (!compositeObjs) {
       continue;

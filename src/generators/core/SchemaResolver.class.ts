@@ -1,5 +1,5 @@
 import { OpenAPIV3 } from "openapi-types";
-import { ALLOWED_METHODS } from "../const/openapi.const";
+import { ALLOWED_METHODS, COMPOSITE_KEYWORDS } from "../const/openapi.const";
 import { GenerateOptions } from "../types/options";
 import { pick } from "../utils/object.utils";
 import {
@@ -155,24 +155,6 @@ export class SchemaResolver {
   }
 
   private initializeSchemaTags() {
-    const getSchemaRefs = (
-      schema: OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject | undefined,
-    ): OpenAPIV3.ReferenceObject[] => {
-      const schemaRefObjs: OpenAPIV3.ReferenceObject[] = [];
-      if (!schema) {
-        return schemaRefObjs;
-      }
-
-      if (isReferenceObject(schema)) {
-        schemaRefObjs.push(schema);
-      } else if (schema.allOf || schema.anyOf || schema.oneOf) {
-        const schemaObjs = schema.allOf ?? schema.anyOf ?? schema.oneOf ?? [];
-        schemaObjs.forEach((schema) => schemaRefObjs.push(...getSchemaRefs(schema)));
-      }
-
-      return schemaRefObjs;
-    };
-
     for (const path in this.openApiDoc.paths) {
       const pathItemObj = this.openApiDoc.paths[path] as OpenAPIV3.PathItemObject;
 
@@ -184,29 +166,30 @@ export class SchemaResolver {
           continue;
         }
 
-        // Collect all parameter objects that are references
         const schemaRefObjs = [] as OpenAPIV3.ReferenceObject[];
+
+        // Collect all referenced schemas in parameter objects
         operation.parameters?.map((param) => {
-          schemaRefObjs.push(...getSchemaRefs((param as OpenAPIV3.ParameterObject).schema));
+          schemaRefObjs.push(...this.getOperationSchemaRefs((param as OpenAPIV3.ParameterObject).schema));
         });
 
-        // Collect all requestBody objects that are references
+        // Collect all referenced schemas in requestBody objects
         if (operation.requestBody) {
           const requestBodyObj = this.resolveObject(operation.requestBody);
           const mediaTypes = Object.keys(requestBodyObj.content ?? {});
           const matchingMediaType = mediaTypes.find(isParamMediaTypeAllowed);
           if (matchingMediaType) {
-            schemaRefObjs.push(...getSchemaRefs(requestBodyObj.content?.[matchingMediaType]?.schema));
+            schemaRefObjs.push(...this.getOperationSchemaRefs(requestBodyObj.content?.[matchingMediaType]?.schema));
           }
         }
 
-        // Collect all main response objects that are references
+        // Collect all referenced schemas in main response objects
         for (const statusCode in operation.responses) {
           const responseObj = <OpenAPIV3.ResponseObject>this.resolveObject(operation.responses[statusCode]);
           const mediaTypes = Object.keys(responseObj.content ?? {});
           const matchingMediaType = mediaTypes.find(isMediaTypeAllowed);
           if (matchingMediaType) {
-            schemaRefObjs.push(...getSchemaRefs(responseObj.content?.[matchingMediaType]?.schema));
+            schemaRefObjs.push(...this.getOperationSchemaRefs(responseObj.content?.[matchingMediaType]?.schema));
           }
         }
 
@@ -227,5 +210,35 @@ export class SchemaResolver {
         });
       }
     }
+  }
+
+  private getOperationSchemaRefs(
+    schema: OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject | undefined,
+  ): OpenAPIV3.ReferenceObject[] {
+    if (!schema) {
+      return [];
+    }
+
+    const schemaRefObjs: OpenAPIV3.ReferenceObject[] = [];
+
+    if (isReferenceObject(schema)) {
+      schemaRefObjs.push(schema);
+    }
+
+    const schemaObj = schema as OpenAPIV3.SchemaObject;
+    if (COMPOSITE_KEYWORDS.some((prop) => prop in schemaObj && schemaObj[prop])) {
+      const schemaObjs = schemaObj.allOf ?? schemaObj.anyOf ?? schemaObj.oneOf ?? [];
+      schemaObjs.forEach((schema) => schemaRefObjs.push(...this.getOperationSchemaRefs(schema)));
+    }
+    if (schemaObj.properties) {
+      Object.values(schemaObj.properties).forEach((schema) =>
+        schemaRefObjs.push(...this.getOperationSchemaRefs(schema)),
+      );
+    }
+    if (schemaObj.type === "array") {
+      schemaRefObjs.push(...this.getOperationSchemaRefs((schema as OpenAPIV3.ArraySchemaObject).items));
+    }
+
+    return schemaRefObjs;
   }
 }

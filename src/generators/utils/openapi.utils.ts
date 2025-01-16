@@ -1,9 +1,9 @@
 import { OpenAPIV3 } from "openapi-types";
 import { match, P } from "ts-pattern";
+import { RESERVED_WORDS } from "../const/js.const";
 import { ALLOWED_METHODS, ALLOWED_PARAM_MEDIA_TYPES, PRIMITIVE_TYPE_LIST } from "../const/openapi.const";
 import { PrimitiveType, SingleType } from "../types/openapi";
 import { GenerateOptions } from "../types/options";
-import { RESERVED_WORDS } from "./js.utils";
 import { pick } from "./object.utils";
 import { capitalize, kebabToCamel, nonWordCharactersToCamel, snakeToCamel } from "./string.utils";
 
