@@ -34,6 +34,11 @@ export function generateModels({
     options,
   });
 
+  const zodSchemasData = Object.entries(zodSchemas).reduce((acc, [key, code]) => {
+    const ref = resolver.getRefByZodSchemaName(key);
+    return { ...acc, [key]: { code, isCircular: !!ref && resolver.isSchemaCircular(ref) } };
+  }, {});
+
   const hbsTemplate = getHbsTemplateDelegate({ resolver, templateName: "models", options });
 
   return hbsTemplate({
@@ -41,6 +46,6 @@ export function generateModels({
     modelsImports,
     includeNamespace: options.includeNamespaces,
     namespace: getNamespaceName({ type: GenerateType.Models, tag, options }),
-    zodSchemas,
+    zodSchemasData,
   });
 }

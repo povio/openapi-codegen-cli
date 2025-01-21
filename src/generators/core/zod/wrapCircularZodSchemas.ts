@@ -15,7 +15,7 @@ export function wrapCircularZodSchemas({
 
   Object.entries(zodSchemas).forEach(([name, code]) => {
     const ref = resolver.getRefByZodSchemaName(name);
-    const isCircular = ref && resolver.dependencyGraph.deepDependencyGraph[ref]?.has(ref);
+    const isCircular = ref && resolver.isSchemaCircular(ref);
     schemas[getZodSchemaName(name, options.schemaSuffix)] = isCircular ? `z.lazy(() => ${code})` : code;
   });
 

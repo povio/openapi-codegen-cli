@@ -145,6 +145,10 @@ export class SchemaResolver {
     return isReferenceObject(obj) ? (this.getSchemaByRef(obj.$ref) as T) : obj;
   }
 
+  isSchemaCircular(ref: string) {
+    return this.dependencyGraph.deepDependencyGraph[ref]?.has(ref);
+  }
+
   private intializeSchemaInfo() {
     this.schemaRefs.forEach((ref) => {
       const correctRef = autocorrectRef(ref);
