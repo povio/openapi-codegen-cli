@@ -78,12 +78,20 @@ export function getEndpointConfig(endpoint: Endpoint) {
         value: paramVariableName,
       };
     });
-  const headers = {
-    ...(endpoint.requestFormat !== DEFAULT_HEADERS["Content-Type"] ? { "Content-Type": endpoint.requestFormat } : {}),
-    ...(endpoint.responseFormat && endpoint.responseFormat !== DEFAULT_HEADERS.Accept
-      ? { Accept: endpoint.responseFormat }
-      : {}),
-  };
+
+  const headers: Record<string, string> = {};
+  if (endpoint.requestFormat !== DEFAULT_HEADERS["Content-Type"]) {
+    headers["Content-Type"] = `'${endpoint.requestFormat}'`;
+  }
+  if (endpoint.responseFormat && endpoint.responseFormat !== DEFAULT_HEADERS.Accept) {
+    headers.Accept = `'${endpoint.responseFormat}'`;
+  }
+  endpoint.parameters
+    .filter((param) => param.type === "Header")
+    .forEach((param) => {
+      headers[param.name] = invalidVariableNameCharactersToCamel(param.name);
+    });
+
   const endpointConfig = {
     ...(params.length > 0 ? { params } : {}),
     ...(Object.keys(headers).length ? { headers } : {}),

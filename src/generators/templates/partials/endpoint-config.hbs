@@ -15,7 +15,7 @@
     {{#if endpointConfig.headers}}
     headers: {
         {{#each endpointConfig.headers as | header |}}
-        '{{@key}}': '{{header}}',
+        '{{@key}}': {{{header}}},
         {{/each}}
     },
     {{/if}}
