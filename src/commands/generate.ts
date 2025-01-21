@@ -2,33 +2,20 @@ import SwaggerParser from "@apidevtools/swagger-parser";
 import { exec } from "child_process";
 import { OpenAPIV3 } from "openapi-types";
 import { generateCodeFromOpenAPIDoc } from "src/generators/generateCodeFromOpenAPIDoc";
+import { GenerateOptions } from "src/generators/types/options";
 import { logError, logInfo, logSuccess } from "src/helpers/cli.helper";
 
 export type GenerateParams = {
   input: string;
-  output: string;
-  includeNamespaces: boolean;
-  useRelativeImports: boolean;
-  splitByTags: boolean;
-  defaultTag: string;
   excludeTags: string;
-  removeOperationPrefixEndingWith: string;
   prettier: boolean;
   verbose: boolean;
-};
+} & Pick<
+  GenerateOptions,
+  "output" | "includeNamespaces" | "splitByTags" | "defaultTag" | "removeOperationPrefixEndingWith" | "importPath"
+>;
 
-export async function generate({
-  input,
-  output,
-  includeNamespaces,
-  useRelativeImports,
-  splitByTags,
-  defaultTag,
-  excludeTags,
-  removeOperationPrefixEndingWith,
-  prettier,
-  verbose,
-}: GenerateParams) {
+export async function generate({ input, excludeTags, prettier, verbose, ...params }: GenerateParams) {
   if (verbose) {
     logInfo(`Parsing OpenAPI spec from "${input}"`);
   }
@@ -40,13 +27,8 @@ export async function generate({
   generateCodeFromOpenAPIDoc({
     openApiDoc,
     options: {
-      output,
-      includeNamespaces,
-      useRelativeImports,
-      splitByTags,
-      defaultTag,
       excludeTags: excludeTags.split(","),
-      removeOperationPrefixEndingWith,
+      ...params,
     },
   });
   if (verbose) {
@@ -54,7 +36,7 @@ export async function generate({
   }
 
   if (prettier) {
-    execPrettier({ output, verbose });
+    execPrettier({ output: params.output, verbose });
   }
 }
 

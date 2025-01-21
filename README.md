@@ -30,6 +30,7 @@ yarn openapi-codegen generate --input http://localhost:3001/docs-json
   --defaultTag                        Default tag name for code shared accross multiple tags (default: 'Common')
   --excludeTags                       Comma separated list of tags excluded from the output
   --removeOperationPrefixEndingWith   Removes prefix that ends with value from operation names (default: 'Controller_')
+  --importPath                        Import path (default: 'ts', possible: 'ts' | 'relative' | 'absolute')
   --prettier                          Run prettier command on output after code generation (default: true)
   --verbose                           Show log messages during execution
 ```

@@ -63,12 +63,17 @@ export function getEndpointsImports({
   });
 }
 
-export function getImportPath(options: Pick<GenerateOptions, "output" | "useRelativeImports">) {
-  const tsPath = options.output.includes(DATA_FILE_PATH)
-    ? options.output.replace(DATA_FILE_PATH, DATA_TS_PATH)
-    : DATA_TS_PATH;
-  const importPath = options.useRelativeImports ? "../" : `${tsPath}/`.replace(/\/\//g, "/");
-  return importPath;
+export function getImportPath(options: Pick<GenerateOptions, "output" | "importPath">) {
+  let importPath = DATA_TS_PATH;
+  const regex = new RegExp(`^${DATA_FILE_PATH}`, "g");
+  if (options.importPath === "relative") {
+    importPath = "../";
+  } else if (options.importPath === "absolute") {
+    importPath = options.output;
+  } else if (regex.test(options.output)) {
+    importPath = options.output.replace(regex, DATA_TS_PATH);
+  }
+  return `${importPath}/`.replace(/\/\//g, "/");
 }
 
 function getImports<T>({

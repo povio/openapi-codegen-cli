@@ -9,7 +9,7 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   defaultTag: "Common",
   excludeTags: [], // TODO: Only works for isolated tags
   includeNamespaces: true,
-  useRelativeImports: false,
+  importPath: "ts",
   configs: {
     [GenerateType.Models]: {
       outputFileNameSuffix: "models",
