@@ -65,13 +65,12 @@ export function getEndpointsImports({
 
 export function getImportPath(options: Pick<GenerateOptions, "output" | "importPath">) {
   let importPath = DATA_TS_PATH;
-  const regex = new RegExp(`^${DATA_FILE_PATH}`, "g");
   if (options.importPath === "relative") {
     importPath = "../";
   } else if (options.importPath === "absolute") {
     importPath = options.output;
-  } else if (regex.test(options.output)) {
-    importPath = options.output.replace(regex, DATA_TS_PATH);
+  } else if (new RegExp(`${DATA_FILE_PATH}`, "g").test(options.output)) {
+    importPath = options.output.replace(new RegExp(`.*${DATA_FILE_PATH}`, "g"), DATA_TS_PATH);
   }
   return `${importPath}/`.replace(/\/\//g, "/");
 }

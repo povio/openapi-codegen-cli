@@ -15,7 +15,7 @@ describe("Utils: generate imports", () => {
     expect(getImportPath({ output: "src/data/auto-gen", importPath: "ts" })).toEqual("@/data/auto-gen/");
     expect(getImportPath({ output: "src/data/auto-gen", importPath: "relative" })).toEqual("../");
     expect(getImportPath({ output: "src/data/auto-gen", importPath: "absolute" })).toEqual("src/data/auto-gen/");
-    expect(getImportPath({ output: "frontend/src/data/auto-gen", importPath: "ts" })).toEqual("@/data/");
+    expect(getImportPath({ output: "frontend/src/data/auto-gen", importPath: "ts" })).toEqual("@/data/auto-gen/");
     expect(getImportPath({ output: "frontend/src/data/auto-gen", importPath: "relative" })).toEqual("../");
     expect(getImportPath({ output: "frontend/src/data/auto-gen", importPath: "absolute" })).toEqual(
       "frontend/src/data/auto-gen/",
