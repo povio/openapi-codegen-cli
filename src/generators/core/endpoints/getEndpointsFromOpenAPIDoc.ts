@@ -1,7 +1,7 @@
 import { OpenAPIV3 } from "openapi-types";
 import { ALLOWED_METHODS } from "src/generators/const/openapi.const";
 import { VOID_SCHEMA } from "src/generators/const/zod.const";
-import { Endpoint } from "../../types/endpoint";
+import { Endpoint, EndpointParameter } from "../../types/endpoint";
 import { GenerateOptions } from "../../types/options";
 import { pick } from "../../utils/object.utils";
 import {
@@ -90,6 +90,11 @@ export function getEndpointsFromOpenAPIDoc({
         }
       }
 
+      const missingPathParameters = getMissingPathParameters(endpoint);
+      missingPathParameters.forEach((pathParam) => {
+        endpoint.parameters.push(pathParam);
+      });
+
       for (const statusCode in operation.responses) {
         const responseObj = <OpenAPIV3.ResponseObject>resolver.resolveObject(operation.responses[statusCode]);
         const mediaTypes = Object.keys(responseObj.content ?? {});
@@ -175,4 +180,20 @@ function getParameters(parameters: NonNullable<OpenAPIV3.PathItemObject["paramet
   return Object.fromEntries(
     (parameters ?? []).map((param) => [isReferenceObject(param) ? param.$ref : param.name, param] as const),
   );
+}
+
+function getMissingPathParameters(endpoint: Endpoint): EndpointParameter[] {
+  const pathParams = [...endpoint.path.matchAll(/:([a-zA-Z0-9_]+)/g)].map((param) => param[1]);
+  return pathParams
+    .filter((pathParam) => endpoint.parameters.findIndex(({ name }) => name === pathParam) === -1)
+    .map((name) => getPathParameterFromName(name));
+}
+
+function getPathParameterFromName(name: string): EndpointParameter {
+  return {
+    name,
+    type: "Path",
+    zodSchema: "z.string()",
+    parameterObject: { name, required: true, in: "path", schema: { type: "string" } },
+  };
 }
