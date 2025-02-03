@@ -4,6 +4,7 @@ import { RESERVED_WORDS } from "../const/js.const";
 import { ALLOWED_METHODS, ALLOWED_PARAM_MEDIA_TYPES, PRIMITIVE_TYPE_LIST } from "../const/openapi.const";
 import { PrimitiveType, SingleType } from "../types/openapi";
 import { GenerateOptions } from "../types/options";
+import { invalidVariableNameCharactersToCamel } from "./js.utils";
 import { pick } from "./object.utils";
 import { capitalize, kebabToCamel, nonWordCharactersToCamel, snakeToCamel } from "./string.utils";
 
@@ -119,7 +120,9 @@ export function getOperationName({
   keepOperationPrefixWithoutEnding?: boolean;
 }) {
   const pathOperationName = `${method}${pathToVariableName(path)}`;
-  let operationName = operation.operationId ?? pathOperationName;
+  let operationName = operation.operationId
+    ? invalidVariableNameCharactersToCamel(operation.operationId)
+    : pathOperationName;
 
   if (options.removeOperationPrefixEndingWith && keepOperationPrefixWithoutEnding) {
     const splits = operationName.split(options.removeOperationPrefixEndingWith);
