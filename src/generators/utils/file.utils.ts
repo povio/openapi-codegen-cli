@@ -11,8 +11,12 @@ export function readHbsTemplateSync(fileName: string) {
   return fs.readFileSync(templatePath, "utf-8");
 }
 
+export function getFileName({ output, fileName }: { output: string; fileName: string }) {
+  return `${output}/${fileName}.ts`;
+}
+
 export function writeTsFileSync({ output, fileName, data }: { output: string; fileName: string; data: string }) {
-  writeFileWithDirSync(`${output}/${fileName}.ts`, data);
+  writeFileWithDirSync(getFileName({ output, fileName }), data);
 }
 
 function writeFileWithDirSync(file: string, data: string) {

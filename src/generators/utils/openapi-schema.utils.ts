@@ -13,7 +13,7 @@ export function isArraySchemaObject(schema: OpenAPIV3.SchemaObject): schema is O
 
 export function inferRequiredSchema(schema: OpenAPIV3.SchemaObject) {
   if (!schema.allOf) {
-    throw new Error("function inferRequiredSchema is specialized to handle item with required only in an allOf array.");
+    throw new Error("Function inferRequiredSchema is specialized to handle item with required only in an allOf array.");
   }
   const [standaloneRequisites, noRequiredOnlyAllof] = schema.allOf.reduce(
     (acc, cur) => {

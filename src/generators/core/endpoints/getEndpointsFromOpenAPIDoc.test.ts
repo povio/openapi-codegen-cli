@@ -119,7 +119,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
     };
 
     const resolver = new SchemaResolver(openApiDoc, generateOptions);
-    const endpoints = getEndpointsFromOpenAPIDoc({
+    const { endpoints } = getEndpointsFromOpenAPIDoc({
       resolver,
       openApiDoc,
       options: generateOptions,
@@ -234,7 +234,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
     };
 
     const resolver = new SchemaResolver(openApiDoc, generateOptions);
-    const endpoints = getEndpointsFromOpenAPIDoc({
+    const { endpoints } = getEndpointsFromOpenAPIDoc({
       resolver,
       openApiDoc,
       options: generateOptions,
@@ -397,7 +397,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
     };
 
     const resolver = new SchemaResolver(openApiDoc, generateOptions);
-    const endpoints = getEndpointsFromOpenAPIDoc({
+    const { endpoints } = getEndpointsFromOpenAPIDoc({
       resolver,
       openApiDoc,
       options: generateOptions,
@@ -597,7 +597,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
     };
 
     const resolver = new SchemaResolver(openApiDoc, generateOptions);
-    const endpoints = getEndpointsFromOpenAPIDoc({
+    const { endpoints } = getEndpointsFromOpenAPIDoc({
       resolver,
       openApiDoc,
       options: generateOptions,
@@ -749,7 +749,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
   test("petstore.yaml", async () => {
     const openApiDoc = (await SwaggerParser.parse("./test/petstore.yaml")) as OpenAPIV3.Document;
     const resolver = new SchemaResolver(openApiDoc, generateOptions);
-    const endpoints = getEndpointsFromOpenAPIDoc({
+    const { endpoints } = getEndpointsFromOpenAPIDoc({
       resolver,
       openApiDoc,
       options: generateOptions,
@@ -1706,7 +1706,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
       },
     };
     const resolver = new SchemaResolver(openApiDoc, generateOptions);
-    const endpoints = getEndpointsFromOpenAPIDoc({
+    const { endpoints } = getEndpointsFromOpenAPIDoc({
       resolver,
       openApiDoc,
       options: generateOptions,

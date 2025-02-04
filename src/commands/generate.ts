@@ -6,33 +6,42 @@ import { GenerateOptions } from "src/generators/types/options";
 import { logError, logInfo, logSuccess } from "src/helpers/cli.helper";
 
 export type GenerateParams = {
-  input: string;
   excludeTags: string;
   prettier: boolean;
   verbose: boolean;
 } & Pick<
   GenerateOptions,
-  "output" | "includeNamespaces" | "splitByTags" | "defaultTag" | "removeOperationPrefixEndingWith" | "importPath"
+  | "input"
+  | "output"
+  | "includeNamespaces"
+  | "splitByTags"
+  | "defaultTag"
+  | "removeOperationPrefixEndingWith"
+  | "importPath"
 >;
 
 export async function generate({ input, excludeTags, prettier, verbose, ...params }: GenerateParams) {
   if (verbose) {
-    logInfo(`Parsing OpenAPI spec from "${input}"`);
+    logInfo("Parsing OpenAPI spec...");
   }
   const openApiDoc = (await SwaggerParser.bundle(input)) as OpenAPIV3.Document;
+  if (verbose) {
+    logSuccess("Parsing finished.");
+  }
 
   if (verbose) {
-    logInfo("Generating code from OpenAPI spec");
+    logInfo("Generating code...");
   }
   generateCodeFromOpenAPIDoc({
     openApiDoc,
     options: {
+      input,
       excludeTags: excludeTags.split(","),
       ...params,
     },
   });
   if (verbose) {
-    logSuccess("Generated code successfully");
+    logSuccess("Generation finished.");
   }
 
   if (prettier) {
@@ -42,14 +51,14 @@ export async function generate({ input, excludeTags, prettier, verbose, ...param
 
 function execPrettier({ output, verbose }: Pick<GenerateParams, "output" | "verbose">) {
   if (verbose) {
-    logInfo("Running Prettier");
+    logInfo("Running Prettier...");
   }
   exec(`prettier --write ${output}`, (error) => {
     if (verbose) {
       if (error) {
         logError(error, "Prettier error");
       } else {
-        logSuccess("Ran Prettier successfully");
+        logSuccess("Prettier finished.");
       }
     }
   });

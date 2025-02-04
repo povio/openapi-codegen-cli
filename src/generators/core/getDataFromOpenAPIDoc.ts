@@ -18,7 +18,11 @@ export function getDataFromOpenAPIDoc({
 }) {
   const resolver = new SchemaResolver(openApiDoc, options);
 
-  const endpoints = getEndpointsFromOpenAPIDoc({ resolver, openApiDoc, options });
+  const { endpoints, validationErrorMessages } = getEndpointsFromOpenAPIDoc({
+    resolver,
+    openApiDoc,
+    options,
+  });
   const zodSchemasFromDocSchemas = getZodSchemasFromOpenAPIDoc({ resolver, openApiDoc, options });
 
   let zodSchemas = { ...zodSchemasFromDocSchemas, ...resolver.getZodSchemas() };
@@ -28,6 +32,7 @@ export function getDataFromOpenAPIDoc({
   return {
     resolver,
     data: splitDataByTags({ resolver, endpoints, zodSchemas, options }),
+    validationErrorMessages,
   };
 }
 

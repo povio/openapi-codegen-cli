@@ -44,6 +44,7 @@ export class SchemaResolver {
   private compositeZodSchemaData: CompositeZodSchemaData[] = [];
 
   readonly dependencyGraph: ReturnType<typeof getOpenAPISchemaDependencyGraph>;
+  readonly validationErrorMessages: string[] = [];
 
   private get docSchemas() {
     return this.openApiDoc.components?.schemas ?? {};
@@ -173,8 +174,14 @@ export class SchemaResolver {
         const schemaRefObjs = [] as OpenAPIV3.ReferenceObject[];
 
         // Collect all referenced schemas in parameter objects
-        operation.parameters?.map((param) => {
-          schemaRefObjs.push(...this.getOperationSchemaRefs((param as OpenAPIV3.ParameterObject).schema));
+        operation.parameters?.map((parameter) => {
+          const parameterObject = parameter as OpenAPIV3.ParameterObject;
+          schemaRefObjs.push(
+            ...this.getOperationSchemaRefs(
+              parameterObject.schema,
+              `${operation.operationId ?? path} parameter ${parameterObject.name}`,
+            ),
+          );
         });
 
         // Collect all referenced schemas in requestBody objects
@@ -183,7 +190,12 @@ export class SchemaResolver {
           const mediaTypes = Object.keys(requestBodyObj.content ?? {});
           const matchingMediaType = mediaTypes.find(isParamMediaTypeAllowed);
           if (matchingMediaType) {
-            schemaRefObjs.push(...this.getOperationSchemaRefs(requestBodyObj.content?.[matchingMediaType]?.schema));
+            schemaRefObjs.push(
+              ...this.getOperationSchemaRefs(
+                requestBodyObj.content?.[matchingMediaType]?.schema,
+                `${operation.operationId} request body`,
+              ),
+            );
           }
         }
 
@@ -193,7 +205,12 @@ export class SchemaResolver {
           const mediaTypes = Object.keys(responseObj.content ?? {});
           const matchingMediaType = mediaTypes.find(isMediaTypeAllowed);
           if (matchingMediaType) {
-            schemaRefObjs.push(...this.getOperationSchemaRefs(responseObj.content?.[matchingMediaType]?.schema));
+            schemaRefObjs.push(
+              ...this.getOperationSchemaRefs(
+                responseObj.content?.[matchingMediaType]?.schema,
+                `${operation.operationId} response body`,
+              ),
+            );
           }
         }
 
@@ -218,29 +235,43 @@ export class SchemaResolver {
 
   private getOperationSchemaRefs(
     schema: OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject | undefined,
+    schemaInfo: string,
   ): OpenAPIV3.ReferenceObject[] {
     if (!schema) {
       return [];
     }
 
     const schemaRefObjs: OpenAPIV3.ReferenceObject[] = [];
+    const isReferenceSchema = isReferenceObject(schema);
 
-    if (isReferenceObject(schema)) {
+    if (isReferenceSchema) {
       schemaRefObjs.push(schema);
     }
 
     const schemaObj = schema as OpenAPIV3.SchemaObject;
     if (COMPOSITE_KEYWORDS.some((prop) => prop in schemaObj && schemaObj[prop])) {
       const schemaObjs = schemaObj.allOf ?? schemaObj.anyOf ?? schemaObj.oneOf ?? [];
-      schemaObjs.forEach((schema) => schemaRefObjs.push(...this.getOperationSchemaRefs(schema)));
+      schemaObjs.forEach((schema) => schemaRefObjs.push(...this.getOperationSchemaRefs(schema, schemaInfo)));
+
+      if (isReferenceSchema) {
+        this.validationErrorMessages.push(`INVALID SCHEMA: ${schemaInfo} has both reference and composite keyword`);
+      }
     }
     if (schemaObj.properties) {
       Object.values(schemaObj.properties).forEach((schema) =>
-        schemaRefObjs.push(...this.getOperationSchemaRefs(schema)),
+        schemaRefObjs.push(...this.getOperationSchemaRefs(schema, schemaInfo)),
       );
+
+      if (isReferenceSchema) {
+        this.validationErrorMessages.push(`INVALID SCHEMA: ${schemaInfo} has both reference and properties`);
+      }
     }
     if (schemaObj.type === "array") {
-      schemaRefObjs.push(...this.getOperationSchemaRefs((schema as OpenAPIV3.ArraySchemaObject).items));
+      schemaRefObjs.push(...this.getOperationSchemaRefs((schema as OpenAPIV3.ArraySchemaObject).items, schemaInfo));
+
+      if (isReferenceSchema) {
+        this.validationErrorMessages.push(`INVALID SCHEMA: ${schemaInfo} is both reference and array schema`);
+      }
     }
 
     return schemaRefObjs;

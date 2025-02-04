@@ -1,6 +1,7 @@
 import { OpenAPIV3 } from "openapi-types";
 import { ALLOWED_METHODS } from "src/generators/const/openapi.const";
 import { VOID_SCHEMA } from "src/generators/const/zod.const";
+import { invalidVariableNameCharactersToCamel } from "src/generators/utils/js.utils";
 import { Endpoint, EndpointParameter } from "../../types/endpoint";
 import { GenerateOptions } from "../../types/options";
 import { pick } from "../../utils/object.utils";
@@ -37,6 +38,7 @@ export function getEndpointsFromOpenAPIDoc({
   options: GenerateOptions;
 }) {
   const endpoints = [];
+  const validationErrorMessages = [];
 
   for (const path in openApiDoc.paths) {
     const pathItemObj = openApiDoc.paths[path] as OpenAPIV3.PathItemObject;
@@ -47,6 +49,12 @@ export function getEndpointsFromOpenAPIDoc({
       const operation = pathItem[method as keyof typeof pathItem] as OpenAPIV3.OperationObject | undefined;
       if (!operation || (operation.deprecated && !options?.withDeprecatedEndpoints)) {
         continue;
+      }
+
+      const invalidOperationId =
+        operation.operationId && operation.operationId !== invalidVariableNameCharactersToCamel(operation.operationId);
+      if (invalidOperationId) {
+        validationErrorMessages.push(`INVALID OPERATION ID: ${operation.operationId}`);
       }
 
       const parameters = Object.entries({
@@ -94,6 +102,11 @@ export function getEndpointsFromOpenAPIDoc({
       missingPathParameters.forEach((pathParam) => {
         endpoint.parameters.push(pathParam);
       });
+      if (missingPathParameters.length > 0) {
+        validationErrorMessages.push(
+          `MISSING PATH PARAMETERS: ${missingPathParameters.map(({ name }) => name).join(", ")} in ${path}`,
+        );
+      }
 
       for (const statusCode in operation.responses) {
         const responseObj = <OpenAPIV3.ResponseObject>resolver.resolveObject(operation.responses[statusCode]);
@@ -152,7 +165,7 @@ export function getEndpointsFromOpenAPIDoc({
     }
   }
 
-  return endpoints;
+  return { endpoints, validationErrorMessages };
 }
 
 function getResponseZodSchemaName({

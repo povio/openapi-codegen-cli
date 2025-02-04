@@ -66,5 +66,5 @@ export function resolveZodSchemaName({
     return result;
   }
 
-  throw new Error("Invalid ref: " + zodSchema.ref);
+  throw new Error(`Invalid ref: ${zodSchema.ref}`);
 }
