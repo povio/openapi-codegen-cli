@@ -1,6 +1,6 @@
 import SwaggerParser from "@apidevtools/swagger-parser";
 import { OpenAPIV3 } from "openapi-types";
-import { checkOpenAPIDoc } from "src/generators/checkOpenApiDoc";
+import { checkOpenAPIDoc } from "src/generators/checkOpenAPIDoc";
 import { GenerateOptions } from "src/generators/types/options";
 import { logInfo, logSuccess } from "src/helpers/cli.helper";
 

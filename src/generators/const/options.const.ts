@@ -4,6 +4,7 @@ import { SCHEMA_SUFFIX } from "./zod.const";
 
 export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   // Base options
+  input: "input.yaml",
   output: "output",
   splitByTags: true,
   defaultTag: "Common",
