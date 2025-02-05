@@ -4,14 +4,13 @@ import { GenerateOptions } from "../types/options";
 import { pick } from "../utils/object.utils";
 import {
   autocorrectRef,
-  formatTag,
-  getOperationTag,
   getSchemaNameByRef,
   getSchemaRef,
   isMediaTypeAllowed,
   isParamMediaTypeAllowed,
   isReferenceObject,
 } from "../utils/openapi.utils";
+import { formatTag, getOperationTag } from "../utils/tag.utils";
 import { getZodSchemaName } from "../utils/zod-schema.utils";
 import { getOpenAPISchemaDependencyGraph } from "./openapi/getOpenAPISchemaDependencyGraph";
 import { iterateSchema } from "./openapi/iterateSchema";
