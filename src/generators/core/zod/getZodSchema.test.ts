@@ -139,7 +139,7 @@ describe("getZodSchema", () => {
         discriminator: { propertyName: "type" },
       }),
     ).toStrictEqual(
-      `z.discriminatedUnion("type", [z.object({ type: z.literal("a"), a: z.string() }).passthrough(), z.object({ type: z.literal("b"), b: z.string() }).passthrough()])`,
+      `z.discriminatedUnion("type", [z.object({ type: z.enum(["a"]), a: z.string() }).passthrough(), z.object({ type: z.enum(["b"]), b: z.string() }).passthrough()])`,
     );
 
     // returns z.discriminatedUnion, when allOf has single object
@@ -187,7 +187,7 @@ describe("getZodSchema", () => {
         discriminator: { propertyName: "type" },
       }),
     ).toStrictEqual(
-      `z.discriminatedUnion("type", [z.object({ type: z.literal("a"), a: z.string() }).passthrough(), z.object({ type: z.literal("b"), b: z.string() }).passthrough()])`,
+      `z.discriminatedUnion("type", [z.object({ type: z.enum(["a"]), a: z.string() }).passthrough(), z.object({ type: z.enum(["b"]), b: z.string() }).passthrough()])`,
     );
 
     // returns z.union, when allOf has multiple objects
@@ -261,7 +261,7 @@ describe("getZodSchema", () => {
         discriminator: { propertyName: "type" },
       }),
     ).toStrictEqual(
-      'z.union([z.object({ type: z.literal("a"), a: z.string() }).passthrough().merge(z.object({ type: z.literal("c"), c: z.string() }).passthrough()), z.object({ type: z.literal("b"), b: z.string() }).passthrough().merge(z.object({ type: z.literal("d"), d: z.string() }).passthrough())])',
+      'z.union([z.object({ type: z.enum(["a"]), a: z.string() }).passthrough().merge(z.object({ type: z.enum(["c"]), c: z.string() }).passthrough()), z.object({ type: z.enum(["b"]), b: z.string() }).passthrough().merge(z.object({ type: z.enum(["d"]), d: z.string() }).passthrough())])',
     );
 
     expect(
@@ -289,7 +289,7 @@ describe("getZodSchema", () => {
       "z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(null)])",
     );
     expect(getZodSchemaString({ type: "number", enum: [1] })).toStrictEqual("z.literal(1)");
-    expect(getZodSchemaString({ type: "string", enum: ["aString"] })).toStrictEqual('z.literal("aString")');
+    expect(getZodSchemaString({ type: "string", enum: ["aString"] })).toStrictEqual('z.enum(["aString"])');
   });
 
   test("getSchemaWithChainableAsZodString", () => {

@@ -285,15 +285,7 @@ function getPrimitiveZodSchema({ schema, zodSchema }: GetPartialZodSchemaParams)
   if (schemaType && isPrimitiveType(schemaType)) {
     if (schema.enum) {
       if (schemaType === "string") {
-        if (schema.enum.length === 1) {
-          const value = schema.enum[0];
-          const valueString = value === null ? "null" : `"${value}"`;
-          return zodSchema.assign(`z.literal(${valueString})`);
-        }
-
-        return zodSchema.assign(
-          `z.enum([${schema.enum.map((value) => (value === null ? "null" : `"${value}"`)).join(", ")}])`,
-        );
+        return getEnumZodSchema({ schema, zodSchema });
       }
 
       if (schema.enum.some((e) => typeof e === "string")) {
@@ -321,4 +313,10 @@ function getPrimitiveZodSchema({ schema, zodSchema }: GetPartialZodSchemaParams)
         .otherwise((type) => `z.${type}()`),
     );
   }
+}
+
+function getEnumZodSchema({ schema, zodSchema }: { schema: OpenAPIV3.SchemaObject; zodSchema: ZodSchema }) {
+  return zodSchema.assign(
+    `z.enum([${schema.enum?.map((value) => (value === null ? "null" : `"${value}"`)).join(", ")}])`,
+  );
 }
