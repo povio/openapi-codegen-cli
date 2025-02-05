@@ -124,32 +124,17 @@ export function getOpenAPISchemaComplexity({
 }
 
 function complexityByType(schema: OpenAPIV3.SchemaObject & { type: PrimitiveType }) {
-  const type = schema.type;
-  if (!type) {
-    return 0;
-  }
-
-  return match(type)
-    .with("string", () => 1)
-    .with("number", () => 1)
-    .with("integer", () => 1)
-    .with("boolean", () => 1)
+  return match(schema.type)
+    .with("string", "number", "integer", "boolean", () => 1)
     .otherwise(() => 0);
 }
 
-function complexityByComposite(from?: CompositeType | undefined) {
-  if (!from) {
-    return 0;
-  }
-
-  return match(from)
+function complexityByComposite(type?: CompositeType) {
+  return match(type)
     .with("oneOf", () => 2)
     .with("anyOf", () => 3)
     .with("allOf", () => 2)
-    .with("enum", () => 1)
-    .with("array", () => 1)
-    .with("record", () => 1)
-    .with("empty-object", () => 1)
+    .with("enum", "array", "record", "empty-object", () => 1)
     .with("object", () => 2)
     .otherwise(() => 0);
 }
