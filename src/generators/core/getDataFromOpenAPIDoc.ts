@@ -18,12 +18,8 @@ export function getDataFromOpenAPIDoc({
 }) {
   const resolver = new SchemaResolver(openApiDoc, options);
 
-  const { endpoints, validationErrorMessages } = getEndpointsFromOpenAPIDoc({
-    resolver,
-    openApiDoc,
-    options,
-  });
-  const zodSchemasFromDocSchemas = getZodSchemasFromOpenAPIDoc({ resolver, openApiDoc, options });
+  const { endpoints, validationErrorMessages } = getEndpointsFromOpenAPIDoc({ resolver, options });
+  const zodSchemasFromDocSchemas = getZodSchemasFromOpenAPIDoc({ resolver, options });
 
   let zodSchemas = { ...zodSchemasFromDocSchemas, ...resolver.getZodSchemas() };
   zodSchemas = wrapCircularZodSchemas({ resolver, zodSchemas, options });

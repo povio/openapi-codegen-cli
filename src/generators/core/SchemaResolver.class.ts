@@ -40,9 +40,10 @@ type CompositeZodSchemaData = {
 };
 
 export class SchemaResolver {
-  private schemaData: SchemaData[] = [];
-  private zodSchemaData: ZodSchemaData[] = [];
-  private compositeZodSchemaData: CompositeZodSchemaData[] = [];
+  private readonly schemaData: SchemaData[] = [];
+  private readonly zodSchemaData: ZodSchemaData[] = [];
+  private readonly enumZodSchemaData: ZodSchemaData[] = [];
+  private readonly compositeZodSchemaData: CompositeZodSchemaData[] = [];
 
   readonly dependencyGraph: ReturnType<typeof getOpenAPISchemaDependencyGraph>;
   readonly validationErrorMessages: string[] = [];
@@ -56,13 +57,12 @@ export class SchemaResolver {
   }
 
   constructor(
-    private openApiDoc: OpenAPIV3.Document,
-    private options: GenerateOptions,
+    public readonly openApiDoc: OpenAPIV3.Document,
+    private readonly options: GenerateOptions,
   ) {
     this.dependencyGraph = getOpenAPISchemaDependencyGraph(this.schemaRefs, this.getSchemaByRef.bind(this));
 
-    this.intializeSchemaInfo();
-    this.initializeSchemaTags();
+    this.initialize();
   }
 
   getSchemaByRef(ref: string) {
@@ -155,16 +155,14 @@ export class SchemaResolver {
     return this.dependencyGraph.deepDependencyGraph[ref]?.has(ref);
   }
 
-  private intializeSchemaInfo() {
+  private initialize() {
     this.schemaRefs.forEach((ref) => {
       const correctRef = autocorrectRef(ref);
       const name = getSchemaNameByRef(correctRef);
       const zodSchemaName = getZodSchemaName(name, this.options.schemaSuffix);
       this.schemaData.push({ ref: correctRef, name, zodSchemaName, tags: [] });
     });
-  }
 
-  private initializeSchemaTags() {
     for (const path in this.openApiDoc.paths) {
       const pathItemObj = this.openApiDoc.paths[path] as OpenAPIV3.PathItemObject;
 
@@ -178,56 +176,42 @@ export class SchemaResolver {
 
         const schemaRefObjs = [] as OpenAPIV3.ReferenceObject[];
 
-        // Collect all referenced schemas in parameter objects
         operation.parameters?.map((parameter) => {
           const parameterObject = parameter as OpenAPIV3.ParameterObject;
+          const parameterSchema = parameterObject.schema;
+
           schemaRefObjs.push(
-            ...this.getOperationSchemaRefs(
-              parameterObject.schema,
+            ...this.getSchemaRefObjs(
+              parameterSchema,
               `${operation.operationId ?? path} parameter ${parameterObject.name}`,
             ),
           );
         });
 
-        // Collect all referenced schemas in requestBody objects
         if (operation.requestBody) {
           const requestBodyObj = this.resolveObject(operation.requestBody);
           const mediaTypes = Object.keys(requestBodyObj.content ?? {});
           const matchingMediaType = mediaTypes.find(isParamMediaTypeAllowed);
           if (matchingMediaType) {
-            schemaRefObjs.push(
-              ...this.getOperationSchemaRefs(
-                requestBodyObj.content?.[matchingMediaType]?.schema,
-                `${operation.operationId} request body`,
-              ),
-            );
+            const matchingMediaSchema = requestBodyObj.content?.[matchingMediaType]?.schema;
+
+            schemaRefObjs.push(...this.getSchemaRefObjs(matchingMediaSchema, `${operation.operationId} request body`));
           }
         }
 
-        // Collect all referenced schemas in main response objects
         for (const statusCode in operation.responses) {
           const responseObj = <OpenAPIV3.ResponseObject>this.resolveObject(operation.responses[statusCode]);
           const mediaTypes = Object.keys(responseObj.content ?? {});
           const matchingMediaType = mediaTypes.find(isMediaTypeAllowed);
           if (matchingMediaType) {
-            schemaRefObjs.push(
-              ...this.getOperationSchemaRefs(
-                responseObj.content?.[matchingMediaType]?.schema,
-                `${operation.operationId} response body`,
-              ),
-            );
+            const matchingMediaSchema = responseObj.content?.[matchingMediaType]?.schema;
+
+            schemaRefObjs.push(...this.getSchemaRefObjs(matchingMediaSchema, `${operation.operationId} response body`));
           }
         }
 
-        // Get deep references for all schema references
-        const allRefs = schemaRefObjs.map((schemaRef) => autocorrectRef(schemaRef.$ref));
-        const deepRefs = allRefs.reduce((acc, schemaRef) => {
-          const refs = this.dependencyGraph.deepDependencyGraph[schemaRef];
-          return [...acc, schemaRef, ...Array.from(refs ?? [])];
-        }, [] as string[]);
-
-        // Assign tags to the schema references
         const tag = getOperationTag(operation, this.options);
+        const deepRefs = this.getDeepSchemaRefObjs(schemaRefObjs);
         deepRefs.forEach((schemaRef) => {
           const schemaData = this.schemaData.find((data) => data.ref === schemaRef);
           if (schemaData) {
@@ -238,7 +222,7 @@ export class SchemaResolver {
     }
   }
 
-  private getOperationSchemaRefs(
+  private getSchemaRefObjs(
     schema: OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject | undefined,
     schemaInfo: string,
   ): OpenAPIV3.ReferenceObject[] {
@@ -255,5 +239,14 @@ export class SchemaResolver {
     });
 
     return schemaRefObjs;
+  }
+
+  private getDeepSchemaRefObjs(schemaRefs: OpenAPIV3.ReferenceObject[]) {
+    const allRefs = schemaRefs.map((schemaRef) => autocorrectRef(schemaRef.$ref));
+    const deepRefs = allRefs.reduce((acc, schemaRef) => {
+      const refs = this.dependencyGraph.deepDependencyGraph[schemaRef];
+      return [...acc, schemaRef, ...Array.from(refs ?? [])];
+    }, [] as string[]);
+    return deepRefs;
   }
 }

@@ -29,19 +29,17 @@ import { getEndpointBody } from "./getEndpointBody";
 import { getEndpointParameter } from "./getEndpointParameter";
 
 export function getEndpointsFromOpenAPIDoc({
-  openApiDoc,
   resolver,
   options,
 }: {
-  openApiDoc: OpenAPIV3.Document;
   resolver: SchemaResolver;
   options: GenerateOptions;
 }) {
   const endpoints = [];
   const validationErrorMessages = [];
 
-  for (const path in openApiDoc.paths) {
-    const pathItemObj = openApiDoc.paths[path] as OpenAPIV3.PathItemObject;
+  for (const path in resolver.openApiDoc.paths) {
+    const pathItemObj = resolver.openApiDoc.paths[path] as OpenAPIV3.PathItemObject;
     const pathItem = pick(pathItemObj, ALLOWED_METHODS);
     const pathParameters = getParameters(pathItemObj.parameters ?? []);
 
@@ -61,8 +59,18 @@ export function getEndpointsFromOpenAPIDoc({
         ...pathParameters,
         ...getParameters(operation.parameters ?? []),
       }).map(([, param]) => param);
-      const operationName = getUniqueOperationName({ path, method, operation, openApiDoc, options });
-      const isUniqueOperationName = isUniqueOperationNameWithoutSplitByTags(operationName, openApiDoc, options);
+      const operationName = getUniqueOperationName({
+        path,
+        method,
+        operation,
+        openApiDoc: resolver.openApiDoc,
+        options,
+      });
+      const isUniqueOperationName = isUniqueOperationNameWithoutSplitByTags(
+        operationName,
+        resolver.openApiDoc,
+        options,
+      );
       const tag = getOperationTag(operation, options);
       const endpoint: Endpoint = {
         method: method as OpenAPIV3.HttpMethods,
