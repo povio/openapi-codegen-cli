@@ -1,4 +1,5 @@
 import { OpenAPIV3 } from "openapi-types";
+import { WithRequired } from "src/generators/types/common";
 import { GenerateType } from "src/generators/types/generate";
 import { GenerateOptions } from "src/generators/types/options";
 import { getNamespaceName } from "src/generators/utils/generate/generate.utils";
@@ -18,21 +19,18 @@ export class ZodSchema {
 
   ref?: string;
   children: ZodSchema[] = [];
-  meta: ZodSchemaMetaData & Required<Pick<ZodSchemaMetaData, "referencedBy">>;
+  meta: WithRequired<ZodSchemaMetaData, "referencedBy">;
 
   constructor(
     public schema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject,
-    public resolver?: SchemaResolver,
+    public resolver: SchemaResolver,
     meta: ZodSchemaMetaData = { referencedBy: [] },
   ) {
     if (isReferenceObject(schema)) {
       this.ref = schema.$ref;
     }
 
-    this.meta = {
-      ...meta,
-      referencedBy: [...(meta?.referencedBy ?? [])],
-    };
+    this.meta = { ...meta, referencedBy: [...(meta?.referencedBy ?? [])] };
 
     if (this.ref) {
       this.meta.referencedBy.push(this);
@@ -40,13 +38,17 @@ export class ZodSchema {
   }
 
   getCodeString(tag?: string, options?: GenerateOptions): string {
-    if ((!this.ref || !this.resolver) && this.code) {
+    if (!this.ref && this.code) {
       return this.code;
     }
 
-    const zodSchemaName = this.resolver?.getZodSchemaNameByRef(this.ref!);
+    if (!this.ref) {
+      throw new Error("Zod schema is missing both ref and code");
+    }
+
+    const zodSchemaName = this.resolver?.getZodSchemaNameByRef(this.ref);
     if (!zodSchemaName) {
-      return this.ref!;
+      return this.ref;
     }
 
     const zodSchemaTag = this.resolver?.getTagByZodSchemaName(zodSchemaName);
@@ -57,7 +59,7 @@ export class ZodSchema {
     return zodSchemaName;
   }
 
-  get complexity(): number {
+  get complexity() {
     return getOpenAPISchemaComplexity({ current: 0, schema: this.schema });
   }
 

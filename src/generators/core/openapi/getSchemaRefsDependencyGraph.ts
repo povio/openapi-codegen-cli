@@ -54,7 +54,7 @@ function visit({
 
   for (const prop of COMPOSITE_KEYWORDS) {
     if (schema[prop]) {
-      for (const item of schema[prop]!) {
+      for (const item of schema[prop]) {
         visit({ ...params, schema: item });
       }
     }
@@ -74,7 +74,7 @@ function visit({
   if (schema.type === "object" || schema.properties || schema.additionalProperties) {
     if (schema.properties) {
       for (const property in schema.properties) {
-        visit({ ...params, schema: schema.properties[property]! });
+        visit({ ...params, schema: schema.properties[property] });
       }
     }
     if (schema.additionalProperties && typeof schema.additionalProperties === "object") {

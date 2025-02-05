@@ -30,3 +30,5 @@ export type Split<S extends string, Delimiter extends string> = S extends `${inf
     : [S];
 
 export type HasNestedPath<Path extends string> = Length<Split<Path, ".">> extends 1 ? false : true;
+
+export type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] };

@@ -36,9 +36,9 @@ function getDeepRefsDependencyGraph(schemaRef: string[], refsDependencyGraph: Re
   const deepDependencyGraph = {} as Record<string, Set<string>>;
 
   const visit = (dep: string, ref: string) => {
-    deepDependencyGraph[ref]!.add(dep);
+    deepDependencyGraph[ref].add(dep);
     if (refsDependencyGraph[dep] && ref !== dep) {
-      refsDependencyGraph[dep]!.forEach((transitive) => {
+      refsDependencyGraph[dep].forEach((transitive) => {
         const refName = `${ref}__${transitive}`;
         if (visitedDeepRefs[refName]) {
           return;

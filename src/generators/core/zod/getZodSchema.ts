@@ -9,7 +9,7 @@ import { getZodChain } from "./getZodChain";
 
 type GetZodSchemaParams = {
   schema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject;
-  resolver?: SchemaResolver;
+  resolver: SchemaResolver;
   meta?: ZodSchemaMetaData;
   tag: string;
   options: GenerateOptions;
@@ -20,10 +20,6 @@ type GetZodSchemaParams = {
  * @see https://github.com/colinhacks/zod
  */
 export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag, options }: GetZodSchemaParams): ZodSchema {
-  if (!schema) {
-    throw new Error("Schema is required");
-  }
-
   const zodSchema = new ZodSchema(schema, resolver, inheritedMeta);
   const meta = {
     parent: zodSchema.inherit(inheritedMeta?.parent),
@@ -153,13 +149,14 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag, optio
 type GetPartialZodSchemaParams = GetZodSchemaParams & { zodSchema: ZodSchema };
 
 function getReferenceZodSchema({ schema, zodSchema, resolver, meta, tag, options }: GetPartialZodSchemaParams) {
-  if (!isReferenceObject(schema) || !resolver) {
+  if (!isReferenceObject(schema)) {
     return;
   }
 
   const refsPath = zodSchema.meta.referencedBy
     .slice(0, -1)
-    .map((prev) => resolver?.getZodSchemaNameByRef(prev.ref!) ?? prev.ref!);
+    .map((prev) => (prev.ref ? resolver.getZodSchemaNameByRef(prev.ref) ?? prev.ref : undefined))
+    .filter(Boolean);
   const zodSchemaName = resolver.getZodSchemaNameByRef(schema.$ref);
   if (refsPath.length > 1 && refsPath.includes(zodSchemaName)) {
     return zodSchema.assign(resolver.getCodeByZodSchemaName(zodSchema.ref!)!);
@@ -254,7 +251,7 @@ function getAllOfZodSchema({ schema, zodSchema, resolver, meta, tag, options }: 
   }
 
   if (schema.allOf.length === 1) {
-    const type = getZodSchema({ schema: schema.allOf[0]!, resolver, meta, tag, options });
+    const type = getZodSchema({ schema: schema.allOf[0], resolver, meta, tag, options });
     return zodSchema.assign(type.getCodeString(tag, options));
   }
 
@@ -276,7 +273,7 @@ function getAllOfZodSchema({ schema, zodSchema, resolver, meta, tag, options }: 
   return zodSchema.assign(`${first.getCodeString(tag, options)}.${rest}`);
 }
 
-function getPrimitiveZodSchema({ schema, zodSchema }: GetPartialZodSchemaParams) {
+function getPrimitiveZodSchema({ schema, zodSchema, resolver, meta, tag, options }: GetPartialZodSchemaParams) {
   if (!isSchemaObject(schema)) {
     return;
   }
@@ -285,7 +282,7 @@ function getPrimitiveZodSchema({ schema, zodSchema }: GetPartialZodSchemaParams)
   if (schemaType && isPrimitiveType(schemaType)) {
     if (schema.enum) {
       if (schemaType === "string") {
-        return getEnumZodSchema({ schema, zodSchema });
+        return getEnumZodSchema({ schema, zodSchema, resolver, meta, tag, options });
       }
 
       if (schema.enum.some((e) => typeof e === "string")) {
@@ -315,7 +312,11 @@ function getPrimitiveZodSchema({ schema, zodSchema }: GetPartialZodSchemaParams)
   }
 }
 
-function getEnumZodSchema({ schema, zodSchema }: { schema: OpenAPIV3.SchemaObject; zodSchema: ZodSchema }) {
+function getEnumZodSchema({ schema, zodSchema }: GetPartialZodSchemaParams) {
+  if (!isSchemaObject(schema)) {
+    return;
+  }
+
   return zodSchema.assign(
     `z.enum([${schema.enum?.map((value) => (value === null ? "null" : `"${value}"`)).join(", ")}])`,
   );

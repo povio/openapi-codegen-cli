@@ -29,24 +29,22 @@ export function resolveZodSchemaName({
       return result;
     }
 
-    const zodSchemaName = getZodSchemaName(fallbackName, options.schemaSuffix);
-
     // result is complex and would benefit from being re-used
-    const formattedZodSchemaName = zodSchemaName;
-    while (resolver.getCodeByZodSchemaName(formattedZodSchemaName)) {
-      if (resolver.getZodSchemaNamesByCompositeCode(result)?.includes(formattedZodSchemaName)) {
-        return formattedZodSchemaName;
-      } else if (resolver.getCodeByZodSchemaName(formattedZodSchemaName) === zodSchemaName) {
-        return formattedZodSchemaName;
+    const zodSchemaName = getZodSchemaName(fallbackName, options.schemaSuffix);
+    while (resolver.getCodeByZodSchemaName(zodSchemaName)) {
+      if (resolver.getZodSchemaNamesByCompositeCode(result)?.includes(zodSchemaName)) {
+        return zodSchemaName;
+      } else if (resolver.getCodeByZodSchemaName(zodSchemaName) === zodSchemaName) {
+        return zodSchemaName;
       } else {
-        throw new Error(`Can't uniquely resolve zod schema name: ${formattedZodSchemaName}`);
+        throw new Error(`Can't uniquely resolve zod schema name: ${zodSchemaName}`);
       }
     }
 
-    resolver.setZodSchema(formattedZodSchemaName, result, tag);
-    resolver.addZodSchemaForCompositeCode(result, zodSchema, formattedZodSchemaName, schema);
+    resolver.setZodSchema(zodSchemaName, result, tag);
+    resolver.addZodSchemaForCompositeCode(result, zodSchema, zodSchemaName, schema);
 
-    return formattedZodSchemaName;
+    return zodSchemaName;
   }
 
   // result is a reference to another schema

@@ -69,7 +69,11 @@ export class SchemaResolver {
   }
 
   getZodSchemaNameByRef(ref: string) {
-    return this.schemaData.find((data) => data.ref === autocorrectRef(ref))!.zodSchemaName;
+    const zodSchemaName = this.schemaData.find((data) => data.ref === autocorrectRef(ref))?.zodSchemaName;
+    if (!zodSchemaName) {
+      throw new Error(`Zod schema not found for ref: ${ref}`);
+    }
+    return zodSchemaName;
   }
 
   getRefByZodSchemaName(zodSchemaName: string) {

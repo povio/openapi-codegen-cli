@@ -23,7 +23,7 @@ export function getOpenAPISchemaComplexity({
     if (schema.type.length === 1) {
       return (
         complexityByComposite("oneOf") +
-        getOpenAPISchemaComplexity({ current, schema: { ...schema, type: schema.type[0]! } })
+        getOpenAPISchemaComplexity({ current, schema: { ...schema, type: schema.type[0] } })
       );
     }
 
