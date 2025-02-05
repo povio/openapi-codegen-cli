@@ -1,5 +1,5 @@
 import { OpenAPIV3 } from "openapi-types";
-import { ALLOWED_METHODS, COMPOSITE_KEYWORDS } from "../const/openapi.const";
+import { ALLOWED_METHODS } from "../const/openapi.const";
 import { GenerateOptions } from "../types/options";
 import { pick } from "../utils/object.utils";
 import {
@@ -14,6 +14,7 @@ import {
 } from "../utils/openapi.utils";
 import { getZodSchemaName } from "../utils/zod-schema.utils";
 import { getOpenAPISchemaDependencyGraph } from "./openapi/getOpenAPISchemaDependencyGraph";
+import { iterateSchema } from "./openapi/iterateSchema";
 import { ZodSchema } from "./zod/ZodSchema.class";
 
 type SchemaData = {
@@ -241,42 +242,17 @@ export class SchemaResolver {
     schema: OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject | undefined,
     schemaInfo: string,
   ): OpenAPIV3.ReferenceObject[] {
-    if (!schema) {
-      return [];
-    }
-
     const schemaRefObjs: OpenAPIV3.ReferenceObject[] = [];
-    const isReferenceSchema = isReferenceObject(schema);
 
-    if (isReferenceSchema) {
-      schemaRefObjs.push(schema);
-    }
-
-    const schemaObj = schema as OpenAPIV3.SchemaObject;
-    if (COMPOSITE_KEYWORDS.some((prop) => prop in schemaObj && schemaObj[prop])) {
-      const schemaObjs = schemaObj.allOf ?? schemaObj.anyOf ?? schemaObj.oneOf ?? [];
-      schemaObjs.forEach((schema) => schemaRefObjs.push(...this.getOperationSchemaRefs(schema, schemaInfo)));
-
-      if (isReferenceSchema) {
-        this.validationErrorMessages.push(`INVALID SCHEMA: ${schemaInfo} has both reference and composite keyword`);
-      }
-    }
-    if (schemaObj.properties) {
-      Object.values(schemaObj.properties).forEach((schema) =>
-        schemaRefObjs.push(...this.getOperationSchemaRefs(schema, schemaInfo)),
-      );
-
-      if (isReferenceSchema) {
-        this.validationErrorMessages.push(`INVALID SCHEMA: ${schemaInfo} has both reference and properties`);
-      }
-    }
-    if (schemaObj.type === "array") {
-      schemaRefObjs.push(...this.getOperationSchemaRefs((schema as OpenAPIV3.ArraySchemaObject).items, schemaInfo));
-
-      if (isReferenceSchema) {
-        this.validationErrorMessages.push(`INVALID SCHEMA: ${schemaInfo} is both reference and array schema`);
-      }
-    }
+    iterateSchema(schema, {
+      onSchema: (data) => {
+        if (data.type === "reference") {
+          schemaRefObjs.push(data.schema);
+        } else if (isReferenceObject(data.parentSchema)) {
+          this.validationErrorMessages.push(`INVALID SCHEMA: ${schemaInfo} has both reference and composite keyword`);
+        }
+      },
+    });
 
     return schemaRefObjs;
   }

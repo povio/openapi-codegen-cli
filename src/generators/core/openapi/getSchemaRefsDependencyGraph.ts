@@ -1,6 +1,5 @@
 import { OpenAPIV3 } from "openapi-types";
-import { COMPOSITE_KEYWORDS } from "src/generators/const/openapi.const";
-import { isReferenceObject } from "src/generators/utils/openapi.utils";
+import { iterateSchema, OnSchemaCallbackData } from "./iterateSchema";
 
 export function getSchemaRefsDependencyGraph({
   schema,
@@ -15,70 +14,23 @@ export function getSchemaRefsDependencyGraph({
   visitedRefs?: Record<string, boolean>;
   refsDependencyGraph?: Record<string, Set<string>>;
 }) {
-  visit({ schema, fromRef, getSchemaByRef, visitedRefs, refsDependencyGraph });
+  const onSchema = (callbackData: OnSchemaCallbackData<{ fromRef: string }>) => {
+    if (callbackData.type !== "reference" || !callbackData.data) {
+      return;
+    }
+    const { schema, data } = callbackData;
+    if (!refsDependencyGraph[data.fromRef]) {
+      refsDependencyGraph[data.fromRef] = new Set();
+    }
+    refsDependencyGraph[data.fromRef].add(schema.$ref);
+    if (visitedRefs[schema.$ref]) {
+      return true;
+    }
+    visitedRefs[data.fromRef] = true;
+    iterateSchema(getSchemaByRef(schema.$ref), { data: { fromRef: schema.$ref }, onSchema });
+  };
+
+  iterateSchema(schema, { data: { fromRef }, onSchema });
 
   return { visitedRefs, refsDependencyGraph };
-}
-
-function visit({
-  schema,
-  fromRef,
-  getSchemaByRef,
-  visitedRefs,
-  refsDependencyGraph,
-}: {
-  schema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject;
-  fromRef: string;
-  getSchemaByRef: (ref: string) => OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject;
-  visitedRefs: Record<string, boolean>;
-  refsDependencyGraph: Record<string, Set<string>>;
-}) {
-  if (!schema) {
-    return;
-  }
-
-  const params = { fromRef, getSchemaByRef, visitedRefs, refsDependencyGraph };
-
-  if (isReferenceObject(schema)) {
-    if (!refsDependencyGraph[fromRef]) {
-      refsDependencyGraph[fromRef] = new Set();
-    }
-    refsDependencyGraph[fromRef].add(schema.$ref);
-    if (visitedRefs[schema.$ref]) {
-      return;
-    }
-    visitedRefs[fromRef] = true;
-    visit({ ...params, schema: getSchemaByRef(schema.$ref), fromRef: schema.$ref });
-    return;
-  }
-
-  for (const prop of COMPOSITE_KEYWORDS) {
-    if (schema[prop]) {
-      for (const item of schema[prop]) {
-        visit({ ...params, schema: item });
-      }
-    }
-  }
-  if (COMPOSITE_KEYWORDS.some((prop) => schema[prop])) {
-    return;
-  }
-
-  if (schema.type === "array") {
-    if (!schema.items) {
-      return;
-    }
-    visit({ ...params, schema: schema.items });
-    return;
-  }
-
-  if (schema.type === "object" || schema.properties || schema.additionalProperties) {
-    if (schema.properties) {
-      for (const property in schema.properties) {
-        visit({ ...params, schema: schema.properties[property] });
-      }
-    }
-    if (schema.additionalProperties && typeof schema.additionalProperties === "object") {
-      visit({ ...params, schema: schema.additionalProperties });
-    }
-  }
 }
