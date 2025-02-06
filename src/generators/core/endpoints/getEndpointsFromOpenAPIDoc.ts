@@ -2,24 +2,19 @@ import { OpenAPIV3 } from "openapi-types";
 import { ALLOWED_METHODS } from "src/generators/const/openapi.const";
 import { VOID_SCHEMA } from "src/generators/const/zod.const";
 import { invalidVariableNameCharactersToCamel } from "src/generators/utils/js.utils";
-import { formatTag, getOperationsByTag, getOperationTag } from "src/generators/utils/tag.utils";
+import { formatTag, getOperationTag } from "src/generators/utils/tag.utils";
+import { getResponseZodSchemaName } from "src/generators/utils/zod-schema.utils";
 import { Endpoint, EndpointParameter } from "../../types/endpoint";
 import { GenerateOptions } from "../../types/options";
 import { pick } from "../../utils/object.utils";
 import {
   getUniqueOperationName,
-  getUniqueOperationNamesWithoutSplitByTags,
   isErrorStatus,
   isMainResponseStatus,
   isMediaTypeAllowed,
   isReferenceObject,
   replaceHyphenatedPath,
 } from "../../utils/openapi.utils";
-import {
-  getErrorResponseZodSchemaName,
-  getMainResponseZodSchemaName,
-  getZodSchemaOperationName,
-} from "../../utils/zod-schema.utils";
 import { SchemaResolver } from "../SchemaResolver.class";
 import { getZodChain } from "../zod/getZodChain";
 import { getZodSchema } from "../zod/getZodSchema";
@@ -27,21 +22,9 @@ import { resolveZodSchemaName } from "../zod/resolveZodSchemaName";
 import { getEndpointBody } from "./getEndpointBody";
 import { getEndpointParameter } from "./getEndpointParameter";
 
-export function getEndpointsFromOpenAPIDoc({
-  resolver,
-  options,
-}: {
-  resolver: SchemaResolver;
-  options: GenerateOptions;
-}) {
+export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver, options: GenerateOptions) {
   const endpoints = [];
   const validationErrorMessages = [];
-  const operationsByTag = getOperationsByTag(resolver.openApiDoc, options);
-  const operationNames = getUniqueOperationNamesWithoutSplitByTags({
-    openApiDoc: resolver.openApiDoc,
-    operationsByTag,
-    options,
-  });
 
   for (const path in resolver.openApiDoc.paths) {
     const pathItemObj = resolver.openApiDoc.paths[path] as OpenAPIV3.PathItemObject;
@@ -64,8 +47,14 @@ export function getEndpointsFromOpenAPIDoc({
         ...pathParameters,
         ...getParameters(operation.parameters ?? []),
       }).map(([, param]) => param);
-      const operationName = getUniqueOperationName({ path, method, operation, operationsByTag, options });
-      const isUniqueOperationName = operationNames.filter((name) => name === operationName).length <= 1;
+      const operationName = getUniqueOperationName({
+        path,
+        method,
+        operation,
+        operationsByTag: resolver.operationsByTag,
+        options,
+      });
+      const isUniqueOperationName = resolver.operationNames.filter((name) => name === operationName).length <= 1;
       const tag = getOperationTag(operation, options);
       const endpoint: Endpoint = {
         method: method as OpenAPIV3.HttpMethods,
@@ -135,7 +124,7 @@ export function getEndpointsFromOpenAPIDoc({
             zodSchema,
             fallbackName: zodSchema.ref
               ? undefined
-              : getResponseZodSchemaName({ statusCode, endpoint, operationName, isUniqueOperationName, tag }),
+              : getResponseZodSchemaName({ statusCode, operationName, isUniqueOperationName, tag }),
             resolver,
             tag,
             options,
@@ -169,27 +158,6 @@ export function getEndpointsFromOpenAPIDoc({
   }
 
   return { endpoints, validationErrorMessages };
-}
-
-function getResponseZodSchemaName({
-  statusCode,
-  endpoint,
-  operationName,
-  isUniqueOperationName,
-  tag,
-}: {
-  statusCode: string;
-  endpoint: Endpoint;
-  operationName: string;
-  isUniqueOperationName: boolean;
-  tag: string;
-}): string {
-  const status = Number(statusCode);
-  const zodSchemaOperationName = getZodSchemaOperationName(operationName, isUniqueOperationName, tag);
-  if ((!isMainResponseStatus(status) || endpoint.response) && statusCode !== "default" && isErrorStatus(status)) {
-    return getErrorResponseZodSchemaName(zodSchemaOperationName, statusCode);
-  }
-  return getMainResponseZodSchemaName(zodSchemaOperationName);
 }
 
 function getParameters(parameters: NonNullable<OpenAPIV3.PathItemObject["parameters"]>) {

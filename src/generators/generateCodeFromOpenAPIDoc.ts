@@ -19,7 +19,7 @@ export function generateCodeFromOpenAPIDoc({
 }) {
   const options = { ...DEFAULT_GENERATE_OPTIONS, ...cliOptions } as GenerateOptions;
 
-  const { resolver, data } = getDataFromOpenAPIDoc({ openApiDoc, options });
+  const { resolver, data } = getDataFromOpenAPIDoc(openApiDoc, options);
 
   data.forEach((_, tag) => {
     const excludedTagIndex = options.excludeTags?.findIndex(

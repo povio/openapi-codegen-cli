@@ -9,21 +9,15 @@ import { getZodSchemasFromOpenAPIDoc } from "./zod/getZodSchemasFromOpenAPIDoc";
 import { sortZodSchemasByTopology } from "./zod/sortZodSchemasByTopology";
 import { wrapCircularZodSchemas } from "./zod/wrapCircularZodSchemas";
 
-export function getDataFromOpenAPIDoc({
-  openApiDoc,
-  options,
-}: {
-  openApiDoc: OpenAPIV3.Document;
-  options: GenerateOptions;
-}) {
+export function getDataFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, options: GenerateOptions) {
   const resolver = new SchemaResolver(openApiDoc, options);
 
-  const { endpoints, validationErrorMessages } = getEndpointsFromOpenAPIDoc({ resolver, options });
-  const zodSchemasFromDocSchemas = getZodSchemasFromOpenAPIDoc({ resolver, options });
+  const { endpoints, validationErrorMessages } = getEndpointsFromOpenAPIDoc(resolver, options);
+  const zodSchemasFromDocSchemas = getZodSchemasFromOpenAPIDoc(resolver, options);
 
   let zodSchemas = { ...zodSchemasFromDocSchemas, ...resolver.getZodSchemas() };
-  zodSchemas = wrapCircularZodSchemas({ resolver, zodSchemas, options });
-  zodSchemas = sortZodSchemasByTopology({ resolver, zodSchemas });
+  zodSchemas = wrapCircularZodSchemas(resolver, zodSchemas, options);
+  zodSchemas = sortZodSchemasByTopology(resolver, zodSchemas);
 
   return {
     resolver,

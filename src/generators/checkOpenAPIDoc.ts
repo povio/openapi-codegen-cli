@@ -16,7 +16,7 @@ export function checkOpenAPIDoc({
 }) {
   const options = { ...DEFAULT_GENERATE_OPTIONS, ...cliOptions } as GenerateOptions;
 
-  const { resolver, data, validationErrorMessages } = getDataFromOpenAPIDoc({ openApiDoc, options });
+  const { resolver, data, validationErrorMessages } = getDataFromOpenAPIDoc(openApiDoc, options);
 
   const errorMessages = [...validationErrorMessages, ...resolver.validationErrorMessages];
   if (errorMessages.length > 0) {

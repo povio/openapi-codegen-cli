@@ -7,12 +7,12 @@ import { isReferenceObject } from "../../utils/openapi.utils";
 import { SchemaResolver } from "../SchemaResolver.class";
 import { getOpenAPISchemaComplexity } from "../openapi/getOpenAPISchemaComplexity";
 
-export type ZodSchemaMetaData = {
+export interface ZodSchemaMetaData {
   isRequired?: boolean;
   name?: string;
   parent?: ZodSchema;
   referencedBy?: ZodSchema[];
-};
+}
 
 export class ZodSchema {
   private code?: string;
@@ -60,7 +60,7 @@ export class ZodSchema {
   }
 
   get complexity() {
-    return getOpenAPISchemaComplexity({ current: 0, schema: this.schema });
+    return getOpenAPISchemaComplexity(0, this.schema);
   }
 
   assign(code: string) {

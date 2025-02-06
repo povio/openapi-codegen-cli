@@ -317,7 +317,9 @@ function getEnumZodSchema({ schema, zodSchema }: GetPartialZodSchemaParams) {
     return;
   }
 
-  return zodSchema.assign(
-    `z.enum([${schema.enum?.map((value) => (value === null ? "null" : `"${value}"`)).join(", ")}])`,
-  );
+  return zodSchema.assign(getEnumZodSchemaCode(schema));
+}
+
+export function getEnumZodSchemaCode(schema: OpenAPIV3.SchemaObject) {
+  return `z.enum([${schema.enum?.map((value) => (value === null ? "null" : `"${value}"`)).join(", ")}])`;
 }

@@ -20,7 +20,7 @@ export async function getMetadataFromOpenAPIDoc({
   openApiDoc: OpenAPIV3.Document;
   options: GenerateOptions;
 }) {
-  const { resolver, data } = await getDataFromOpenAPIDoc({ openApiDoc, options });
+  const { resolver, data } = await getDataFromOpenAPIDoc(openApiDoc, options);
 
   const models: ModelMetadata[] = [];
   const queries: QueryMetadata[] = [];

@@ -1,10 +1,15 @@
 import { OpenAPIV3 } from "openapi-types";
 import { iterateSchema, OnSchemaCallbackData } from "./iterateSchema";
 
+export interface DependencyGraph {
+  refsDependencyGraph: Record<string, Set<string>>;
+  deepDependencyGraph: Record<string, Set<string>>;
+}
+
 export function getOpenAPISchemaDependencyGraph(
   schemaRef: string[],
   getSchemaByRef: (ref: string) => OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject,
-) {
+): DependencyGraph {
   const refsDependencyGraph = getRefsDependencyGraph(schemaRef, getSchemaByRef);
   const deepDependencyGraph = getDeepRefsDependencyGraph(schemaRef, refsDependencyGraph);
 

@@ -1,7 +1,7 @@
 import { SchemaResolver } from "../SchemaResolver.class";
 import { ZodSchema } from "./ZodSchema.class";
 
-export function getZodSchemaRefs({ resolver, zodSchemaName }: { resolver: SchemaResolver; zodSchemaName: string }) {
+export function getZodSchemaRefs(resolver: SchemaResolver, zodSchemaName: string) {
   const schemaRef = resolver.getRefByZodSchemaName(zodSchemaName);
   if (schemaRef) {
     return Array.from(resolver.dependencyGraph.refsDependencyGraph[schemaRef] ?? []).map((ref) =>

@@ -4,13 +4,10 @@ import { CompositeType, PrimitiveType } from "../../types/openapi";
 import { sum } from "../../utils/math.utils";
 import { isPrimitiveType, isReferenceObject } from "../../utils/openapi.utils";
 
-export function getOpenAPISchemaComplexity({
-  current,
-  schema,
-}: {
-  current: number;
-  schema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject | undefined;
-}): number {
+export function getOpenAPISchemaComplexity(
+  current: number,
+  schema?: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject,
+): number {
   if (!schema) {
     return current;
   }
@@ -21,53 +18,44 @@ export function getOpenAPISchemaComplexity({
 
   if (Array.isArray(schema.type)) {
     if (schema.type.length === 1) {
-      return (
-        complexityByComposite("oneOf") +
-        getOpenAPISchemaComplexity({ current, schema: { ...schema, type: schema.type[0] } })
-      );
+      return complexityByComposite("oneOf") + getOpenAPISchemaComplexity(current, { ...schema, type: schema.type[0] });
     }
 
     return (
       current +
       complexityByComposite("oneOf") +
-      sum(schema.type.map((prop) => getOpenAPISchemaComplexity({ current: 0, schema: { ...schema, type: prop } })))
+      sum(schema.type.map((prop) => getOpenAPISchemaComplexity(0, { ...schema, type: prop })))
     );
   }
 
   if (schema.oneOf) {
     if (schema.oneOf.length === 1) {
-      return complexityByComposite("oneOf") + getOpenAPISchemaComplexity({ current, schema: schema.oneOf[0] });
+      return complexityByComposite("oneOf") + getOpenAPISchemaComplexity(current, schema.oneOf[0]);
     }
 
     return (
-      current +
-      complexityByComposite("oneOf") +
-      sum(schema.oneOf.map((prop) => getOpenAPISchemaComplexity({ current: 0, schema: prop })))
+      current + complexityByComposite("oneOf") + sum(schema.oneOf.map((prop) => getOpenAPISchemaComplexity(0, prop)))
     );
   }
 
   // anyOf = oneOf but with 1 or more = `T extends oneOf ? T | T[] : never`
   if (schema.anyOf) {
     if (schema.anyOf.length === 1) {
-      return complexityByComposite("anyOf") + getOpenAPISchemaComplexity({ current, schema: schema.anyOf[0] });
+      return complexityByComposite("anyOf") + getOpenAPISchemaComplexity(current, schema.anyOf[0]);
     }
 
     return (
-      current +
-      complexityByComposite("anyOf") +
-      sum(schema.anyOf.map((prop) => getOpenAPISchemaComplexity({ current: 0, schema: prop })))
+      current + complexityByComposite("anyOf") + sum(schema.anyOf.map((prop) => getOpenAPISchemaComplexity(0, prop)))
     );
   }
 
   if (schema.allOf) {
     if (schema.allOf.length === 1) {
-      return complexityByComposite("allOf") + getOpenAPISchemaComplexity({ current, schema: schema.allOf[0] });
+      return complexityByComposite("allOf") + getOpenAPISchemaComplexity(current, schema.allOf[0]);
     }
 
     return (
-      current +
-      complexityByComposite("allOf") +
-      sum(schema.allOf.map((prop) => getOpenAPISchemaComplexity({ current: 0, schema: prop })))
+      current + complexityByComposite("allOf") + sum(schema.allOf.map((prop) => getOpenAPISchemaComplexity(0, prop)))
     );
   }
 
@@ -81,7 +69,7 @@ export function getOpenAPISchemaComplexity({
         current +
         complexityByType(schema as OpenAPIV3.SchemaObject & { type: PrimitiveType }) +
         complexityByComposite("enum") +
-        sum(schema.enum.map((prop) => getOpenAPISchemaComplexity({ current: 0, schema: prop })))
+        sum(schema.enum.map((prop) => getOpenAPISchemaComplexity(0, prop)))
       );
     }
 
@@ -90,34 +78,28 @@ export function getOpenAPISchemaComplexity({
 
   if (schema.type === "array") {
     if (schema.items) {
-      return complexityByComposite("array") + getOpenAPISchemaComplexity({ current, schema: schema.items });
+      return complexityByComposite("array") + getOpenAPISchemaComplexity(current, schema.items);
     }
 
-    return complexityByComposite("array") + getOpenAPISchemaComplexity({ current, schema: undefined });
+    return complexityByComposite("array") + getOpenAPISchemaComplexity(current);
   }
 
   if (schema.type === "object" || schema.properties || schema.additionalProperties) {
     if (schema.additionalProperties) {
       if (schema.additionalProperties === true) {
-        return complexityByComposite("record") + getOpenAPISchemaComplexity({ current, schema: undefined });
+        return complexityByComposite("record") + getOpenAPISchemaComplexity(current);
       }
 
-      return (
-        complexityByComposite("record") + getOpenAPISchemaComplexity({ current, schema: schema.additionalProperties })
-      );
+      return complexityByComposite("record") + getOpenAPISchemaComplexity(current, schema.additionalProperties);
     }
 
     if (schema.properties) {
       const props = Object.values(schema.properties);
 
-      return (
-        current +
-        complexityByComposite("object") +
-        sum(props.map((prop) => getOpenAPISchemaComplexity({ current: 0, schema: prop })))
-      );
+      return current + complexityByComposite("object") + sum(props.map((prop) => getOpenAPISchemaComplexity(0, prop)));
     }
 
-    return complexityByComposite("empty-object") + getOpenAPISchemaComplexity({ current, schema: undefined });
+    return complexityByComposite("empty-object") + getOpenAPISchemaComplexity(current);
   }
 
   return current;

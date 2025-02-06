@@ -4,7 +4,7 @@ import {
   PARAM_SCHEMA_SUFFIX,
   RESPONSE_SCHEMA_SUFFIX,
 } from "../const/zod.const";
-import { normalizeString } from "./openapi.utils";
+import { isErrorStatus, isMainResponseStatus, normalizeString } from "./openapi.utils";
 import { capitalize, snakeToCamel, suffixIfNeeded } from "./string.utils";
 
 export const getZodSchemaName = (name: string, schemaSuffix: string) =>
@@ -25,3 +25,22 @@ export const getMainResponseZodSchemaName = (operationName: string) =>
 
 export const getErrorResponseZodSchemaName = (operationName: string, statusCode: string) =>
   snakeToCamel(`${operationName}_${statusCode}_${ERROR_RESPONSE_SCHEMA_SUFFIX}`);
+
+export function getResponseZodSchemaName({
+  statusCode,
+  operationName,
+  isUniqueOperationName,
+  tag,
+}: {
+  statusCode: string;
+  operationName: string;
+  isUniqueOperationName: boolean;
+  tag: string;
+}): string {
+  const status = Number(statusCode);
+  const zodSchemaOperationName = getZodSchemaOperationName(operationName, isUniqueOperationName, tag);
+  if (!isMainResponseStatus(status) && statusCode !== "default" && isErrorStatus(status)) {
+    return getErrorResponseZodSchemaName(zodSchemaOperationName, statusCode);
+  }
+  return getMainResponseZodSchemaName(zodSchemaOperationName);
+}

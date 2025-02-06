@@ -163,15 +163,11 @@ export function getUniqueOperationName({
   return getOperationName({ path, method, operation, options, keepOperationPrefixWithoutEnding: true });
 }
 
-export function getUniqueOperationNamesWithoutSplitByTags({
-  openApiDoc,
-  operationsByTag,
-  options,
-}: {
-  openApiDoc: OpenAPIV3.Document;
-  operationsByTag: Record<string, OpenAPIV3.OperationObject[]>;
-  options: GenerateOptions;
-}) {
+export function getUniqueOperationNamesWithoutSplitByTags(
+  openApiDoc: OpenAPIV3.Document,
+  operationsByTag: Record<string, OpenAPIV3.OperationObject[]>,
+  options: GenerateOptions,
+) {
   const operationNames: string[] = [];
   for (const path in openApiDoc.paths) {
     const pathItemObj = openApiDoc.paths[path] as OpenAPIV3.PathItemObject;

@@ -5,7 +5,13 @@ import { isReferenceObject } from "src/generators/utils/openapi.utils";
 export type OnSchemaCallbackData<TData> = { data?: TData } & (
   | { type: "reference"; schema: OpenAPIV3.ReferenceObject }
   | {
-      type: "composite" | "property" | "additionalProperty" | "array";
+      type: "property" | "additionalProperty";
+      parentSchema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject;
+      schema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject;
+      propertyName: string;
+    }
+  | {
+      type: "composite" | "array";
       parentSchema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject;
       schema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject;
     }
@@ -42,8 +48,16 @@ export function iterateSchema<TData>(
   }
 
   if (schemaObj.properties) {
-    for (const propertyObj of Object.values(schemaObj.properties)) {
-      if (onSchema?.({ type: "property", parentSchema: schema, schema: propertyObj, data }) === true) {
+    for (const [name, propertyObj] of Object.entries(schemaObj.properties)) {
+      if (
+        onSchema?.({
+          type: "property",
+          parentSchema: schema,
+          schema: propertyObj,
+          data,
+          propertyName: name,
+        }) === true
+      ) {
         return;
       }
       iterateSchema(propertyObj, options);
@@ -51,10 +65,16 @@ export function iterateSchema<TData>(
   }
 
   if (schemaObj.additionalProperties) {
-    for (const additionalPropertyObj of Object.values(schemaObj.additionalProperties)) {
+    for (const [name, additionalPropertyObj] of Object.entries(schemaObj.additionalProperties)) {
       if (
         !(additionalPropertyObj instanceof Object) ||
-        onSchema?.({ type: "additionalProperty", parentSchema: schema, schema: additionalPropertyObj, data }) === true
+        onSchema?.({
+          type: "additionalProperty",
+          parentSchema: schema,
+          schema: additionalPropertyObj,
+          data,
+          propertyName: name,
+        }) === true
       ) {
         return;
       }

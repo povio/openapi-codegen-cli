@@ -54,7 +54,7 @@ export function resolveZodSchemaName({
   }
 
   if (zodSchema.ref && resolvedSchema) {
-    const complexity = getOpenAPISchemaComplexity({ current: 0, schema: resolver.getSchemaByRef(zodSchema.ref) });
+    const complexity = getOpenAPISchemaComplexity(0, resolver.getSchemaByRef(zodSchema.ref));
 
     // ref result is simple enough that it doesn't need to be assigned to a variable
     if (complexity < COMPLEXITY_THRESHOLD) {
