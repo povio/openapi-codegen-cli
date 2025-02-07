@@ -3,6 +3,7 @@ import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
 import { Endpoint } from "../../types/endpoint";
 import { GenerateType, Import } from "../../types/generate";
 import { GenerateOptions } from "../../types/options";
+import { getUniqueArray } from "../array.utils";
 import { getEndpointName, getEndpointTag } from "./generate.endpoints.utils";
 import { getNamespaceName, getTagFileName } from "./generate.utils";
 import { getZodSchemaInferedTypeName } from "./generate.zod.utils";
@@ -115,5 +116,8 @@ function mergeImports(options: GenerateOptions, ...importArrs: Import[][]): Impo
       }
     });
   });
-  return Array.from(merged.values());
+  return Array.from(merged.values()).map((importItem) => ({
+    ...importItem,
+    bindings: getUniqueArray(importItem.bindings),
+  }));
 }

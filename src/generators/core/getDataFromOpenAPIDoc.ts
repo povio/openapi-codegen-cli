@@ -18,6 +18,7 @@ export function getDataFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, options: G
   let zodSchemas = { ...zodSchemasFromDocSchemas, ...resolver.getZodSchemas() };
   zodSchemas = wrapCircularZodSchemas(resolver, zodSchemas);
   zodSchemas = sortZodSchemasByTopology(resolver, zodSchemas);
+  zodSchemas = { ...resolver.getEnumZodSchemas(), ...zodSchemas };
 
   return {
     resolver,

@@ -1,6 +1,8 @@
 import { OpenAPIV3 } from "openapi-types";
+import { getUniqueArray } from "src/generators/utils/array.utils";
 import { isReferenceObject } from "src/generators/utils/openapi.utils";
 import { capitalize, getMostCommonAdjacentCombinationSplit } from "src/generators/utils/string.utils";
+import { getEnumZodSchemaName } from "src/generators/utils/zod-schema.utils";
 import { iterateSchema } from "../openapi/iterateSchema";
 import { EnumZodSchemaData, SchemaResolver } from "../SchemaResolver.class";
 import { getEnumZodSchemaCode } from "./getZodSchema";
@@ -8,12 +10,14 @@ import { getEnumZodSchemaCode } from "./getZodSchema";
 export function updateEnumZodSchemaData({
   resolver,
   schema,
+  schemaRef,
   nameSegments = [],
   tags,
   includeSelf,
 }: {
   resolver: SchemaResolver;
   schema: OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject | undefined;
+  schemaRef?: string;
   tags: string[];
   nameSegments?: string[];
   includeSelf?: boolean;
@@ -32,7 +36,7 @@ export function updateEnumZodSchemaData({
       if (data.type === "property" || data.type === "additionalProperty") {
         segments.push(data.propertyName);
       }
-      handleEnumZodSchemaDataUpdate({ resolver, schema: data.schema, tags, nameSegments: [...segments] });
+      handleEnumZodSchemaDataUpdate({ resolver, schema: data.schema, schemaRef, tags, nameSegments: [...segments] });
     },
   });
 }
@@ -40,11 +44,13 @@ export function updateEnumZodSchemaData({
 function handleEnumZodSchemaDataUpdate({
   resolver,
   schema,
+  schemaRef,
   tags,
   nameSegments = [],
 }: {
   resolver: SchemaResolver;
   schema: OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject | undefined;
+  schemaRef?: string;
   tags: string[];
   nameSegments?: string[];
 }) {
@@ -55,21 +61,29 @@ function handleEnumZodSchemaDataUpdate({
   const code = getEnumZodSchemaCode(schema);
   const enumZodSchema = resolver.enumZodSchemaData.find((data) => data.code === code);
   if (enumZodSchema) {
-    enumZodSchema.zodSchemaNameSegments.push(nameSegments);
-    enumZodSchema.tags.push(...tags);
+    enumZodSchema.meta.zodSchemaNameSegments.push(nameSegments);
+    enumZodSchema.meta.tags.push(...tags);
+    enumZodSchema.meta.schemaRefs.push(...(schemaRef ? [schemaRef] : []));
   } else {
-    resolver.enumZodSchemaData.push({ code, zodSchemaNameSegments: [nameSegments], tags: [...tags] });
+    resolver.enumZodSchemaData.push({
+      code,
+      meta: { zodSchemaNameSegments: [nameSegments], tags: [...tags], schemaRefs: schemaRef ? [schemaRef] : [] },
+    });
   }
 }
 
 export function resolveEnumZodSchemaNames(resolver: SchemaResolver) {
   resolver.enumZodSchemaData.forEach((enumData) => {
-    const lastSegements = enumData.zodSchemaNameSegments.map((arr) => arr[arr.length - 1]).filter(Boolean);
+    const lastSegements = enumData.meta.zodSchemaNameSegments.map((arr) => arr[arr.length - 1]).filter(Boolean);
     const mostCommonLastSegment = getMostCommonAdjacentCombinationSplit(lastSegements);
     if (!mostCommonLastSegment) {
       throw new Error(`No common last segment found for enum: ${enumData.code}`);
     }
-    enumData.name = `${capitalize(mostCommonLastSegment)}Enum`;
+    enumData.zodSchemaName = getEnumZodSchemaName(
+      mostCommonLastSegment,
+      resolver.options.enumSuffix,
+      resolver.options.schemaSuffix,
+    );
   });
 
   let nameResolutionIterationsCounter = 0;
@@ -88,13 +102,16 @@ export function resolveEnumZodSchemaNames(resolver: SchemaResolver) {
 
 function allEnumZodSchemaNamesAreUnique(resolver: SchemaResolver) {
   return resolver.enumZodSchemaData.every(
-    (enumData) => resolver.enumZodSchemaData.filter(({ name }) => enumData.name === name).length == 1,
+    (enumData) =>
+      resolver.enumZodSchemaData.filter(({ zodSchemaName }) => enumData.zodSchemaName === zodSchemaName).length == 1,
   );
 }
 
 function additionalResolveEnumZodSchemaName(resolver: SchemaResolver, index: number) {
   resolver.enumZodSchemaData.forEach((enumData) => {
-    const enumsDataWithSameName = resolver.enumZodSchemaData.filter(({ name }) => enumData.name === name);
+    const enumsDataWithSameName = resolver.enumZodSchemaData.filter(
+      ({ zodSchemaName }) => enumData.zodSchemaName === zodSchemaName,
+    );
     if (enumsDataWithSameName.length === 1) {
       return;
     }
@@ -105,14 +122,23 @@ function additionalResolveEnumZodSchemaName(resolver: SchemaResolver, index: num
 
 function suffixWithPreviousSegmentName(enumsData: EnumZodSchemaData[], index = 2) {
   enumsData.forEach((data) => {
-    const precedingLastFragments = data.zodSchemaNameSegments.map((arr) => arr[arr.length - index]).filter(Boolean);
+    const precedingLastFragments = data.meta.zodSchemaNameSegments
+      .map((arr) => arr[arr.length - index])
+      .filter(Boolean);
     if (precedingLastFragments.length === 1) {
-      data.name = [capitalize(precedingLastFragments[0]), data.name].filter(Boolean).join("");
+      data.zodSchemaName = [capitalize(precedingLastFragments[0]), data.zodSchemaName].filter(Boolean).join("");
     } else {
       const secondLastFragmentSplit = getMostCommonAdjacentCombinationSplit(precedingLastFragments);
-      data.name = [secondLastFragmentSplit ? capitalize(secondLastFragmentSplit) : "", data.name]
+      data.zodSchemaName = [secondLastFragmentSplit ? capitalize(secondLastFragmentSplit) : "", data.zodSchemaName]
         .filter(Boolean)
         .join("");
     }
+  });
+}
+
+export function resolveEnumZodSchemaTags(resolver: SchemaResolver) {
+  resolver.enumZodSchemaData.forEach((enumData) => {
+    const tags = getUniqueArray(enumData.meta.tags);
+    enumData.tag = tags.length === 1 ? tags[0] : resolver.options.defaultTag;
   });
 }

@@ -1,4 +1,6 @@
 import { OpenAPIV3 } from "openapi-types";
+import { GenerateType } from "src/generators/types/generate";
+import { getNamespaceName } from "src/generators/utils/generate/generate.utils";
 import { match } from "ts-pattern";
 import { inferRequiredSchema, isArraySchemaObject, isSchemaObject } from "../../utils/openapi-schema.utils";
 import { isPrimitiveType, isReferenceObject, wrapWithQuotesIfNeeded } from "../../utils/openapi.utils";
@@ -318,12 +320,29 @@ function getPrimitiveZodSchema({ schema, zodSchema, resolver, meta, tag }: GetPa
   }
 }
 
-function getEnumZodSchema({ schema, zodSchema }: GetPartialZodSchemaParams) {
+function getEnumZodSchema({ resolver, schema, zodSchema, meta, tag }: GetPartialZodSchemaParams) {
   if (!isSchemaObject(schema)) {
     return;
   }
 
-  return zodSchema.assign(getEnumZodSchemaCode(schema));
+  const code = getEnumZodSchemaCode(schema);
+  const enumZodSchemaData = resolver.getEnumZodSchemaDataByCode(code);
+  if (!resolver.options.extractEnums || !enumZodSchemaData) {
+    return zodSchema.assign(code);
+  }
+
+  if (!enumZodSchemaData.zodSchemaName || !enumZodSchemaData.tag) {
+    throw new Error(`Enum zod schema name or tag not resolved for code: ${code}`);
+  }
+
+  const namespacePrefix =
+    resolver.options.includeNamespaces && enumZodSchemaData.tag !== tag
+      ? `${getNamespaceName({ type: GenerateType.Models, tag: enumZodSchemaData.tag, options: resolver.options })}.`
+      : "";
+
+  new ZodSchema(schema, resolver, meta, enumZodSchemaData.zodSchemaName).inherit(zodSchema);
+
+  return zodSchema.assign(`${namespacePrefix}${enumZodSchemaData.zodSchemaName}`);
 }
 
 export function getEnumZodSchemaCode(schema: OpenAPIV3.SchemaObject) {

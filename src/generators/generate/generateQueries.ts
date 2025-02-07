@@ -3,6 +3,7 @@ import { QUERY_OPTIONS_TYPES, QUERY_TYPES_IMPORT } from "../const/template.const
 import { SchemaResolver } from "../core/SchemaResolver.class";
 import { EndpointParameter } from "../types/endpoint";
 import { GenerateData, GenerateType, Import } from "../types/generate";
+import { getUniqueArray } from "../utils/array.utils";
 import { getEndpointsImports, getModelsImports } from "../utils/generate/generate.imports.utils";
 import { getNamespaceName } from "../utils/generate/generate.utils";
 import { getHbsTemplateDelegate } from "../utils/hbs/hbs-template.utils";
@@ -49,7 +50,7 @@ export function generateQueries({
   const modelsImports = getModelsImports({
     resolver,
     tag,
-    zodSchemasAsTypes: Array.from(new Set(endpointParams.map((param) => param.zodSchema).filter(isNamedZodSchema))),
+    zodSchemasAsTypes: getUniqueArray(endpointParams.map((param) => param.zodSchema).filter(isNamedZodSchema)),
   });
 
   const endpointsImports = getEndpointsImports({

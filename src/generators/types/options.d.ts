@@ -3,12 +3,14 @@ import { GenerateType } from "./generate";
 
 interface ZodGenerateOptions {
   schemaSuffix: string;
+  enumSuffix: string;
   withImplicitRequiredProps?: boolean;
   withDefaultValues?: boolean;
   withDescription?: boolean;
   allReadonly?: boolean;
   strictObjects?: boolean;
   additionalPropertiesDefaultValue?: boolean | OpenAPIV3.SchemaObject;
+  extractEnums?: boolean;
 }
 
 interface EndpointsGenerateOptions {

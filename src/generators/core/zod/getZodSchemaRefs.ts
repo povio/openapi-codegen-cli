@@ -4,9 +4,11 @@ import { ZodSchema } from "./ZodSchema.class";
 export function getZodSchemaRefs(resolver: SchemaResolver, zodSchemaName: string) {
   const schemaRef = resolver.getRefByZodSchemaName(zodSchemaName);
   if (schemaRef) {
-    return Array.from(resolver.dependencyGraph.refsDependencyGraph[schemaRef] ?? []).map((ref) =>
+    const refs = Array.from(resolver.dependencyGraph.refsDependencyGraph[schemaRef] ?? []).map((ref) =>
       resolver.getZodSchemaNameByRef(ref),
     );
+    const enumRefs = resolver.getEnumZodSchemaNamesReferencedBySchemaRef(schemaRef);
+    return [...refs, ...enumRefs];
   }
 
   const zodSchema = resolver.getCompositeZodSchemaByZodSchemaName(zodSchemaName);
@@ -21,8 +23,9 @@ export function getZodSchemaRefs(resolver: SchemaResolver, zodSchemaName: string
 
 function getSchemaRefs(zodSchema: ZodSchema): Set<string> {
   const refsSet = zodSchema.children.reduce((acc, child) => {
-    if (child.ref) {
-      acc.add(child.ref);
+    const ref = child.ref ?? child.enumRef;
+    if (ref) {
+      acc.add(ref);
     }
     if (child.children.length > 0) {
       getSchemaRefs(child).forEach((ref) => acc.add(ref));

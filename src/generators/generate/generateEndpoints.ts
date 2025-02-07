@@ -3,6 +3,7 @@ import { ZOD_IMPORT } from "../const/zod.const";
 import { SchemaResolver } from "../core/SchemaResolver.class";
 import { EndpointParameter } from "../types/endpoint";
 import { GenerateData, GenerateType } from "../types/generate";
+import { getUniqueArray } from "../utils/array.utils";
 import { getModelsImports } from "../utils/generate/generate.imports.utils";
 import { getNamespaceName } from "../utils/generate/generate.utils";
 import { getHbsTemplateDelegate } from "../utils/hbs/hbs-template.utils";
@@ -29,8 +30,8 @@ export function generateEndpoints({
   const modelsImports = getModelsImports({
     resolver,
     tag,
-    zodSchemas: Array.from(new Set(endpointResponseSchemas.filter(isNamedZodSchema))),
-    zodSchemasAsTypes: Array.from(new Set(endpointParams.map((param) => param.zodSchema).filter(isNamedZodSchema))),
+    zodSchemas: getUniqueArray(endpointResponseSchemas.filter(isNamedZodSchema)),
+    zodSchemasAsTypes: getUniqueArray(endpointParams.map((param) => param.zodSchema).filter(isNamedZodSchema)),
   });
 
   const hbsTemplate = getHbsTemplateDelegate(resolver, "endpoints");

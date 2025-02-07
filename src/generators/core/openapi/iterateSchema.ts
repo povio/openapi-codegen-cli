@@ -21,10 +21,7 @@ type OnSchemaCallbackType<TData> = (data: OnSchemaCallbackData<TData>) => any;
 
 export function iterateSchema<TData>(
   schema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject | undefined,
-  options: {
-    data?: TData;
-    onSchema?: OnSchemaCallbackType<TData>;
-  },
+  options: { data?: TData; onSchema: OnSchemaCallbackType<TData> },
 ) {
   if (!schema) {
     return;
@@ -32,7 +29,7 @@ export function iterateSchema<TData>(
 
   const { data, onSchema } = options;
 
-  if (isReferenceObject(schema) && onSchema?.({ type: "reference", schema, data }) === true) {
+  if (isReferenceObject(schema) && onSchema({ type: "reference", schema, data }) === true) {
     return;
   }
 
@@ -43,21 +40,13 @@ export function iterateSchema<TData>(
       if (onSchema?.({ type: "composite", parentSchema: schema, schema: compositeObj, data }) === true) {
         return;
       }
-      iterateSchema(compositeObj, options);
+      iterateSchema(compositeObj, { data, onSchema });
     }
   }
 
   if (schemaObj.properties) {
-    for (const [name, propertyObj] of Object.entries(schemaObj.properties)) {
-      if (
-        onSchema?.({
-          type: "property",
-          parentSchema: schema,
-          schema: propertyObj,
-          data,
-          propertyName: name,
-        }) === true
-      ) {
+    for (const [propertyName, propertyObj] of Object.entries(schemaObj.properties)) {
+      if (onSchema({ type: "property", parentSchema: schema, schema: propertyObj, data, propertyName }) === true) {
         return;
       }
       iterateSchema(propertyObj, options);
@@ -65,26 +54,20 @@ export function iterateSchema<TData>(
   }
 
   if (schemaObj.additionalProperties) {
-    for (const [name, additionalPropertyObj] of Object.entries(schemaObj.additionalProperties)) {
+    for (const [propertyName, propertyObj] of Object.entries(schemaObj.additionalProperties)) {
       if (
-        !(additionalPropertyObj instanceof Object) ||
-        onSchema?.({
-          type: "additionalProperty",
-          parentSchema: schema,
-          schema: additionalPropertyObj,
-          data,
-          propertyName: name,
-        }) === true
+        !(propertyObj instanceof Object) ||
+        onSchema({ type: "additionalProperty", parentSchema: schema, schema: propertyObj, data, propertyName }) === true
       ) {
         return;
       }
-      iterateSchema(additionalPropertyObj, options);
+      iterateSchema(propertyObj, options);
     }
   }
 
   if (schemaObj.type === "array") {
     const arrayObj = (schema as OpenAPIV3.ArraySchemaObject).items;
-    if (onSchema?.({ type: "array", parentSchema: schema, schema: arrayObj, data }) === true) {
+    if (onSchema({ type: "array", parentSchema: schema, schema: arrayObj, data }) === true) {
       return;
     }
     iterateSchema(arrayObj, options);

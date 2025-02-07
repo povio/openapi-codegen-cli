@@ -16,11 +16,8 @@ export function generateCodeFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, cliOp
   const { resolver, data } = getDataFromOpenAPIDoc(openApiDoc, options);
 
   data.forEach((_, tag) => {
-    const excludedTagIndex = options.excludeTags?.findIndex(
-      (excludeTag) => excludeTag.toLocaleLowerCase() === tag.toLocaleLowerCase(),
-    );
-    const isExcludedTag = excludedTagIndex !== -1;
-    if (isExcludedTag) {
+    const excludedTag = options.excludeTags.find((excludeTag) => excludeTag.toLowerCase() === tag.toLowerCase());
+    if (excludedTag) {
       return;
     }
 

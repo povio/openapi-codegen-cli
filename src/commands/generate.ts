@@ -18,6 +18,7 @@ export type GenerateParams = {
   | "defaultTag"
   | "removeOperationPrefixEndingWith"
   | "importPath"
+  | "extractEnums"
 >;
 
 export async function generate({ input, excludeTags, prettier, verbose, ...params }: GenerateParams) {

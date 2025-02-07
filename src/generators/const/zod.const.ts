@@ -1,6 +1,7 @@
 import { Import } from "../types/generate";
 
 export const SCHEMA_SUFFIX = "Schema";
+export const ENUM_SUFFIX = "Enum";
 export const BODY_SCHEMA_SUFFIX = "Body";
 export const PARAM_SCHEMA_SUFFIX = "Param";
 export const RESPONSE_SCHEMA_SUFFIX = "Response";

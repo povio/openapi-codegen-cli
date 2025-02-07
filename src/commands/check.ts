@@ -23,13 +23,10 @@ export async function check({ input, excludeTags, verbose, ...params }: CheckPar
   if (verbose) {
     logInfo("Running check...");
   }
-  const errorMessages = checkOpenAPIDoc({
-    openApiDoc,
-    options: {
-      input,
-      excludeTags: excludeTags.split(","),
-      ...params,
-    },
+  const errorMessages = checkOpenAPIDoc(openApiDoc, {
+    input,
+    excludeTags: excludeTags.split(","),
+    ...params,
   });
 
   if (verbose) {

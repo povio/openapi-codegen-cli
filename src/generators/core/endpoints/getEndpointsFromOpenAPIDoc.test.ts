@@ -119,7 +119,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
     };
 
     const resolver = new SchemaResolver(openApiDoc, generateOptions);
-    const { endpoints } = getEndpointsFromOpenAPIDoc(resolver, generateOptions);
+    const { endpoints } = getEndpointsFromOpenAPIDoc(resolver);
 
     expect(endpoints).toStrictEqual([
       {
@@ -230,7 +230,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
     };
 
     const resolver = new SchemaResolver(openApiDoc, generateOptions);
-    const { endpoints } = getEndpointsFromOpenAPIDoc(resolver, generateOptions);
+    const { endpoints } = getEndpointsFromOpenAPIDoc(resolver);
 
     expect(endpoints).toStrictEqual([
       {
@@ -389,7 +389,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
     };
 
     const resolver = new SchemaResolver(openApiDoc, generateOptions);
-    const { endpoints } = getEndpointsFromOpenAPIDoc(resolver, generateOptions);
+    const { endpoints } = getEndpointsFromOpenAPIDoc(resolver);
     expect(endpoints).toStrictEqual([
       {
         description: "Update an existing pet by Id",
@@ -585,7 +585,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
     };
 
     const resolver = new SchemaResolver(openApiDoc, generateOptions);
-    const { endpoints } = getEndpointsFromOpenAPIDoc(resolver, generateOptions);
+    const { endpoints } = getEndpointsFromOpenAPIDoc(resolver);
     expect(endpoints).toStrictEqual([
       {
         description: "Multiple status values can be provided with comma separated strings",
@@ -733,7 +733,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
   test("petstore.yaml", async () => {
     const openApiDoc = (await SwaggerParser.parse("./test/petstore.yaml")) as OpenAPIV3.Document;
     const resolver = new SchemaResolver(openApiDoc, generateOptions);
-    const { endpoints } = getEndpointsFromOpenAPIDoc(resolver, generateOptions);
+    const { endpoints } = getEndpointsFromOpenAPIDoc(resolver);
     expect(endpoints).toStrictEqual([
       {
         description: "Update an existing pet by Id",
@@ -1686,7 +1686,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
       },
     };
     const resolver = new SchemaResolver(openApiDoc, generateOptions);
-    const { endpoints } = getEndpointsFromOpenAPIDoc(resolver, generateOptions);
+    const { endpoints } = getEndpointsFromOpenAPIDoc(resolver);
     expect(endpoints).toStrictEqual([
       {
         description: "Multiple status values can be provided with comma separated strings",

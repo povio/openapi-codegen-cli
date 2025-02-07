@@ -10,6 +10,9 @@ import { capitalize, snakeToCamel, suffixIfNeeded } from "./string.utils";
 export const getZodSchemaName = (name: string, schemaSuffix: string) =>
   suffixIfNeeded(capitalize(normalizeString(name)), schemaSuffix);
 
+export const getEnumZodSchemaName = (name: string, enumSuffix: string, schemaSuffix: string) =>
+  suffixIfNeeded(capitalize(normalizeString(name)), `${enumSuffix}${schemaSuffix}`);
+
 export const isNamedZodSchema = (schema: string) => !schema.startsWith("z.");
 
 export const getZodSchemaOperationName = (operationName: string, isUniqueOperationName: boolean, tag: string) =>

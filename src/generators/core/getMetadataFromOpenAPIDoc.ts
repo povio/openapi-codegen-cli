@@ -21,7 +21,7 @@ export async function getMetadataFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, 
 
   data.forEach(({ endpoints, zodSchemas }, dataTag) => {
     const excludedTagIndex = options.excludeTags?.findIndex(
-      (excludeTag) => excludeTag.toLocaleLowerCase() === dataTag.toLocaleLowerCase(),
+      (excludeTag) => excludeTag.toLowerCase() === dataTag.toLowerCase(),
     );
     const isExcludedTag = excludedTagIndex !== -1;
     if (isExcludedTag) {

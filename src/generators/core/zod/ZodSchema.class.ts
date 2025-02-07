@@ -18,6 +18,7 @@ export class ZodSchema {
   private code?: string;
 
   ref?: string;
+  enumRef?: string;
   children: ZodSchema[] = [];
   meta: WithRequired<ZodSchemaMetaData, "referencedBy">;
 
@@ -25,9 +26,14 @@ export class ZodSchema {
     public schema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject,
     public resolver: SchemaResolver,
     meta: ZodSchemaMetaData = { referencedBy: [] },
+    enumRef?: string,
   ) {
     if (isReferenceObject(schema)) {
       this.ref = schema.$ref;
+    }
+
+    if (enumRef) {
+      this.enumRef = enumRef;
     }
 
     this.meta = { ...meta, referencedBy: [...(meta?.referencedBy ?? [])] };

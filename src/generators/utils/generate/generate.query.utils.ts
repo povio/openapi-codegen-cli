@@ -1,4 +1,5 @@
 import { Endpoint } from "../../types/endpoint";
+import { getUniqueArray } from "../array.utils";
 import { capitalize, kebabToCamel, snakeToCamel } from "../string.utils";
 
 export const getQueryName = (endpoint: Endpoint) => `use${capitalize(snakeToCamel(endpoint.operationName))}`;
@@ -6,7 +7,7 @@ export const getQueryName = (endpoint: Endpoint) => `use${capitalize(snakeToCame
 export const getAllQueryKeys = (endpoints: Endpoint[]): { path: string; name: string }[] => {
   const paths = endpoints.map(({ path }) => path);
   const firstPathSegmentRegex = /^\/[^\/]*/g;
-  const queryKeys = Array.from(new Set(paths.map((path) => path.match(firstPathSegmentRegex)).flat()));
+  const queryKeys = getUniqueArray(paths.map((path) => path.match(firstPathSegmentRegex)).flat());
   const getQueryKeyName = (path: string) =>
     queryKeys.length === 1 ? "all" : `all${capitalize(kebabToCamel(path.replace(/\//g, "") ?? ""))}`;
   return queryKeys
