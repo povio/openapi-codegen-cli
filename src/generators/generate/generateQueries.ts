@@ -3,7 +3,6 @@ import { QUERY_OPTIONS_TYPES, QUERY_TYPES_IMPORT } from "../const/template.const
 import { SchemaResolver } from "../core/SchemaResolver.class";
 import { EndpointParameter } from "../types/endpoint";
 import { GenerateData, GenerateType, Import } from "../types/generate";
-import { GenerateOptions } from "../types/options";
 import { getEndpointsImports, getModelsImports } from "../utils/generate/generate.imports.utils";
 import { getNamespaceName } from "../utils/generate/generate.utils";
 import { getHbsTemplateDelegate } from "../utils/hbs/hbs-template.utils";
@@ -14,12 +13,10 @@ export function generateQueries({
   resolver,
   data,
   tag = "",
-  options,
 }: {
   resolver: SchemaResolver;
   data: GenerateData;
   tag?: string;
-  options: GenerateOptions;
 }) {
   const endpoints = data.get(tag)?.endpoints;
   if (!endpoints || endpoints.length === 0) {
@@ -53,24 +50,23 @@ export function generateQueries({
     resolver,
     tag,
     zodSchemasAsTypes: Array.from(new Set(endpointParams.map((param) => param.zodSchema).filter(isNamedZodSchema))),
-    options,
   });
 
   const endpointsImports = getEndpointsImports({
     tag,
     endpoints,
-    options,
+    options: resolver.options,
   });
 
-  const hbsTemplate = getHbsTemplateDelegate({ resolver, templateName: "queries", options });
+  const hbsTemplate = getHbsTemplateDelegate(resolver, "queries");
 
   return hbsTemplate({
     queryImport,
     queryTypesImport,
     modelsImports,
     endpointsImports,
-    includeNamespace: options.includeNamespaces,
-    namespace: getNamespaceName({ type: GenerateType.Queries, tag, options }),
+    includeNamespace: resolver.options.includeNamespaces,
+    namespace: getNamespaceName({ type: GenerateType.Queries, tag, options: resolver.options }),
     endpoints,
     queryEndpoints,
   });

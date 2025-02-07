@@ -13,7 +13,12 @@ const generateOptions = {
 
 const makeSchema = (schema: OpenAPIV3.SchemaObject) => schema;
 const getZodSchemaString = (schema: OpenAPIV3.SchemaObject, meta?: ZodSchemaMetaData | undefined) =>
-  getZodSchema({ schema: makeSchema(schema), meta, tag: "", options: {} })
+  getZodSchema({
+    schema: makeSchema(schema),
+    meta,
+    tag: "",
+    resolver: new SchemaResolver({} as OpenAPIV3.Document, generateOptions),
+  })
     .getCodeString()
     .trim();
 
@@ -320,7 +325,6 @@ describe("getZodSchema", () => {
         }),
         resolver: new SchemaResolver({ components: { schemas: {} } } as OpenAPIV3.Document, generateOptions),
         tag: "",
-        options: {},
       }),
     ).toThrowErrorMatchingInlineSnapshot("[Error: Schema Example not found]");
   });
@@ -356,7 +360,6 @@ describe("getZodSchema", () => {
       }),
       resolver,
       tag: "",
-      options: {},
     });
     expect(code.getCodeString()).toStrictEqual(
       "z.object({ str: z.string(), reference: Example, inline: z.object({ nested_prop: z.boolean() }).partial().passthrough() }).partial().passthrough()",
@@ -410,7 +413,6 @@ describe("getZodSchema", () => {
       }),
       resolver,
       tag: "",
-      options: {},
     });
     expect(code.getCodeString()).toStrictEqual(
       "z.object({ str: z.string(), reference: ObjectWithArrayOfRef, inline: z.object({ nested_prop: z.boolean() }).partial().passthrough(), another: WithNested, basic: Basic, differentPropSameRef: Basic }).partial().passthrough()",

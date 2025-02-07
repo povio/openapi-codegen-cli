@@ -12,13 +12,11 @@ export function getModelsImports({
   tag,
   zodSchemas = [],
   zodSchemasAsTypes = [],
-  options,
 }: {
   resolver: SchemaResolver;
   tag: string;
   zodSchemas?: string[];
   zodSchemasAsTypes?: string[];
-  options: GenerateOptions;
 }) {
   const type = GenerateType.Models;
   const getTag = (zodSchemaName: string) => resolver.getTagByZodSchemaName(zodSchemaName);
@@ -29,7 +27,7 @@ export function getModelsImports({
     entities: zodSchemas,
     getTag,
     getEntityName: (zodSchema) => zodSchema,
-    options,
+    options: resolver.options,
   });
 
   const zodSchemaTypeImports = getImports({
@@ -37,11 +35,11 @@ export function getModelsImports({
     tag,
     entities: zodSchemasAsTypes,
     getTag,
-    getEntityName: (zodSchema) => getZodSchemaInferedTypeName(zodSchema, options),
-    options,
+    getEntityName: (zodSchema) => getZodSchemaInferedTypeName(zodSchema, resolver.options),
+    options: resolver.options,
   });
 
-  return mergeImports(options, zodSchemaImports, zodSchemaTypeImports);
+  return mergeImports(resolver.options, zodSchemaImports, zodSchemaTypeImports);
 }
 
 export function getEndpointsImports({

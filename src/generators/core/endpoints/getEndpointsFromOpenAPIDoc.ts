@@ -5,7 +5,6 @@ import { invalidVariableNameCharactersToCamel } from "src/generators/utils/js.ut
 import { formatTag, getOperationTag } from "src/generators/utils/tag.utils";
 import { getResponseZodSchemaName } from "src/generators/utils/zod-schema.utils";
 import { Endpoint, EndpointParameter } from "../../types/endpoint";
-import { GenerateOptions } from "../../types/options";
 import { pick } from "../../utils/object.utils";
 import {
   getUniqueOperationName,
@@ -22,7 +21,7 @@ import { resolveZodSchemaName } from "../zod/resolveZodSchemaName";
 import { getEndpointBody } from "./getEndpointBody";
 import { getEndpointParameter } from "./getEndpointParameter";
 
-export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver, options: GenerateOptions) {
+export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver) {
   const endpoints = [];
   const validationErrorMessages = [];
 
@@ -33,7 +32,7 @@ export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver, options: Ge
 
     for (const method in pathItem) {
       const operation = pathItem[method as keyof typeof pathItem] as OpenAPIV3.OperationObject | undefined;
-      if (!operation || (operation.deprecated && !options?.withDeprecatedEndpoints)) {
+      if (!operation || (operation.deprecated && !resolver.options.withDeprecatedEndpoints)) {
         continue;
       }
 
@@ -52,10 +51,10 @@ export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver, options: Ge
         method,
         operation,
         operationsByTag: resolver.operationsByTag,
-        options,
+        options: resolver.options,
       });
       const isUniqueOperationName = resolver.operationNames.filter((name) => name === operationName).length <= 1;
-      const tag = getOperationTag(operation, options);
+      const tag = getOperationTag(operation, resolver.options);
       const endpoint: Endpoint = {
         method: method as OpenAPIV3.HttpMethods,
         path: replaceHyphenatedPath(path),
@@ -69,7 +68,7 @@ export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver, options: Ge
       };
 
       if (operation.requestBody) {
-        const body = getEndpointBody({ resolver, operation, operationName, isUniqueOperationName, tag, options });
+        const body = getEndpointBody({ resolver, operation, operationName, isUniqueOperationName, tag });
         if (body) {
           endpoint.parameters.push(body.endpointParameter);
           endpoint.requestFormat = body.requestFormat;
@@ -83,7 +82,6 @@ export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver, options: Ge
           operationName,
           isUniqueOperationName,
           tag,
-          options,
         });
         if (endpointParameter) {
           endpoint.parameters.push(endpointParameter);
@@ -115,7 +113,12 @@ export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver, options: Ge
         }
 
         if (schema) {
-          const zodSchema = getZodSchema({ schema, resolver, meta: { isRequired: true }, tag, options });
+          const zodSchema = getZodSchema({
+            schema,
+            resolver,
+            meta: { isRequired: true },
+            tag,
+          });
 
           const schemaObject = resolver.resolveObject(schema);
 
@@ -127,10 +130,10 @@ export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver, options: Ge
               : getResponseZodSchemaName({ statusCode, operationName, isUniqueOperationName, tag }),
             resolver,
             tag,
-            options,
           });
 
-          responseZodSchema = zodSchemaName + getZodChain({ schema: schemaObject, meta: zodSchema.meta, options });
+          responseZodSchema =
+            zodSchemaName + getZodChain({ schema: schemaObject, meta: zodSchema.meta, options: resolver.options });
         }
 
         if (responseZodSchema) {

@@ -1,5 +1,4 @@
 import { OpenAPIV3 } from "openapi-types";
-import { GenerateOptions } from "src/generators/types/options";
 import { match } from "ts-pattern";
 import { inferRequiredSchema, isArraySchemaObject, isSchemaObject } from "../../utils/openapi-schema.utils";
 import { isPrimitiveType, isReferenceObject, wrapWithQuotesIfNeeded } from "../../utils/openapi.utils";
@@ -12,60 +11,61 @@ type GetZodSchemaParams = {
   resolver: SchemaResolver;
   meta?: ZodSchemaMetaData;
   tag: string;
-  options: GenerateOptions;
 };
 
 /**
  * @see https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.3.md#schemaObject
  * @see https://github.com/colinhacks/zod
  */
-export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag, options }: GetZodSchemaParams): ZodSchema {
+export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag }: GetZodSchemaParams): ZodSchema {
   const zodSchema = new ZodSchema(schema, resolver, inheritedMeta);
   const meta = {
     parent: zodSchema.inherit(inheritedMeta?.parent),
     referencedBy: [...zodSchema.meta.referencedBy],
   };
-  const params = { resolver, meta, tag, options };
+  const params = { resolver, meta, tag };
 
   if (isReferenceObject(schema)) {
-    return getReferenceZodSchema({ schema, zodSchema, resolver, meta, tag, options })!;
+    return getReferenceZodSchema({ schema, zodSchema, resolver, meta, tag })!;
   }
 
-  const arrayZodSchema = getArrayZodSchema({ schema, zodSchema, resolver, meta, tag, options });
+  const arrayZodSchema = getArrayZodSchema({ schema, zodSchema, resolver, meta, tag });
   if (arrayZodSchema) {
     return arrayZodSchema;
   }
 
-  const oneOfZodSchema = getOneOfZodSchema({ schema, zodSchema, resolver, meta, tag, options });
+  const oneOfZodSchema = getOneOfZodSchema({ schema, zodSchema, resolver, meta, tag });
   if (oneOfZodSchema) {
     return oneOfZodSchema;
   }
 
-  const anyOfZodSchema = getAnyOfZodSchema({ schema, zodSchema, resolver, meta, tag, options });
+  const anyOfZodSchema = getAnyOfZodSchema({ schema, zodSchema, resolver, meta, tag });
   if (anyOfZodSchema) {
     return anyOfZodSchema;
   }
 
-  const allOfZodSchema = getAllOfZodSchema({ schema, zodSchema, resolver, meta, tag, options });
+  const allOfZodSchema = getAllOfZodSchema({ schema, zodSchema, resolver, meta, tag });
   if (allOfZodSchema) {
     return allOfZodSchema;
   }
 
-  const primitiveZodSchema = getPrimitiveZodSchema({ schema, zodSchema, resolver, meta, tag, options });
+  const primitiveZodSchema = getPrimitiveZodSchema({ schema, zodSchema, resolver, meta, tag });
   if (primitiveZodSchema) {
     return primitiveZodSchema;
   }
 
-  const readonly = options?.allReadonly ? ".readonly()" : "";
+  const readonly = resolver.options.allReadonly ? ".readonly()" : "";
 
   if (isArraySchemaObject(schema)) {
     if (schema.items) {
       return zodSchema.assign(
-        `z.array(${getZodSchema({ ...params, schema: schema.items }).getCodeString(tag, options)}${getZodChain({
-          schema: schema.items as OpenAPIV3.SchemaObject,
-          meta: { ...meta, isRequired: true },
-          options,
-        })})${readonly}`,
+        `z.array(${getZodSchema({ ...params, schema: schema.items }).getCodeString(tag, resolver.options)}${getZodChain(
+          {
+            schema: schema.items as OpenAPIV3.SchemaObject,
+            meta: { ...meta, isRequired: true },
+            options: resolver.options,
+          },
+        )})${readonly}`,
       );
     }
 
@@ -76,7 +76,9 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag, optio
   if (schemaType === "object" || schema.properties || schema.additionalProperties) {
     // additional properties default to true if additionalPropertiesDefaultValue not provided
     const additionalPropsDefaultValue =
-      options?.additionalPropertiesDefaultValue !== undefined ? options?.additionalPropertiesDefaultValue : true;
+      resolver.options.additionalPropertiesDefaultValue !== undefined
+        ? resolver.options.additionalPropertiesDefaultValue
+        : true;
     const additionalProps =
       schema.additionalProperties === null || schema.additionalProperties === undefined
         ? additionalPropsDefaultValue
@@ -86,18 +88,18 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag, optio
     if (typeof schema.additionalProperties === "object" && Object.keys(schema.additionalProperties).length > 0) {
       return zodSchema.assign(
         `z.record(${
-          getZodSchema({ ...params, schema: schema.additionalProperties }).getCodeString(tag, options) +
+          getZodSchema({ ...params, schema: schema.additionalProperties }).getCodeString(tag, resolver.options) +
           getZodChain({
             schema: schema.additionalProperties as OpenAPIV3.SchemaObject,
             meta: { ...meta, isRequired: true },
-            options,
+            options: resolver.options,
           })
         })`,
       );
     }
 
     const hasRequiredArray = schema.required && schema.required.length > 0;
-    const isPartial = options?.withImplicitRequiredProps ? false : !schema.required?.length;
+    const isPartial = resolver.options.withImplicitRequiredProps ? false : !schema.required?.length;
     let properties = "{}";
 
     if (schema.properties) {
@@ -108,7 +110,7 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag, optio
             ? true
             : hasRequiredArray
               ? schema.required?.includes(prop)
-              : options?.withImplicitRequiredProps,
+              : resolver.options.withImplicitRequiredProps,
           name: prop,
         } as ZodSchemaMetaData;
 
@@ -122,8 +124,12 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag, optio
         }
 
         const propZodSchema =
-          getZodSchema({ ...params, schema: propSchema, meta: propMetadata }).getCodeString(tag, options) +
-          getZodChain({ schema: propActualSchema as OpenAPIV3.SchemaObject, meta: propMetadata, options });
+          getZodSchema({ ...params, schema: propSchema, meta: propMetadata }).getCodeString(tag, resolver.options) +
+          getZodChain({
+            schema: propActualSchema as OpenAPIV3.SchemaObject,
+            meta: propMetadata,
+            options: resolver.options,
+          });
 
         return [prop, propZodSchema];
       });
@@ -135,7 +141,7 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag, optio
     }
 
     const partial = isPartial ? ".partial()" : "";
-    const strict = options?.strictObjects ? ".strict()" : "";
+    const strict = resolver.options.strictObjects ? ".strict()" : "";
     return zodSchema.assign(`z.object(${properties})${partial}${strict}${additionalPropsSchema}${readonly}`);
   }
 
@@ -148,7 +154,7 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag, optio
 
 type GetPartialZodSchemaParams = GetZodSchemaParams & { zodSchema: ZodSchema };
 
-function getReferenceZodSchema({ schema, zodSchema, resolver, meta, tag, options }: GetPartialZodSchemaParams) {
+function getReferenceZodSchema({ schema, zodSchema, resolver, meta, tag }: GetPartialZodSchemaParams) {
   if (!isReferenceObject(schema)) {
     return;
   }
@@ -168,7 +174,7 @@ function getReferenceZodSchema({ schema, zodSchema, resolver, meta, tag, options
     if (!actualSchema) {
       throw new Error(`Schema ${schema.$ref} not found`);
     }
-    result = getZodSchema({ schema: actualSchema, resolver, meta, tag, options }).getCodeString(tag, options);
+    result = getZodSchema({ schema: actualSchema, resolver, meta, tag }).getCodeString(tag, resolver.options);
   }
 
   if (resolver.getCodeByZodSchemaName(zodSchemaName)) {
@@ -180,14 +186,14 @@ function getReferenceZodSchema({ schema, zodSchema, resolver, meta, tag, options
   return zodSchema;
 }
 
-function getOneOfZodSchema({ schema, zodSchema, resolver, meta, tag, options }: GetPartialZodSchemaParams) {
+function getOneOfZodSchema({ schema, zodSchema, resolver, meta, tag }: GetPartialZodSchemaParams) {
   if (!isSchemaObject(schema) || !schema.oneOf) {
     return;
   }
 
   if (schema.oneOf.length === 1) {
-    const type = getZodSchema({ schema: schema.oneOf[0]!, resolver, meta, tag, options });
-    return zodSchema.assign(type.getCodeString(tag, options));
+    const type = getZodSchema({ schema: schema.oneOf[0]!, resolver, meta, tag });
+    return zodSchema.assign(type.getCodeString(tag, resolver.options));
   }
 
   /* when there are multiple allOf we are unable to use a discriminatedUnion as this library adds an
@@ -198,82 +204,82 @@ function getOneOfZodSchema({ schema, zodSchema, resolver, meta, tag, options }: 
 
     return zodSchema.assign(`
       z.discriminatedUnion("${propertyName}", [${schema.oneOf
-        .map((schema) => getZodSchema({ schema, resolver, meta, tag, options }).getCodeString(tag, options))
+        .map((schema) => getZodSchema({ schema, resolver, meta, tag }).getCodeString(tag, resolver.options))
         .join(", ")}])
         `);
   }
 
   return zodSchema.assign(
-    `z.union([${schema.oneOf.map((schema) => getZodSchema({ schema, resolver, meta, tag, options }).getCodeString(tag, options)).join(", ")}])`,
+    `z.union([${schema.oneOf.map((schema) => getZodSchema({ schema, resolver, meta, tag }).getCodeString(tag, resolver.options)).join(", ")}])`,
   );
 }
 
-function getArrayZodSchema({ schema, zodSchema, resolver, meta, tag, options }: GetPartialZodSchemaParams) {
+function getArrayZodSchema({ schema, zodSchema, resolver, meta, tag }: GetPartialZodSchemaParams) {
   if (!isSchemaObject(schema) || !Array.isArray(schema.type)) {
     return;
   }
 
   if (schema.type.length === 1) {
-    return getZodSchema({ schema: { ...schema, type: schema.type[0]! }, resolver, meta, tag, options });
+    return getZodSchema({ schema: { ...schema, type: schema.type[0]! }, resolver, meta, tag });
   }
 
   return zodSchema.assign(
     `z.union([${schema.type
       .map((prop) =>
-        getZodSchema({ schema: { ...schema, type: prop }, resolver, meta, tag, options }).getCodeString(tag, options),
+        getZodSchema({ schema: { ...schema, type: prop }, resolver, meta, tag }).getCodeString(tag, resolver.options),
       )
       .join(", ")}])`,
   );
 }
 
-function getAnyOfZodSchema({ schema, zodSchema, resolver, meta, tag, options }: GetPartialZodSchemaParams) {
+function getAnyOfZodSchema({ schema, zodSchema, resolver, meta, tag }: GetPartialZodSchemaParams) {
   // anyOf = oneOf but with 1 or more = `T extends oneOf ? T | T[] : never`
   if (!isSchemaObject(schema) || !schema.anyOf) {
     return;
   }
 
   if (schema.anyOf.length === 1) {
-    const type = getZodSchema({ schema: schema.anyOf[0]!, resolver, meta, tag, options });
-    return zodSchema.assign(type.getCodeString(tag, options));
+    const type = getZodSchema({ schema: schema.anyOf[0]!, resolver, meta, tag });
+    return zodSchema.assign(type.getCodeString(tag, resolver.options));
   }
 
   const types = schema.anyOf
-    .map((schema) => getZodSchema({ schema, resolver, meta, tag, options }))
-    .map((type) => type.getCodeString(tag, options))
+    .map((schema) => getZodSchema({ schema, resolver, meta, tag }))
+    .map((type) => type.getCodeString(tag, resolver.options))
     .join(", ");
 
   return zodSchema.assign(`z.union([${types}])`);
 }
 
-function getAllOfZodSchema({ schema, zodSchema, resolver, meta, tag, options }: GetPartialZodSchemaParams) {
+function getAllOfZodSchema({ schema, zodSchema, resolver, meta, tag }: GetPartialZodSchemaParams) {
   if (!isSchemaObject(schema) || !schema.allOf) {
     return;
   }
 
   if (schema.allOf.length === 1) {
-    const type = getZodSchema({ schema: schema.allOf[0], resolver, meta, tag, options });
-    return zodSchema.assign(type.getCodeString(tag, options));
+    const type = getZodSchema({ schema: schema.allOf[0], resolver, meta, tag });
+    return zodSchema.assign(type.getCodeString(tag, resolver.options));
   }
 
   const { patchRequiredSchemaInLoop, noRequiredOnlyAllof, composedRequiredSchema } = inferRequiredSchema(schema);
   const types = noRequiredOnlyAllof.map((schema) => {
-    const type = getZodSchema({ schema, resolver, meta, tag, options });
+    const type = getZodSchema({ schema, resolver, meta, tag });
     resolver && patchRequiredSchemaInLoop(schema, resolver.getSchemaByRef.bind(resolver));
     return type;
   });
   if (composedRequiredSchema.required.length) {
-    types.push(getZodSchema({ schema: composedRequiredSchema, resolver, meta, tag, options }));
+    types.push(getZodSchema({ schema: composedRequiredSchema, resolver, meta, tag }));
   }
   const first = types.at(0)!;
   const rest = types
     .slice(1)
-    .map((type) => `merge(${type.getCodeString(tag, options)})`)
+    .map((type) => `merge(${type.getCodeString(tag, resolver.options)})`)
     .join(".");
 
-  return zodSchema.assign(`${first.getCodeString(tag, options)}.${rest}`);
+  return zodSchema.assign(`${first.getCodeString(tag, resolver.options)}.${rest}`);
 }
 
-function getPrimitiveZodSchema({ schema, zodSchema, resolver, meta, tag, options }: GetPartialZodSchemaParams) {
+function getPrimitiveZodSchema({ schema, zodSchema, resolver, meta, tag }: GetPartialZodSchemaParams) {
   if (!isSchemaObject(schema)) {
     return;
   }
@@ -282,7 +288,7 @@ function getPrimitiveZodSchema({ schema, zodSchema, resolver, meta, tag, options
   if (schemaType && isPrimitiveType(schemaType)) {
     if (schema.enum) {
       if (schemaType === "string") {
-        return getEnumZodSchema({ schema, zodSchema, resolver, meta, tag, options });
+        return getEnumZodSchema({ schema, zodSchema, resolver, meta, tag });
       }
 
       if (schema.enum.some((e) => typeof e === "string")) {

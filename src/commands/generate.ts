@@ -34,13 +34,10 @@ export async function generate({ input, excludeTags, prettier, verbose, ...param
   if (verbose) {
     logInfo("Generating code...");
   }
-  generateCodeFromOpenAPIDoc({
-    openApiDoc,
-    options: {
-      input,
-      excludeTags: excludeTags.split(","),
-      ...params,
-    },
+  generateCodeFromOpenAPIDoc(openApiDoc, {
+    input,
+    excludeTags: excludeTags.split(","),
+    ...params,
   });
   if (verbose) {
     logSuccess("Generation finished.");

@@ -1,6 +1,5 @@
 import { OpenAPIV3 } from "openapi-types";
 import { COMPLEXITY_THRESHOLD } from "src/generators/const/openapi.const";
-import { GenerateOptions } from "src/generators/types/options";
 import { getZodSchemaName, isNamedZodSchema } from "src/generators/utils/zod-schema.utils";
 import { getOpenAPISchemaComplexity } from "../openapi/getOpenAPISchemaComplexity";
 import { SchemaResolver } from "../SchemaResolver.class";
@@ -12,14 +11,12 @@ export function resolveZodSchemaName({
   fallbackName,
   resolver,
   tag,
-  options,
 }: {
   schema?: OpenAPIV3.SchemaObject;
   zodSchema: ZodSchema;
   fallbackName?: string;
   resolver: SchemaResolver;
   tag: string;
-  options: GenerateOptions;
 }): string {
   const result = zodSchema.getCodeString();
 
@@ -30,7 +27,7 @@ export function resolveZodSchemaName({
     }
 
     // result is complex and would benefit from being re-used
-    const zodSchemaName = getZodSchemaName(fallbackName, options.schemaSuffix);
+    const zodSchemaName = getZodSchemaName(fallbackName, resolver.options.schemaSuffix);
     while (resolver.getCodeByZodSchemaName(zodSchemaName)) {
       if (resolver.getZodSchemaNamesByCompositeCode(result)?.includes(zodSchemaName)) {
         return zodSchemaName;

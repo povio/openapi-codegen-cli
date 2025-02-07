@@ -8,40 +8,24 @@ import { getNamespaceName } from "./generate.utils";
 export const getZodSchemaInferedTypeName = (zodSchemaName: string, options: GenerateOptions) =>
   removeSuffix(zodSchemaName, options.schemaSuffix);
 
-export const getImportedZodSchemaName = ({
-  resolver,
-  zodSchemaName,
-  options,
-}: {
-  resolver: SchemaResolver;
-  zodSchemaName: string;
-  options: GenerateOptions;
-}) => {
+export const getImportedZodSchemaName = (resolver: SchemaResolver, zodSchemaName: string) => {
   if (!isNamedZodSchema(zodSchemaName)) {
     return zodSchemaName;
   }
 
-  const namespacePrefix = options.includeNamespaces
-    ? `${getNamespaceName({ type: GenerateType.Models, tag: resolver.getTagByZodSchemaName(zodSchemaName), options })}.`
+  const namespacePrefix = resolver.options.includeNamespaces
+    ? `${getNamespaceName({ type: GenerateType.Models, tag: resolver.getTagByZodSchemaName(zodSchemaName), options: resolver.options })}.`
     : "";
   return `${namespacePrefix}${zodSchemaName}`;
 };
 
-export const getImportedZodSchemaInferedTypeName = ({
-  resolver,
-  zodSchemaName,
-  options,
-}: {
-  resolver: SchemaResolver;
-  zodSchemaName: string;
-  options: GenerateOptions;
-}) => {
+export const getImportedZodSchemaInferedTypeName = (resolver: SchemaResolver, zodSchemaName: string) => {
   if (!isNamedZodSchema(zodSchemaName)) {
     return zodSchemaName;
   }
 
-  const namespacePrefix = options.includeNamespaces
-    ? `${getNamespaceName({ type: GenerateType.Models, tag: resolver.getTagByZodSchemaName(zodSchemaName), options })}.`
+  const namespacePrefix = resolver.options.includeNamespaces
+    ? `${getNamespaceName({ type: GenerateType.Models, tag: resolver.getTagByZodSchemaName(zodSchemaName), options: resolver.options })}.`
     : "";
-  return `${namespacePrefix}${getZodSchemaInferedTypeName(zodSchemaName, options)}`;
+  return `${namespacePrefix}${getZodSchemaInferedTypeName(zodSchemaName, resolver.options)}`;
 };

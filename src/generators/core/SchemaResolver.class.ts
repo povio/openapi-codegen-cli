@@ -77,7 +77,7 @@ export class SchemaResolver {
 
   constructor(
     public readonly openApiDoc: OpenAPIV3.Document,
-    private readonly options: GenerateOptions,
+    public readonly options: GenerateOptions,
   ) {
     this.dependencyGraph = getOpenAPISchemaDependencyGraph(this.schemaRefs, this.getSchemaByRef.bind(this));
     this.operationsByTag = getOperationsByTag(openApiDoc, options);

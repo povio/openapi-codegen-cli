@@ -30,20 +30,12 @@ export function getEndpointTag(endpoint: Endpoint, options: GenerateOptions) {
   return formatTag(tag ?? options.defaultTag);
 }
 
-export function mapEndpointParamsToFunctionParams({
-  resolver,
-  endpoint,
-  options,
-}: {
-  resolver: SchemaResolver;
-  endpoint: Endpoint;
-  options: GenerateOptions;
-}) {
+export function mapEndpointParamsToFunctionParams(resolver: SchemaResolver, endpoint: Endpoint) {
   return endpoint.parameters
     .map((param) => {
       let type = "string";
       if (isNamedZodSchema(param.zodSchema)) {
-        type = getImportedZodSchemaInferedTypeName({ resolver, zodSchemaName: param.zodSchema, options });
+        type = getImportedZodSchemaInferedTypeName(resolver, param.zodSchema);
       } else if (param.parameterObject?.schema && isSchemaObject(param.parameterObject.schema)) {
         const openApiSchemaType = (param.parameterObject?.schema as OpenAPIV3.SchemaObject)?.type;
         if (openApiSchemaType && isPrimitiveType(openApiSchemaType)) {

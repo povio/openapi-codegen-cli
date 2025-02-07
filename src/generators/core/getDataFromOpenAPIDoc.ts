@@ -12,11 +12,11 @@ import { wrapCircularZodSchemas } from "./zod/wrapCircularZodSchemas";
 export function getDataFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, options: GenerateOptions) {
   const resolver = new SchemaResolver(openApiDoc, options);
 
-  const { endpoints, validationErrorMessages } = getEndpointsFromOpenAPIDoc(resolver, options);
-  const zodSchemasFromDocSchemas = getZodSchemasFromOpenAPIDoc(resolver, options);
+  const { endpoints, validationErrorMessages } = getEndpointsFromOpenAPIDoc(resolver);
+  const zodSchemasFromDocSchemas = getZodSchemasFromOpenAPIDoc(resolver);
 
   let zodSchemas = { ...zodSchemasFromDocSchemas, ...resolver.getZodSchemas() };
-  zodSchemas = wrapCircularZodSchemas(resolver, zodSchemas, options);
+  zodSchemas = wrapCircularZodSchemas(resolver, zodSchemas);
   zodSchemas = sortZodSchemasByTopology(resolver, zodSchemas);
 
   return {

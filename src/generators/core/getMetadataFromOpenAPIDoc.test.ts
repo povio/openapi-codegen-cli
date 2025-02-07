@@ -9,7 +9,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
   const openApiDoc = (await SwaggerParser.bundle("./test/petstore.yaml")) as OpenAPIV3.Document;
 
   test("getMetadataFromOpenAPIDoc", async () => {
-    const metadata = await getMetadataFromOpenAPIDoc({ openApiDoc, options: DEFAULT_GENERATE_OPTIONS });
+    const metadata = await getMetadataFromOpenAPIDoc(openApiDoc, DEFAULT_GENERATE_OPTIONS);
 
     const Category: TsType = {
       type: "Category",
