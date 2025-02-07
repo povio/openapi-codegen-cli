@@ -9,31 +9,18 @@ import { getZodSchemasFromOpenAPIDoc } from "./zod/getZodSchemasFromOpenAPIDoc";
 import { sortZodSchemasByTopology } from "./zod/sortZodSchemasByTopology";
 import { wrapCircularZodSchemas } from "./zod/wrapCircularZodSchemas";
 
-export function getDataFromOpenAPIDoc({
-  openApiDoc,
-  options,
-}: {
-  openApiDoc: OpenAPIV3.Document;
-  options: GenerateOptions;
-}) {
+export function getDataFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, options: GenerateOptions) {
   const resolver = new SchemaResolver(openApiDoc, options);
 
-  const { endpoints, validationErrorMessages } = getEndpointsFromOpenAPIDoc({
-    resolver,
-    openApiDoc,
-    options,
-  });
-  const zodSchemasFromDocSchemas = getZodSchemasFromOpenAPIDoc({ resolver, openApiDoc, options });
+  const endpoints = getEndpointsFromOpenAPIDoc(resolver);
+  const zodSchemasFromDocSchemas = getZodSchemasFromOpenAPIDoc(resolver);
 
   let zodSchemas = { ...zodSchemasFromDocSchemas, ...resolver.getZodSchemas() };
-  zodSchemas = wrapCircularZodSchemas({ resolver, zodSchemas, options });
-  zodSchemas = sortZodSchemasByTopology({ resolver, zodSchemas });
+  zodSchemas = wrapCircularZodSchemas(resolver, zodSchemas);
+  zodSchemas = sortZodSchemasByTopology(resolver, zodSchemas);
+  zodSchemas = { ...resolver.getEnumZodSchemas(), ...zodSchemas };
 
-  return {
-    resolver,
-    data: splitDataByTags({ resolver, endpoints, zodSchemas, options }),
-    validationErrorMessages,
-  };
+  return { resolver, data: splitDataByTags({ resolver, endpoints, zodSchemas, options }) };
 }
 
 function splitDataByTags({

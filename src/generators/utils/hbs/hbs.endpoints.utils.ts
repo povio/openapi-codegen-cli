@@ -18,13 +18,13 @@ enum EndpointsHelpers {
   ENDPOINT_ARGS = "endpointArgs",
 }
 
-export function registerEndpointsHbsHelpers(resolver: SchemaResolver, options: GenerateOptions) {
+export function registerEndpointsHbsHelpers(resolver: SchemaResolver) {
   registerEndpointNameHelper();
-  registerImportedEndpointNameHelper(options);
-  registerEndpointParamsHelper(resolver, options);
+  registerImportedEndpointNameHelper(resolver.options);
+  registerEndpointParamsHelper(resolver);
   registerEndpointPathHelper();
   registerEndpointBodyHelper();
-  registerEndpointArgsHelper(resolver, options);
+  registerEndpointArgsHelper(resolver);
 }
 
 function registerEndpointNameHelper() {
@@ -47,15 +47,15 @@ function registerEndpointBodyHelper() {
   );
 }
 
-function registerEndpointParamsHelper(resolver: SchemaResolver, options: GenerateOptions) {
+function registerEndpointParamsHelper(resolver: SchemaResolver) {
   Handlebars.registerHelper(EndpointsHelpers.ENDPOINT_PARAMS, (endpoint: Endpoint) =>
-    mapEndpointParamsToFunctionParams({ resolver, endpoint, options }),
+    mapEndpointParamsToFunctionParams(resolver, endpoint),
   );
 }
 
-function registerEndpointArgsHelper(resolver: SchemaResolver, options: GenerateOptions) {
+function registerEndpointArgsHelper(resolver: SchemaResolver) {
   Handlebars.registerHelper(EndpointsHelpers.ENDPOINT_ARGS, (endpoint: Endpoint) =>
-    mapEndpointParamsToFunctionParams({ resolver, endpoint, options })
+    mapEndpointParamsToFunctionParams(resolver, endpoint)
       .map((param) => param.name)
       .join(", "),
   );

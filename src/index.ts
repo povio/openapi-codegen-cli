@@ -10,7 +10,7 @@ export async function getGenerateMetadata({ input, options: genOptions }: Genera
 
   const openApiDoc = (await SwaggerParser.bundle(input)) as OpenAPIV3.Document;
 
-  return await getMetadataFromOpenAPIDoc({ openApiDoc, options });
+  return await getMetadataFromOpenAPIDoc(openApiDoc, options);
 }
 
 export * from "./generators/types/metadata";

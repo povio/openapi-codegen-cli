@@ -1,6 +1,6 @@
 import { GenerateType } from "../types/generate";
 import { GenerateOptions } from "../types/options";
-import { SCHEMA_SUFFIX } from "./zod.const";
+import { ENUM_SUFFIX, SCHEMA_SUFFIX } from "./zod.const";
 
 export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   // Base options
@@ -11,6 +11,7 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   excludeTags: [], // TODO: Only works for isolated tags
   includeNamespaces: true,
   importPath: "ts",
+  extractEnums: true,
   configs: {
     [GenerateType.Models]: {
       outputFileNameSuffix: "models",
@@ -27,6 +28,7 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   },
   // Zod options
   schemaSuffix: SCHEMA_SUFFIX,
+  enumSuffix: ENUM_SUFFIX,
   additionalPropertiesDefaultValue: false,
   // Endpoints options
   removeOperationPrefixEndingWith: "Controller_",

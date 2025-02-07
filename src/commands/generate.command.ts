@@ -26,6 +26,9 @@ class GenerateOptions implements GenerateParams {
   @YargOption({ envAlias: "importPath", default: "ts", type: "string" })
   importPath!: "ts" | "relative" | "absolute";
 
+  @YargOption({ envAlias: "extractEnums", default: true, type: "boolean" })
+  extractEnums!: boolean;
+
   @YargOption({ envAlias: "removeOperationPrefixEndingWith", default: "Controller_" })
   removeOperationPrefixEndingWith!: string;
 

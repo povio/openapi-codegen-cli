@@ -1,10 +1,15 @@
 import { OpenAPIV3 } from "openapi-types";
-import { getSchemaRefsDependencyGraph } from "./getSchemaRefsDependencyGraph";
+import { iterateSchema, OnSchemaCallbackData } from "./iterateSchema";
+
+export interface DependencyGraph {
+  refsDependencyGraph: Record<string, Set<string>>;
+  deepDependencyGraph: Record<string, Set<string>>;
+}
 
 export function getOpenAPISchemaDependencyGraph(
   schemaRef: string[],
   getSchemaByRef: (ref: string) => OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject,
-) {
+): DependencyGraph {
   const refsDependencyGraph = getRefsDependencyGraph(schemaRef, getSchemaByRef);
   const deepDependencyGraph = getDeepRefsDependencyGraph(schemaRef, refsDependencyGraph);
 
@@ -36,9 +41,9 @@ function getDeepRefsDependencyGraph(schemaRef: string[], refsDependencyGraph: Re
   const deepDependencyGraph = {} as Record<string, Set<string>>;
 
   const visit = (dep: string, ref: string) => {
-    deepDependencyGraph[ref]!.add(dep);
+    deepDependencyGraph[ref].add(dep);
     if (refsDependencyGraph[dep] && ref !== dep) {
-      refsDependencyGraph[dep]!.forEach((transitive) => {
+      refsDependencyGraph[dep].forEach((transitive) => {
         const refName = `${ref}__${transitive}`;
         if (visitedDeepRefs[refName]) {
           return;
@@ -61,4 +66,38 @@ function getDeepRefsDependencyGraph(schemaRef: string[], refsDependencyGraph: Re
   });
 
   return deepDependencyGraph;
+}
+
+function getSchemaRefsDependencyGraph({
+  schema,
+  fromRef,
+  getSchemaByRef,
+  visitedRefs = {},
+  refsDependencyGraph = {},
+}: {
+  schema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject;
+  fromRef: string;
+  getSchemaByRef: (ref: string) => OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject;
+  visitedRefs?: Record<string, boolean>;
+  refsDependencyGraph?: Record<string, Set<string>>;
+}) {
+  const onSchema = (callbackData: OnSchemaCallbackData<{ fromRef: string }>) => {
+    if (callbackData.type !== "reference" || !callbackData.data) {
+      return;
+    }
+    const { schema, data } = callbackData;
+    if (!refsDependencyGraph[data.fromRef]) {
+      refsDependencyGraph[data.fromRef] = new Set();
+    }
+    refsDependencyGraph[data.fromRef].add(schema.$ref);
+    if (visitedRefs[schema.$ref]) {
+      return true;
+    }
+    visitedRefs[data.fromRef] = true;
+    iterateSchema(getSchemaByRef(schema.$ref), { data: { fromRef: schema.$ref }, onSchema });
+  };
+
+  iterateSchema(schema, { data: { fromRef }, onSchema });
+
+  return { visitedRefs, refsDependencyGraph };
 }

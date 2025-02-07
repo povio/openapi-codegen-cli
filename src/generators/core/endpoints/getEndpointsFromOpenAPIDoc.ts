@@ -2,25 +2,19 @@ import { OpenAPIV3 } from "openapi-types";
 import { ALLOWED_METHODS } from "src/generators/const/openapi.const";
 import { VOID_SCHEMA } from "src/generators/const/zod.const";
 import { invalidVariableNameCharactersToCamel } from "src/generators/utils/js.utils";
+import { formatTag, getOperationTag } from "src/generators/utils/tag.utils";
+import { getInvalidOperationIdError, getMissingPathParameterError } from "src/generators/utils/validation.utils";
+import { getResponseZodSchemaName } from "src/generators/utils/zod-schema.utils";
 import { Endpoint, EndpointParameter } from "../../types/endpoint";
-import { GenerateOptions } from "../../types/options";
 import { pick } from "../../utils/object.utils";
 import {
-  formatTag,
-  getOperationTag,
   getUniqueOperationName,
   isErrorStatus,
   isMainResponseStatus,
   isMediaTypeAllowed,
   isReferenceObject,
-  isUniqueOperationNameWithoutSplitByTags,
   replaceHyphenatedPath,
 } from "../../utils/openapi.utils";
-import {
-  getErrorResponseZodSchemaName,
-  getMainResponseZodSchemaName,
-  getZodSchemaOperationName,
-} from "../../utils/zod-schema.utils";
 import { SchemaResolver } from "../SchemaResolver.class";
 import { getZodChain } from "../zod/getZodChain";
 import { getZodSchema } from "../zod/getZodSchema";
@@ -28,42 +22,39 @@ import { resolveZodSchemaName } from "../zod/resolveZodSchemaName";
 import { getEndpointBody } from "./getEndpointBody";
 import { getEndpointParameter } from "./getEndpointParameter";
 
-export function getEndpointsFromOpenAPIDoc({
-  openApiDoc,
-  resolver,
-  options,
-}: {
-  openApiDoc: OpenAPIV3.Document;
-  resolver: SchemaResolver;
-  options: GenerateOptions;
-}) {
+export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver) {
   const endpoints = [];
-  const validationErrorMessages = [];
 
-  for (const path in openApiDoc.paths) {
-    const pathItemObj = openApiDoc.paths[path] as OpenAPIV3.PathItemObject;
+  for (const path in resolver.openApiDoc.paths) {
+    const pathItemObj = resolver.openApiDoc.paths[path] as OpenAPIV3.PathItemObject;
     const pathItem = pick(pathItemObj, ALLOWED_METHODS);
     const pathParameters = getParameters(pathItemObj.parameters ?? []);
 
     for (const method in pathItem) {
       const operation = pathItem[method as keyof typeof pathItem] as OpenAPIV3.OperationObject | undefined;
-      if (!operation || (operation.deprecated && !options?.withDeprecatedEndpoints)) {
+      if (!operation || (operation.deprecated && !resolver.options.withDeprecatedEndpoints)) {
         continue;
       }
 
       const invalidOperationId =
         operation.operationId && operation.operationId !== invalidVariableNameCharactersToCamel(operation.operationId);
-      if (invalidOperationId) {
-        validationErrorMessages.push(`INVALID OPERATION ID: ${operation.operationId}`);
+      if (operation.operationId && invalidOperationId) {
+        resolver.validationErrors.push(getInvalidOperationIdError(operation.operationId));
       }
 
       const parameters = Object.entries({
         ...pathParameters,
         ...getParameters(operation.parameters ?? []),
       }).map(([, param]) => param);
-      const operationName = getUniqueOperationName({ path, method, operation, openApiDoc, options });
-      const isUniqueOperationName = isUniqueOperationNameWithoutSplitByTags(operationName, openApiDoc, options);
-      const tag = getOperationTag(operation, options);
+      const operationName = getUniqueOperationName({
+        path,
+        method,
+        operation,
+        operationsByTag: resolver.operationsByTag,
+        options: resolver.options,
+      });
+      const isUniqueOperationName = resolver.operationNames.filter((name) => name === operationName).length <= 1;
+      const tag = getOperationTag(operation, resolver.options);
       const endpoint: Endpoint = {
         method: method as OpenAPIV3.HttpMethods,
         path: replaceHyphenatedPath(path),
@@ -77,7 +68,7 @@ export function getEndpointsFromOpenAPIDoc({
       };
 
       if (operation.requestBody) {
-        const body = getEndpointBody({ resolver, operation, operationName, isUniqueOperationName, tag, options });
+        const body = getEndpointBody({ resolver, operation, operationName, isUniqueOperationName, tag });
         if (body) {
           endpoint.parameters.push(body.endpointParameter);
           endpoint.requestFormat = body.requestFormat;
@@ -91,7 +82,6 @@ export function getEndpointsFromOpenAPIDoc({
           operationName,
           isUniqueOperationName,
           tag,
-          options,
         });
         if (endpointParameter) {
           endpoint.parameters.push(endpointParameter);
@@ -103,9 +93,7 @@ export function getEndpointsFromOpenAPIDoc({
         endpoint.parameters.push(pathParam);
       });
       if (missingPathParameters.length > 0) {
-        validationErrorMessages.push(
-          `MISSING PATH PARAMETERS: ${missingPathParameters.map(({ name }) => name).join(", ")} in ${path}`,
-        );
+        resolver.validationErrors.push(getMissingPathParameterError(missingPathParameters, path));
       }
 
       for (const statusCode in operation.responses) {
@@ -123,7 +111,12 @@ export function getEndpointsFromOpenAPIDoc({
         }
 
         if (schema) {
-          const zodSchema = getZodSchema({ schema, resolver, meta: { isRequired: true }, tag, options });
+          const zodSchema = getZodSchema({
+            schema,
+            resolver,
+            meta: { isRequired: true },
+            tag,
+          });
 
           const schemaObject = resolver.resolveObject(schema);
 
@@ -132,13 +125,13 @@ export function getEndpointsFromOpenAPIDoc({
             zodSchema,
             fallbackName: zodSchema.ref
               ? undefined
-              : getResponseZodSchemaName({ statusCode, endpoint, operationName, isUniqueOperationName, tag }),
+              : getResponseZodSchemaName({ statusCode, operationName, isUniqueOperationName, tag }),
             resolver,
             tag,
-            options,
           });
 
-          responseZodSchema = zodSchemaName + getZodChain({ schema: schemaObject, meta: zodSchema.meta, options });
+          responseZodSchema =
+            zodSchemaName + getZodChain({ schema: schemaObject, meta: zodSchema.meta, options: resolver.options });
         }
 
         if (responseZodSchema) {
@@ -165,28 +158,7 @@ export function getEndpointsFromOpenAPIDoc({
     }
   }
 
-  return { endpoints, validationErrorMessages };
-}
-
-function getResponseZodSchemaName({
-  statusCode,
-  endpoint,
-  operationName,
-  isUniqueOperationName,
-  tag,
-}: {
-  statusCode: string;
-  endpoint: Endpoint;
-  operationName: string;
-  isUniqueOperationName: boolean;
-  tag: string;
-}): string {
-  const status = Number(statusCode);
-  const zodSchemaOperationName = getZodSchemaOperationName(operationName, isUniqueOperationName, tag);
-  if ((!isMainResponseStatus(status) || endpoint.response) && statusCode !== "default" && isErrorStatus(status)) {
-    return getErrorResponseZodSchemaName(zodSchemaOperationName, statusCode);
-  }
-  return getMainResponseZodSchemaName(zodSchemaOperationName);
+  return endpoints;
 }
 
 function getParameters(parameters: NonNullable<OpenAPIV3.PathItemObject["parameters"]>) {

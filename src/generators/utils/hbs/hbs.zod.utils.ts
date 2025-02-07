@@ -8,9 +8,9 @@ enum ZodHelpers {
   IMPORTED_ZOD_SCHEMA_NAME = "importedZodSchemaName",
 }
 
-export function registerZodHbsHelpers(resolver: SchemaResolver, options: GenerateOptions) {
-  registerInferedTypeHelper(options);
-  registerImportedZodSchemaNameHelper(resolver, options);
+export function registerZodHbsHelpers(resolver: SchemaResolver) {
+  registerInferedTypeHelper(resolver.options);
+  registerImportedZodSchemaNameHelper(resolver);
 }
 
 function registerInferedTypeHelper(options: GenerateOptions) {
@@ -19,8 +19,8 @@ function registerInferedTypeHelper(options: GenerateOptions) {
   );
 }
 
-function registerImportedZodSchemaNameHelper(resolver: SchemaResolver, options: GenerateOptions) {
+function registerImportedZodSchemaNameHelper(resolver: SchemaResolver) {
   Handlebars.registerHelper(ZodHelpers.IMPORTED_ZOD_SCHEMA_NAME, (zodSchemaName: string) =>
-    getImportedZodSchemaName({ resolver, zodSchemaName, options }),
+    getImportedZodSchemaName(resolver, zodSchemaName),
   );
 }

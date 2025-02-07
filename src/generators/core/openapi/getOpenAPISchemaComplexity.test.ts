@@ -2,7 +2,7 @@ import { OpenAPIV3 } from "openapi-types";
 import { expect, test } from "vitest";
 import { getOpenAPISchemaComplexity } from "./getOpenAPISchemaComplexity";
 
-const getComplexity = (schema: OpenAPIV3.SchemaObject) => getOpenAPISchemaComplexity({ schema: schema, current: 0 });
+const getComplexity = (schema: OpenAPIV3.SchemaObject) => getOpenAPISchemaComplexity(0, schema);
 
 test("getOpenAPISchemaComplexity", async () => {
   expect(getComplexity({ type: "boolean" })).toMatchInlineSnapshot("1");

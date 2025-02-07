@@ -2,16 +2,19 @@ import { OpenAPIV3 } from "openapi-types";
 import { describe, expect, test } from "vitest";
 import { GenerateOptions } from "../types/options";
 import { getOperationName, getUniqueOperationName, pathToVariableName, toBoolean } from "./openapi.utils";
+import { getOperationsByTag } from "./tag.utils";
 
 const path = "/auth/provider/local/login";
 const method = "post";
 
 const options: GenerateOptions = {
+  input: "input",
   output: "output",
   splitByTags: true,
   defaultTag: "Common",
   excludeTags: [""],
   includeNamespaces: true,
+  importPath: "ts",
   configs: {
     models: {
       outputFileNameSuffix: "models",
@@ -27,6 +30,7 @@ const options: GenerateOptions = {
     },
   },
   schemaSuffix: "Schema",
+  enumSuffix: "Enum",
   additionalPropertiesDefaultValue: false,
   removeOperationPrefixEndingWith: "Controller_",
 };
@@ -156,12 +160,13 @@ describe("Utils: openapi", () => {
   describe("getUniqueOperationName", () => {
     test("without removing operation prefix", () => {
       const operation = paths[pathNames[0]].post;
+      const operationsByTag = getOperationsByTag(openApiDoc, options);
       expect(
         getUniqueOperationName({
           path,
           method,
           operation,
-          openApiDoc,
+          operationsByTag,
           options: { ...options, removeOperationPrefixEndingWith: undefined },
         }),
       ).toEqual("LocalAuthnPasswordController_register");
@@ -169,15 +174,16 @@ describe("Utils: openapi", () => {
 
     test("without duplicate", () => {
       const operation = paths[pathNames[0]].post;
+      const operationsByTag = getOperationsByTag(
+        { ...openApiDoc, paths: { [pathNames[0]]: paths[pathNames[0]] } },
+        options,
+      );
       expect(
         getUniqueOperationName({
           path,
           method,
           operation,
-          openApiDoc: {
-            ...openApiDoc,
-            paths: { [pathNames[0]]: paths[pathNames[0]] },
-          },
+          operationsByTag,
           options,
         }),
       ).toEqual("register");
@@ -185,18 +191,22 @@ describe("Utils: openapi", () => {
 
     test("without duplicate in same tag", () => {
       const operation = paths[pathNames[0]].post;
+      const operationsByTag = getOperationsByTag(
+        {
+          ...openApiDoc,
+          paths: {
+            [pathNames[0]]: { ...paths[pathNames[0]], post: { ...paths[pathNames[0]].post, tags: ["Other"] } },
+            [pathNames[1]]: paths[pathNames[1]],
+          },
+        },
+        options,
+      );
       expect(
         getUniqueOperationName({
           path,
           method,
           operation,
-          openApiDoc: {
-            ...openApiDoc,
-            paths: {
-              [pathNames[0]]: { ...paths[pathNames[0]], post: { ...paths[pathNames[0]].post, tags: ["Other"] } },
-              [pathNames[1]]: paths[pathNames[1]],
-            },
-          },
+          operationsByTag,
           options,
         }),
       ).toEqual("register");
@@ -204,26 +214,32 @@ describe("Utils: openapi", () => {
 
     test("with duplicate in same tag", () => {
       const operation = paths[pathNames[0]].post;
-      expect(getUniqueOperationName({ path, method, operation, openApiDoc, options })).toEqual(
+      const operationsByTag = getOperationsByTag(openApiDoc, options);
+      expect(getUniqueOperationName({ path, method, operation, operationsByTag, options })).toEqual(
         "LocalAuthnPasswordRegister",
       );
     });
 
     test("with duplicate in different tags without splitting by tags", () => {
       const operation = paths[pathNames[0]].post;
+      const noSplitOptions = { ...options, splitByTags: false };
+      const operationsByTag = getOperationsByTag(
+        {
+          ...openApiDoc,
+          paths: {
+            [pathNames[0]]: { ...paths[pathNames[0]], post: { ...paths[pathNames[0]].post, tags: ["Other"] } },
+            [pathNames[1]]: paths[pathNames[1]],
+          },
+        },
+        noSplitOptions,
+      );
       expect(
         getUniqueOperationName({
           path,
           method,
           operation,
-          openApiDoc: {
-            ...openApiDoc,
-            paths: {
-              [pathNames[0]]: { ...paths[pathNames[0]], post: { ...paths[pathNames[0]].post, tags: ["Other"] } },
-              [pathNames[1]]: paths[pathNames[1]],
-            },
-          },
-          options: { ...options, splitByTags: false },
+          operationsByTag,
+          options: noSplitOptions,
         }),
       ).toEqual("LocalAuthnPasswordRegister");
     });

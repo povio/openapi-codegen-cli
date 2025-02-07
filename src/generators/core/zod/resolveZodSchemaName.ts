@@ -1,6 +1,5 @@
 import { OpenAPIV3 } from "openapi-types";
 import { COMPLEXITY_THRESHOLD } from "src/generators/const/openapi.const";
-import { GenerateOptions } from "src/generators/types/options";
 import { getZodSchemaName, isNamedZodSchema } from "src/generators/utils/zod-schema.utils";
 import { getOpenAPISchemaComplexity } from "../openapi/getOpenAPISchemaComplexity";
 import { SchemaResolver } from "../SchemaResolver.class";
@@ -12,14 +11,12 @@ export function resolveZodSchemaName({
   fallbackName,
   resolver,
   tag,
-  options,
 }: {
   schema?: OpenAPIV3.SchemaObject;
   zodSchema: ZodSchema;
   fallbackName?: string;
   resolver: SchemaResolver;
   tag: string;
-  options: GenerateOptions;
 }): string {
   const result = zodSchema.getCodeString();
 
@@ -29,24 +26,22 @@ export function resolveZodSchemaName({
       return result;
     }
 
-    const zodSchemaName = getZodSchemaName(fallbackName, options.schemaSuffix);
-
     // result is complex and would benefit from being re-used
-    const formattedZodSchemaName = zodSchemaName;
-    while (resolver.getCodeByZodSchemaName(formattedZodSchemaName)) {
-      if (resolver.getZodSchemaNamesByCompositeCode(result)?.includes(formattedZodSchemaName)) {
-        return formattedZodSchemaName;
-      } else if (resolver.getCodeByZodSchemaName(formattedZodSchemaName) === zodSchemaName) {
-        return formattedZodSchemaName;
+    const zodSchemaName = getZodSchemaName(fallbackName, resolver.options.schemaSuffix);
+    while (resolver.getCodeByZodSchemaName(zodSchemaName)) {
+      if (resolver.getZodSchemaNamesByCompositeCode(result)?.includes(zodSchemaName)) {
+        return zodSchemaName;
+      } else if (resolver.getCodeByZodSchemaName(zodSchemaName) === zodSchemaName) {
+        return zodSchemaName;
       } else {
-        throw new Error(`Can't uniquely resolve zod schema name: ${formattedZodSchemaName}`);
+        throw new Error(`Can't uniquely resolve zod schema name: ${zodSchemaName}`);
       }
     }
 
-    resolver.setZodSchema(formattedZodSchemaName, result, tag);
-    resolver.addZodSchemaForCompositeCode(result, zodSchema, formattedZodSchemaName, schema);
+    resolver.setZodSchema(zodSchemaName, result, tag);
+    resolver.addZodSchemaForCompositeCode(result, zodSchema, zodSchemaName, schema);
 
-    return formattedZodSchemaName;
+    return zodSchemaName;
   }
 
   // result is a reference to another schema
@@ -56,7 +51,7 @@ export function resolveZodSchemaName({
   }
 
   if (zodSchema.ref && resolvedSchema) {
-    const complexity = getOpenAPISchemaComplexity({ current: 0, schema: resolver.getSchemaByRef(zodSchema.ref) });
+    const complexity = getOpenAPISchemaComplexity(0, resolver.getSchemaByRef(zodSchema.ref));
 
     // ref result is simple enough that it doesn't need to be assigned to a variable
     if (complexity < COMPLEXITY_THRESHOLD) {

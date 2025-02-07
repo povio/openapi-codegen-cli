@@ -6,7 +6,8 @@ import { PrimitiveType, SingleType } from "../types/openapi";
 import { GenerateOptions } from "../types/options";
 import { invalidVariableNameCharactersToCamel } from "./js.utils";
 import { pick } from "./object.utils";
-import { capitalize, kebabToCamel, nonWordCharactersToCamel, snakeToCamel } from "./string.utils";
+import { capitalize, kebabToCamel, snakeToCamel } from "./string.utils";
+import { getOperationTag } from "./tag.utils";
 
 export const getSchemaRef = (schemaName: string) => `#/components/schemas/${schemaName}`;
 
@@ -141,16 +142,15 @@ export function getUniqueOperationName({
   path,
   method,
   operation,
-  openApiDoc,
+  operationsByTag,
   options,
 }: {
   path: string;
   method: string;
   operation: OpenAPIV3.OperationObject;
-  openApiDoc: OpenAPIV3.Document;
+  operationsByTag: Record<string, OpenAPIV3.OperationObject[]>;
   options: GenerateOptions;
 }) {
-  const operationsByTag = getOperationsByTag(openApiDoc, options);
   const tag = options.splitByTags ? getOperationTag(operation, options) : options.defaultTag;
   const operationName = getOperationName({ path, method, operation, options });
   const operationsWithName = operationsByTag[tag].filter(
@@ -163,31 +163,9 @@ export function getUniqueOperationName({
   return getOperationName({ path, method, operation, options, keepOperationPrefixWithoutEnding: true });
 }
 
-function getOperationsByTag(openApiDoc: OpenAPIV3.Document, options: GenerateOptions) {
-  const operationsByTag: Record<string, OpenAPIV3.OperationObject[]> = {};
-  for (const path in openApiDoc.paths) {
-    const pathItemObj = openApiDoc.paths[path] as OpenAPIV3.PathItemObject;
-    const pathItem = pick(pathItemObj, ALLOWED_METHODS);
-
-    for (const method in pathItem) {
-      const operation = pathItem[method as keyof typeof pathItem] as OpenAPIV3.OperationObject | undefined;
-      if (!operation || (operation.deprecated && !options?.withDeprecatedEndpoints)) {
-        continue;
-      }
-
-      const tag = options.splitByTags ? getOperationTag(operation, options) : options.defaultTag;
-      if (!operationsByTag[tag]) {
-        operationsByTag[tag] = [];
-      }
-      operationsByTag[tag].push(operation);
-    }
-  }
-  return operationsByTag;
-}
-
-export function isUniqueOperationNameWithoutSplitByTags(
-  operationName: string,
+export function getUniqueOperationNamesWithoutSplitByTags(
   openApiDoc: OpenAPIV3.Document,
+  operationsByTag: Record<string, OpenAPIV3.OperationObject[]>,
   options: GenerateOptions,
 ) {
   const operationNames: string[] = [];
@@ -201,20 +179,11 @@ export function isUniqueOperationNameWithoutSplitByTags(
         continue;
       }
 
-      const operationName = getUniqueOperationName({ path, method, operation, openApiDoc, options });
+      const operationName = getUniqueOperationName({ path, method, operation, operationsByTag, options });
       operationNames.push(operationName);
     }
   }
-  return operationNames.filter((name) => name === operationName).length <= 1;
-}
-
-export function formatTag(tag: string) {
-  return nonWordCharactersToCamel(tag);
-}
-
-export function getOperationTag(operation: OpenAPIV3.OperationObject, options: GenerateOptions) {
-  const tag = operation.tags?.[0];
-  return formatTag(tag ?? options.defaultTag);
+  return operationNames;
 }
 
 const PATH_PARAM_WITH_BRACKETS_REGEX = /({\w+})/g;

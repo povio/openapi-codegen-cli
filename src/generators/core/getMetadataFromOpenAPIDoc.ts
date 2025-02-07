@@ -6,27 +6,22 @@ import { GenerateOptions } from "../types/options";
 import { getQueryName } from "../utils/generate/generate.query.utils";
 import { getNamespaceName, getTagFileName } from "../utils/generate/generate.utils";
 import { invalidVariableNameCharactersToCamel } from "../utils/js.utils";
-import { formatTag, isMediaTypeAllowed, isParamMediaTypeAllowed } from "../utils/openapi.utils";
+import { isMediaTypeAllowed, isParamMediaTypeAllowed } from "../utils/openapi.utils";
 import { isMutation, isQuery } from "../utils/queries.utils";
+import { formatTag } from "../utils/tag.utils";
 import { getSchemaTsMetaType, getTsTypeBase } from "../utils/ts.utils";
 import { getDataFromOpenAPIDoc } from "./getDataFromOpenAPIDoc";
 import { SchemaResolver } from "./SchemaResolver.class";
 
-export async function getMetadataFromOpenAPIDoc({
-  openApiDoc,
-  options,
-}: {
-  openApiDoc: OpenAPIV3.Document;
-  options: GenerateOptions;
-}) {
-  const { resolver, data } = await getDataFromOpenAPIDoc({ openApiDoc, options });
+export async function getMetadataFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, options: GenerateOptions) {
+  const { resolver, data } = await getDataFromOpenAPIDoc(openApiDoc, options);
 
   const models: ModelMetadata[] = [];
   const queries: QueryMetadata[] = [];
 
   data.forEach(({ endpoints, zodSchemas }, dataTag) => {
     const excludedTagIndex = options.excludeTags?.findIndex(
-      (excludeTag) => excludeTag.toLocaleLowerCase() === dataTag.toLocaleLowerCase(),
+      (excludeTag) => excludeTag.toLowerCase() === dataTag.toLowerCase(),
     );
     const isExcludedTag = excludedTagIndex !== -1;
     if (isExcludedTag) {
@@ -37,11 +32,11 @@ export async function getMetadataFromOpenAPIDoc({
       const ref = resolver.getRefByZodSchemaName(zodSchemaName);
       const schema = ref ? resolver.getSchemaByRef(ref) : resolver.getSchemaByCompositeZodSchemaName(zodSchemaName);
 
-      const tsTypeInfo = getTsTypeBase({ zodSchemaName, schema, resolver, options });
+      const tsTypeInfo = getTsTypeBase({ zodSchemaName, schema, resolver });
 
       let tsMetaType: TsMetaType | undefined;
       if (schema) {
-        tsMetaType = getSchemaTsMetaType({ schema, parentTypes: [tsTypeInfo], resolver, options });
+        tsMetaType = getSchemaTsMetaType({ schema, parentTypes: [tsTypeInfo], resolver });
       }
 
       models.push({ ...tsTypeInfo, metaType: "primitive", ...tsMetaType });
@@ -57,8 +52,8 @@ export async function getMetadataFromOpenAPIDoc({
         namespace: options.includeNamespaces ? getNamespaceName({ type: generateType, tag, options }) : undefined,
         isQuery: isQuery(endpoint),
         isMutation: isMutation(endpoint),
-        params: getQueryMetadataParams({ resolver, endpoint, options }),
-        response: getQueryMetadataResponse({ resolver, endpoint, options }),
+        params: getQueryMetadataParams({ resolver, endpoint }),
+        response: getQueryMetadataResponse({ resolver, endpoint }),
       });
     });
   });
@@ -71,11 +66,9 @@ export async function getMetadataFromOpenAPIDoc({
 function getQueryMetadataParams({
   resolver,
   endpoint,
-  options,
 }: {
   resolver: SchemaResolver;
   endpoint: Endpoint;
-  options: GenerateOptions;
 }): QueryMetadata["params"] {
   return endpoint.parameters
     .map((param) => {
@@ -90,11 +83,11 @@ function getQueryMetadataParams({
         }
       }
 
-      const tsTypeInfo = getTsTypeBase({ zodSchemaName: param.zodSchema, schema, resolver, options });
+      const tsTypeInfo = getTsTypeBase({ zodSchemaName: param.zodSchema, schema, resolver });
 
       let tsMetaType: TsMetaType | undefined;
       if (schema) {
-        tsMetaType = getSchemaTsMetaType({ schema, parentTypes: [tsTypeInfo], resolver, options });
+        tsMetaType = getSchemaTsMetaType({ schema, parentTypes: [tsTypeInfo], resolver });
       }
 
       return {
@@ -118,11 +111,9 @@ function getQueryMetadataParams({
 function getQueryMetadataResponse({
   resolver,
   endpoint,
-  options,
 }: {
   resolver: SchemaResolver;
   endpoint: Endpoint;
-  options: GenerateOptions;
 }): QueryMetadata["response"] {
   let schema: OpenAPIV3.SchemaObject | undefined;
   const matchingMediaType = Object.keys(endpoint.responseObject?.content ?? {}).find(isMediaTypeAllowed);
@@ -130,11 +121,11 @@ function getQueryMetadataResponse({
     schema = resolver.resolveObject(endpoint.responseObject?.content?.[matchingMediaType]?.schema);
   }
 
-  const tsTypeInfo = getTsTypeBase({ zodSchemaName: endpoint.response, schema, resolver, options });
+  const tsTypeInfo = getTsTypeBase({ zodSchemaName: endpoint.response, schema, resolver });
 
   let tsMetaType: TsMetaType | undefined;
   if (schema) {
-    tsMetaType = getSchemaTsMetaType({ schema, parentTypes: [tsTypeInfo], resolver, options });
+    tsMetaType = getSchemaTsMetaType({ schema, parentTypes: [tsTypeInfo], resolver });
   }
 
   return { ...tsTypeInfo, metaType: "primitive", ...tsMetaType };

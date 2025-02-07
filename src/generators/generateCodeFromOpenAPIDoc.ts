@@ -10,29 +10,20 @@ import { GenerateOptions } from "./types/options";
 import { writeTsFileSync } from "./utils/file.utils";
 import { getTagFileName } from "./utils/generate/generate.utils";
 
-export function generateCodeFromOpenAPIDoc({
-  openApiDoc,
-  options: cliOptions,
-}: {
-  openApiDoc: OpenAPIV3.Document;
-  options?: Partial<GenerateOptions>;
-}) {
+export function generateCodeFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, cliOptions?: Partial<GenerateOptions>) {
   const options = { ...DEFAULT_GENERATE_OPTIONS, ...cliOptions } as GenerateOptions;
 
-  const { resolver, data } = getDataFromOpenAPIDoc({ openApiDoc, options });
+  const { resolver, data } = getDataFromOpenAPIDoc(openApiDoc, options);
 
   data.forEach((_, tag) => {
-    const excludedTagIndex = options.excludeTags?.findIndex(
-      (excludeTag) => excludeTag.toLocaleLowerCase() === tag.toLocaleLowerCase(),
-    );
-    const isExcludedTag = excludedTagIndex !== -1;
-    if (isExcludedTag) {
+    const excludedTag = options.excludeTags.find((excludeTag) => excludeTag.toLowerCase() === tag.toLowerCase());
+    if (excludedTag) {
       return;
     }
 
-    generateCodeByType({ resolver, data, type: GenerateType.Models, tag, options });
-    generateCodeByType({ resolver, data, type: GenerateType.Endpoints, tag, options });
-    generateCodeByType({ resolver, data, type: GenerateType.Queries, tag, options });
+    generateCodeByType({ resolver, data, type: GenerateType.Models, tag });
+    generateCodeByType({ resolver, data, type: GenerateType.Endpoints, tag });
+    generateCodeByType({ resolver, data, type: GenerateType.Queries, tag });
   });
 }
 
@@ -41,32 +32,30 @@ function generateCodeByType({
   data,
   type,
   tag,
-  options,
 }: {
   resolver: SchemaResolver;
   data: GenerateData;
   type: GenerateType;
   tag: string;
-  options: GenerateOptions;
 }) {
   let code: string | undefined;
 
   switch (type) {
     case GenerateType.Models:
-      code = generateModels({ resolver, data, tag, options });
+      code = generateModels({ resolver, data, tag });
       break;
     case GenerateType.Endpoints:
-      code = generateEndpoints({ resolver, data, tag, options });
+      code = generateEndpoints({ resolver, data, tag });
       break;
     case GenerateType.Queries:
-      code = generateQueries({ resolver, data, tag, options });
+      code = generateQueries({ resolver, data, tag });
       break;
   }
 
   if (code) {
     writeTsFileSync({
-      output: options.output,
-      fileName: getTagFileName({ tag, type, options }),
+      output: resolver.options.output,
+      fileName: getTagFileName({ tag, type, options: resolver.options }),
       data: code,
     });
   }

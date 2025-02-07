@@ -1,50 +1,82 @@
 import { OpenAPIV3 } from "openapi-types";
-import { ALLOWED_METHODS, COMPOSITE_KEYWORDS } from "../const/openapi.const";
+import { chk } from "src/helpers/chalk.helper";
+import { ALLOWED_METHODS } from "../const/openapi.const";
 import { GenerateOptions } from "../types/options";
+import { ValidationError } from "../types/validation";
+import { getUniqueArray } from "../utils/array.utils";
 import { pick } from "../utils/object.utils";
 import {
   autocorrectRef,
-  formatTag,
-  getOperationTag,
   getSchemaNameByRef,
   getSchemaRef,
+  getUniqueOperationName,
+  getUniqueOperationNamesWithoutSplitByTags,
   isMediaTypeAllowed,
   isParamMediaTypeAllowed,
   isReferenceObject,
 } from "../utils/openapi.utils";
-import { getZodSchemaName } from "../utils/zod-schema.utils";
-import { getOpenAPISchemaDependencyGraph } from "./openapi/getOpenAPISchemaDependencyGraph";
+import { snakeToCamel } from "../utils/string.utils";
+import { formatTag, getOperationsByTag, getOperationTag } from "../utils/tag.utils";
+import {
+  getBodyZodSchemaName,
+  getResponseZodSchemaName,
+  getZodSchemaName,
+  getZodSchemaOperationName,
+} from "../utils/zod-schema.utils";
+import { DependencyGraph, getOpenAPISchemaDependencyGraph } from "./openapi/getOpenAPISchemaDependencyGraph";
+import { getDeepSchemaRefObjs, getSchemaRefObjs } from "./openapi/getSchemaRefObjs";
 import { ZodSchema } from "./zod/ZodSchema.class";
+import {
+  resolveEnumZodSchemaNames,
+  resolveEnumZodSchemaTags,
+  updateEnumZodSchemaData,
+} from "./zod/updateEnumZodSchemaData";
 
-type SchemaData = {
+interface SchemaData {
   ref: string;
   name: string;
   zodSchemaName: string;
   tags: string[];
-};
+}
 
-type ZodSchemaData = {
+interface ZodSchemaData {
   zodSchemaName: string;
   code: string;
   tags: string[];
-};
+}
 
-type CompositeZodSchemaData = {
+interface CompositeZodSchemaData {
   code: string;
   zodSchemas: {
     zodSchemaName: string;
     zodSchema: ZodSchema;
     schema?: OpenAPIV3.SchemaObject;
   }[];
-};
+}
+
+export interface EnumZodSchemaData {
+  code: string;
+  zodSchemaName?: string;
+  tag?: string;
+  meta: {
+    zodSchemaNameSegments: string[][];
+    tags: string[];
+    schemaRefs: string[];
+  };
+}
 
 export class SchemaResolver {
-  private schemaData: SchemaData[] = [];
-  private zodSchemaData: ZodSchemaData[] = [];
-  private compositeZodSchemaData: CompositeZodSchemaData[] = [];
+  private readonly schemaData: SchemaData[] = [];
+  private readonly zodSchemaData: ZodSchemaData[] = [];
+  private readonly compositeZodSchemaData: CompositeZodSchemaData[] = [];
+  readonly enumZodSchemaData: EnumZodSchemaData[] = [];
 
-  readonly dependencyGraph: ReturnType<typeof getOpenAPISchemaDependencyGraph>;
-  readonly validationErrorMessages: string[] = [];
+  readonly dependencyGraph: DependencyGraph;
+
+  readonly operationsByTag: Record<string, OpenAPIV3.OperationObject[]> = {};
+  readonly operationNames: string[] = [];
+
+  readonly validationErrors: ValidationError[] = [];
 
   private get docSchemas() {
     return this.openApiDoc.components?.schemas ?? {};
@@ -55,21 +87,32 @@ export class SchemaResolver {
   }
 
   constructor(
-    private openApiDoc: OpenAPIV3.Document,
-    private options: GenerateOptions,
+    public readonly openApiDoc: OpenAPIV3.Document,
+    public readonly options: GenerateOptions,
   ) {
     this.dependencyGraph = getOpenAPISchemaDependencyGraph(this.schemaRefs, this.getSchemaByRef.bind(this));
+    this.operationsByTag = getOperationsByTag(openApiDoc, options);
+    this.operationNames = getUniqueOperationNamesWithoutSplitByTags(openApiDoc, this.operationsByTag, options);
 
-    this.intializeSchemaInfo();
-    this.initializeSchemaTags();
+    this.initialize();
   }
 
   getSchemaByRef(ref: string) {
     return this.docSchemas[getSchemaNameByRef(ref)] as OpenAPIV3.SchemaObject;
   }
 
+  getSchemaDataByRef(ref: string) {
+    return this.schemaData.find((data) => data.ref === ref);
+  }
+
   getZodSchemaNameByRef(ref: string) {
-    return this.schemaData.find((data) => data.ref === autocorrectRef(ref))!.zodSchemaName;
+    const zodSchemaName =
+      this.getSchemaDataByRef(autocorrectRef(ref))?.zodSchemaName ??
+      this.enumZodSchemaData.find((data) => data.zodSchemaName === ref)?.zodSchemaName;
+    if (!zodSchemaName) {
+      throw new Error(`Zod schema not found for ref: ${ref}`);
+    }
+    return zodSchemaName;
   }
 
   getRefByZodSchemaName(zodSchemaName: string) {
@@ -77,15 +120,20 @@ export class SchemaResolver {
   }
 
   getTagByZodSchemaName(zodSchemaName: string) {
-    let tag: string | undefined;
-
-    if (this.options.splitByTags) {
-      const schemaRef = this.getRefByZodSchemaName(zodSchemaName);
-      const schemaTags = this.schemaData.find((data) => data.ref === schemaRef)?.tags ?? [];
-      const zodSchemaTags = this.zodSchemaData.find((data) => data.zodSchemaName === zodSchemaName)?.tags ?? [];
-      const tags = new Set([...schemaTags, ...zodSchemaTags]);
-      tag = tags.size === 1 ? tags.values().next().value : this.options.defaultTag;
+    if (!this.options.splitByTags) {
+      return this.options.defaultTag;
     }
+
+    const enumZodSchema = this.enumZodSchemaData.find((data) => data.zodSchemaName === zodSchemaName);
+    if (enumZodSchema) {
+      return formatTag(enumZodSchema.tag ?? this.options.defaultTag);
+    }
+
+    const schemaRef = this.getRefByZodSchemaName(zodSchemaName);
+    const schemaTags = schemaRef ? this.getSchemaDataByRef(schemaRef)?.tags ?? [] : [];
+    const zodSchemaTags = this.zodSchemaData.find((data) => data.zodSchemaName === zodSchemaName)?.tags ?? [];
+    const tags = getUniqueArray(schemaTags, zodSchemaTags);
+    const tag = tags.length === 1 ? tags[0] : this.options.defaultTag;
 
     return formatTag(tag ?? this.options.defaultTag);
   }
@@ -138,8 +186,28 @@ export class SchemaResolver {
       ?.zodSchemas.find((schema) => schema.zodSchemaName === compositeZodSchemaName)?.schema;
   }
 
+  getEnumZodSchemaDataByCode(code: string) {
+    return this.enumZodSchemaData.find((data) => data.code === code);
+  }
+
+  getEnumZodSchemaNamesReferencedBySchemaRef(schemaRef: string) {
+    return this.enumZodSchemaData.reduce((acc, { zodSchemaName, meta }) => {
+      if (zodSchemaName && meta.schemaRefs.includes(schemaRef)) {
+        acc.push(zodSchemaName);
+      }
+      return acc;
+    }, [] as string[]);
+  }
+
   getZodSchemas() {
     return this.zodSchemaData.reduce((acc, { zodSchemaName, code }) => ({ ...acc, [zodSchemaName]: code }), {});
+  }
+
+  getEnumZodSchemas() {
+    return this.enumZodSchemaData.reduce(
+      (acc, { zodSchemaName, code }) => (zodSchemaName ? { ...acc, [zodSchemaName]: code } : acc),
+      {},
+    );
   }
 
   resolveObject<T>(obj: OpenAPIV3.ReferenceObject | T): T {
@@ -150,16 +218,14 @@ export class SchemaResolver {
     return this.dependencyGraph.deepDependencyGraph[ref]?.has(ref);
   }
 
-  private intializeSchemaInfo() {
+  private initialize() {
     this.schemaRefs.forEach((ref) => {
       const correctRef = autocorrectRef(ref);
       const name = getSchemaNameByRef(correctRef);
       const zodSchemaName = getZodSchemaName(name, this.options.schemaSuffix);
       this.schemaData.push({ ref: correctRef, name, zodSchemaName, tags: [] });
     });
-  }
 
-  private initializeSchemaTags() {
     for (const path in this.openApiDoc.paths) {
       const pathItemObj = this.openApiDoc.paths[path] as OpenAPIV3.PathItemObject;
 
@@ -171,109 +237,108 @@ export class SchemaResolver {
           continue;
         }
 
+        const tag = getOperationTag(operation, this.options);
+        const operationName = getUniqueOperationName({
+          path,
+          method,
+          operation,
+          operationsByTag: this.operationsByTag,
+          options: this.options,
+        });
+        const isUniqueOperationName = this.operationNames.filter((name) => name === operationName).length <= 1;
+        const zodSchemaOperationName = snakeToCamel(
+          getZodSchemaOperationName(operationName, isUniqueOperationName, tag),
+        );
         const schemaRefObjs = [] as OpenAPIV3.ReferenceObject[];
 
-        // Collect all referenced schemas in parameter objects
         operation.parameters?.map((parameter) => {
           const parameterObject = parameter as OpenAPIV3.ParameterObject;
-          schemaRefObjs.push(
-            ...this.getOperationSchemaRefs(
-              parameterObject.schema,
-              `${operation.operationId ?? path} parameter ${parameterObject.name}`,
-            ),
-          );
+          const parameterSchema = parameterObject.schema;
+          const schemaInfo = `operation ${chk.gray(operation.operationId ?? path)} parameter ${chk.gray(parameterObject.name)}`;
+
+          schemaRefObjs.push(...getSchemaRefObjs(this, parameterSchema, schemaInfo));
+
+          if (this.options.extractEnums) {
+            updateEnumZodSchemaData({
+              resolver: this,
+              schema: parameterSchema,
+              schemaInfo,
+              tags: [tag],
+              nameSegments: [zodSchemaOperationName, parameterObject.name],
+              includeSelf: true,
+            });
+          }
         });
 
-        // Collect all referenced schemas in requestBody objects
         if (operation.requestBody) {
           const requestBodyObj = this.resolveObject(operation.requestBody);
           const mediaTypes = Object.keys(requestBodyObj.content ?? {});
           const matchingMediaType = mediaTypes.find(isParamMediaTypeAllowed);
           if (matchingMediaType) {
-            schemaRefObjs.push(
-              ...this.getOperationSchemaRefs(
-                requestBodyObj.content?.[matchingMediaType]?.schema,
-                `${operation.operationId} request body`,
-              ),
-            );
+            const matchingMediaSchema = requestBodyObj.content?.[matchingMediaType]?.schema;
+            const schemaInfo = `operation ${chk.gray(operation.operationId)} request body`;
+
+            schemaRefObjs.push(...getSchemaRefObjs(this, matchingMediaSchema, schemaInfo));
+
+            if (this.options.extractEnums) {
+              updateEnumZodSchemaData({
+                resolver: this,
+                schema: matchingMediaSchema,
+                schemaInfo,
+                tags: [tag],
+                nameSegments: [getBodyZodSchemaName(zodSchemaOperationName)],
+              });
+            }
           }
         }
 
-        // Collect all referenced schemas in main response objects
         for (const statusCode in operation.responses) {
           const responseObj = <OpenAPIV3.ResponseObject>this.resolveObject(operation.responses[statusCode]);
           const mediaTypes = Object.keys(responseObj.content ?? {});
           const matchingMediaType = mediaTypes.find(isMediaTypeAllowed);
           if (matchingMediaType) {
-            schemaRefObjs.push(
-              ...this.getOperationSchemaRefs(
-                responseObj.content?.[matchingMediaType]?.schema,
-                `${operation.operationId} response body`,
-              ),
-            );
+            const matchingMediaSchema = responseObj.content?.[matchingMediaType]?.schema;
+            const schemaInfo = `operation ${chk.gray(operation.operationId)} response body`;
+
+            schemaRefObjs.push(...getSchemaRefObjs(this, matchingMediaSchema, schemaInfo));
+
+            if (this.options.extractEnums) {
+              updateEnumZodSchemaData({
+                resolver: this,
+                schema: matchingMediaSchema,
+                schemaInfo,
+                tags: [tag],
+                nameSegments: [getResponseZodSchemaName({ statusCode, operationName, isUniqueOperationName, tag })],
+              });
+            }
           }
         }
 
-        // Get deep references for all schema references
-        const allRefs = schemaRefObjs.map((schemaRef) => autocorrectRef(schemaRef.$ref));
-        const deepRefs = allRefs.reduce((acc, schemaRef) => {
-          const refs = this.dependencyGraph.deepDependencyGraph[schemaRef];
-          return [...acc, schemaRef, ...Array.from(refs ?? [])];
-        }, [] as string[]);
-
-        // Assign tags to the schema references
-        const tag = getOperationTag(operation, this.options);
+        const deepRefs = getDeepSchemaRefObjs(this, schemaRefObjs);
         deepRefs.forEach((schemaRef) => {
-          const schemaData = this.schemaData.find((data) => data.ref === schemaRef);
+          const schemaData = this.getSchemaDataByRef(schemaRef);
           if (schemaData) {
             schemaData.tags.push(tag);
           }
         });
       }
     }
-  }
 
-  private getOperationSchemaRefs(
-    schema: OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject | undefined,
-    schemaInfo: string,
-  ): OpenAPIV3.ReferenceObject[] {
-    if (!schema) {
-      return [];
+    if (this.options.extractEnums) {
+      this.schemaRefs.forEach((ref) => {
+        const schemaRef = autocorrectRef(ref);
+
+        updateEnumZodSchemaData({
+          resolver: this,
+          schema: this.getSchemaByRef(schemaRef),
+          schemaRef,
+          tags: this.getSchemaDataByRef(schemaRef)?.tags ?? [],
+          nameSegments: [getSchemaNameByRef(schemaRef)],
+        });
+      });
+
+      resolveEnumZodSchemaNames(this);
+      resolveEnumZodSchemaTags(this);
     }
-
-    const schemaRefObjs: OpenAPIV3.ReferenceObject[] = [];
-    const isReferenceSchema = isReferenceObject(schema);
-
-    if (isReferenceSchema) {
-      schemaRefObjs.push(schema);
-    }
-
-    const schemaObj = schema as OpenAPIV3.SchemaObject;
-    if (COMPOSITE_KEYWORDS.some((prop) => prop in schemaObj && schemaObj[prop])) {
-      const schemaObjs = schemaObj.allOf ?? schemaObj.anyOf ?? schemaObj.oneOf ?? [];
-      schemaObjs.forEach((schema) => schemaRefObjs.push(...this.getOperationSchemaRefs(schema, schemaInfo)));
-
-      if (isReferenceSchema) {
-        this.validationErrorMessages.push(`INVALID SCHEMA: ${schemaInfo} has both reference and composite keyword`);
-      }
-    }
-    if (schemaObj.properties) {
-      Object.values(schemaObj.properties).forEach((schema) =>
-        schemaRefObjs.push(...this.getOperationSchemaRefs(schema, schemaInfo)),
-      );
-
-      if (isReferenceSchema) {
-        this.validationErrorMessages.push(`INVALID SCHEMA: ${schemaInfo} has both reference and properties`);
-      }
-    }
-    if (schemaObj.type === "array") {
-      schemaRefObjs.push(...this.getOperationSchemaRefs((schema as OpenAPIV3.ArraySchemaObject).items, schemaInfo));
-
-      if (isReferenceSchema) {
-        this.validationErrorMessages.push(`INVALID SCHEMA: ${schemaInfo} is both reference and array schema`);
-      }
-    }
-
-    return schemaRefObjs;
   }
 }

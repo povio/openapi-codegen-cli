@@ -20,18 +20,29 @@ yarn openapi-codegen generate --input http://localhost:3001/docs-json
 
 ## Options
 
-### Generate command
+### Generate command (generates Zod schemas, API definitions and React queries)
 
 ```sh
-  --input <path>                      Path/url to OpenAPI/Swagger document as json/yaml
-  --output <path>                     Output path (default: 'output')
+  --input                             Path/url to OpenAPI/Swagger document as json/yaml
+  --output                            Output path (default: 'output')
   --includeNamespaces                 Include namespaces inside generated files (default: true)
   --splitByTags                       Split output into directories based on tags in OpenAPI operations (default: true)
   --defaultTag                        Default tag name for code shared accross multiple tags (default: 'Common')
   --excludeTags                       Comma separated list of tags excluded from the output
+  --extractEnums                      Enums are extracted as seperate Zod schemas (default: true)
   --removeOperationPrefixEndingWith   Removes prefix that ends with value from operation names (default: 'Controller_')
   --importPath                        Import path (default: 'ts', possible: 'ts' | 'relative' | 'absolute')
   --prettier                          Run prettier command on output after code generation (default: true)
+  --verbose                           Show log messages during execution
+```
+
+### Check command (checks if OpenAPI spec is compliant)
+
+```sh
+  --input                             Path/url to OpenAPI/Swagger document as json/yaml
+  --splitByTags                       Split output into directories based on tags in OpenAPI operations (default: true)
+  --defaultTag                        Default tag name for code shared accross multiple tags (default: 'Common')
+  --excludeTags                       Comma separated list of tags excluded from the output
   --verbose                           Show log messages during execution
 ```
 

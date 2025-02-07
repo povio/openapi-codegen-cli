@@ -13,7 +13,12 @@ const generateOptions = {
 
 const makeSchema = (schema: OpenAPIV3.SchemaObject) => schema;
 const getZodSchemaString = (schema: OpenAPIV3.SchemaObject, meta?: ZodSchemaMetaData | undefined) =>
-  getZodSchema({ schema: makeSchema(schema), meta, tag: "", options: {} })
+  getZodSchema({
+    schema: makeSchema(schema),
+    meta,
+    tag: "",
+    resolver: new SchemaResolver({} as OpenAPIV3.Document, generateOptions),
+  })
     .getCodeString()
     .trim();
 
@@ -139,7 +144,7 @@ describe("getZodSchema", () => {
         discriminator: { propertyName: "type" },
       }),
     ).toStrictEqual(
-      `z.discriminatedUnion("type", [z.object({ type: z.literal("a"), a: z.string() }).passthrough(), z.object({ type: z.literal("b"), b: z.string() }).passthrough()])`,
+      `z.discriminatedUnion("type", [z.object({ type: z.enum(["a"]), a: z.string() }).passthrough(), z.object({ type: z.enum(["b"]), b: z.string() }).passthrough()])`,
     );
 
     // returns z.discriminatedUnion, when allOf has single object
@@ -187,7 +192,7 @@ describe("getZodSchema", () => {
         discriminator: { propertyName: "type" },
       }),
     ).toStrictEqual(
-      `z.discriminatedUnion("type", [z.object({ type: z.literal("a"), a: z.string() }).passthrough(), z.object({ type: z.literal("b"), b: z.string() }).passthrough()])`,
+      `z.discriminatedUnion("type", [z.object({ type: z.enum(["a"]), a: z.string() }).passthrough(), z.object({ type: z.enum(["b"]), b: z.string() }).passthrough()])`,
     );
 
     // returns z.union, when allOf has multiple objects
@@ -261,7 +266,7 @@ describe("getZodSchema", () => {
         discriminator: { propertyName: "type" },
       }),
     ).toStrictEqual(
-      'z.union([z.object({ type: z.literal("a"), a: z.string() }).passthrough().merge(z.object({ type: z.literal("c"), c: z.string() }).passthrough()), z.object({ type: z.literal("b"), b: z.string() }).passthrough().merge(z.object({ type: z.literal("d"), d: z.string() }).passthrough())])',
+      'z.union([z.object({ type: z.enum(["a"]), a: z.string() }).passthrough().merge(z.object({ type: z.enum(["c"]), c: z.string() }).passthrough()), z.object({ type: z.enum(["b"]), b: z.string() }).passthrough().merge(z.object({ type: z.enum(["d"]), d: z.string() }).passthrough())])',
     );
 
     expect(
@@ -289,7 +294,7 @@ describe("getZodSchema", () => {
       "z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(null)])",
     );
     expect(getZodSchemaString({ type: "number", enum: [1] })).toStrictEqual("z.literal(1)");
-    expect(getZodSchemaString({ type: "string", enum: ["aString"] })).toStrictEqual('z.literal("aString")');
+    expect(getZodSchemaString({ type: "string", enum: ["aString"] })).toStrictEqual('z.enum(["aString"])');
   });
 
   test("getSchemaWithChainableAsZodString", () => {
@@ -320,7 +325,6 @@ describe("getZodSchema", () => {
         }),
         resolver: new SchemaResolver({ components: { schemas: {} } } as OpenAPIV3.Document, generateOptions),
         tag: "",
-        options: {},
       }),
     ).toThrowErrorMatchingInlineSnapshot("[Error: Schema Example not found]");
   });
@@ -356,7 +360,6 @@ describe("getZodSchema", () => {
       }),
       resolver,
       tag: "",
-      options: {},
     });
     expect(code.getCodeString()).toStrictEqual(
       "z.object({ str: z.string(), reference: Example, inline: z.object({ nested_prop: z.boolean() }).partial().passthrough() }).partial().passthrough()",
@@ -410,7 +413,6 @@ describe("getZodSchema", () => {
       }),
       resolver,
       tag: "",
-      options: {},
     });
     expect(code.getCodeString()).toStrictEqual(
       "z.object({ str: z.string(), reference: ObjectWithArrayOfRef, inline: z.object({ nested_prop: z.boolean() }).partial().passthrough(), another: WithNested, basic: Basic, differentPropSameRef: Basic }).partial().passthrough()",

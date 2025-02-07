@@ -18,9 +18,12 @@ export type GenerateParams = {
   | "defaultTag"
   | "removeOperationPrefixEndingWith"
   | "importPath"
+  | "extractEnums"
 >;
 
 export async function generate({ input, excludeTags, prettier, verbose, ...params }: GenerateParams) {
+  const start = Date.now();
+
   if (verbose) {
     logInfo("Parsing OpenAPI spec...");
   }
@@ -32,13 +35,10 @@ export async function generate({ input, excludeTags, prettier, verbose, ...param
   if (verbose) {
     logInfo("Generating code...");
   }
-  generateCodeFromOpenAPIDoc({
-    openApiDoc,
-    options: {
-      input,
-      excludeTags: excludeTags.split(","),
-      ...params,
-    },
+  generateCodeFromOpenAPIDoc(openApiDoc, {
+    input,
+    excludeTags: excludeTags.split(","),
+    ...params,
   });
   if (verbose) {
     logSuccess("Generation finished.");
@@ -46,6 +46,10 @@ export async function generate({ input, excludeTags, prettier, verbose, ...param
 
   if (prettier) {
     execPrettier({ output: params.output, verbose });
+  }
+
+  if (verbose) {
+    logInfo(`TIME: ${Date.now() - start}ms`);
   }
 }
 

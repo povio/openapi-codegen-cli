@@ -6,8 +6,9 @@ import { DEFAULT_HEADERS } from "../../const/endpoints.const";
 import { Endpoint } from "../../types/endpoint";
 import { invalidVariableNameCharactersToCamel, isValidPropertyName } from "../js.utils";
 import { isSchemaObject } from "../openapi-schema.utils";
-import { formatTag, isPrimitiveType } from "../openapi.utils";
+import { isPrimitiveType } from "../openapi.utils";
 import { decapitalize, snakeToCamel } from "../string.utils";
+import { formatTag } from "../tag.utils";
 import { primitiveTypeToTsType } from "../ts.utils";
 import { isNamedZodSchema } from "../zod-schema.utils";
 import { getNamespaceName } from "./generate.utils";
@@ -29,20 +30,12 @@ export function getEndpointTag(endpoint: Endpoint, options: GenerateOptions) {
   return formatTag(tag ?? options.defaultTag);
 }
 
-export function mapEndpointParamsToFunctionParams({
-  resolver,
-  endpoint,
-  options,
-}: {
-  resolver: SchemaResolver;
-  endpoint: Endpoint;
-  options: GenerateOptions;
-}) {
+export function mapEndpointParamsToFunctionParams(resolver: SchemaResolver, endpoint: Endpoint) {
   return endpoint.parameters
     .map((param) => {
       let type = "string";
       if (isNamedZodSchema(param.zodSchema)) {
-        type = getImportedZodSchemaInferedTypeName({ resolver, zodSchemaName: param.zodSchema, options });
+        type = getImportedZodSchemaInferedTypeName(resolver, param.zodSchema);
       } else if (param.parameterObject?.schema && isSchemaObject(param.parameterObject.schema)) {
         const openApiSchemaType = (param.parameterObject?.schema as OpenAPIV3.SchemaObject)?.type;
         if (openApiSchemaType && isPrimitiveType(openApiSchemaType)) {

@@ -87,8 +87,7 @@ function getZodChainableStringValidations(schema: OpenAPIV3.SchemaObject) {
   if (schema.format) {
     const chain = match(schema.format)
       .with("email", () => "email()")
-      .with("hostname", () => "url()")
-      .with("uri", () => "url()")
+      .with("hostname", "uri", () => "url()")
       .with("uuid", () => "uuid()")
       .with("date-time", () => "datetime({ offset: true })")
       .otherwise(() => "");

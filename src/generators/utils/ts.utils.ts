@@ -5,7 +5,6 @@ import { SchemaResolver } from "../core/SchemaResolver.class";
 import { GenerateType } from "../types/generate";
 import { TsMetaType, TsObjectMetaType, TsProperty, TsType, TsTypeBase } from "../types/metadata";
 import { PrimitiveType } from "../types/openapi";
-import { GenerateOptions } from "../types/options";
 import { getTagFileName } from "./generate/generate.utils";
 import { getImportedZodSchemaInferedTypeName } from "./generate/generate.zod.utils";
 import { isPrimitiveType, isReferenceObject } from "./openapi.utils";
@@ -24,17 +23,15 @@ export function getTsTypeBase({
   zodSchemaName,
   schema,
   resolver,
-  options,
 }: {
   zodSchemaName?: string;
   schema?: OpenAPIV3.SchemaObject;
   resolver: SchemaResolver;
-  options: GenerateOptions;
 }): TsTypeBase {
   let type = "void";
   let tag: string | undefined;
   if (zodSchemaName && isNamedZodSchema(zodSchemaName)) {
-    type = getImportedZodSchemaInferedTypeName({ resolver, zodSchemaName, options });
+    type = getImportedZodSchemaInferedTypeName(resolver, zodSchemaName);
     tag = resolver.getTagByZodSchemaName(zodSchemaName);
   } else if (schema?.type && isPrimitiveType(schema?.type)) {
     type = primitiveTypeToTsType(schema?.type);
@@ -44,7 +41,9 @@ export function getTsTypeBase({
   return {
     type: splitType[splitType.length - 1],
     ...(splitType.length > 1 ? { namespace: splitType[0] } : {}),
-    ...(tag ? { filePath: getTagFileName({ type: GenerateType.Models, tag, includeTagDir: true, options }) } : {}),
+    ...(tag
+      ? { filePath: getTagFileName({ type: GenerateType.Models, tag, includeTagDir: true, options: resolver.options }) }
+      : {}),
   };
 }
 
@@ -53,13 +52,11 @@ export function getSchemaTsMetaType({
   isCircular,
   parentTypes,
   resolver,
-  options,
 }: {
   schema?: OpenAPIV3.SchemaObject;
   isCircular?: boolean;
   parentTypes: TsTypeBase[];
   resolver: SchemaResolver;
-  options: GenerateOptions;
 }): TsMetaType {
   if (!schema) {
     return { metaType: "primitive" };
@@ -73,7 +70,7 @@ export function getSchemaTsMetaType({
     if (compositeObjs.length > 1) {
       const metaTypes = compositeObjs.map((compositeObj) => {
         const compositeSchema = resolver.resolveObject(compositeObj);
-        return getSchemaTsMetaType({ schema: compositeSchema, parentTypes, resolver, options });
+        return getSchemaTsMetaType({ schema: compositeSchema, parentTypes, resolver });
       });
       if (metaTypes.every(({ metaType }) => metaType === "object")) {
         return {
@@ -98,14 +95,13 @@ export function getSchemaTsMetaType({
     const arrayType = getArraySchemaTsType({
       arraySchema: schema as OpenAPIV3.ArraySchemaObject,
       resolver,
-      options,
       parentTypes,
     });
     return { metaType: "array", arrayType };
   } else if ((schema.type === "object" || schema.properties) && isCircular) {
     return { metaType: "object", objectProperties: [], isCircular: true };
   } else if (schema.type === "object" || schema.properties) {
-    const objectProperties = getSchemaTsProperties({ schema, parentTypes, resolver, options });
+    const objectProperties = getSchemaTsProperties({ schema, parentTypes, resolver });
     return { metaType: "object", objectProperties };
   }
 
@@ -116,12 +112,10 @@ function getArraySchemaTsType({
   arraySchema,
   parentTypes,
   resolver,
-  options,
 }: {
   arraySchema: OpenAPIV3.ArraySchemaObject;
   parentTypes: TsTypeBase[];
   resolver: SchemaResolver;
-  options: GenerateOptions;
 }): TsType {
   let zodSchemaName: string | undefined;
   let schema: OpenAPIV3.SchemaObject | undefined;
@@ -133,14 +127,13 @@ function getArraySchemaTsType({
     schema = arraySchema.items as OpenAPIV3.SchemaObject;
   }
 
-  const tsType = getTsTypeBase({ zodSchemaName, schema, resolver, options });
+  const tsType = getTsTypeBase({ zodSchemaName, schema, resolver });
   const isCircular = getIsCircular(tsType, parentTypes);
   const tsMetaType = getSchemaTsMetaType({
     schema,
     isCircular,
     parentTypes: [...parentTypes, tsType],
     resolver,
-    options,
   });
   return { ...tsType, ...tsMetaType };
 }
@@ -149,12 +142,10 @@ function getSchemaTsProperties({
   schema,
   parentTypes,
   resolver,
-  options,
 }: {
   schema?: OpenAPIV3.SchemaObject | undefined;
   parentTypes: TsTypeBase[];
   resolver: SchemaResolver;
-  options: GenerateOptions;
 }): TsProperty[] {
   return Object.entries(schema?.properties ?? {}).map(([name, property]) => {
     const isRequired = schema?.required?.includes(name) ?? false;
@@ -162,14 +153,13 @@ function getSchemaTsProperties({
     if (isReferenceObject(property)) {
       const zodSchemaName = resolver.getZodSchemaNameByRef(property.$ref);
       const schema = resolver.getSchemaByRef(property.$ref);
-      const tsType = getTsTypeBase({ zodSchemaName, schema, resolver, options });
+      const tsType = getTsTypeBase({ zodSchemaName, schema, resolver });
       const isCircular = getIsCircular(tsType, parentTypes);
       const tsMetaType = getSchemaTsMetaType({
         schema,
         isCircular,
         parentTypes: [...parentTypes, tsType],
         resolver,
-        options,
       });
       return { name, isRequired, ...tsType, ...tsMetaType };
     } else if (property.type === "array") {
@@ -177,7 +167,6 @@ function getSchemaTsProperties({
         arraySchema: property as OpenAPIV3.ArraySchemaObject,
         parentTypes,
         resolver,
-        options,
       });
       return { name, isRequired, type: "array", metaType: "array", arrayType };
     } else if (isPrimitiveType(property.type)) {

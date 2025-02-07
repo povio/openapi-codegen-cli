@@ -10,6 +10,8 @@ export type CheckParams = {
 } & Pick<GenerateOptions, "input" | "splitByTags" | "defaultTag">;
 
 export async function check({ input, excludeTags, verbose, ...params }: CheckParams) {
+  const start = Date.now();
+
   if (verbose) {
     logInfo("Parsing OpenAPI spec...");
   }
@@ -21,14 +23,15 @@ export async function check({ input, excludeTags, verbose, ...params }: CheckPar
   if (verbose) {
     logInfo("Running check...");
   }
-  const errorMessages = checkOpenAPIDoc({
-    openApiDoc,
-    options: {
-      input,
-      excludeTags: excludeTags.split(","),
-      ...params,
-    },
+  const errorMessages = checkOpenAPIDoc(openApiDoc, {
+    input,
+    excludeTags: excludeTags.split(","),
+    ...params,
   });
+
+  if (verbose) {
+    logInfo(`TIME: ${Date.now() - start}ms`);
+  }
 
   if (errorMessages.length === 0) {
     logSuccess("Check finished.");
