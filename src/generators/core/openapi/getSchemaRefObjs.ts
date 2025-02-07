@@ -1,5 +1,6 @@
 import { OpenAPIV3 } from "openapi-types";
 import { autocorrectRef, isReferenceObject } from "src/generators/utils/openapi.utils";
+import { getInvalidSchemaError } from "src/generators/utils/validation.utils";
 import { SchemaResolver } from "../SchemaResolver.class";
 import { iterateSchema } from "./iterateSchema";
 
@@ -15,7 +16,7 @@ export function getSchemaRefObjs(
       if (data.type === "reference") {
         schemaRefObjs.push(data.schema);
       } else if (isReferenceObject(data.parentSchema)) {
-        resolver.validationErrorMessages.push(`INVALID SCHEMA: ${schemaInfo} has both reference and composite keyword`);
+        resolver.validationErrors.push(getInvalidSchemaError(schemaInfo));
       }
     },
   });

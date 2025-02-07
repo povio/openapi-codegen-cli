@@ -1,6 +1,8 @@
 import { OpenAPIV3 } from "openapi-types";
+import { chk } from "src/helpers/chalk.helper";
 import { ALLOWED_METHODS } from "../const/openapi.const";
 import { GenerateOptions } from "../types/options";
+import { ValidationError } from "../types/validation";
 import { getUniqueArray } from "../utils/array.utils";
 import { pick } from "../utils/object.utils";
 import {
@@ -68,12 +70,13 @@ export class SchemaResolver {
   private readonly zodSchemaData: ZodSchemaData[] = [];
   private readonly compositeZodSchemaData: CompositeZodSchemaData[] = [];
   readonly enumZodSchemaData: EnumZodSchemaData[] = [];
+
   readonly dependencyGraph: DependencyGraph;
 
   readonly operationsByTag: Record<string, OpenAPIV3.OperationObject[]> = {};
   readonly operationNames: string[] = [];
 
-  readonly validationErrorMessages: string[] = [];
+  readonly validationErrors: ValidationError[] = [];
 
   private get docSchemas() {
     return this.openApiDoc.components?.schemas ?? {};
@@ -251,19 +254,15 @@ export class SchemaResolver {
         operation.parameters?.map((parameter) => {
           const parameterObject = parameter as OpenAPIV3.ParameterObject;
           const parameterSchema = parameterObject.schema;
+          const schemaInfo = `operation ${chk.gray(operation.operationId ?? path)} parameter ${chk.gray(parameterObject.name)}`;
 
-          schemaRefObjs.push(
-            ...getSchemaRefObjs(
-              this,
-              parameterSchema,
-              `${operation.operationId ?? path} parameter ${parameterObject.name}`,
-            ),
-          );
+          schemaRefObjs.push(...getSchemaRefObjs(this, parameterSchema, schemaInfo));
 
           if (this.options.extractEnums) {
             updateEnumZodSchemaData({
               resolver: this,
               schema: parameterSchema,
+              schemaInfo,
               tags: [tag],
               nameSegments: [zodSchemaOperationName, parameterObject.name],
               includeSelf: true,
@@ -277,13 +276,15 @@ export class SchemaResolver {
           const matchingMediaType = mediaTypes.find(isParamMediaTypeAllowed);
           if (matchingMediaType) {
             const matchingMediaSchema = requestBodyObj.content?.[matchingMediaType]?.schema;
+            const schemaInfo = `operation ${chk.gray(operation.operationId)} request body`;
 
-            schemaRefObjs.push(...getSchemaRefObjs(this, matchingMediaSchema, `${operation.operationId} request body`));
+            schemaRefObjs.push(...getSchemaRefObjs(this, matchingMediaSchema, schemaInfo));
 
             if (this.options.extractEnums) {
               updateEnumZodSchemaData({
                 resolver: this,
                 schema: matchingMediaSchema,
+                schemaInfo,
                 tags: [tag],
                 nameSegments: [getBodyZodSchemaName(zodSchemaOperationName)],
               });
@@ -297,15 +298,15 @@ export class SchemaResolver {
           const matchingMediaType = mediaTypes.find(isMediaTypeAllowed);
           if (matchingMediaType) {
             const matchingMediaSchema = responseObj.content?.[matchingMediaType]?.schema;
+            const schemaInfo = `operation ${chk.gray(operation.operationId)} response body`;
 
-            schemaRefObjs.push(
-              ...getSchemaRefObjs(this, matchingMediaSchema, `${operation.operationId} response body`),
-            );
+            schemaRefObjs.push(...getSchemaRefObjs(this, matchingMediaSchema, schemaInfo));
 
             if (this.options.extractEnums) {
               updateEnumZodSchemaData({
                 resolver: this,
                 schema: matchingMediaSchema,
+                schemaInfo,
                 tags: [tag],
                 nameSegments: [getResponseZodSchemaName({ statusCode, operationName, isUniqueOperationName, tag })],
               });

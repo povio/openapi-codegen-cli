@@ -3,6 +3,7 @@ import { ALLOWED_METHODS } from "src/generators/const/openapi.const";
 import { VOID_SCHEMA } from "src/generators/const/zod.const";
 import { invalidVariableNameCharactersToCamel } from "src/generators/utils/js.utils";
 import { formatTag, getOperationTag } from "src/generators/utils/tag.utils";
+import { getInvalidOperationIdError, getMissingPathParameterError } from "src/generators/utils/validation.utils";
 import { getResponseZodSchemaName } from "src/generators/utils/zod-schema.utils";
 import { Endpoint, EndpointParameter } from "../../types/endpoint";
 import { pick } from "../../utils/object.utils";
@@ -23,7 +24,6 @@ import { getEndpointParameter } from "./getEndpointParameter";
 
 export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver) {
   const endpoints = [];
-  const validationErrorMessages = [];
 
   for (const path in resolver.openApiDoc.paths) {
     const pathItemObj = resolver.openApiDoc.paths[path] as OpenAPIV3.PathItemObject;
@@ -38,8 +38,8 @@ export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver) {
 
       const invalidOperationId =
         operation.operationId && operation.operationId !== invalidVariableNameCharactersToCamel(operation.operationId);
-      if (invalidOperationId) {
-        validationErrorMessages.push(`INVALID OPERATION ID: ${operation.operationId}`);
+      if (operation.operationId && invalidOperationId) {
+        resolver.validationErrors.push(getInvalidOperationIdError(operation.operationId));
       }
 
       const parameters = Object.entries({
@@ -93,9 +93,7 @@ export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver) {
         endpoint.parameters.push(pathParam);
       });
       if (missingPathParameters.length > 0) {
-        validationErrorMessages.push(
-          `MISSING PATH PARAMETERS: ${missingPathParameters.map(({ name }) => name).join(", ")} in ${path}`,
-        );
+        resolver.validationErrors.push(getMissingPathParameterError(missingPathParameters, path));
       }
 
       for (const statusCode in operation.responses) {
@@ -160,7 +158,7 @@ export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver) {
     }
   }
 
-  return { endpoints, validationErrorMessages };
+  return endpoints;
 }
 
 function getParameters(parameters: NonNullable<OpenAPIV3.PathItemObject["parameters"]>) {

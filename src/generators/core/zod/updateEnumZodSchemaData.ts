@@ -1,29 +1,30 @@
 import { OpenAPIV3 } from "openapi-types";
 import { getUniqueArray } from "src/generators/utils/array.utils";
-import { isReferenceObject } from "src/generators/utils/openapi.utils";
+import { getSchemaNameByRef, isReferenceObject } from "src/generators/utils/openapi.utils";
 import { capitalize, getMostCommonAdjacentCombinationSplit } from "src/generators/utils/string.utils";
+import { getNotAllowedInlineEnumError } from "src/generators/utils/validation.utils";
 import { getEnumZodSchemaName } from "src/generators/utils/zod-schema.utils";
+import { chk } from "src/helpers/chalk.helper";
 import { iterateSchema } from "../openapi/iterateSchema";
 import { EnumZodSchemaData, SchemaResolver } from "../SchemaResolver.class";
 import { getEnumZodSchemaCode } from "./getZodSchema";
 
 export function updateEnumZodSchemaData({
-  resolver,
   schema,
-  schemaRef,
   nameSegments = [],
-  tags,
   includeSelf,
+  ...params
 }: {
   resolver: SchemaResolver;
   schema: OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject | undefined;
   schemaRef?: string;
+  schemaInfo?: string;
   tags: string[];
   nameSegments?: string[];
   includeSelf?: boolean;
 }) {
   if (includeSelf) {
-    handleEnumZodSchemaDataUpdate({ resolver, schema, tags, nameSegments });
+    handleEnumZodSchemaDataUpdate({ schema, nameSegments, ...params });
   }
 
   iterateSchema(schema, {
@@ -36,7 +37,7 @@ export function updateEnumZodSchemaData({
       if (data.type === "property" || data.type === "additionalProperty") {
         segments.push(data.propertyName);
       }
-      handleEnumZodSchemaDataUpdate({ resolver, schema: data.schema, schemaRef, tags, nameSegments: [...segments] });
+      handleEnumZodSchemaDataUpdate({ schema: data.schema, nameSegments: [...segments], ...params });
     },
   });
 }
@@ -45,12 +46,14 @@ function handleEnumZodSchemaDataUpdate({
   resolver,
   schema,
   schemaRef,
+  schemaInfo,
   tags,
   nameSegments = [],
 }: {
   resolver: SchemaResolver;
   schema: OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject | undefined;
   schemaRef?: string;
+  schemaInfo?: string;
   tags: string[];
   nameSegments?: string[];
 }) {
@@ -70,6 +73,14 @@ function handleEnumZodSchemaDataUpdate({
       meta: { zodSchemaNameSegments: [nameSegments], tags: [...tags], schemaRefs: schemaRef ? [schemaRef] : [] },
     });
   }
+
+  resolver.validationErrors.push(
+    getNotAllowedInlineEnumError(
+      schemaRef
+        ? `schema ${chk.gray(getSchemaNameByRef(schemaRef))} property ${chk.gray(nameSegments[nameSegments.length - 1])}`
+        : schemaInfo ?? nameSegments.join("->"),
+    ),
+  );
 }
 
 export function resolveEnumZodSchemaNames(resolver: SchemaResolver) {
