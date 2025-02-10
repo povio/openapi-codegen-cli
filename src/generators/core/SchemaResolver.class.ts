@@ -1,5 +1,4 @@
 import { OpenAPIV3 } from "openapi-types";
-import { chk } from "src/helpers/chalk.helper";
 import { ALLOWED_METHODS } from "../const/openapi.const";
 import { GenerateOptions } from "../types/options";
 import { ValidationError } from "../types/validation";
@@ -254,7 +253,7 @@ export class SchemaResolver {
         operation.parameters?.map((parameter) => {
           const parameterObject = parameter as OpenAPIV3.ParameterObject;
           const parameterSchema = parameterObject.schema;
-          const schemaInfo = `operation ${chk.gray(operation.operationId ?? path)} parameter ${chk.gray(parameterObject.name)}`;
+          const schemaInfo = `operation ${operation.operationId ?? path} parameter ${parameterObject.name}`;
 
           schemaRefObjs.push(...getSchemaRefObjs(this, parameterSchema, schemaInfo));
 
@@ -276,7 +275,7 @@ export class SchemaResolver {
           const matchingMediaType = mediaTypes.find(isParamMediaTypeAllowed);
           if (matchingMediaType) {
             const matchingMediaSchema = requestBodyObj.content?.[matchingMediaType]?.schema;
-            const schemaInfo = `operation ${chk.gray(operation.operationId)} request body`;
+            const schemaInfo = `operation ${operation.operationId} request body`;
 
             schemaRefObjs.push(...getSchemaRefObjs(this, matchingMediaSchema, schemaInfo));
 
@@ -298,7 +297,7 @@ export class SchemaResolver {
           const matchingMediaType = mediaTypes.find(isMediaTypeAllowed);
           if (matchingMediaType) {
             const matchingMediaSchema = responseObj.content?.[matchingMediaType]?.schema;
-            const schemaInfo = `operation ${chk.gray(operation.operationId)} response body`;
+            const schemaInfo = `operation ${operation.operationId} response body`;
 
             schemaRefObjs.push(...getSchemaRefObjs(this, matchingMediaSchema, schemaInfo));
 

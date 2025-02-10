@@ -4,7 +4,6 @@ import { getSchemaNameByRef, isReferenceObject } from "src/generators/utils/open
 import { capitalize, getMostCommonAdjacentCombinationSplit } from "src/generators/utils/string.utils";
 import { getNotAllowedInlineEnumError } from "src/generators/utils/validation.utils";
 import { getEnumZodSchemaName } from "src/generators/utils/zod-schema.utils";
-import { chk } from "src/helpers/chalk.helper";
 import { iterateSchema } from "../openapi/iterateSchema";
 import { EnumZodSchemaData, SchemaResolver } from "../SchemaResolver.class";
 import { getEnumZodSchemaCode } from "./getZodSchema";
@@ -77,7 +76,7 @@ function handleEnumZodSchemaDataUpdate({
   resolver.validationErrors.push(
     getNotAllowedInlineEnumError(
       schemaRef
-        ? `schema ${chk.gray(getSchemaNameByRef(schemaRef))} property ${chk.gray(nameSegments[nameSegments.length - 1])}`
+        ? `schema ${getSchemaNameByRef(schemaRef)} property ${nameSegments[nameSegments.length - 1]}`
         : schemaInfo ?? nameSegments.join("->"),
     ),
   );

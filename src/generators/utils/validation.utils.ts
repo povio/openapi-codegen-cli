@@ -1,4 +1,3 @@
-import { chk } from "src/helpers/chalk.helper";
 import { EndpointParameter } from "../types/endpoint";
 import { ValidationError, ValidationErrorType } from "../types/validation";
 
@@ -7,13 +6,13 @@ export function getInvalidSchemaError(schemaInfo: string): ValidationError {
 }
 
 export function getInvalidOperationIdError(operationId: string): ValidationError {
-  return { type: "invalid-operation-id", message: `Operation ${chk.gray(operationId)}` };
+  return { type: "invalid-operation-id", message: `Operation ${operationId}` };
 }
 
 export function getMissingPathParameterError(params: EndpointParameter[], path: string): ValidationError {
   return {
     type: "missing-path-parameter",
-    message: `Path ${chk.gray(path)} is missing [${params.map(({ name }) => chk.gray(name)).join(", ")}]`,
+    message: `Path ${path} is missing [${params.join(", ")}]`,
   };
 }
 
