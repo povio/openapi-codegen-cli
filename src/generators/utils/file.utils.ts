@@ -29,3 +29,7 @@ function writeFileWithDirSync(file: string, data: string) {
 
   fs.writeFileSync(file, data, "utf-8");
 }
+
+export function writeGeneratesFileData(filesData: GenerateFileData[]) {
+  filesData.forEach(writeTsFileSync);
+}

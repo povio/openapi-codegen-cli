@@ -6,14 +6,10 @@ import { generateModels } from "./generate/generateModels";
 import { generateQueries } from "./generate/generateQueries";
 import { GenerateFileData, GenerateType, GenerateTypeParams } from "./types/generate";
 import { GenerateOptions } from "./types/options";
-import { getOutputFileName, writeTsFileSync } from "./utils/file.utils";
+import { getOutputFileName } from "./utils/file.utils";
 import { getTagFileName } from "./utils/generate/generate.utils";
 
-export function generateCodeFromOpenAPIDoc(
-  openApiDoc: OpenAPIV3.Document,
-  cliOptions: Partial<GenerateOptions>,
-  writeFiles = true,
-) {
+export function generateCodeFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, cliOptions: Partial<GenerateOptions>) {
   const options = { ...DEFAULT_GENERATE_OPTIONS, ...cliOptions } as GenerateOptions;
 
   const { resolver, data } = getDataFromOpenAPIDoc(openApiDoc, options);
@@ -43,10 +39,6 @@ export function generateCodeFromOpenAPIDoc(
       }
     });
   });
-
-  if (writeFiles) {
-    generateFilesData.forEach(writeTsFileSync);
-  }
 
   return generateFilesData;
 }

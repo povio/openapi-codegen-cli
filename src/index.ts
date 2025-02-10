@@ -14,12 +14,12 @@ export async function getGenerateMetadata({ input, options: genOptions }: Genera
   return await getMetadataFromOpenAPIDoc(openApiDoc, options);
 }
 
-export async function getGenerateFileData({ input, options: genOptions }: GenerateParams) {
+export async function getGenerateFilesData({ input, options: genOptions }: GenerateParams) {
   const options = { ...DEFAULT_GENERATE_OPTIONS, ...genOptions } as GenerateOptions;
 
   const openApiDoc = (await SwaggerParser.bundle(input)) as OpenAPIV3.Document;
 
-  return generateCodeFromOpenAPIDoc(openApiDoc, options, false);
+  return generateCodeFromOpenAPIDoc(openApiDoc, options);
 }
 
 export { GenerateFileData } from "./generators/types/generate";

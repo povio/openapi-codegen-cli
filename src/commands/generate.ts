@@ -3,6 +3,7 @@ import { exec } from "child_process";
 import { OpenAPIV3 } from "openapi-types";
 import { generateCodeFromOpenAPIDoc } from "src/generators/generateCodeFromOpenAPIDoc";
 import { GenerateOptions } from "src/generators/types/options";
+import { writeGeneratesFileData } from "src/generators/utils/file.utils";
 import { logError, logInfo, logSuccess } from "src/helpers/cli.helper";
 
 export type GenerateParams = {
@@ -35,13 +36,21 @@ export async function generate({ input, excludeTags, prettier, verbose, ...param
   if (verbose) {
     logInfo("Generating code...");
   }
-  generateCodeFromOpenAPIDoc(openApiDoc, {
+  const filesData = generateCodeFromOpenAPIDoc(openApiDoc, {
     input,
     excludeTags: excludeTags.split(","),
     ...params,
   });
   if (verbose) {
     logSuccess("Generation finished.");
+  }
+
+  if (verbose) {
+    logInfo("Writing files...");
+  }
+  writeGeneratesFileData(filesData);
+  if (verbose) {
+    logSuccess("Writing finished.");
   }
 
   if (prettier) {
