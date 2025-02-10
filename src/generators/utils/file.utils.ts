@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { GenerateFileData } from "../types/generate";
 
 export function readHbsTemplateSync(fileName: string) {
   const templatePath = `src/generators/templates/${fileName}.hbs`;
@@ -11,12 +12,12 @@ export function readHbsTemplateSync(fileName: string) {
   return fs.readFileSync(templatePath, "utf-8");
 }
 
-export function getFileName({ output, fileName }: { output: string; fileName: string }) {
+export function getOutputFileName({ output, fileName }: { output: string; fileName: string }) {
   return `${output}/${fileName}.ts`;
 }
 
-export function writeTsFileSync({ output, fileName, data }: { output: string; fileName: string; data: string }) {
-  writeFileWithDirSync(getFileName({ output, fileName }), data);
+export function writeTsFileSync({ fileName, content }: GenerateFileData) {
+  writeFileWithDirSync(fileName, content);
 }
 
 function writeFileWithDirSync(file: string, data: string) {

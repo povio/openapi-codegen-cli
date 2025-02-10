@@ -1,20 +1,11 @@
 import { ZOD_IMPORT } from "../const/zod.const";
-import { SchemaResolver } from "../core/SchemaResolver.class";
 import { getZodSchemaRefs } from "../core/zod/getZodSchemaRefs";
-import { GenerateData, GenerateType } from "../types/generate";
+import { GenerateType, GenerateTypeParams } from "../types/generate";
 import { getModelsImports } from "../utils/generate/generate.imports.utils";
 import { getNamespaceName } from "../utils/generate/generate.utils";
 import { getHbsTemplateDelegate } from "../utils/hbs/hbs-template.utils";
 
-export function generateModels({
-  resolver,
-  data,
-  tag = "",
-}: {
-  resolver: SchemaResolver;
-  data: GenerateData;
-  tag?: string;
-}) {
+export function generateModels({ resolver, data, tag = "" }: GenerateTypeParams) {
   const zodSchemas = data.get(tag)?.zodSchemas;
   if (!zodSchemas || Object.keys(zodSchemas).length === 0) {
     return;

@@ -1,7 +1,7 @@
 import { OpenAPIV3 } from "openapi-types";
 import { GenerateOptions } from "./options";
 
-export interface GenerateMetadataParams {
+export interface GenerateParams {
   input: string;
   options?: Partial<GenerateOptions>;
 }

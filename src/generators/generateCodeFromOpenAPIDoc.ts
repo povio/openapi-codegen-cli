@@ -1,19 +1,30 @@
 import { OpenAPIV3 } from "openapi-types";
 import { DEFAULT_GENERATE_OPTIONS } from "./const/options.const";
 import { getDataFromOpenAPIDoc } from "./core/getDataFromOpenAPIDoc";
-import { SchemaResolver } from "./core/SchemaResolver.class";
 import { generateEndpoints } from "./generate/generateEndpoints";
 import { generateModels } from "./generate/generateModels";
 import { generateQueries } from "./generate/generateQueries";
-import { GenerateData, GenerateType } from "./types/generate";
+import { GenerateFileData, GenerateType, GenerateTypeParams } from "./types/generate";
 import { GenerateOptions } from "./types/options";
-import { writeTsFileSync } from "./utils/file.utils";
+import { getOutputFileName, writeTsFileSync } from "./utils/file.utils";
 import { getTagFileName } from "./utils/generate/generate.utils";
 
-export function generateCodeFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, cliOptions?: Partial<GenerateOptions>) {
+export function generateCodeFromOpenAPIDoc(
+  openApiDoc: OpenAPIV3.Document,
+  cliOptions: Partial<GenerateOptions>,
+  writeFiles = true,
+) {
   const options = { ...DEFAULT_GENERATE_OPTIONS, ...cliOptions } as GenerateOptions;
 
   const { resolver, data } = getDataFromOpenAPIDoc(openApiDoc, options);
+
+  const generateFilesData: GenerateFileData[] = [];
+  const generateTypes = [GenerateType.Models, GenerateType.Endpoints, GenerateType.Queries];
+  const generateFunctions: Record<GenerateType, (params: GenerateTypeParams) => string | undefined> = {
+    [GenerateType.Models]: generateModels,
+    [GenerateType.Endpoints]: generateEndpoints,
+    [GenerateType.Queries]: generateQueries,
+  };
 
   data.forEach((_, tag) => {
     const excludedTag = options.excludeTags.find((excludeTag) => excludeTag.toLowerCase() === tag.toLowerCase());
@@ -21,42 +32,21 @@ export function generateCodeFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, cliOp
       return;
     }
 
-    generateCodeByType({ resolver, data, type: GenerateType.Models, tag });
-    generateCodeByType({ resolver, data, type: GenerateType.Endpoints, tag });
-    generateCodeByType({ resolver, data, type: GenerateType.Queries, tag });
-  });
-}
-
-function generateCodeByType({
-  resolver,
-  data,
-  type,
-  tag,
-}: {
-  resolver: SchemaResolver;
-  data: GenerateData;
-  type: GenerateType;
-  tag: string;
-}) {
-  let code: string | undefined;
-
-  switch (type) {
-    case GenerateType.Models:
-      code = generateModels({ resolver, data, tag });
-      break;
-    case GenerateType.Endpoints:
-      code = generateEndpoints({ resolver, data, tag });
-      break;
-    case GenerateType.Queries:
-      code = generateQueries({ resolver, data, tag });
-      break;
-  }
-
-  if (code) {
-    writeTsFileSync({
-      output: resolver.options.output,
-      fileName: getTagFileName({ tag, type, options: resolver.options }),
-      data: code,
+    generateTypes.forEach((type) => {
+      const content = generateFunctions[type]({ resolver, data, tag });
+      if (content) {
+        const fileName = getOutputFileName({
+          output: options.output,
+          fileName: getTagFileName({ tag, type, options }),
+        });
+        generateFilesData.push({ fileName, content });
+      }
     });
+  });
+
+  if (writeFiles) {
+    generateFilesData.forEach(writeTsFileSync);
   }
+
+  return generateFilesData;
 }

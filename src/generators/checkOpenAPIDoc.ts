@@ -6,7 +6,7 @@ import { getDataFromOpenAPIDoc } from "./core/getDataFromOpenAPIDoc";
 import { GenerateType } from "./types/generate";
 import { GenerateOptions } from "./types/options";
 import { ValidationErrorType } from "./types/validation";
-import { getFileName } from "./utils/file.utils";
+import { getOutputFileName } from "./utils/file.utils";
 import { getTagFileName } from "./utils/generate/generate.utils";
 import { groupByType } from "./utils/validation.utils";
 
@@ -25,7 +25,7 @@ export function checkOpenAPIDoc(openApiDoc: OpenAPIV3.Document, cliOptions?: Par
   } else {
     const outputs = [...data.keys()].reduce((acc, tag) => {
       const excludedTag = options.excludeTags.find((excludeTag) => excludeTag.toLowerCase() === tag.toLowerCase());
-      return excludedTag ? acc : [...acc, ...getTagOutputFileNames(tag, options)];
+      return excludedTag ? acc : [...acc, ...getOutputFileNames(tag, options)];
     }, [] as string[]);
     console.log(`${chk.green("Outputs:")}\n${outputs.map((output) => `- ${output}`).join("\n")}\n`);
   }
@@ -33,8 +33,8 @@ export function checkOpenAPIDoc(openApiDoc: OpenAPIV3.Document, cliOptions?: Par
   return resolver.validationErrors;
 }
 
-function getTagOutputFileNames(tag: string, options: GenerateOptions) {
+function getOutputFileNames(tag: string, options: GenerateOptions) {
   return [GenerateType.Models, GenerateType.Endpoints, GenerateType.Queries].map((type) =>
-    getFileName({ output: options.output, fileName: getTagFileName({ tag, type, options }) }),
+    getOutputFileName({ output: options.output, fileName: getTagFileName({ tag, type, options }) }),
   );
 }
