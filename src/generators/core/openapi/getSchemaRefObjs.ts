@@ -16,7 +16,15 @@ export function getSchemaRefObjs(
       if (data.type === "reference") {
         schemaRefObjs.push(data.schema);
       } else if (isReferenceObject(data.parentSchema)) {
-        resolver.validationErrors.push(getInvalidSchemaError(schemaInfo));
+        if (data.type === "property" || data.type === "additionalProperty") {
+          resolver.validationErrors.push(getInvalidSchemaError(`${schemaInfo} has both reference and properties`));
+        } else if (data.type === "array") {
+          resolver.validationErrors.push(getInvalidSchemaError(`${schemaInfo} is both reference and array schema`));
+        } else if (data.type === "composite") {
+          resolver.validationErrors.push(
+            getInvalidSchemaError(`${schemaInfo} has both reference and composite keyword`),
+          );
+        }
       }
     },
   });

@@ -217,6 +217,18 @@ export class SchemaResolver {
     return this.dependencyGraph.deepDependencyGraph[ref]?.has(ref);
   }
 
+  getCircularSchemaChain(ref: string, currentRef = ref, chain = []): string[] {
+    if (this.dependencyGraph.refsDependencyGraph[currentRef]?.has(ref)) {
+      return [...chain, currentRef, ref];
+    }
+    return Array.from(this.dependencyGraph.refsDependencyGraph[currentRef]?.values() ?? [])
+      .map((childRef) => {
+        const childChain = this.getCircularSchemaChain(ref, childRef, chain);
+        return childChain.length > 0 ? [currentRef, ...childChain] : childChain;
+      })
+      .flat();
+  }
+
   private initialize() {
     this.schemaRefs.forEach((ref) => {
       const correctRef = autocorrectRef(ref);

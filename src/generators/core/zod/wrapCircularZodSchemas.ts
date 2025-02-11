@@ -1,3 +1,4 @@
+import { getNotAllowedCircularSchemaError } from "src/generators/utils/validation.utils";
 import { getZodSchemaName } from "../../utils/zod-schema.utils";
 import { SchemaResolver } from "../SchemaResolver.class";
 
@@ -7,7 +8,14 @@ export function wrapCircularZodSchemas(resolver: SchemaResolver, zodSchemas: Rec
   Object.entries(zodSchemas).forEach(([name, code]) => {
     const ref = resolver.getRefByZodSchemaName(name);
     const isCircular = ref && resolver.isSchemaCircular(ref);
-    schemas[getZodSchemaName(name, resolver.options.schemaSuffix)] = isCircular ? `z.lazy(() => ${code})` : code;
+    if (isCircular) {
+      resolver.validationErrors.push(
+        getNotAllowedCircularSchemaError(resolver.getCircularSchemaChain(ref).join(" -> ")),
+      );
+      schemas[getZodSchemaName(name, resolver.options.schemaSuffix)] = `z.lazy(() => ${code})`;
+    } else {
+      schemas[getZodSchemaName(name, resolver.options.schemaSuffix)] = code;
+    }
   });
 
   return schemas;
