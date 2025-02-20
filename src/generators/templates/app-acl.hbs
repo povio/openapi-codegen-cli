@@ -4,6 +4,7 @@
 {{#each imports as | import |}}
 {{{genImport import}}}
 {{/each}}
+
 {{! AppAbilities union type }}
 export type AppAbilities = 
 {{#if includeNamespace}}{{#each namespaces as | namespace |}} | {{namespace}}.{{../allAbilities}}{{/each}}
