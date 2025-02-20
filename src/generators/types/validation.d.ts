@@ -3,7 +3,8 @@ export type ValidationErrorType =
   | "invalid-operation-id"
   | "missing-path-parameter"
   | "not-allowed-inline-enum"
-  | "not-allowed-circular-schema";
+  | "not-allowed-circular-schema"
+  | "missing-acl-condition-property";
 
 export interface ValidationError {
   type: ValidationErrorType;

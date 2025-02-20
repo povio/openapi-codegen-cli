@@ -24,6 +24,13 @@ export function getNotAllowedCircularSchemaError(message: string): ValidationErr
   return { type: "not-allowed-circular-schema", message };
 }
 
+export function getMissingAclConditionPropertyError(propertyName: string, operationId: string): ValidationError {
+  return {
+    type: "missing-acl-condition-property",
+    message: `Condition property ${propertyName} is not found in parameters or body in operation ${operationId}`,
+  };
+}
+
 export function groupByType(validationErrors: ValidationError[]): Record<ValidationErrorType, string[]> {
   return validationErrors.reduce(
     (acc, err) => ({ ...acc, [err.type]: [...(acc[err.type] ?? []), err.message] }),

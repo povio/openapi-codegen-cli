@@ -1,6 +1,7 @@
 import { OpenAPIV3 } from "openapi-types";
 import { ALLOWED_METHODS } from "src/generators/const/openapi.const";
 import { VOID_SCHEMA } from "src/generators/const/zod.const";
+import { OperationObject } from "src/generators/types/openapi";
 import { invalidVariableNameCharactersToCamel } from "src/generators/utils/js.utils";
 import { formatTag, getOperationTag } from "src/generators/utils/tag.utils";
 import { getInvalidOperationIdError, getMissingPathParameterError } from "src/generators/utils/validation.utils";
@@ -19,6 +20,7 @@ import { SchemaResolver } from "../SchemaResolver.class";
 import { getZodChain } from "../zod/getZodChain";
 import { getZodSchema } from "../zod/getZodSchema";
 import { resolveZodSchemaName } from "../zod/resolveZodSchemaName";
+import { getEndpointAcl } from "./getEndpointAcl";
 import { getEndpointBody } from "./getEndpointBody";
 import { getEndpointParameter } from "./getEndpointParameter";
 
@@ -31,7 +33,7 @@ export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver) {
     const pathParameters = getParameters(pathItemObj.parameters ?? []);
 
     for (const method in pathItem) {
-      const operation = pathItem[method as keyof typeof pathItem] as OpenAPIV3.OperationObject | undefined;
+      const operation = pathItem[method as keyof typeof pathItem] as OperationObject | undefined;
       if (!operation || (operation.deprecated && !resolver.options.withDeprecatedEndpoints)) {
         continue;
       }
@@ -153,6 +155,8 @@ export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver) {
       if (!endpoint.response) {
         endpoint.response = VOID_SCHEMA;
       }
+
+      endpoint.acl = getEndpointAcl({ resolver, endpoint, operation });
 
       endpoints.push(endpoint);
     }

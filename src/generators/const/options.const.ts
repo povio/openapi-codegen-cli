@@ -25,6 +25,10 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
       outputFileNameSuffix: "queries",
       namespaceSuffix: "Queries",
     },
+    [GenerateType.Acl]: {
+      outputFileNameSuffix: "acl",
+      namespaceSuffix: "Acl",
+    },
   },
   // Zod options
   schemaSuffix: SCHEMA_SUFFIX,

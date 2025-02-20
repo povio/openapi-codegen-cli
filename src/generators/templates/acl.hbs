@@ -1,0 +1,27 @@
+{{! Casl AbilityTuple import}}
+{{{genImport caslAbilityTupleImport}}}
+{{! Models import }}
+{{#each modelsImports as | modelsImport |}}
+{{{genImport modelsImport}}}
+{{/each}}
+
+{{#if includeNamespace}}
+export namespace {{namespace}} {
+{{/if}}
+{{! Ability types }}
+{{#each endpoints as | endpoint |}}
+{{{genCaslAbilityType endpoint}}}
+
+{{/each}}
+{{! All abilities type }}
+export type AllAbilities =
+{{#each endpoints as | endpoint |}} | {{abilityTypeName endpoint}} {{/each}};
+
+{{! Ability functions }}
+{{#each endpoints as | endpoint |}}
+{{{genCaslAbilityFunction endpoint}}}
+
+{{/each}}
+{{#if includeNamespace}}
+}
+{{/if}}

@@ -1,0 +1,12 @@
+{{! Casl AbilityTuple import}}
+{{{genImport caslAbilityTupleImport}}}
+{{! Acl imports }}
+{{#each imports as | import |}}
+{{{genImport import}}}
+{{/each}}
+{{! AppAbilities union type }}
+export type AppAbilities = 
+{{#if includeNamespace}}{{#each namespaces as | namespace |}} | {{namespace}}.{{../allAbilities}}{{/each}}
+{{else}}{{#each tags as | tag |}} | {{tagAllAbilitiesName tag}}{{/each}}{{/if}}
+
+export type AppAbility = PureAbility<AppAbilities>;

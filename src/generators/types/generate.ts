@@ -10,6 +10,7 @@ export enum GenerateType {
   Models = "models",
   Endpoints = "endpoints",
   Queries = "queries",
+  Acl = "acl",
 }
 
 export type GenerateData = Map<

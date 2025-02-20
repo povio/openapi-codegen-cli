@@ -2,7 +2,7 @@ import { OpenAPIV3 } from "openapi-types";
 import { match, P } from "ts-pattern";
 import { RESERVED_WORDS } from "../const/js.const";
 import { ALLOWED_METHODS, ALLOWED_PARAM_MEDIA_TYPES, PRIMITIVE_TYPE_LIST } from "../const/openapi.const";
-import { PrimitiveType, SingleType } from "../types/openapi";
+import { OperationObject, PrimitiveType, SingleType } from "../types/openapi";
 import { GenerateOptions } from "../types/options";
 import { invalidVariableNameCharactersToCamel } from "./js.utils";
 import { pick } from "./object.utils";
@@ -116,7 +116,7 @@ export function getOperationName({
 }: {
   path: string;
   method: string;
-  operation: OpenAPIV3.OperationObject;
+  operation: OperationObject;
   options: GenerateOptions;
   keepOperationPrefixWithoutEnding?: boolean;
 }) {
@@ -147,8 +147,8 @@ export function getUniqueOperationName({
 }: {
   path: string;
   method: string;
-  operation: OpenAPIV3.OperationObject;
-  operationsByTag: Record<string, OpenAPIV3.OperationObject[]>;
+  operation: OperationObject;
+  operationsByTag: Record<string, OperationObject[]>;
   options: GenerateOptions;
 }) {
   const tag = options.splitByTags ? getOperationTag(operation, options) : options.defaultTag;
@@ -165,7 +165,7 @@ export function getUniqueOperationName({
 
 export function getUniqueOperationNamesWithoutSplitByTags(
   openApiDoc: OpenAPIV3.Document,
-  operationsByTag: Record<string, OpenAPIV3.OperationObject[]>,
+  operationsByTag: Record<string, OperationObject[]>,
   options: GenerateOptions,
 ) {
   const operationNames: string[] = [];
@@ -174,7 +174,7 @@ export function getUniqueOperationNamesWithoutSplitByTags(
     const pathItem = pick(pathItemObj, ALLOWED_METHODS);
 
     for (const method in pathItem) {
-      const operation = pathItem[method as keyof typeof pathItem] as OpenAPIV3.OperationObject | undefined;
+      const operation = pathItem[method as keyof typeof pathItem] as OperationObject | undefined;
       if (!operation || (operation.deprecated && !options?.withDeprecatedEndpoints)) {
         continue;
       }

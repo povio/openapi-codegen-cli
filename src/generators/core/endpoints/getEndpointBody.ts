@@ -1,6 +1,6 @@
-import { OpenAPIV3 } from "openapi-types";
 import { BODY_PARAMETER_NAME } from "src/generators/const/endpoints.const";
 import { EndpointParameter } from "src/generators/types/endpoint";
+import { OperationObject } from "src/generators/types/openapi";
 import { isParamMediaTypeAllowed } from "src/generators/utils/openapi.utils";
 import { getBodyZodSchemaName, getZodSchemaOperationName } from "src/generators/utils/zod-schema.utils";
 import { SchemaResolver } from "../SchemaResolver.class";
@@ -16,7 +16,7 @@ export function getEndpointBody({
   tag,
 }: {
   resolver: SchemaResolver;
-  operation: OpenAPIV3.OperationObject;
+  operation: OperationObject;
   operationName: string;
   isUniqueOperationName: boolean;
   tag: string;

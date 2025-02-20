@@ -1,4 +1,5 @@
 import Handlebars from "handlebars";
+import { CASL_ABILITY_BINDING } from "src/generators/const/acl.const";
 import { QUERY_HOOKS } from "../../const/query.const";
 import { Endpoint } from "../../types/endpoint";
 import { Import } from "../../types/generate";
@@ -12,6 +13,8 @@ enum PartialsHelpers {
   ENDPOINT_CONFIG = "genEndpointConfig",
   QUERY_KEYS = "genQueryKeys",
   QUERY = "genQuery",
+  CASL_ABILITY_TYPE = "genCaslAbilityType",
+  CASL_ABILITY_FUNCTION = "genCaslAbilityFunction",
 }
 
 export function registerPartialsHbsHelpers() {
@@ -20,6 +23,8 @@ export function registerPartialsHbsHelpers() {
   registerGenerateEndpointConfigHelper();
   registerGenerateQueryKeysHelper();
   registerGenerateQueryHelper();
+  registerGenerateCaslAbilityTypeHelper();
+  registerGenerateCaslAbilityFunctionHelper();
 }
 
 function registerImportHelper() {
@@ -67,5 +72,20 @@ function registerGenerateQueryHelper() {
     }
 
     return getHbsPartialTemplateDelegate(templateName)({ endpoint, queryHook });
+  });
+}
+
+function registerGenerateCaslAbilityTypeHelper() {
+  Handlebars.registerHelper(PartialsHelpers.CASL_ABILITY_TYPE, (endpoint: Endpoint) => {
+    return getHbsPartialTemplateDelegate("casl-ability-type")({
+      endpoint,
+      abilityTupleType: CASL_ABILITY_BINDING.abilityTuple,
+    });
+  });
+}
+
+function registerGenerateCaslAbilityFunctionHelper() {
+  Handlebars.registerHelper(PartialsHelpers.CASL_ABILITY_FUNCTION, (endpoint: Endpoint) => {
+    return getHbsPartialTemplateDelegate("casl-ability-function")({ endpoint });
   });
 }

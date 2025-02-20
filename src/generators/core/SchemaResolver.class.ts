@@ -1,5 +1,6 @@
 import { OpenAPIV3 } from "openapi-types";
 import { ALLOWED_METHODS } from "../const/openapi.const";
+import { OperationObject } from "../types/openapi";
 import { GenerateOptions } from "../types/options";
 import { ValidationError } from "../types/validation";
 import { getUniqueArray } from "../utils/array.utils";
@@ -72,7 +73,7 @@ export class SchemaResolver {
 
   readonly dependencyGraph: DependencyGraph;
 
-  readonly operationsByTag: Record<string, OpenAPIV3.OperationObject[]> = {};
+  readonly operationsByTag: Record<string, OperationObject[]> = {};
   readonly operationNames: string[] = [];
 
   readonly validationErrors: ValidationError[] = [];
@@ -242,7 +243,7 @@ export class SchemaResolver {
 
       const pathItem = pick(pathItemObj, ALLOWED_METHODS);
       for (const method in pathItem) {
-        const operation = pathItem[method as keyof typeof pathItem] as OpenAPIV3.OperationObject | undefined;
+        const operation = pathItem[method as keyof typeof pathItem] as OperationObject | undefined;
 
         if (!operation || (operation.deprecated && !this.options?.withDeprecatedEndpoints)) {
           continue;

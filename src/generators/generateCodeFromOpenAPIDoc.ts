@@ -1,6 +1,8 @@
 import { OpenAPIV3 } from "openapi-types";
+import { ACL_APP_ABILITY_FILENAME } from "./const/acl.const";
 import { DEFAULT_GENERATE_OPTIONS } from "./const/options.const";
 import { getDataFromOpenAPIDoc } from "./core/getDataFromOpenAPIDoc";
+import { generateAcl, generateAppAcl } from "./generate/generateAcl";
 import { generateEndpoints } from "./generate/generateEndpoints";
 import { generateModels } from "./generate/generateModels";
 import { generateQueries } from "./generate/generateQueries";
@@ -15,11 +17,13 @@ export function generateCodeFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, cliOp
   const { resolver, data } = getDataFromOpenAPIDoc(openApiDoc, options);
 
   const generateFilesData: GenerateFileData[] = [];
-  const generateTypes = [GenerateType.Models, GenerateType.Endpoints, GenerateType.Queries];
+  const appAclTags: string[] = [];
+  const generateTypes = [GenerateType.Models, GenerateType.Endpoints, GenerateType.Queries, GenerateType.Acl];
   const generateFunctions: Record<GenerateType, (params: GenerateTypeParams) => string | undefined> = {
     [GenerateType.Models]: generateModels,
     [GenerateType.Endpoints]: generateEndpoints,
     [GenerateType.Queries]: generateQueries,
+    [GenerateType.Acl]: generateAcl,
   };
 
   data.forEach((_, tag) => {
@@ -36,9 +40,18 @@ export function generateCodeFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, cliOp
           fileName: getTagFileName({ tag, type, options }),
         });
         generateFilesData.push({ fileName, content });
+        if (type === GenerateType.Acl) {
+          appAclTags.push(tag);
+        }
       }
     });
   });
+
+  const appAclContent = generateAppAcl(resolver, appAclTags);
+  if (appAclContent) {
+    const fileName = getOutputFileName({ output: options.output, fileName: ACL_APP_ABILITY_FILENAME });
+    generateFilesData.push({ fileName, content: appAclContent });
+  }
 
   return generateFilesData;
 }

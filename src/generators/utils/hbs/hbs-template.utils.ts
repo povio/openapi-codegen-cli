@@ -1,6 +1,7 @@
 import Handlebars from "handlebars";
 import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
 import { readHbsTemplateSync } from "../file.utils";
+import { registerAclHbsHelpers } from "./hbs.acl.utils";
 import { registerCommonHbsHelpers } from "./hbs.common.utils";
 import { registerEndpointsHbsHelpers } from "./hbs.endpoints.utils";
 import { registerPartialsHbsHelpers } from "./hbs.partials.utils";
@@ -14,6 +15,7 @@ export function getHbsTemplateDelegate(resolver: SchemaResolver, templateName: s
   registerZodHbsHelpers(resolver);
   registerEndpointsHbsHelpers(resolver);
   registerQueryHbsHelpers();
+  registerAclHbsHelpers();
   registerPartialsHbsHelpers();
 
   return Handlebars.compile(template);

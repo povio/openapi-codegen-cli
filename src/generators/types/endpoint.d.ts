@@ -1,4 +1,5 @@
 import { OpenAPIV3 } from "openapi-types";
+import { OperationAclInfo } from "./openapi";
 
 export interface EndpointParameter {
   name: string;
@@ -21,6 +22,18 @@ interface EndpointError {
   zodSchema: string;
 }
 
+export interface AclConditionsPropertyType {
+  name: string;
+  type?: string;
+  zodSchemaName?: string;
+  required?: boolean;
+  info?: string;
+}
+
+export type EndpointAclInfo = OperationAclInfo & {
+  conditionsTypes?: AclConditionsPropertyType[];
+};
+
 export interface Endpoint {
   method: OpenAPIV3.HttpMethods;
   path: string;
@@ -35,4 +48,5 @@ export interface Endpoint {
   responseObject?: OpenAPIV3.ResponseObject;
   responseDescription?: string;
   errors: Array<EndpointError>;
+  acl?: EndpointAclInfo[];
 }

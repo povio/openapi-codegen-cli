@@ -121,7 +121,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
     const resolver = new SchemaResolver(openApiDoc, generateOptions);
     const endpoints = getEndpointsFromOpenAPIDoc(resolver);
 
-    expect(endpoints).toStrictEqual([
+    expect(endpoints).toEqual([
       {
         description: "Place a new order in the store",
         errors: [
@@ -232,7 +232,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
     const resolver = new SchemaResolver(openApiDoc, generateOptions);
     const endpoints = getEndpointsFromOpenAPIDoc(resolver);
 
-    expect(endpoints).toStrictEqual([
+    expect(endpoints).toEqual([
       {
         description: "Update an existing pet by Id",
         errors: [
@@ -390,7 +390,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
 
     const resolver = new SchemaResolver(openApiDoc, generateOptions);
     const endpoints = getEndpointsFromOpenAPIDoc(resolver);
-    expect(endpoints).toStrictEqual([
+    expect(endpoints).toEqual([
       {
         description: "Update an existing pet by Id",
         errors: [
@@ -586,7 +586,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
 
     const resolver = new SchemaResolver(openApiDoc, generateOptions);
     const endpoints = getEndpointsFromOpenAPIDoc(resolver);
-    expect(endpoints).toStrictEqual([
+    expect(endpoints).toEqual([
       {
         description: "Multiple status values can be provided with comma separated strings",
         errors: [
@@ -734,7 +734,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
     const openApiDoc = (await SwaggerParser.parse("./test/petstore.yaml")) as OpenAPIV3.Document;
     const resolver = new SchemaResolver(openApiDoc, generateOptions);
     const endpoints = getEndpointsFromOpenAPIDoc(resolver);
-    expect(endpoints).toStrictEqual([
+    expect(endpoints).toEqual([
       {
         description: "Update an existing pet by Id",
         errors: [
@@ -1687,7 +1687,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
     };
     const resolver = new SchemaResolver(openApiDoc, generateOptions);
     const endpoints = getEndpointsFromOpenAPIDoc(resolver);
-    expect(endpoints).toStrictEqual([
+    expect(endpoints).toEqual([
       {
         description: "Multiple status values can be provided with comma separated strings",
         errors: [

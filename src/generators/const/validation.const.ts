@@ -6,4 +6,5 @@ export const VALIDATION_ERROR_TYPE_TITLE: Record<ValidationErrorType, string> = 
   "missing-path-parameter": "Missing Path Parameters",
   "not-allowed-inline-enum": "Not Allowed Inline Enums",
   "not-allowed-circular-schema": "Not Allowed Circular Schemas",
+  "missing-acl-condition-property": "Missing x-acl Condition Property",
 };

@@ -62,6 +62,32 @@ export function getEndpointsImports({
   });
 }
 
+export function getAclImports({
+  tags,
+  entityName,
+  getAliasEntityName,
+  options,
+}: {
+  tags: string[];
+  entityName: string;
+  getAliasEntityName?: (tag: string) => string;
+  options: GenerateOptions;
+}) {
+  const imports = new Map<string, Import>();
+  tags.forEach((tag) => {
+    const name = `${entityName}${getAliasEntityName ? ` as ${getAliasEntityName(tag)}` : ""}`;
+    if (!imports.has(tag)) {
+      imports.set(tag, {
+        bindings: [options.includeNamespaces ? getNamespaceName({ type: GenerateType.Acl, tag, options }) : name],
+        from: `${getImportPath(options)}${getTagFileName({ type: GenerateType.Acl, tag, includeTagDir: true, options })}`,
+      });
+    } else if (!options.includeNamespaces) {
+      imports.get(tag)!.bindings.push(name);
+    }
+  });
+  return Array.from(imports.values());
+}
+
 export function getImportPath(options: Pick<GenerateOptions, "output" | "importPath">) {
   let importPath = DATA_TS_PATH;
   if (options.importPath === "relative") {
