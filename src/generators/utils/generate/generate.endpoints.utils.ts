@@ -48,6 +48,8 @@ export function mapEndpointParamsToFunctionParams(resolver: SchemaResolver, endp
         type,
         paramType: param.type,
         required: param.parameterObject?.required ?? true,
+        parameterObject: param.parameterObject,
+        bodyObject: param.bodyObject,
       };
     })
     .sort((a, b) => {

@@ -22,9 +22,7 @@ export function getEndpointAcl({
     const conditionsTypes = Object.keys(item.conditions ?? {}).reduce((acc, name) => {
       const propertyType = getEndpointAclConditionPropertyType({ resolver, endpoint, acl, name });
       if (!propertyType) {
-        resolver.validationErrors.push(
-          getMissingAclConditionPropertyError(name, operation.operationId ?? `${endpoint.method} ${endpoint.path}`),
-        );
+        resolver.validationErrors.push(getMissingAclConditionPropertyError(name, operation, endpoint));
         return acc;
       }
       return [...acc, propertyType];

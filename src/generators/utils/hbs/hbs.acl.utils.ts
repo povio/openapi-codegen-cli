@@ -2,6 +2,7 @@ import Handlebars from "handlebars";
 import {
   getAbilityAction,
   getAbilityConditionsTypes,
+  getAbilityDescription,
   getAbilityFunctionName,
   getAbilitySubject,
   getAbilityTypeName,
@@ -16,6 +17,7 @@ enum AclHelpers {
   ABILITY_SUBJECT = "ablitySubject",
   HAS_ABILITY_CONDITIONS = "hasAbilityConditions",
   ABILITY_CONDITIONS_TYPES = "abilityConditionsTypes",
+  ABILITY_DESCRIPTION = "abilityDescription",
   TAG_ALL_ABILITIES_NAME = "tagAllAbilitiesName",
 }
 
@@ -26,6 +28,7 @@ export function registerAclHbsHelpers() {
   registerAbilitySubjectHelper();
   registerHasAbilityConditionsHelper();
   registerAbilityConditionsTypesHelper();
+  registerAbilityDescriptionHelper();
   registerTagAllAbilitiesNameHelper();
 }
 
@@ -51,6 +54,10 @@ function registerHasAbilityConditionsHelper() {
 
 function registerAbilityConditionsTypesHelper() {
   Handlebars.registerHelper(AclHelpers.ABILITY_CONDITIONS_TYPES, getAbilityConditionsTypes);
+}
+
+function registerAbilityDescriptionHelper() {
+  Handlebars.registerHelper(AclHelpers.ABILITY_DESCRIPTION, getAbilityDescription);
 }
 
 function registerTagAllAbilitiesNameHelper() {

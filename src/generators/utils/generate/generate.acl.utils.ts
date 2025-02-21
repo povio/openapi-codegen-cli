@@ -16,4 +16,6 @@ export const hasAbilityConditions = (endpoint: Endpoint) => !!getAbilityConditio
 
 export const getAbilityConditionsTypes = (endpoint: Endpoint) => endpoint.acl?.[0].conditionsTypes;
 
+export const getAbilityDescription = (endpoint: Endpoint) => endpoint.acl?.[0].description;
+
 export const getTagAllAbilitiesName = (tag: string) => `${capitalize(tag)}${ACL_ALL_ABILITIES}`;

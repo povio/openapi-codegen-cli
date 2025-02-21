@@ -4,7 +4,11 @@ import { VOID_SCHEMA } from "src/generators/const/zod.const";
 import { OperationObject } from "src/generators/types/openapi";
 import { invalidVariableNameCharactersToCamel } from "src/generators/utils/js.utils";
 import { formatTag, getOperationTag } from "src/generators/utils/tag.utils";
-import { getInvalidOperationIdError, getMissingPathParameterError } from "src/generators/utils/validation.utils";
+import {
+  getInvalidOperationIdError,
+  getMissingPathParameterError,
+  getMissingStatusCodeError,
+} from "src/generators/utils/validation.utils";
 import { getResponseZodSchemaName } from "src/generators/utils/zod-schema.utils";
 import { Endpoint, EndpointParameter } from "../../types/endpoint";
 import { pick } from "../../utils/object.utils";
@@ -62,11 +66,13 @@ export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver) {
         path: replaceHyphenatedPath(path),
         operationName,
         description: operation.description,
+        summary: operation.summary,
         tags: operation.tags?.map(formatTag),
         requestFormat: "application/json",
         parameters: [],
         response: "",
         errors: [],
+        responseStatusCodes: [],
       };
 
       if (operation.requestBody) {
@@ -99,6 +105,8 @@ export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver) {
       }
 
       for (const statusCode in operation.responses) {
+        endpoint.responseStatusCodes.push(statusCode);
+
         const responseObj = <OpenAPIV3.ResponseObject>resolver.resolveObject(operation.responses[statusCode]);
         const mediaTypes = Object.keys(responseObj.content ?? {});
         const matchingMediaType = mediaTypes.find(isMediaTypeAllowed);
@@ -157,6 +165,14 @@ export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver) {
       }
 
       endpoint.acl = getEndpointAcl({ resolver, endpoint, operation });
+
+      if (operation.security?.[0].Authorization && !endpoint.responseStatusCodes.includes("401")) {
+        resolver.validationErrors.push(getMissingStatusCodeError("401", operation, endpoint));
+      }
+
+      if (endpoint.acl?.[0] && !endpoint.responseStatusCodes.includes("403")) {
+        resolver.validationErrors.push(getMissingStatusCodeError("403", operation, endpoint));
+      }
 
       endpoints.push(endpoint);
     }

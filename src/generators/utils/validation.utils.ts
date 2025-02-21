@@ -1,4 +1,5 @@
-import { EndpointParameter } from "../types/endpoint";
+import { Endpoint, EndpointParameter } from "../types/endpoint";
+import { OperationObject } from "../types/openapi";
 import { ValidationError, ValidationErrorType } from "../types/validation";
 
 export function getInvalidSchemaError(message: string): ValidationError {
@@ -24,11 +25,30 @@ export function getNotAllowedCircularSchemaError(message: string): ValidationErr
   return { type: "not-allowed-circular-schema", message };
 }
 
-export function getMissingAclConditionPropertyError(propertyName: string, operationId: string): ValidationError {
+export function getMissingAclConditionPropertyError(
+  propertyName: string,
+  operation: OperationObject,
+  endpoint: Endpoint,
+): ValidationError {
   return {
     type: "missing-acl-condition-property",
-    message: `Condition property ${propertyName} is not found in parameters or body in operation ${operationId}`,
+    message: `Condition property ${propertyName} is not found in parameters or body in operation ${getOperationDescriptor(operation, endpoint)}`,
   };
+}
+
+export function getMissingStatusCodeError(
+  statusCode: string,
+  operation: OperationObject,
+  endpoint: Endpoint,
+): ValidationError {
+  return {
+    type: "missing-status-code",
+    message: `Missing status code ${statusCode} in operation ${getOperationDescriptor(operation, endpoint)}`,
+  };
+}
+
+function getOperationDescriptor(operation: OperationObject, endpoint: Endpoint) {
+  return operation.operationId ?? `${endpoint.method} ${endpoint.path}`;
 }
 
 export function groupByType(validationErrors: ValidationError[]): Record<ValidationErrorType, string[]> {

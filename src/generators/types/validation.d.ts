@@ -4,7 +4,8 @@ export type ValidationErrorType =
   | "missing-path-parameter"
   | "not-allowed-inline-enum"
   | "not-allowed-circular-schema"
-  | "missing-acl-condition-property";
+  | "missing-acl-condition-property"
+  | "missing-status-code";
 
 export interface ValidationError {
   type: ValidationErrorType;

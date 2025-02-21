@@ -37,6 +37,8 @@ export const splitByUppercase = (str: string): string[] => {
   return str.split(/(?<![A-Z])(?=[A-Z])/).filter(Boolean);
 };
 
+export const camelToSpaceSeparated = (text: string) => splitByUppercase(text).join(" ");
+
 export const getAdjacentStringCombinations = (
   strs: string[],
   ignoreStrs = ["dto", "by", "for", "of", "in", "to", "and", "with"],

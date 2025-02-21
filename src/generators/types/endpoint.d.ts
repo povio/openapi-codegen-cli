@@ -39,6 +39,7 @@ export interface Endpoint {
   path: string;
   operationName: string;
   description?: string;
+  summary?: string;
   tags?: string[];
   requestFormat: string;
   responseFormat?: string;
@@ -48,5 +49,6 @@ export interface Endpoint {
   responseObject?: OpenAPIV3.ResponseObject;
   responseDescription?: string;
   errors: Array<EndpointError>;
+  responseStatusCodes: string[];
   acl?: EndpointAclInfo[];
 }

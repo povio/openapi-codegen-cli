@@ -124,6 +124,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
     expect(endpoints).toEqual([
       {
         description: "Place a new order in the store",
+        summary: "Place an order for a pet",
         errors: [
           {
             description: "Invalid input",
@@ -157,6 +158,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           description: "successful operation",
         },
         tags: ["store"],
+        responseStatusCodes: ["200", "405"],
       },
     ]);
     expect(resolver.getZodSchemas()).toStrictEqual({
@@ -235,6 +237,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
     expect(endpoints).toEqual([
       {
         description: "Update an existing pet by Id",
+        summary: "Update an existing pet",
         errors: [
           {
             description: "Invalid ID supplied",
@@ -284,9 +287,11 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           description: "Successful operation",
         },
         tags: ["pet"],
+        responseStatusCodes: ["200", "400", "404", "405"],
       },
       {
         description: "Add a new pet to the store",
+        summary: "Add a new pet to the store",
         errors: [
           {
             description: "Invalid input",
@@ -325,6 +330,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           description: "Successful operation",
         },
         tags: ["pet"],
+        responseStatusCodes: ["200", "405"],
       },
     ]);
     expect(resolver.getZodSchemas()).toStrictEqual({
@@ -393,6 +399,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
     expect(endpoints).toEqual([
       {
         description: "Update an existing pet by Id",
+        summary: "Update an existing pet",
         errors: [
           {
             description: "Invalid ID supplied",
@@ -444,6 +451,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           description: "Successful operation",
         },
         tags: ["pet"],
+        responseStatusCodes: ["200", "400", "404", "405"],
       },
     ]);
     expect(resolver.getZodSchemas()).toStrictEqual({
@@ -589,6 +597,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
     expect(endpoints).toEqual([
       {
         description: "Multiple status values can be provided with comma separated strings",
+        summary: "Finds Pets by status",
         errors: [
           {
             description: "Invalid status value",
@@ -629,9 +638,11 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           description: "successful operation",
         },
         tags: ["pet"],
+        responseStatusCodes: ["200", "400"],
       },
       {
         description: "Multiple tags can be provided with comma separated strings. Use tag1, tag2, tag3 for testing.",
+        summary: "Finds Pets by tags",
         errors: [
           {
             description: "Invalid tag value",
@@ -673,6 +684,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           description: "successful operation",
         },
         tags: ["pet"],
+        responseStatusCodes: ["200", "400"],
       },
     ]);
     expect(resolver.getZodSchemas()).toStrictEqual({
@@ -737,6 +749,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
     expect(endpoints).toEqual([
       {
         description: "Update an existing pet by Id",
+        summary: "Update an existing pet",
         errors: [
           {
             description: "Invalid ID supplied",
@@ -785,9 +798,11 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           description: "Successful operation",
         },
         tags: ["pet"],
+        responseStatusCodes: ["200", "400", "404", "405"],
       },
       {
         description: "Add a new pet to the store",
+        summary: "Add a new pet to the store",
         errors: [
           {
             description: "Invalid input",
@@ -826,9 +841,11 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           description: "Successful operation",
         },
         tags: ["pet"],
+        responseStatusCodes: ["200", "405"],
       },
       {
         description: "Multiple status values can be provided with comma separated strings",
+        summary: "Finds Pets by status",
         errors: [
           {
             description: "Invalid status value",
@@ -883,9 +900,11 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           description: "successful operation",
         },
         tags: ["pet"],
+        responseStatusCodes: ["200", "400"],
       },
       {
         description: "Multiple tags can be provided with comma separated strings. Use tag1, tag2, tag3 for testing.",
+        summary: "Finds Pets by tags",
         errors: [
           {
             description: "Invalid tag value",
@@ -927,9 +946,11 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           description: "successful operation",
         },
         tags: ["pet"],
+        responseStatusCodes: ["200", "400"],
       },
       {
         description: "Returns a single pet",
+        summary: "Find pet by ID",
         errors: [
           {
             description: "Invalid ID supplied",
@@ -973,9 +994,11 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           description: "successful operation",
         },
         tags: ["pet"],
+        responseStatusCodes: ["200", "400", "404"],
       },
       {
         description: "",
+        summary: "Updates a pet in the store with form data",
         errors: [
           {
             description: "Invalid input",
@@ -1032,9 +1055,11 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         requestFormat: "application/json",
         response: "z.void()",
         tags: ["pet"],
+        responseStatusCodes: ["405"],
       },
       {
         description: "delete a pet",
+        summary: "Deletes a pet",
         errors: [
           {
             description: "Invalid pet value",
@@ -1079,9 +1104,11 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         requestFormat: "application/json",
         response: "z.void()",
         tags: ["pet"],
+        responseStatusCodes: ["400"],
       },
       {
         description: "",
+        summary: "uploads an image",
         errors: [],
         method: "post",
         operationName: "uploadFile",
@@ -1136,9 +1163,11 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           description: "successful operation",
         },
         tags: ["pet"],
+        responseStatusCodes: ["200"],
       },
       {
         description: "Returns a map of status codes to quantities",
+        summary: "Returns pet inventories by status",
         errors: [],
         method: "get",
         operationName: "getInventory",
@@ -1162,9 +1191,11 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           description: "successful operation",
         },
         tags: ["store"],
+        responseStatusCodes: ["200"],
       },
       {
         description: "Place a new order in the store",
+        summary: "Place an order for a pet",
         errors: [
           {
             description: "Invalid input",
@@ -1200,10 +1231,12 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           description: "successful operation",
         },
         tags: ["store"],
+        responseStatusCodes: ["200", "405"],
       },
       {
         description:
           "For valid response try integer IDs with value <= 5 or > 10. Other values will generate exceptions.",
+        summary: "Find purchase order by ID",
         errors: [
           {
             description: "Invalid ID supplied",
@@ -1247,10 +1280,12 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           description: "successful operation",
         },
         tags: ["store"],
+        responseStatusCodes: ["200", "400", "404"],
       },
       {
         description:
           "For valid response try integer IDs with value < 1000. Anything above 1000 or nonintegers will generate API errors",
+        summary: "Delete purchase order by ID",
         errors: [
           {
             description: "Invalid ID supplied",
@@ -1286,9 +1321,11 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         requestFormat: "application/json",
         response: "z.void()",
         tags: ["store"],
+        responseStatusCodes: ["400", "404"],
       },
       {
         description: "This can only be done by the logged in user.",
+        summary: "Create user",
         errors: [],
         method: "post",
         operationName: "createUser",
@@ -1313,9 +1350,11 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         response: "z.void()",
         responseFormat: "application/json",
         tags: ["user"],
+        responseStatusCodes: ["default"],
       },
       {
         description: "Creates list of users with given input array",
+        summary: "Creates list of users with given input array",
         errors: [],
         method: "post",
         operationName: "createUsersWithListInput",
@@ -1344,9 +1383,11 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           description: "Successful operation",
         },
         tags: ["user"],
+        responseStatusCodes: ["200", "default"],
       },
       {
         description: "",
+        summary: "Logs user into the system",
         errors: [
           {
             description: "Invalid username/password supplied",
@@ -1414,9 +1455,11 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         },
         tags: ["user"],
+        responseStatusCodes: ["200", "400"],
       },
       {
         description: "",
+        summary: "Logs out current logged in user session",
         errors: [],
         method: "get",
         operationName: "logoutUser",
@@ -1425,9 +1468,11 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         requestFormat: "application/json",
         response: "z.void()",
         tags: ["user"],
+        responseStatusCodes: ["default"],
       },
       {
         description: "",
+        summary: "Get user by user name",
         errors: [
           {
             description: "Invalid username supplied",
@@ -1470,9 +1515,11 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           description: "successful operation",
         },
         tags: ["user"],
+        responseStatusCodes: ["200", "400", "404"],
       },
       {
         description: "This can only be done by the logged in user.",
+        summary: "Update user",
         errors: [],
         method: "put",
         operationName: "updateUser",
@@ -1522,9 +1569,11 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         requestFormat: "application/json",
         response: "z.void()",
         tags: ["user"],
+        responseStatusCodes: ["default"],
       },
       {
         description: "This can only be done by the logged in user.",
+        summary: "Delete user",
         errors: [
           {
             description: "Invalid username supplied",
@@ -1559,6 +1608,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         requestFormat: "application/json",
         response: "z.void()",
         tags: ["user"],
+        responseStatusCodes: ["400", "404"],
       },
     ]);
     expect(resolver.getZodSchemas()).toStrictEqual({
@@ -1690,6 +1740,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
     expect(endpoints).toEqual([
       {
         description: "Multiple status values can be provided with comma separated strings",
+        summary: "Finds Pets by status",
         errors: [
           {
             description: "Invalid status value",
@@ -1716,9 +1767,11 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           description: "successful operation",
         },
         tags: ["pet"],
+        responseStatusCodes: ["200", "400", "500"],
       },
       {
         description: "Multiple tags can be provided with comma separated strings. Use tag1, tag2, tag3 for testing.",
+        summary: "Finds Pets by tags",
         errors: [
           {
             description: "Invalid tag value",
@@ -1740,6 +1793,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
           description: "successful operation",
         },
+        responseStatusCodes: ["200", "400"],
       },
     ]);
     expect(resolver.getZodSchemas()).toStrictEqual({
