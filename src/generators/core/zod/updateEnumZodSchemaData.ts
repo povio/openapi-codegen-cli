@@ -106,15 +106,21 @@ export function resolveEnumZodSchemaNames(resolver: SchemaResolver) {
   }
 
   if (!allEnumZodSchemaNamesAreUnique(resolver)) {
+    const enumsDuplicateData = resolver.enumZodSchemaData.filter((enumData) => !isUnique(resolver, enumData));
+    enumsDuplicateData.forEach((enumData) => {
+      enumData.zodSchemaName = enumData.meta.zodSchemaNameSegments[0]
+        .map((name) => sanitizeName(capitalize(name)))
+        .join("");
+    });
+  }
+
+  if (!allEnumZodSchemaNamesAreUnique(resolver)) {
     throw new Error("Failed to resolve unique names for enum zod schemas");
   }
 }
 
 function allEnumZodSchemaNamesAreUnique(resolver: SchemaResolver) {
-  return resolver.enumZodSchemaData.every(
-    (enumData) =>
-      resolver.enumZodSchemaData.filter(({ zodSchemaName }) => enumData.zodSchemaName === zodSchemaName).length == 1,
-  );
+  return resolver.enumZodSchemaData.every((enumData) => isUnique(resolver, enumData));
 }
 
 function additionalResolveEnumZodSchemaName(resolver: SchemaResolver, index: number) {
@@ -136,12 +142,19 @@ function suffixWithPreviousSegmentName(enumsData: EnumZodSchemaData[], index = 2
       .map((arr) => arr[arr.length - index])
       .filter(Boolean);
     if (precedingLastFragments.length === 1) {
-      data.zodSchemaName = [capitalize(precedingLastFragments[0]), data.zodSchemaName].filter(Boolean).join("");
-    } else {
-      const secondLastFragmentSplit = getMostCommonAdjacentCombinationSplit(precedingLastFragments);
-      data.zodSchemaName = [secondLastFragmentSplit ? capitalize(secondLastFragmentSplit) : "", data.zodSchemaName]
+      const zodSchemaName = [sanitizeName(capitalize(precedingLastFragments[0])), data.zodSchemaName]
         .filter(Boolean)
         .join("");
+      data.zodSchemaName = zodSchemaName;
+    } else {
+      const secondLastFragmentSplit = getMostCommonAdjacentCombinationSplit(precedingLastFragments);
+      const zodSchemaName = [
+        secondLastFragmentSplit ? sanitizeName(capitalize(secondLastFragmentSplit)) : "",
+        data.zodSchemaName,
+      ]
+        .filter(Boolean)
+        .join("");
+      data.zodSchemaName = zodSchemaName;
     }
   });
 }
@@ -151,4 +164,14 @@ export function resolveEnumZodSchemaTags(resolver: SchemaResolver) {
     const tags = getUniqueArray(enumData.meta.tags);
     enumData.tag = tags.length === 1 ? tags[0] : resolver.options.defaultTag;
   });
+}
+
+function isUnique(resolver: SchemaResolver, enumData: EnumZodSchemaData) {
+  return (
+    resolver.enumZodSchemaData.filter(({ zodSchemaName }) => enumData.zodSchemaName === zodSchemaName).length === 1
+  );
+}
+
+function sanitizeName(name: string) {
+  return name.replace(/(Dto|DTO|Response|Request)/g, "");
 }

@@ -49,6 +49,10 @@ export function generateAcl({ resolver, data, tag = "" }: GenerateTypeParams) {
 }
 
 export function generateAppAcl(resolver: SchemaResolver, tags: string[]) {
+  if (!tags || tags.length === 0) {
+    return;
+  }
+
   const caslAbilityTupleImport: Import = {
     ...CASL_ABILITY_IMPORT,
     bindings: [CASL_ABILITY_BINDING.pureAbility],
