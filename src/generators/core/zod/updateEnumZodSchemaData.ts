@@ -108,9 +108,11 @@ export function resolveEnumZodSchemaNames(resolver: SchemaResolver) {
   if (!allEnumZodSchemaNamesAreUnique(resolver)) {
     const enumsDuplicateData = resolver.enumZodSchemaData.filter((enumData) => !isUnique(resolver, enumData));
     enumsDuplicateData.forEach((enumData) => {
-      enumData.zodSchemaName = enumData.meta.zodSchemaNameSegments[0]
-        .map((name) => sanitizeName(capitalize(name)))
-        .join("");
+      enumData.zodSchemaName = getEnumZodSchemaName(
+        enumData.meta.zodSchemaNameSegments[0].map((name) => sanitizeName(capitalize(name))).join(""),
+        resolver.options.enumSuffix,
+        resolver.options.schemaSuffix,
+      );
     });
   }
 
