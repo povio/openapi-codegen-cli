@@ -17,7 +17,7 @@ export function generateAcl({ resolver, data, tag = "" }: GenerateTypeParams) {
     ...CASL_ABILITY_IMPORT,
     bindings: [
       CASL_ABILITY_BINDING.abilityTuple,
-      ...(endpoints.filter(({ acl }) => acl?.[0].conditions)
+      ...(endpoints.filter(({ acl }) => acl?.[0].conditions).length > 0
         ? [CASL_ABILITY_BINDING.forcedSubject, CASL_ABILITY_BINDING.subject]
         : []),
     ],
