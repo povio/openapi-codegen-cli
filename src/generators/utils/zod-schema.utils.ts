@@ -1,5 +1,6 @@
 import {
   BODY_SCHEMA_SUFFIX,
+  ENUM_SCHEMA,
   ERROR_RESPONSE_SCHEMA_SUFFIX,
   PARAM_SCHEMA_SUFFIX,
   RESPONSE_SCHEMA_SUFFIX,
@@ -14,6 +15,8 @@ export const getEnumZodSchemaName = (name: string, enumSuffix: string, schemaSuf
   suffixIfNeeded(capitalize(normalizeString(name)), `${enumSuffix}${schemaSuffix}`);
 
 export const isNamedZodSchema = (schema: string) => !schema.startsWith("z.");
+
+export const isEnumZodSchema = (schema: string) => schema.startsWith(ENUM_SCHEMA);
 
 export const getZodSchemaOperationName = (operationName: string, isUniqueOperationName: boolean, tag: string) =>
   isUniqueOperationName ? operationName : `${tag}_${operationName}`;

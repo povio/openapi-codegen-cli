@@ -7,6 +7,7 @@ import { isPrimitiveType, isReferenceObject, wrapWithQuotesIfNeeded } from "../.
 import { SchemaResolver } from "../SchemaResolver.class";
 import { ZodSchema, ZodSchemaMetaData } from "./ZodSchema.class";
 import { getZodChain } from "./getZodChain";
+import { ENUM_SCHEMA } from "src/generators/const/zod.const";
 
 type GetZodSchemaParams = {
   schema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject;
@@ -346,5 +347,5 @@ function getEnumZodSchema({ resolver, schema, zodSchema, meta, tag }: GetPartial
 }
 
 export function getEnumZodSchemaCode(schema: OpenAPIV3.SchemaObject) {
-  return `z.enum([${schema.enum?.map((value) => (value === null ? "null" : `"${value}"`)).join(", ")}])`;
+  return `${ENUM_SCHEMA}([${schema.enum?.map((value) => (value === null ? "null" : `"${value}"`)).join(", ")}])`;
 }

@@ -14,6 +14,7 @@ export namespace {{namespace}} {
 export const {{@key}}{{#if zodSchema.isCircular}}: z.ZodType<unknown>{{/if}} = {{{zodSchema.code}}};
 {{! Zod schema infered type export }}
 export type {{zodInferedType @key}} = z.infer<typeof {{@key}}>;
+{{#if zodSchema.isEnum}}export const {{zodInferedType @key}} = {{@key}}.enum;{{/if}}
 
 {{/each}}
 {{#if includeNamespace}}
