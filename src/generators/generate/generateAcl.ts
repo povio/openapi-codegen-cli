@@ -13,13 +13,14 @@ export function generateAcl({ resolver, data, tag = "" }: GenerateTypeParams) {
     return;
   }
 
+  const hasAdditionalAbilityImports = endpoints.some(
+    ({ acl }) => acl?.[0].conditions && Object.keys(acl[0].conditions).length > 0,
+  );
   const caslAbilityTupleImport: Import = {
     ...CASL_ABILITY_IMPORT,
     bindings: [
       CASL_ABILITY_BINDING.abilityTuple,
-      ...(endpoints.filter(({ acl }) => acl?.[0].conditions).length > 0
-        ? [CASL_ABILITY_BINDING.forcedSubject, CASL_ABILITY_BINDING.subject]
-        : []),
+      ...(hasAdditionalAbilityImports ? [CASL_ABILITY_BINDING.forcedSubject, CASL_ABILITY_BINDING.subject] : []),
     ],
   };
 
