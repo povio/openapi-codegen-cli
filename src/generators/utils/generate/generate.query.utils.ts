@@ -24,3 +24,9 @@ export const getEndpointPathQueryKeys = (endpoint: Endpoint, endpoints: Endpoint
   const rest = endpoint.path.substring(queryKey.path.length);
   return [`...keys.${queryKey.name}`, ...(rest ? [`"${rest}"`] : [])];
 };
+
+export const getEndpointAllQueryKey = (endpoint: Endpoint, endpoints: Endpoint[]) => {
+  const queryKeys = getAllQueryKeys(endpoints);
+  const queryKey = queryKeys.find(({ path }) => endpoint.path.startsWith(path));
+  return queryKey?.name;
+};

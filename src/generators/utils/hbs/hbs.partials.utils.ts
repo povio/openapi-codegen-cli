@@ -59,7 +59,7 @@ function registerGenerateQueryKeysHelper() {
 }
 
 function registerGenerateQueryHelper() {
-  Handlebars.registerHelper(PartialsHelpers.QUERY, (endpoint: Endpoint) => {
+  Handlebars.registerHelper(PartialsHelpers.QUERY, (endpoint: Endpoint, endpoints: Endpoint[]) => {
     let templateName: string;
     let queryHook: string;
 
@@ -71,7 +71,7 @@ function registerGenerateQueryHelper() {
       queryHook = QUERY_HOOKS.mutation;
     }
 
-    return getHbsPartialTemplateDelegate(templateName)({ endpoint, queryHook });
+    return getHbsPartialTemplateDelegate(templateName)({ endpoint, endpoints, queryHook });
   });
 }
 

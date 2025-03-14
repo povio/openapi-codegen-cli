@@ -8,8 +8,16 @@
  * @statusCodes [{{commaSeparated endpoint.responseStatusCodes}}]
  */
 export const {{queryName endpoint}} = (options?: AppMutationOptions<typeof {{importedEndpointName endpoint}}, { {{{genEndpointParams endpoint}}} }>) => {
+  {{#if (endpointAllQueryKey endpoint endpoints)}} const queryClient = useQueryClient();{{/if}}
+
   return {{queryHook}}({
     mutationFn: ({{#if (endpointParams endpoint)}} { {{{endpointArgs endpoint}}} } {{/if}}) => {{importedEndpointName endpoint}}({{{endpointArgs endpoint}}}),
-    ...options,
+    ...options, {{#if (endpointAllQueryKey endpoint endpoints)}}
+    onSuccess: (...args) => {
+      if (options?.enableInvalidateAll) {
+        queryClient.invalidateQueries({ queryKey: keys.{{endpointAllQueryKey endpoint endpoints}} });
+      }
+      options?.onSuccess?.(...args);
+    },{{/if}}
   });
 };
