@@ -32,6 +32,8 @@ interface BaseGenerateOptions {
   includeNamespaces: boolean;
   importPath: "ts" | "relative" | "absolute";
   configs: Record<GenerateType, GenerateConfig>;
+  standalone: boolean;
+  baseUrl: string;
 }
 
 export type GenerateOptions = BaseGenerateOptions & ZodGenerateOptions & EndpointsGenerateOptions;

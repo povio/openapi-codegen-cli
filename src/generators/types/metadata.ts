@@ -9,7 +9,7 @@ export interface GenerateParams {
 export interface TsTypeBase {
   type: string;
   namespace?: string;
-  filePath?: string;
+  importPath?: string;
 }
 
 export type TsType = TsTypeBase & TsMetaType;
@@ -49,7 +49,7 @@ export type ModelMetadata = TsType;
 
 export type QueryMetadata = {
   name: string;
-  filePath: string;
+  importPath: string;
   namespace?: string;
   isQuery: boolean;
   isMutation: boolean;

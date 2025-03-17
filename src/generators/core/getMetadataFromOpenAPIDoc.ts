@@ -4,7 +4,7 @@ import { GenerateType } from "../types/generate";
 import { GenerateMetadata, ModelMetadata, QueryMetadata, TsMetaType } from "../types/metadata";
 import { GenerateOptions } from "../types/options";
 import { getQueryName } from "../utils/generate/generate.query.utils";
-import { getNamespaceName, getTagFileName } from "../utils/generate/generate.utils";
+import { getNamespaceName, getTagImportPath } from "../utils/generate/generate.utils";
 import { invalidVariableNameCharactersToCamel } from "../utils/js.utils";
 import { isMediaTypeAllowed, isParamMediaTypeAllowed } from "../utils/openapi.utils";
 import { isMutation, isQuery } from "../utils/queries.utils";
@@ -48,7 +48,7 @@ export async function getMetadataFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, 
 
       queries.push({
         name: getQueryName(endpoint),
-        filePath: getTagFileName({ type: generateType, tag, includeTagDir: true, options }),
+        importPath: getTagImportPath({ type: generateType, tag, includeTagDir: true, options }),
         namespace: options.includeNamespaces ? getNamespaceName({ type: generateType, tag, options }) : undefined,
         isQuery: isQuery(endpoint),
         isMutation: isMutation(endpoint),

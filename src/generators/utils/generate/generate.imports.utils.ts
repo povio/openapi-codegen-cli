@@ -1,11 +1,11 @@
-import { DATA_FILE_PATH, DATA_TS_PATH } from "src/generators/const/template.const";
+import { TEMPLATE_DATA_FILE_PATH, TEMPLATE_DATA_TS_PATH } from "src/generators/const/deps.const";
 import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
 import { Endpoint } from "../../types/endpoint";
 import { GenerateType, Import } from "../../types/generate";
 import { GenerateOptions } from "../../types/options";
 import { getUniqueArray } from "../array.utils";
 import { getEndpointName, getEndpointTag } from "./generate.endpoints.utils";
-import { getNamespaceName, getTagFileName } from "./generate.utils";
+import { getNamespaceName, getTagImportPath } from "./generate.utils";
 import { getZodSchemaInferedTypeName } from "./generate.zod.utils";
 
 export function getModelsImports({
@@ -79,7 +79,7 @@ export function getAclImports({
     if (!imports.has(tag)) {
       imports.set(tag, {
         bindings: [options.includeNamespaces ? getNamespaceName({ type: GenerateType.Acl, tag, options }) : name],
-        from: `${getImportPath(options)}${getTagFileName({ type: GenerateType.Acl, tag, includeTagDir: true, options })}`,
+        from: `${getImportPath(options)}${getTagImportPath({ type: GenerateType.Acl, tag, includeTagDir: true, options })}`,
       });
     } else if (!options.includeNamespaces) {
       imports.get(tag)!.bindings.push(name);
@@ -89,13 +89,13 @@ export function getAclImports({
 }
 
 export function getImportPath(options: Pick<GenerateOptions, "output" | "importPath">) {
-  let importPath = DATA_TS_PATH;
+  let importPath = TEMPLATE_DATA_TS_PATH;
   if (options.importPath === "relative") {
     importPath = "../";
   } else if (options.importPath === "absolute") {
     importPath = options.output;
-  } else if (new RegExp(`${DATA_FILE_PATH}`, "g").test(options.output)) {
-    importPath = options.output.replace(new RegExp(`.*${DATA_FILE_PATH}`, "g"), DATA_TS_PATH);
+  } else if (new RegExp(`${TEMPLATE_DATA_FILE_PATH}`, "g").test(options.output)) {
+    importPath = options.output.replace(new RegExp(`.*${TEMPLATE_DATA_FILE_PATH}`, "g"), TEMPLATE_DATA_TS_PATH);
   }
   return `${importPath}/`.replace(/\/\//g, "/");
 }
@@ -122,7 +122,7 @@ function getImports<T>({
       const sameTagDir = currentTag === tag;
       imports.set(tag, {
         bindings: [options.includeNamespaces ? getNamespaceName({ type, tag, options }) : getEntityName(entity)],
-        from: `${sameTagDir ? "./" : getImportPath(options)}${getTagFileName({ type, tag, includeTagDir: !sameTagDir, options })}`,
+        from: `${sameTagDir ? "./" : getImportPath(options)}${getTagImportPath({ type, tag, includeTagDir: !sameTagDir, options })}`,
       });
     } else if (!options.includeNamespaces) {
       imports.get(tag)!.bindings.push(getEntityName(entity));

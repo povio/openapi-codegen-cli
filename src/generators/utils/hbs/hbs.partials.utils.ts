@@ -8,13 +8,13 @@ import { getHbsPartialTemplateDelegate } from "../hbs/hbs-template.utils";
 import { isQuery } from "../queries.utils";
 
 enum PartialsHelpers {
-  IMPORT = "genImport",
-  ENDPOINT_PARAMS = "genEndpointParams",
-  ENDPOINT_CONFIG = "genEndpointConfig",
-  QUERY_KEYS = "genQueryKeys",
-  QUERY = "genQuery",
-  CASL_ABILITY_TYPE = "genCaslAbilityType",
-  CASL_ABILITY_FUNCTION = "genCaslAbilityFunction",
+  Import = "genImport",
+  EndpointParams = "genEndpointParams",
+  EndpointConfig = "genEndpointConfig",
+  QueryKeys = "genQueryKeys",
+  Query = "genQuery",
+  CaslAbilityType = "genCaslAbilityType",
+  CaslAbilityFunction = "genCaslAbilityFunction",
 }
 
 export function registerPartialsHbsHelpers() {
@@ -28,19 +28,19 @@ export function registerPartialsHbsHelpers() {
 }
 
 function registerImportHelper() {
-  Handlebars.registerHelper(PartialsHelpers.IMPORT, (genImport: Import) =>
+  Handlebars.registerHelper(PartialsHelpers.Import, (genImport: Import) =>
     getHbsPartialTemplateDelegate("import")({ import: genImport }),
   );
 }
 
 function registerGenerateEndpointParamsHelper() {
-  Handlebars.registerHelper(PartialsHelpers.ENDPOINT_PARAMS, (endpoint: Endpoint) =>
+  Handlebars.registerHelper(PartialsHelpers.EndpointParams, (endpoint: Endpoint) =>
     getHbsPartialTemplateDelegate("endpoint-params")({ endpoint }),
   );
 }
 
 function registerGenerateEndpointConfigHelper() {
-  Handlebars.registerHelper(PartialsHelpers.ENDPOINT_CONFIG, (endpoint: Endpoint) => {
+  Handlebars.registerHelper(PartialsHelpers.EndpointConfig, (endpoint: Endpoint) => {
     const endpointConfig = getEndpointConfig(endpoint);
     if (Object.keys(endpointConfig).length === 0) {
       return "";
@@ -50,7 +50,7 @@ function registerGenerateEndpointConfigHelper() {
 }
 
 function registerGenerateQueryKeysHelper() {
-  Handlebars.registerHelper(PartialsHelpers.QUERY_KEYS, (endpoints: Endpoint[]) => {
+  Handlebars.registerHelper(PartialsHelpers.QueryKeys, (endpoints: Endpoint[]) => {
     if (endpoints.length === 0) {
       return "";
     }
@@ -59,7 +59,7 @@ function registerGenerateQueryKeysHelper() {
 }
 
 function registerGenerateQueryHelper() {
-  Handlebars.registerHelper(PartialsHelpers.QUERY, (endpoint: Endpoint, endpoints: Endpoint[]) => {
+  Handlebars.registerHelper(PartialsHelpers.Query, (endpoint: Endpoint, endpoints: Endpoint[]) => {
     let templateName: string;
     let queryHook: string;
 
@@ -76,7 +76,7 @@ function registerGenerateQueryHelper() {
 }
 
 function registerGenerateCaslAbilityTypeHelper() {
-  Handlebars.registerHelper(PartialsHelpers.CASL_ABILITY_TYPE, (endpoint: Endpoint) => {
+  Handlebars.registerHelper(PartialsHelpers.CaslAbilityType, (endpoint: Endpoint) => {
     return getHbsPartialTemplateDelegate("casl-ability-type")({
       endpoint,
       abilityTupleType: CASL_ABILITY_BINDING.abilityTuple,
@@ -85,7 +85,7 @@ function registerGenerateCaslAbilityTypeHelper() {
 }
 
 function registerGenerateCaslAbilityFunctionHelper() {
-  Handlebars.registerHelper(PartialsHelpers.CASL_ABILITY_FUNCTION, (endpoint: Endpoint) => {
+  Handlebars.registerHelper(PartialsHelpers.CaslAbilityFunction, (endpoint: Endpoint) => {
     return getHbsPartialTemplateDelegate("casl-ability-function")({ endpoint });
   });
 }

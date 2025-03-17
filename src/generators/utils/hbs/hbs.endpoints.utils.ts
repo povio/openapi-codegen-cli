@@ -14,13 +14,13 @@ import { isParamMediaTypeAllowed } from "../openapi.utils";
 import { camelToSpaceSeparated, capitalize } from "../string.utils";
 
 enum EndpointsHelpers {
-  ENDPOINT_NAME = "endpointName",
-  IMPORTED_ENDPOINT_NAME = "importedEndpointName",
-  ENDPOINT_PARAMS = "endpointParams",
-  ENDPOINT_PATH = "endpointPath",
-  ENDPOINT_BODY = "endpointBody",
-  ENDPOINT_ARGS = "endpointArgs",
-  ENDPOINT_PARAM_DESCRIPTION = "endpointParamDescription",
+  EndpointName = "endpointName",
+  ImportedEndpointName = "importedEndpointName",
+  EndpointParams = "endpointParams",
+  EndpointPath = "endpointPath",
+  EndpointBody = "endpointBody",
+  EndpointArgs = "endpointArgs",
+  EndpointParamDescription = "endpointParamDescription",
 }
 
 export function registerEndpointsHbsHelpers(resolver: SchemaResolver) {
@@ -34,33 +34,33 @@ export function registerEndpointsHbsHelpers(resolver: SchemaResolver) {
 }
 
 function registerEndpointNameHelper() {
-  Handlebars.registerHelper(EndpointsHelpers.ENDPOINT_NAME, getEndpointName);
+  Handlebars.registerHelper(EndpointsHelpers.EndpointName, getEndpointName);
 }
 
 function registerImportedEndpointNameHelper(options: GenerateOptions) {
-  Handlebars.registerHelper(EndpointsHelpers.IMPORTED_ENDPOINT_NAME, (endpoint: Endpoint) =>
+  Handlebars.registerHelper(EndpointsHelpers.ImportedEndpointName, (endpoint: Endpoint) =>
     getImportedEndpointName(endpoint, options),
   );
 }
 
 function registerEndpointPathHelper() {
-  Handlebars.registerHelper(EndpointsHelpers.ENDPOINT_PATH, getEndpointPath);
+  Handlebars.registerHelper(EndpointsHelpers.EndpointPath, getEndpointPath);
 }
 
 function registerEndpointBodyHelper() {
-  Handlebars.registerHelper(EndpointsHelpers.ENDPOINT_BODY, (endpoint: Endpoint) =>
+  Handlebars.registerHelper(EndpointsHelpers.EndpointBody, (endpoint: Endpoint) =>
     endpoint.parameters.find((params) => params.type === "Body"),
   );
 }
 
 function registerEndpointParamsHelper(resolver: SchemaResolver) {
-  Handlebars.registerHelper(EndpointsHelpers.ENDPOINT_PARAMS, (endpoint: Endpoint) =>
+  Handlebars.registerHelper(EndpointsHelpers.EndpointParams, (endpoint: Endpoint) =>
     mapEndpointParamsToFunctionParams(resolver, endpoint),
   );
 }
 
 function registerEndpointArgsHelper(resolver: SchemaResolver) {
-  Handlebars.registerHelper(EndpointsHelpers.ENDPOINT_ARGS, (endpoint: Endpoint) =>
+  Handlebars.registerHelper(EndpointsHelpers.EndpointArgs, (endpoint: Endpoint) =>
     mapEndpointParamsToFunctionParams(resolver, endpoint)
       .map((param) => param.name)
       .join(", "),
@@ -69,7 +69,7 @@ function registerEndpointArgsHelper(resolver: SchemaResolver) {
 
 function registerEndpointParamDescriptionHelper() {
   Handlebars.registerHelper(
-    EndpointsHelpers.ENDPOINT_PARAM_DESCRIPTION,
+    EndpointsHelpers.EndpointParamDescription,
     (endpointParam: ReturnType<typeof mapEndpointParamsToFunctionParams>[0]) => {
       const strs = [`${endpointParam.paramType} parameter`];
 

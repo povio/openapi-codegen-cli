@@ -3,6 +3,7 @@ import { describe, expect, test } from "vitest";
 import { GenerateOptions } from "../types/options";
 import { getOperationName, getUniqueOperationName, pathToVariableName, toBoolean } from "./openapi.utils";
 import { getOperationsByTag } from "./tag.utils";
+import { GenerateType } from "../types/generate";
 
 const path = "/auth/provider/local/login";
 const method = "post";
@@ -16,23 +17,29 @@ const options: GenerateOptions = {
   includeNamespaces: true,
   importPath: "ts",
   configs: {
-    models: {
+    [GenerateType.Models]: {
       outputFileNameSuffix: "models",
       namespaceSuffix: "Models",
     },
-    endpoints: {
+    [GenerateType.Endpoints]: {
       outputFileNameSuffix: "api",
       namespaceSuffix: "Api",
     },
-    queries: {
+    [GenerateType.Queries]: {
       outputFileNameSuffix: "queries",
       namespaceSuffix: "Queries",
+    },
+    [GenerateType.Acl]: {
+      outputFileNameSuffix: "acl",
+      namespaceSuffix: "Acl",
     },
   },
   schemaSuffix: "Schema",
   enumSuffix: "Enum",
   additionalPropertiesDefaultValue: false,
   removeOperationPrefixEndingWith: "Controller_",
+  standalone: false,
+  baseUrl: "",
 };
 
 const pathNames = ["/auth/provider/local/login", "/auth/provider/local/register"];

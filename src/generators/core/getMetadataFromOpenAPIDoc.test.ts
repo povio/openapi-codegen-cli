@@ -11,7 +11,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
   const Category: TsType = {
     type: "Category",
     namespace: "PetModels",
-    filePath: "pet/pet.models",
+    importPath: "pet/pet.models",
     metaType: "object",
     objectProperties: [
       { name: "id", type: "number", isRequired: false, metaType: "primitive" },
@@ -22,7 +22,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
   const Tag: TsType = {
     type: "Tag",
     namespace: "PetModels",
-    filePath: "pet/pet.models",
+    importPath: "pet/pet.models",
     metaType: "object",
     objectProperties: [
       { name: "id", type: "number", isRequired: false, metaType: "primitive" },
@@ -33,7 +33,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
   const Pet: TsType = {
     type: "Pet",
     namespace: "PetModels",
-    filePath: "pet/pet.models",
+    importPath: "pet/pet.models",
     metaType: "object",
     objectProperties: [
       { name: "id", type: "number", isRequired: false, metaType: "primitive" },
@@ -60,7 +60,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
   const ApiResponse: TsType = {
     type: "ApiResponse",
     namespace: "PetModels",
-    filePath: "pet/pet.models",
+    importPath: "pet/pet.models",
     metaType: "object",
     objectProperties: [
       { name: "code", type: "number", isRequired: false, metaType: "primitive" },
@@ -72,7 +72,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
   const Order: TsType = {
     type: "Order",
     namespace: "StoreModels",
-    filePath: "store/store.models",
+    importPath: "store/store.models",
     metaType: "object",
     objectProperties: [
       { name: "id", type: "number", isRequired: false, metaType: "primitive" },
@@ -87,7 +87,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
   const User: TsType = {
     type: "User",
     namespace: "UserModels",
-    filePath: "user/user.models",
+    importPath: "user/user.models",
     metaType: "object",
     objectProperties: [
       { name: "id", type: "number", isRequired: false, metaType: "primitive" },
@@ -104,21 +104,21 @@ describe("getMetadataFromOpenAPIDoc", async () => {
   const CreateUsersWithListInputBody: TsType = {
     type: "CreateUsersWithListInputBody",
     namespace: "UserModels",
-    filePath: "user/user.models",
+    importPath: "user/user.models",
     metaType: "array",
     arrayType: { ...User },
   };
 
   const FindPetsByStatusStatusParam: TsType = {
     type: "FindPetsByStatusStatusParam",
-    filePath: "pet/pet.models",
+    importPath: "pet/pet.models",
     namespace: "PetModels",
     metaType: "primitive",
   };
 
   const FindPetsByStatusResponse: TsType = {
     type: "FindPetsByStatusResponse",
-    filePath: "pet/pet.models",
+    importPath: "pet/pet.models",
     namespace: "PetModels",
     metaType: "array",
     arrayType: { ...Pet },
@@ -126,7 +126,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
 
   const FindPetsByTagsTagsParam: TsType = {
     type: "FindPetsByTagsTagsParam",
-    filePath: "pet/pet.models",
+    importPath: "pet/pet.models",
     namespace: "PetModels",
     metaType: "array",
     arrayType: { type: "string", metaType: "primitive" },
@@ -134,7 +134,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
 
   const FindPetsByTagsResponse: TsType = {
     type: "FindPetsByTagsResponse",
-    filePath: "pet/pet.models",
+    importPath: "pet/pet.models",
     namespace: "PetModels",
     metaType: "array",
     arrayType: { ...Pet },
@@ -142,7 +142,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
 
   const GetInventoryResponse: TsType = {
     type: "GetInventoryResponse",
-    filePath: "store/store.models",
+    importPath: "store/store.models",
     namespace: "StoreModels",
     metaType: "object",
     objectProperties: [],
@@ -150,7 +150,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
 
   const Address: TsType = {
     type: "Address",
-    filePath: "common/common.models",
+    importPath: "common/common.models",
     namespace: "CommonModels",
     metaType: "object",
     objectProperties: [
@@ -163,7 +163,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
 
   const Customer: TsType = {
     type: "Customer",
-    filePath: "common/common.models",
+    importPath: "common/common.models",
     namespace: "CommonModels",
     metaType: "object",
     objectProperties: [
@@ -182,14 +182,14 @@ describe("getMetadataFromOpenAPIDoc", async () => {
   const FindPetsByStatusStatusEnum: ModelMetadata = {
     type: "FindPetsByStatusStatusEnum",
     namespace: "PetModels",
-    filePath: "pet/pet.models",
+    importPath: "pet/pet.models",
     metaType: "primitive",
   };
 
   const OrderStatusEnum: ModelMetadata = {
     type: "OrderStatusEnum",
     namespace: "StoreModels",
-    filePath: "store/store.models",
+    importPath: "store/store.models",
     metaType: "primitive",
   };
 
@@ -215,7 +215,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
   const queries: QueryMetadata[] = [
     {
       name: "useUpdatePet",
-      filePath: "pet/pet.queries",
+      importPath: "pet/pet.queries",
       namespace: "PetQueries",
       isQuery: false,
       isMutation: true,
@@ -224,7 +224,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
     },
     {
       name: "useAddPet",
-      filePath: "pet/pet.queries",
+      importPath: "pet/pet.queries",
       namespace: "PetQueries",
       isQuery: false,
       isMutation: true,
@@ -233,7 +233,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
     },
     {
       name: "useFindPetsByStatus",
-      filePath: "pet/pet.queries",
+      importPath: "pet/pet.queries",
       namespace: "PetQueries",
       isQuery: true,
       isMutation: false,
@@ -242,7 +242,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
     },
     {
       name: "useFindPetsByTags",
-      filePath: "pet/pet.queries",
+      importPath: "pet/pet.queries",
       namespace: "PetQueries",
       isQuery: true,
       isMutation: false,
@@ -251,7 +251,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
     },
     {
       name: "useGetPetById",
-      filePath: "pet/pet.queries",
+      importPath: "pet/pet.queries",
       namespace: "PetQueries",
       isQuery: true,
       isMutation: false,
@@ -260,7 +260,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
     },
     {
       name: "useUpdatePetWithForm",
-      filePath: "pet/pet.queries",
+      importPath: "pet/pet.queries",
       namespace: "PetQueries",
       isQuery: false,
       isMutation: true,
@@ -273,7 +273,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
     },
     {
       name: "useDeletePet",
-      filePath: "pet/pet.queries",
+      importPath: "pet/pet.queries",
       namespace: "PetQueries",
       isQuery: false,
       isMutation: true,
@@ -285,7 +285,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
     },
     {
       name: "useUploadFile",
-      filePath: "pet/pet.queries",
+      importPath: "pet/pet.queries",
       namespace: "PetQueries",
       isQuery: false,
       isMutation: true,
@@ -298,7 +298,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
     },
     {
       name: "useGetInventory",
-      filePath: "store/store.queries",
+      importPath: "store/store.queries",
       namespace: "StoreQueries",
       isQuery: true,
       isMutation: false,
@@ -307,7 +307,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
     },
     {
       name: "usePlaceOrder",
-      filePath: "store/store.queries",
+      importPath: "store/store.queries",
       namespace: "StoreQueries",
       isQuery: false,
       isMutation: true,
@@ -316,7 +316,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
     },
     {
       name: "useGetOrderById",
-      filePath: "store/store.queries",
+      importPath: "store/store.queries",
       namespace: "StoreQueries",
       isQuery: true,
       isMutation: false,
@@ -325,7 +325,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
     },
     {
       name: "useDeleteOrder",
-      filePath: "store/store.queries",
+      importPath: "store/store.queries",
       namespace: "StoreQueries",
       isQuery: false,
       isMutation: true,
@@ -334,7 +334,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
     },
     {
       name: "useCreateUser",
-      filePath: "user/user.queries",
+      importPath: "user/user.queries",
       namespace: "UserQueries",
       isQuery: false,
       isMutation: true,
@@ -343,7 +343,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
     },
     {
       name: "useCreateUsersWithListInput",
-      filePath: "user/user.queries",
+      importPath: "user/user.queries",
       namespace: "UserQueries",
       isQuery: false,
       isMutation: true,
@@ -352,7 +352,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
     },
     {
       name: "useLoginUser",
-      filePath: "user/user.queries",
+      importPath: "user/user.queries",
       namespace: "UserQueries",
       isQuery: true,
       isMutation: false,
@@ -364,7 +364,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
     },
     {
       name: "useLogoutUser",
-      filePath: "user/user.queries",
+      importPath: "user/user.queries",
       namespace: "UserQueries",
       isQuery: true,
       isMutation: false,
@@ -373,7 +373,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
     },
     {
       name: "useGetUserByName",
-      filePath: "user/user.queries",
+      importPath: "user/user.queries",
       namespace: "UserQueries",
       isQuery: true,
       isMutation: false,
@@ -382,7 +382,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
     },
     {
       name: "useUpdateUser",
-      filePath: "user/user.queries",
+      importPath: "user/user.queries",
       namespace: "UserQueries",
       isQuery: false,
       isMutation: true,
@@ -394,7 +394,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
     },
     {
       name: "useDeleteUser",
-      filePath: "user/user.queries",
+      importPath: "user/user.queries",
       namespace: "UserQueries",
       isQuery: false,
       isMutation: true,

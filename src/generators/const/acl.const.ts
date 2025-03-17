@@ -1,6 +1,6 @@
-import { Import } from "../types/generate";
+import { GenerateFile, Import } from "../types/generate";
 
-export const ACL_APP_ABILITY_FILENAME = "acl/app.ability";
+export const ACL_APP_ABILITY_FILE: GenerateFile = { fileName: "acl/app.ability", extension: "ts" };
 export const ACL_ALL_ABILITIES = "AllAbilities";
 
 export const CASL_ABILITY_BINDING = {

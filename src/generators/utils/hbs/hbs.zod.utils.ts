@@ -4,8 +4,8 @@ import { GenerateOptions } from "../../types/options";
 import { getImportedZodSchemaName, getZodSchemaInferedTypeName } from "../generate/generate.zod.utils";
 
 enum ZodHelpers {
-  INFERED_TYPE = "zodInferedType",
-  IMPORTED_ZOD_SCHEMA_NAME = "importedZodSchemaName",
+  ZodInferedType = "zodInferedType",
+  ImportedZodSchemaName = "importedZodSchemaName",
 }
 
 export function registerZodHbsHelpers(resolver: SchemaResolver) {
@@ -14,13 +14,13 @@ export function registerZodHbsHelpers(resolver: SchemaResolver) {
 }
 
 function registerInferedTypeHelper(options: GenerateOptions) {
-  Handlebars.registerHelper(ZodHelpers.INFERED_TYPE, (zodSchema: string) =>
+  Handlebars.registerHelper(ZodHelpers.ZodInferedType, (zodSchema: string) =>
     getZodSchemaInferedTypeName(zodSchema, options),
   );
 }
 
 function registerImportedZodSchemaNameHelper(resolver: SchemaResolver) {
-  Handlebars.registerHelper(ZodHelpers.IMPORTED_ZOD_SCHEMA_NAME, (zodSchemaName: string) =>
+  Handlebars.registerHelper(ZodHelpers.ImportedZodSchemaName, (zodSchemaName: string) =>
     getImportedZodSchemaName(resolver, zodSchemaName),
   );
 }

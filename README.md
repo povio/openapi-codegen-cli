@@ -1,8 +1,8 @@
 # OpenAPI code generation CLI
 
-**NOTE:** This CLI tool is specifically designed for custom usage within our organization. The generated code output is in alignment with our internal templates.
+**NOTE:** This CLI tool is primarily designed for use within our organization. The generated code output aligns with our internal template. If you are using this tool without our internal template, make sure to use it in standalone mode.
 
-Use this tool to generate code (Zod schemas, API definitions and React queries) from OpenAPI v3 specification. API definitions are customized to fit the REST client wrapper used in our Next.js template. React queries are generated in alignment with our code standards, without the need for explicit types.
+Use this tool to generate code (Zod schemas, TypeScript types, API definitions, and React queries) from an OpenAPI v3 specification. API definitions are generated to use a REST client wrapper that utilizes Axios. React queries are generated in alignment with our code standards, without the need for explicit types.
 
 The tool partially leverages code from [openapi-zod-client](https://github.com/astahmer/openapi-zod-client) repository.
 
@@ -18,37 +18,45 @@ yarn add @povio/openapi-codegen-cli
 yarn openapi-codegen generate --input http://localhost:3001/docs-json
 ```
 
+#### Standalone mode
+
+```bash
+yarn openapi-codegen generate --input http://localhost:3001/docs-json --standalone
+```
+
 ## Options
 
-### Generate command (generates Zod schemas, API definitions and React queries)
+#### Generate command (generates Zod schemas, API definitions and React queries)
 
 ```sh
-  --input                             Path/url to OpenAPI/Swagger document as json/yaml
+  --input                             Path/URL to OpenAPI/Swagger document as JSON/YAML
   --output                            Output path (default: 'output')
   --includeNamespaces                 Include namespaces inside generated files (default: true)
   --splitByTags                       Split output into directories based on tags in OpenAPI operations (default: true)
-  --defaultTag                        Default tag name for code shared accross multiple tags (default: 'Common')
-  --excludeTags                       Comma separated list of tags excluded from the output
-  --extractEnums                      Enums are extracted as seperate Zod schemas (default: true)
-  --removeOperationPrefixEndingWith   Removes prefix that ends with value from operation names (default: 'Controller_')
-  --importPath                        Import path (default: 'ts', possible: 'ts' | 'relative' | 'absolute')
-  --prettier                          Run prettier command on output after code generation (default: true)
+  --defaultTag                        Default tag name for code shared across multiple tags (default: 'Common')
+  --excludeTags                       Comma-separated list of tags to exclude from the output
+  --extractEnums                      Extract enums as separate Zod schemas (default: true)
+  --removeOperationPrefixEndingWith   Remove prefixes that end with the specified value from operation names (default: 'Controller_')
+  --importPath                        Import path (default: 'ts', possible values: 'ts' | 'relative' | 'absolute')
+  --prettier                          Run the Prettier command on the output after code generation (default: true)
   --verbose                           Show log messages during execution
+  --standalone                        Add any missing classes or types—e.g., REST client class, React Query type extensions, etc. (default: false)
+  --baseUrl                           (Standalone mode only) Base URL for the REST client; falls back to the one defined in the OpenAPI spec
 ```
 
-### Check command (checks if OpenAPI spec is compliant)
+#### Check command (checks if OpenAPI spec is compliant)
 
 ```sh
-  --input                             Path/url to OpenAPI/Swagger document as json/yaml
+  --input                             Path/URL to OpenAPI/Swagger document as JSON/YAML
   --splitByTags                       Split output into directories based on tags in OpenAPI operations (default: true)
-  --defaultTag                        Default tag name for code shared accross multiple tags (default: 'Common')
-  --excludeTags                       Comma separated list of tags excluded from the output
+  --defaultTag                        Default tag name for code shared across multiple tags (default: 'Common')
+  --excludeTags                       Comma-separated list of tags to exclude from the output
   --verbose                           Show log messages during execution
 ```
 
 ## Development
 
-### Test locally
+#### Test locally
 
 ```bash
 # prerequisites

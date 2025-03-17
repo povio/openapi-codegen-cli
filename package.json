@@ -1,6 +1,6 @@
 {
   "name": "@povio/openapi-codegen-cli",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "main": "./dist/index.js",
   "bin": {
     "openapi-codegen": "./dist/sh.js"
@@ -14,6 +14,7 @@
     "build": "yarn build:clean && yarn build:types && node ./esbuild.mjs && chmod +x ./dist/sh.js",
     "build:check": "yarn tsc --project . --noEmit",
     "start:dist": "node ./dist/sh.js",
+    "typecheck": "tsc --noEmit",
     "lint": "eslint --fix",
     "format:check": "prettier --check .",
     "format:fix": "prettier --write .",
@@ -21,6 +22,7 @@
   },
   "files": [
     "dist/*",
+    "src/assets/**",
     "src/generators/templates/**",
     "README.md"
   ],

@@ -1,8 +1,9 @@
-import { REST_CLIENT_IMPORT, REST_CLIENT_NAME } from "../const/template.const";
+import { APP_REST_CLIENT_NAME } from "../const/deps.const";
 import { ZOD_IMPORT } from "../const/zod.const";
 import { EndpointParameter } from "../types/endpoint";
-import { GenerateType, GenerateTypeParams } from "../types/generate";
+import { GenerateType, GenerateTypeParams, Import } from "../types/generate";
 import { getUniqueArray } from "../utils/array.utils";
+import { getAppRestClientImportPath } from "../utils/deps.utils";
 import { getModelsImports } from "../utils/generate/generate.imports.utils";
 import { getNamespaceName } from "../utils/generate/generate.utils";
 import { getHbsTemplateDelegate } from "../utils/hbs/hbs-template.utils";
@@ -13,6 +14,11 @@ export function generateEndpoints({ resolver, data, tag = "" }: GenerateTypePara
   if (!endpoints || endpoints.length === 0) {
     return;
   }
+
+  const appRestClientImport: Import = {
+    bindings: [APP_REST_CLIENT_NAME],
+    from: getAppRestClientImportPath(resolver.options),
+  };
 
   const endpointResponseSchemas = endpoints.map((endpoint) => endpoint.response);
   const hasZodImport = endpointResponseSchemas.some((response) => !isNamedZodSchema(response));
@@ -28,13 +34,13 @@ export function generateEndpoints({ resolver, data, tag = "" }: GenerateTypePara
   const hbsTemplate = getHbsTemplateDelegate(resolver, "endpoints");
 
   return hbsTemplate({
-    restClientImport: REST_CLIENT_IMPORT,
+    appRestClientImport,
     hasZodImport,
     zodImport: ZOD_IMPORT,
     modelsImports,
     includeNamespace: resolver.options.includeNamespaces,
     namespace: getNamespaceName({ type: GenerateType.Endpoints, tag, options: resolver.options }),
-    restClientName: REST_CLIENT_NAME,
+    restClientName: APP_REST_CLIENT_NAME,
     endpoints,
   });
 }

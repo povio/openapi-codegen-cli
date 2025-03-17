@@ -6,6 +6,11 @@ export interface Import {
   from: string;
 }
 
+export interface GenerateFile {
+  fileName: string;
+  extension: string;
+}
+
 export enum GenerateType {
   Models = "models",
   Endpoints = "endpoints",

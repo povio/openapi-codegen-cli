@@ -230,6 +230,14 @@ export class SchemaResolver {
       .flat();
   }
 
+  getBaseUrl() {
+    const serverUrl = this.openApiDoc.servers?.[0].url;
+    if (this.options.baseUrl === "" && serverUrl) {
+      return serverUrl;
+    }
+    return this.options.baseUrl;
+  }
+
   private initialize() {
     this.schemaRefs.forEach((ref) => {
       const correctRef = autocorrectRef(ref);

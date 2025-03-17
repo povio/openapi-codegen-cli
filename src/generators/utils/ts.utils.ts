@@ -5,7 +5,7 @@ import { SchemaResolver } from "../core/SchemaResolver.class";
 import { GenerateType } from "../types/generate";
 import { TsMetaType, TsObjectMetaType, TsProperty, TsType, TsTypeBase } from "../types/metadata";
 import { PrimitiveType } from "../types/openapi";
-import { getTagFileName } from "./generate/generate.utils";
+import { getTagImportPath } from "./generate/generate.utils";
 import { getImportedZodSchemaInferedTypeName } from "./generate/generate.zod.utils";
 import { isPrimitiveType, isReferenceObject } from "./openapi.utils";
 import { isNamedZodSchema } from "./zod-schema.utils";
@@ -42,7 +42,14 @@ export function getTsTypeBase({
     type: splitType[splitType.length - 1],
     ...(splitType.length > 1 ? { namespace: splitType[0] } : {}),
     ...(tag
-      ? { filePath: getTagFileName({ type: GenerateType.Models, tag, includeTagDir: true, options: resolver.options }) }
+      ? {
+          importPath: getTagImportPath({
+            type: GenerateType.Models,
+            tag,
+            includeTagDir: true,
+            options: resolver.options,
+          }),
+        }
       : {}),
   };
 }

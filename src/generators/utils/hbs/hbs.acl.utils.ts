@@ -11,14 +11,14 @@ import {
 } from "../generate/generate.acl.utils";
 
 enum AclHelpers {
-  ABILITY_TYPE_NAME = "abilityTypeName",
-  ABILITY_FUNCTION_NAME = "abilityFunctionName",
-  ABILITY_ACTION = "ablityAction",
-  ABILITY_SUBJECT = "ablitySubject",
-  HAS_ABILITY_CONDITIONS = "hasAbilityConditions",
-  ABILITY_CONDITIONS_TYPES = "abilityConditionsTypes",
-  ABILITY_DESCRIPTION = "abilityDescription",
-  TAG_ALL_ABILITIES_NAME = "tagAllAbilitiesName",
+  AbilityTypeName = "abilityTypeName",
+  AbilityFunctionName = "abilityFunctionName",
+  AbilityAction = "ablityAction",
+  AbilitySubject = "ablitySubject",
+  HasAbilityConditions = "hasAbilityConditions",
+  AbilityConditionsTypes = "abilityConditionsTypes",
+  AbilityDescription = "abilityDescription",
+  TagAllAbilitiesName = "tagAllAbilitiesName",
 }
 
 export function registerAclHbsHelpers() {
@@ -33,33 +33,33 @@ export function registerAclHbsHelpers() {
 }
 
 function registerAbilityTypeNameHelper() {
-  Handlebars.registerHelper(AclHelpers.ABILITY_TYPE_NAME, getAbilityTypeName);
+  Handlebars.registerHelper(AclHelpers.AbilityTypeName, getAbilityTypeName);
 }
 
 function registerAbilityFunctionNameHelper() {
-  Handlebars.registerHelper(AclHelpers.ABILITY_FUNCTION_NAME, getAbilityFunctionName);
+  Handlebars.registerHelper(AclHelpers.AbilityFunctionName, getAbilityFunctionName);
 }
 
 function registerAbilityActionHelper() {
-  Handlebars.registerHelper(AclHelpers.ABILITY_ACTION, getAbilityAction);
+  Handlebars.registerHelper(AclHelpers.AbilityAction, getAbilityAction);
 }
 
 function registerAbilitySubjectHelper() {
-  Handlebars.registerHelper(AclHelpers.ABILITY_SUBJECT, getAbilitySubject);
+  Handlebars.registerHelper(AclHelpers.AbilitySubject, getAbilitySubject);
 }
 
 function registerHasAbilityConditionsHelper() {
-  Handlebars.registerHelper(AclHelpers.HAS_ABILITY_CONDITIONS, hasAbilityConditions);
+  Handlebars.registerHelper(AclHelpers.HasAbilityConditions, hasAbilityConditions);
 }
 
 function registerAbilityConditionsTypesHelper() {
-  Handlebars.registerHelper(AclHelpers.ABILITY_CONDITIONS_TYPES, getAbilityConditionsTypes);
+  Handlebars.registerHelper(AclHelpers.AbilityConditionsTypes, getAbilityConditionsTypes);
 }
 
 function registerAbilityDescriptionHelper() {
-  Handlebars.registerHelper(AclHelpers.ABILITY_DESCRIPTION, getAbilityDescription);
+  Handlebars.registerHelper(AclHelpers.AbilityDescription, getAbilityDescription);
 }
 
 function registerTagAllAbilitiesNameHelper() {
-  Handlebars.registerHelper(AclHelpers.TAG_ALL_ABILITIES_NAME, getTagAllAbilitiesName);
+  Handlebars.registerHelper(AclHelpers.TagAllAbilitiesName, getTagAllAbilitiesName);
 }

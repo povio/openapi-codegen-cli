@@ -3,7 +3,7 @@ import { exec } from "child_process";
 import { OpenAPIV3 } from "openapi-types";
 import { generateCodeFromOpenAPIDoc } from "src/generators/generateCodeFromOpenAPIDoc";
 import { GenerateOptions } from "src/generators/types/options";
-import { writeGeneratesFileData } from "src/generators/utils/file.utils";
+import { writeGenerateFileData } from "src/generators/utils/file.utils";
 import { logError, logInfo, logSuccess } from "src/helpers/cli.helper";
 
 export type GenerateParams = {
@@ -20,6 +20,8 @@ export type GenerateParams = {
   | "removeOperationPrefixEndingWith"
   | "importPath"
   | "extractEnums"
+  | "standalone"
+  | "baseUrl"
 >;
 
 export async function generate({ input, excludeTags, prettier, verbose, ...params }: GenerateParams) {
@@ -48,7 +50,7 @@ export async function generate({ input, excludeTags, prettier, verbose, ...param
   if (verbose) {
     logInfo("Writing files...");
   }
-  writeGeneratesFileData(filesData);
+  writeGenerateFileData(filesData);
   if (verbose) {
     logSuccess("Writing finished.");
   }

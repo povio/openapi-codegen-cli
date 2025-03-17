@@ -37,6 +37,12 @@ class GenerateOptions implements GenerateParams {
 
   @YargOption({ envAlias: "verbose", default: false, type: "boolean" })
   verbose!: boolean;
+
+  @YargOption({ envAlias: "standalone", default: false, type: "boolean" })
+  standalone!: boolean;
+
+  @YargOption({ envAlias: "baseUrl", default: "" })
+  baseUrl!: string;
 }
 
 export const command: yargs.CommandModule = {

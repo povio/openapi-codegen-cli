@@ -30,6 +30,8 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
       namespaceSuffix: "Acl",
     },
   },
+  standalone: false,
+  baseUrl: "",
   // Zod options
   schemaSuffix: SCHEMA_SUFFIX,
   enumSuffix: ENUM_SUFFIX,

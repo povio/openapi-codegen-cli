@@ -8,11 +8,11 @@ import {
 import { isQuery } from "../queries.utils";
 
 enum QueryHelpers {
-  QUERY_NAME = "queryName",
-  ALL_QUERY_KEYS = "allQueryKeys",
-  ENDPOINT_PATH_QUERY_KEYS = "endpointPathQueryKeys",
-  ENDPOINT_ALL_QUERY_KEY = "endpointAllQueryKey",
-  IS_QUERY = "isQuery",
+  QueryName = "queryName",
+  AllQueryKeys = "allQueryKeys",
+  EndpointPathQueryKeys = "endpointPathQueryKeys",
+  EndpointAllQueryKey = "endpointAllQueryKey",
+  IsQuery = "isQuery",
 }
 
 export function registerQueryHbsHelpers() {
@@ -24,21 +24,21 @@ export function registerQueryHbsHelpers() {
 }
 
 function registerQueryNameHelper() {
-  Handlebars.registerHelper(QueryHelpers.QUERY_NAME, getQueryName);
+  Handlebars.registerHelper(QueryHelpers.QueryName, getQueryName);
 }
 
 function registerQueryKeysHelper() {
-  Handlebars.registerHelper(QueryHelpers.ALL_QUERY_KEYS, getAllQueryKeys);
+  Handlebars.registerHelper(QueryHelpers.AllQueryKeys, getAllQueryKeys);
 }
 
 function registerEndpointPathQueryKeysHelper() {
-  Handlebars.registerHelper(QueryHelpers.ENDPOINT_PATH_QUERY_KEYS, getEndpointPathQueryKeys);
+  Handlebars.registerHelper(QueryHelpers.EndpointPathQueryKeys, getEndpointPathQueryKeys);
 }
 
 function registerEndpointAllQueryKeyHelper() {
-  Handlebars.registerHelper(QueryHelpers.ENDPOINT_ALL_QUERY_KEY, getEndpointAllQueryKey);
+  Handlebars.registerHelper(QueryHelpers.EndpointAllQueryKey, getEndpointAllQueryKey);
 }
 
 function registerIsQueryHelper() {
-  Handlebars.registerHelper(QueryHelpers.IS_QUERY, isQuery);
+  Handlebars.registerHelper(QueryHelpers.IsQuery, isQuery);
 }

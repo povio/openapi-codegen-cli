@@ -1,5 +1,5 @@
 import { QUERY_HOOKS, QUERY_IMPORT } from "../const/query.const";
-import { QUERY_OPTIONS_TYPES, QUERY_TYPES_IMPORT } from "../const/template.const";
+import { QUERY_OPTIONS_TYPES } from "../const/deps.const";
 import { EndpointParameter } from "../types/endpoint";
 import { GenerateType, GenerateTypeParams, Import } from "../types/generate";
 import { getUniqueArray } from "../utils/array.utils";
@@ -9,6 +9,7 @@ import { getNamespaceName } from "../utils/generate/generate.utils";
 import { getHbsTemplateDelegate } from "../utils/hbs/hbs-template.utils";
 import { isMutation, isQuery } from "../utils/queries.utils";
 import { isNamedZodSchema } from "../utils/zod-schema.utils";
+import { getQueryTypesImportPath } from "../utils/deps.utils";
 
 export function generateQueries({ resolver, data, tag = "" }: GenerateTypeParams) {
   const endpoints = data.get(tag)?.endpoints;
@@ -31,11 +32,11 @@ export function generateQueries({ resolver, data, tag = "" }: GenerateTypeParams
   };
 
   const queryTypesImport: Import = {
-    ...QUERY_TYPES_IMPORT,
     bindings: [
       ...(queryEndpoints.length > 0 ? [QUERY_OPTIONS_TYPES.query] : []),
       ...(mutationEndpoints.length > 0 ? [QUERY_OPTIONS_TYPES.mutation] : []),
     ],
+    from: getQueryTypesImportPath(resolver.options),
   };
 
   const endpointParams = [...queryEndpoints, ...mutationEndpoints].reduce(
