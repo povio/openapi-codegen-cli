@@ -1,8 +1,6 @@
 export const keys = {
-    {{#each (allQueryKeys endpoints) as | queryKey |}}
-    {{queryKey.name}}: ["{{queryKey.path}}"] as const,
-    {{/each}}
-    {{#each endpoints as | endpoint |}}
-    {{endpointName endpoint}}: ({{{genEndpointParams endpoint}}}) => [{{{commaSeparated (endpointPathQueryKeys endpoint ../endpoints)}}}, {{{endpointArgs endpoint}}}] as const,
+    all: ["{{namespace}}"] as const,
+    {{#each queryEndpoints as | endpoint |}}
+    {{endpointName endpoint}}: ({{{genEndpointParams endpoint}}}) => [...keys.all, "{{endpoint.path}}", {{{endpointArgs endpoint}}}] as const,
     {{/each}}
 };

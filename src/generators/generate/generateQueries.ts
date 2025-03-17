@@ -4,7 +4,6 @@ import { EndpointParameter } from "../types/endpoint";
 import { GenerateType, GenerateTypeParams, Import } from "../types/generate";
 import { getUniqueArray } from "../utils/array.utils";
 import { getEndpointsImports, getModelsImports } from "../utils/generate/generate.imports.utils";
-import { getEndpointAllQueryKey } from "../utils/generate/generate.query.utils";
 import { getNamespaceName } from "../utils/generate/generate.utils";
 import { getHbsTemplateDelegate } from "../utils/hbs/hbs-template.utils";
 import { isMutation, isQuery } from "../utils/queries.utils";
@@ -25,9 +24,7 @@ export function generateQueries({ resolver, data, tag = "" }: GenerateTypeParams
     bindings: [
       ...(queryEndpoints.length > 0 ? [QUERY_HOOKS.query] : []),
       ...(mutationEndpoints.length > 0 ? [QUERY_HOOKS.mutation] : []),
-      ...(mutationEndpoints.some((endpoint) => getEndpointAllQueryKey(endpoint, queryEndpoints))
-        ? [QUERY_HOOKS.queryClient]
-        : []),
+      ...(queryEndpoints.length > 0 && mutationEndpoints.length > 0 ? [QUERY_HOOKS.queryClient] : []),
     ],
   };
 

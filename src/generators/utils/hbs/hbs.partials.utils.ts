@@ -50,16 +50,16 @@ function registerGenerateEndpointConfigHelper() {
 }
 
 function registerGenerateQueryKeysHelper() {
-  Handlebars.registerHelper(PartialsHelpers.QueryKeys, (endpoints: Endpoint[]) => {
-    if (endpoints.length === 0) {
+  Handlebars.registerHelper(PartialsHelpers.QueryKeys, (queryEndpoints: Endpoint[], namespace: string) => {
+    if (queryEndpoints.length === 0) {
       return "";
     }
-    return getHbsPartialTemplateDelegate("query-keys")({ endpoints });
+    return getHbsPartialTemplateDelegate("query-keys")({ queryEndpoints, namespace });
   });
 }
 
 function registerGenerateQueryHelper() {
-  Handlebars.registerHelper(PartialsHelpers.Query, (endpoint: Endpoint, endpoints: Endpoint[]) => {
+  Handlebars.registerHelper(PartialsHelpers.Query, (endpoint: Endpoint, queryEndpoints: Endpoint[]) => {
     let templateName: string;
     let queryHook: string;
 
@@ -71,7 +71,7 @@ function registerGenerateQueryHelper() {
       queryHook = QUERY_HOOKS.mutation;
     }
 
-    return getHbsPartialTemplateDelegate(templateName)({ endpoint, endpoints, queryHook });
+    return getHbsPartialTemplateDelegate(templateName)({ endpoint, queryEndpoints, queryHook });
   });
 }
 
