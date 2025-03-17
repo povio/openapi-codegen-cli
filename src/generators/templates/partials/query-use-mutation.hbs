@@ -1,12 +1,4 @@
-/** 
- * Mutation `{{queryName endpoint}}`{{#if endpoint.summary}}
- * @summary {{addAsteriskAfterNewLine endpoint.summary}}{{/if}}{{#if endpoint.description}} 
- * @description {{addAsteriskAfterNewLine endpoint.description}}{{/if}}{{#if endpoint.acl}}
- * @permission Requires `{{abilityFunctionName endpoint}}` ability {{/if}}
-{{#if (endpointParams endpoint)}}{{#each (endpointParams endpoint) as | endpointParam |}} * @param { {{endpointParam.type}} } mutation.{{endpointParam.name}} {{{endpointParamDescription endpointParam}}}
-{{/each}}{{/if}} * @param { AppMutationOptions } options Mutation options
- * @statusCodes [{{commaSeparated endpoint.responseStatusCodes}}]
- */
+{{{genQueryJsDocs endpoint}}}
 export const {{queryName endpoint}} = (options?: AppMutationOptions<typeof {{importedEndpointName endpoint}}, { {{{genEndpointParams endpoint}}} }>) => {
   {{#if queryEndpoints}} const queryClient = useQueryClient();{{/if}}
 

@@ -10,12 +10,6 @@ export interface EndpointParameter {
   bodyObject?: OpenAPIV3.RequestBodyObject;
 }
 
-export interface EndpointResponse {
-  statusCode: string;
-  description?: string;
-  zodSchema: string;
-}
-
 interface EndpointError {
   status: number | "default";
   description?: string;

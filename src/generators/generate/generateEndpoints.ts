@@ -3,7 +3,7 @@ import { ZOD_IMPORT } from "../const/zod.const";
 import { EndpointParameter } from "../types/endpoint";
 import { GenerateType, GenerateTypeParams, Import } from "../types/generate";
 import { getUniqueArray } from "../utils/array.utils";
-import { getAppRestClientImportPath } from "../utils/deps.utils";
+import { getAppRestClientImportPath } from "../utils/generate/generate.utils";
 import { getModelsImports } from "../utils/generate/generate.imports.utils";
 import { getNamespaceName } from "../utils/generate/generate.utils";
 import { getHbsTemplateDelegate } from "../utils/hbs/hbs-template.utils";

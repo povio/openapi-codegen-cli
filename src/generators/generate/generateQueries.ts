@@ -8,7 +8,7 @@ import { getNamespaceName } from "../utils/generate/generate.utils";
 import { getHbsTemplateDelegate } from "../utils/hbs/hbs-template.utils";
 import { isMutation, isQuery } from "../utils/queries.utils";
 import { isNamedZodSchema } from "../utils/zod-schema.utils";
-import { getQueryTypesImportPath } from "../utils/deps.utils";
+import { getQueryTypesImportPath } from "../utils/generate/generate.utils";
 
 export function generateQueries({ resolver, data, tag = "" }: GenerateTypeParams) {
   const endpoints = data.get(tag)?.endpoints;
@@ -36,10 +36,7 @@ export function generateQueries({ resolver, data, tag = "" }: GenerateTypeParams
     from: getQueryTypesImportPath(resolver.options),
   };
 
-  const endpointParams = [...queryEndpoints, ...mutationEndpoints].reduce(
-    (prev, curr) => [...prev, ...curr.parameters],
-    [] as EndpointParameter[],
-  );
+  const endpointParams = endpoints.reduce((prev, curr) => [...prev, ...curr.parameters], [] as EndpointParameter[]);
   const modelsImports = getModelsImports({
     resolver,
     tag,

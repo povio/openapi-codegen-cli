@@ -150,6 +150,7 @@ export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver) {
           if (isMainResponseStatus(status)) {
             endpoint.response = responseZodSchema;
             endpoint.responseObject = responseObj;
+            endpoint.responseDescription = responseObj.description;
           } else if (statusCode !== "default" && isErrorStatus(status)) {
             endpoint.errors.push({
               zodSchema: responseZodSchema,

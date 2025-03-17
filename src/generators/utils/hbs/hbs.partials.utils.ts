@@ -13,6 +13,7 @@ enum PartialsHelpers {
   EndpointConfig = "genEndpointConfig",
   QueryKeys = "genQueryKeys",
   Query = "genQuery",
+  QueryJsDocs = "genQueryJsDocs",
   CaslAbilityType = "genCaslAbilityType",
   CaslAbilityFunction = "genCaslAbilityFunction",
 }
@@ -23,6 +24,7 @@ export function registerPartialsHbsHelpers() {
   registerGenerateEndpointConfigHelper();
   registerGenerateQueryKeysHelper();
   registerGenerateQueryHelper();
+  registerGenerateQueryJsDocsHelper();
   registerGenerateCaslAbilityTypeHelper();
   registerGenerateCaslAbilityFunctionHelper();
 }
@@ -72,6 +74,12 @@ function registerGenerateQueryHelper() {
     }
 
     return getHbsPartialTemplateDelegate(templateName)({ endpoint, queryEndpoints, queryHook });
+  });
+}
+
+function registerGenerateQueryJsDocsHelper() {
+  Handlebars.registerHelper(PartialsHelpers.QueryJsDocs, (endpoint: Endpoint) => {
+    return getHbsPartialTemplateDelegate("query-js-docs")({ endpoint });
   });
 }
 

@@ -1,12 +1,4 @@
-/** 
- * Query `{{queryName endpoint}}`{{#if endpoint.summary}}
- * @summary {{addAsteriskAfterNewLine endpoint.summary}}{{/if}}{{#if endpoint.description}} 
- * @description {{addAsteriskAfterNewLine endpoint.description}}{{/if}}{{#if endpoint.acl}}
- * @permission Requires `{{abilityFunctionName endpoint}}` ability {{/if}}
-{{#if (endpointParams endpoint)}}{{#each (endpointParams endpoint) as | endpointParam |}} * @param { {{endpointParam.type}} } object.{{endpointParam.name}} {{{endpointParamDescription endpointParam}}}
-{{/each}}{{/if}} * @param { AppQueryOptions } options Query options
- * @statusCodes [{{commaSeparated endpoint.responseStatusCodes}}]
- */
+{{{genQueryJsDocs endpoint}}}
 export const {{queryName endpoint}} = <TData>({{#if (endpointParams endpoint)}}{ {{{endpointArgs endpoint}}} }: { {{{genEndpointParams endpoint}}} }, {{/if}}options?: AppQueryOptions<typeof {{importedEndpointName endpoint}}, TData>) => {
   return {{queryHook}}({
     queryKey: keys.{{endpointName endpoint}}({{#if (endpointParams endpoint)}}{{{endpointArgs endpoint}}}{{/if}}),

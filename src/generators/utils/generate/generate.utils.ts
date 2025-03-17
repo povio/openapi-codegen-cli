@@ -1,6 +1,14 @@
+import {
+  STANDALONE_APP_REST_CLIENT_FILE,
+  STANDALONE_ASSETS,
+  StandaloneAssetEnum,
+  TEMPLATE_IMPORT_PATH_APP_REST_CLIENT,
+  TEMPLATE_IMPORT_PATH_QUERY_TYPES,
+} from "src/generators/const/deps.const";
 import { GenerateFile, GenerateType } from "../../types/generate";
 import { GenerateOptions } from "../../types/options";
 import { capitalize, decapitalize } from "../string.utils";
+import { getImportPath } from "./generate.imports.utils";
 
 export function getFileNameWithExtension({ fileName, extension }: GenerateFile) {
   return `${fileName}.${extension}`;
@@ -41,3 +49,17 @@ export const getNamespaceName = ({
   tag: string;
   options: GenerateOptions;
 }) => `${capitalize(tag)}${options.configs[type].namespaceSuffix}`;
+
+export function getAppRestClientImportPath(options: GenerateOptions) {
+  if (!options.standalone) {
+    return TEMPLATE_IMPORT_PATH_APP_REST_CLIENT;
+  }
+  return `${getImportPath(options)}${STANDALONE_APP_REST_CLIENT_FILE.fileName}`;
+}
+
+export function getQueryTypesImportPath(options: GenerateOptions) {
+  if (!options.standalone) {
+    return TEMPLATE_IMPORT_PATH_QUERY_TYPES;
+  }
+  return `${getImportPath(options)}${STANDALONE_ASSETS[StandaloneAssetEnum.ReactQueryTypes].fileName}`;
+}
