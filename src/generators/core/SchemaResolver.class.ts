@@ -62,6 +62,7 @@ export interface EnumZodSchemaData {
     zodSchemaNameSegments: string[][];
     tags: string[];
     schemaRefs: string[];
+    schemas: (OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject)[];
   };
 }
 
@@ -190,6 +191,10 @@ export class SchemaResolver {
     return this.enumZodSchemaData.find((data) => data.code === code);
   }
 
+  getEnumZodSchemaDataByName(enumZodSchemaName: string) {
+    return this.enumZodSchemaData.find(({ zodSchemaName }) => zodSchemaName === enumZodSchemaName);
+  }
+
   getEnumZodSchemaNamesReferencedBySchemaRef(schemaRef: string) {
     return this.enumZodSchemaData.reduce((acc, { zodSchemaName, meta }) => {
       if (zodSchemaName && meta.schemaRefs.includes(schemaRef)) {
@@ -238,6 +243,26 @@ export class SchemaResolver {
     return this.options.baseUrl;
   }
 
+  getZodSchemaObj(zodSchemaName: string) {
+    const ref = this.getRefByZodSchemaName(zodSchemaName);
+    if (ref) {
+      return this.getSchemaByRef(ref);
+    }
+
+    const schema = this.getSchemaByCompositeZodSchemaName(zodSchemaName);
+    if (schema) {
+      return schema;
+    }
+
+    const enumZodSchemaData = this.getEnumZodSchemaDataByName(zodSchemaName);
+    if (enumZodSchemaData) {
+      return enumZodSchemaData.meta.schemas.reduce(
+        (acc, curr) => ({ ...acc, ...this.resolveObject(curr) }),
+        {} as OpenAPIV3.SchemaObject,
+      );
+    }
+  }
+
   private initialize() {
     this.schemaRefs.forEach((ref) => {
       const correctRef = autocorrectRef(ref);
@@ -253,7 +278,7 @@ export class SchemaResolver {
       for (const method in pathItem) {
         const operation = pathItem[method as keyof typeof pathItem] as OperationObject | undefined;
 
-        if (!operation || (operation.deprecated && !this.options?.withDeprecatedEndpoints)) {
+        if (!operation || (operation.deprecated && !this.options.withDeprecatedEndpoints)) {
           continue;
         }
 

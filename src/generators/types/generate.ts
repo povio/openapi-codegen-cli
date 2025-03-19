@@ -1,3 +1,4 @@
+import { OpenAPIV3 } from "openapi-types";
 import { SchemaResolver } from "../core/SchemaResolver.class";
 import { Endpoint } from "./endpoint";
 
@@ -9,6 +10,13 @@ export interface Import {
 export interface GenerateFile {
   fileName: string;
   extension: string;
+}
+
+export interface GenerateZodSchemaData {
+  code: string;
+  isCiruclar: boolean;
+  isEnum: boolean;
+  schemaObj?: OpenAPIV3.SchemaObject;
 }
 
 export enum GenerateType {

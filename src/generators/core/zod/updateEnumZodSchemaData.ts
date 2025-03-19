@@ -4,7 +4,7 @@ import { getSchemaNameByRef, isReferenceObject } from "src/generators/utils/open
 import { capitalize, getMostCommonAdjacentCombinationSplit } from "src/generators/utils/string.utils";
 import { getNotAllowedInlineEnumError } from "src/generators/utils/validation.utils";
 import { getEnumZodSchemaName } from "src/generators/utils/zod-schema.utils";
-import { iterateSchema } from "../openapi/iterateSchema";
+import { iterateSchema, OnSchemaCallbackData } from "../openapi/iterateSchema";
 import { EnumZodSchemaData, SchemaResolver } from "../SchemaResolver.class";
 import { getEnumZodSchemaCode } from "./getZodSchema";
 
@@ -26,19 +26,18 @@ export function updateEnumZodSchemaData({
     handleEnumZodSchemaDataUpdate({ schema, nameSegments, ...params });
   }
 
-  iterateSchema(schema, {
-    data: { nameSegments },
-    onSchema: (data) => {
-      if (data.type === "reference") {
-        return true;
-      }
-      const segments = [...(data.data?.nameSegments ?? [])];
-      if (data.type === "property" || data.type === "additionalProperty") {
-        segments.push(data.propertyName);
-      }
-      handleEnumZodSchemaDataUpdate({ schema: data.schema, nameSegments: [...segments], ...params });
-    },
-  });
+  const onSchema = (data: OnSchemaCallbackData<{ nameSegments: string[] }>) => {
+    if (data.type === "reference") {
+      return true;
+    }
+    const segments = [...(data.data?.nameSegments ?? [])];
+    if (data.type === "property" || data.type === "additionalProperty") {
+      segments.push(data.propertyName);
+    }
+    handleEnumZodSchemaDataUpdate({ schema: data.schema, nameSegments: [...segments], ...params });
+  };
+
+  iterateSchema(schema, { data: { nameSegments }, onSchema });
 }
 
 function handleEnumZodSchemaDataUpdate({
@@ -66,10 +65,16 @@ function handleEnumZodSchemaDataUpdate({
     enumZodSchema.meta.zodSchemaNameSegments.push(nameSegments);
     enumZodSchema.meta.tags.push(...tags);
     enumZodSchema.meta.schemaRefs.push(...(schemaRef ? [schemaRef] : []));
+    enumZodSchema.meta.schemas.push(...(schema ? [schema] : []));
   } else {
     resolver.enumZodSchemaData.push({
       code,
-      meta: { zodSchemaNameSegments: [nameSegments], tags: [...tags], schemaRefs: schemaRef ? [schemaRef] : [] },
+      meta: {
+        zodSchemaNameSegments: [nameSegments],
+        tags: [...tags],
+        schemaRefs: schemaRef ? [schemaRef] : [],
+        schemas: schema ? [schema] : [],
+      },
     });
   }
 

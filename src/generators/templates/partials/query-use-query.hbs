@@ -1,4 +1,6 @@
+{{! Js docs }}
 {{{genQueryJsDocs endpoint}}}
+{{! Query definition}}
 export const {{queryName endpoint}} = <TData>({{#if (endpointParams endpoint)}}{ {{{endpointArgs endpoint}}} }: { {{{genEndpointParams endpoint}}} }, {{/if}}options?: AppQueryOptions<typeof {{importedEndpointName endpoint}}, TData>) => {
   return {{queryHook}}({
     queryKey: keys.{{endpointName endpoint}}({{#if (endpointParams endpoint)}}{{{endpointArgs endpoint}}}{{/if}}),

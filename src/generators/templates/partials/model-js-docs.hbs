@@ -1,0 +1,6 @@
+/** 
+ * {{name}} 
+ * @type { {{zodSchemaType zodSchema}} }{{#if (zodSchemaDescription zodSchema)}}
+ * @description {{{zodSchemaDescription zodSchema}}}{{/if}}
+{{#if (zodSchemaPropertyDescriptions zodSchema tag)}}{{#each (zodSchemaPropertyDescriptions zodSchema tag) as | property |}} * @property { {{property.type}} } {{@key}} {{{addAsteriskAfterNewLine property.description}}} 
+{{/each}}{{/if}} */

@@ -35,6 +35,7 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   // Zod options
   schemaSuffix: SCHEMA_SUFFIX,
   enumSuffix: ENUM_SUFFIX,
+  withDefaultValues: true,
   additionalPropertiesDefaultValue: false,
   // Endpoints options
   removeOperationPrefixEndingWith: "Controller_",
