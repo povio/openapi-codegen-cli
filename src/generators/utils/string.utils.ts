@@ -57,3 +57,12 @@ export const getAdjacentStringCombinations = (
   }
   return combinations;
 };
+
+export const removeWord = (source: string, wordToRemove: string) => {
+  const singularWordToRemove = wordToRemove.replace(/es$|s$/g, "");
+  const pattern = new RegExp(
+    `(${decapitalize(singularWordToRemove)}|${capitalize(singularWordToRemove)})[a-z]*(?=$|[A-Z])`,
+    "g",
+  );
+  return source.replace(pattern, "");
+};

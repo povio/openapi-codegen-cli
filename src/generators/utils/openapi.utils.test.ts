@@ -147,20 +147,54 @@ describe("Utils: openapi", () => {
           method,
           operation,
           options: { ...options, removeOperationPrefixEndingWith: undefined },
+          tag: "Authentication",
+        }),
+      ).toEqual("LocalAuthnPasswordController_register");
+    });
+
+    test("without removing operation tag", () => {
+      const operation = {
+        ...paths[pathNames[0]].post,
+        operationId: "LocalAuthnPasswordController_registerAuthentication",
+      };
+      expect(
+        getOperationName({
+          path,
+          method,
+          operation,
+          options: { ...options, removeOperationPrefixEndingWith: undefined },
+          tag: "Authentication",
+          keepOperationTag: true,
+        }),
+      ).toEqual("LocalAuthnPasswordController_registerAuthentication");
+    });
+
+    test("with removing operation tag", () => {
+      const operation = {
+        ...paths[pathNames[0]].post,
+        operationId: "LocalAuthnPasswordController_registerAuthentication",
+      };
+      expect(
+        getOperationName({
+          path,
+          method,
+          operation,
+          options: { ...options, removeOperationPrefixEndingWith: undefined },
+          tag: "Authentication",
         }),
       ).toEqual("LocalAuthnPasswordController_register");
     });
 
     test("removes prefix with ending", () => {
       const operation = paths[pathNames[0]].post;
-      expect(getOperationName({ path, method, operation, options })).toEqual("register");
+      expect(getOperationName({ path, method, operation, options, tag: "Authentication" })).toEqual("register");
     });
 
     test("removes prefix ending", () => {
       const operation = paths[pathNames[0]].post;
-      expect(getOperationName({ path, method, operation, options, keepOperationPrefixWithoutEnding: true })).toEqual(
-        "LocalAuthnPasswordRegister",
-      );
+      expect(
+        getOperationName({ path, method, operation, options, tag: "Authentication", keepOperationPrefix: true }),
+      ).toEqual("LocalAuthnPasswordRegister");
     });
   });
 

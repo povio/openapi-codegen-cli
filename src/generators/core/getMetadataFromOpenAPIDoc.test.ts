@@ -101,39 +101,39 @@ describe("getMetadataFromOpenAPIDoc", async () => {
     ],
   };
 
-  const CreateUsersWithListInputBody: TsType = {
-    type: "CreateUsersWithListInputBody",
+  const CreateWithListInputBody: TsType = {
+    type: "CreateWithListInputBody",
     namespace: "UserModels",
     importPath: "user/user.models",
     metaType: "array",
     arrayType: { ...User },
   };
 
-  const FindPetsByStatusStatusParam: TsType = {
-    type: "FindPetsByStatusStatusParam",
+  const FindByStatusStatusParam: TsType = {
+    type: "FindByStatusStatusParam",
     importPath: "pet/pet.models",
     namespace: "PetModels",
     metaType: "primitive",
   };
 
-  const FindPetsByStatusResponse: TsType = {
-    type: "FindPetsByStatusResponse",
+  const FindByStatusResponse: TsType = {
+    type: "FindByStatusResponse",
     importPath: "pet/pet.models",
     namespace: "PetModels",
     metaType: "array",
     arrayType: { ...Pet },
   };
 
-  const FindPetsByTagsTagsParam: TsType = {
-    type: "FindPetsByTagsTagsParam",
+  const FindByTagsTagsParam: TsType = {
+    type: "FindByTagsTagsParam",
     importPath: "pet/pet.models",
     namespace: "PetModels",
     metaType: "array",
     arrayType: { type: "string", metaType: "primitive" },
   };
 
-  const FindPetsByTagsResponse: TsType = {
-    type: "FindPetsByTagsResponse",
+  const FindByTagsResponse: TsType = {
+    type: "FindByTagsResponse",
     importPath: "pet/pet.models",
     namespace: "PetModels",
     metaType: "array",
@@ -179,8 +179,8 @@ describe("getMetadataFromOpenAPIDoc", async () => {
     ],
   };
 
-  const FindPetsByStatusStatusEnum: ModelMetadata = {
-    type: "FindPetsByStatusStatusEnum",
+  const FindByStatusStatusEnum: ModelMetadata = {
+    type: "FindByStatusStatusEnum",
     namespace: "PetModels",
     importPath: "pet/pet.models",
     metaType: "primitive",
@@ -194,27 +194,27 @@ describe("getMetadataFromOpenAPIDoc", async () => {
   };
 
   const models = (withEnums = true): ModelMetadata[] => [
-    ...(withEnums ? [FindPetsByStatusStatusEnum] : []),
+    ...(withEnums ? [FindByStatusStatusEnum] : []),
     Category,
     Tag,
     Pet,
     ApiResponse,
-    FindPetsByStatusStatusParam,
-    FindPetsByStatusResponse,
-    FindPetsByTagsTagsParam,
-    FindPetsByTagsResponse,
+    FindByStatusStatusParam,
+    FindByStatusResponse,
+    FindByTagsTagsParam,
+    FindByTagsResponse,
     ...(withEnums ? [OrderStatusEnum] : []),
     Order,
     GetInventoryResponse,
     User,
-    CreateUsersWithListInputBody,
+    CreateWithListInputBody,
     Address,
     Customer,
   ];
 
   const queries: QueryMetadata[] = [
     {
-      name: "useUpdatePet",
+      name: "useUpdate",
       importPath: "pet/pet.queries",
       namespace: "PetQueries",
       isQuery: false,
@@ -223,7 +223,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
       response: { ...Pet },
     },
     {
-      name: "useAddPet",
+      name: "useAdd",
       importPath: "pet/pet.queries",
       namespace: "PetQueries",
       isQuery: false,
@@ -232,25 +232,25 @@ describe("getMetadataFromOpenAPIDoc", async () => {
       response: { ...Pet },
     },
     {
-      name: "useFindPetsByStatus",
+      name: "useFindByStatus",
       importPath: "pet/pet.queries",
       namespace: "PetQueries",
       isQuery: true,
       isMutation: false,
-      params: [{ name: "status", isRequired: false, ...FindPetsByStatusStatusParam }],
-      response: { ...FindPetsByStatusResponse },
+      params: [{ name: "status", isRequired: false, ...FindByStatusStatusParam }],
+      response: { ...FindByStatusResponse },
     },
     {
-      name: "useFindPetsByTags",
+      name: "useFindByTags",
       importPath: "pet/pet.queries",
       namespace: "PetQueries",
       isQuery: true,
       isMutation: false,
-      params: [{ name: "tags", isRequired: false, ...FindPetsByTagsTagsParam }],
-      response: { ...FindPetsByTagsResponse },
+      params: [{ name: "tags", isRequired: false, ...FindByTagsTagsParam }],
+      response: { ...FindByTagsResponse },
     },
     {
-      name: "useGetPetById",
+      name: "useGetById",
       importPath: "pet/pet.queries",
       namespace: "PetQueries",
       isQuery: true,
@@ -259,7 +259,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
       response: { ...Pet },
     },
     {
-      name: "useUpdatePetWithForm",
+      name: "useUpdateWithForm",
       importPath: "pet/pet.queries",
       namespace: "PetQueries",
       isQuery: false,
@@ -333,7 +333,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
       response: { type: "void", metaType: "primitive" },
     },
     {
-      name: "useCreateUser",
+      name: "useCreate",
       importPath: "user/user.queries",
       namespace: "UserQueries",
       isQuery: false,
@@ -342,16 +342,16 @@ describe("getMetadataFromOpenAPIDoc", async () => {
       response: { type: "void", metaType: "primitive" },
     },
     {
-      name: "useCreateUsersWithListInput",
+      name: "useCreateWithListInput",
       importPath: "user/user.queries",
       namespace: "UserQueries",
       isQuery: false,
       isMutation: true,
-      params: [{ name: "data", isRequired: true, ...CreateUsersWithListInputBody }],
+      params: [{ name: "data", isRequired: true, ...CreateWithListInputBody }],
       response: { ...User },
     },
     {
-      name: "useLoginUser",
+      name: "useLogin",
       importPath: "user/user.queries",
       namespace: "UserQueries",
       isQuery: true,
@@ -363,7 +363,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
       response: { type: "string", metaType: "primitive" },
     },
     {
-      name: "useLogoutUser",
+      name: "useLogout",
       importPath: "user/user.queries",
       namespace: "UserQueries",
       isQuery: true,
@@ -372,7 +372,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
       response: { type: "void", metaType: "primitive" },
     },
     {
-      name: "useGetUserByName",
+      name: "useGetByName",
       importPath: "user/user.queries",
       namespace: "UserQueries",
       isQuery: true,
@@ -381,7 +381,7 @@ describe("getMetadataFromOpenAPIDoc", async () => {
       response: { ...User },
     },
     {
-      name: "useUpdateUser",
+      name: "useUpdate",
       importPath: "user/user.queries",
       namespace: "UserQueries",
       isQuery: false,

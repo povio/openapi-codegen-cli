@@ -68,7 +68,8 @@ function execPrettier({ output, verbose }: Pick<GenerateParams, "output" | "verb
   if (verbose) {
     logInfo("Running Prettier...");
   }
-  exec(`prettier --write ${output}`, (error) => {
+  const ignorePathArg = process.env.NODE_ENV === "production" ? "" : "--ignore-path .prettierignore";
+  exec(`prettier --write ${output} ${ignorePathArg}`, (error) => {
     if (verbose) {
       if (error) {
         logError(error, "Prettier error");

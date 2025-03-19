@@ -4,6 +4,7 @@ import {
   getLongestMostCommon,
   getMostCommonAdjacentCombinationSplit,
   nonWordCharactersToCamel,
+  removeWord,
   splitByUppercase,
 } from "./string.utils";
 
@@ -74,5 +75,39 @@ describe("Utils: string", () => {
       "PetsByStatus",
       "Status",
     ]);
+  });
+
+  describe("removeWord", () => {
+    test("plural with 's'", () => {
+      expect(removeWord("getTaskPaginate", "Task")).toBe("getPaginate");
+      expect(removeWord("getTasksPaginate", "Task")).toBe("getPaginate");
+
+      expect(removeWord("getTaskPaginate", "Tasks")).toBe("getPaginate");
+      expect(removeWord("getTasksPaginate", "Tasks")).toBe("getPaginate");
+
+      expect(removeWord("taskPaginate", "Task")).toBe("Paginate");
+      expect(removeWord("tasksPaginate", "Task")).toBe("Paginate");
+
+      expect(removeWord("taskPaginate", "Tasks")).toBe("Paginate");
+      expect(removeWord("tasksPaginate", "Tasks")).toBe("Paginate");
+    });
+
+    test("plural with 'es'", () => {
+      expect(removeWord("getClassPaginate", "Class")).toBe("getPaginate");
+      expect(removeWord("getClassesPaginate", "Class")).toBe("getPaginate");
+
+      expect(removeWord("getClassPaginate", "Classes")).toBe("getPaginate");
+      expect(removeWord("getClassesPaginate", "Classes")).toBe("getPaginate");
+
+      expect(removeWord("classPaginate", "Class")).toBe("Paginate");
+      expect(removeWord("classesPaginate", "Class")).toBe("Paginate");
+
+      expect(removeWord("classPaginate", "Classes")).toBe("Paginate");
+      expect(removeWord("classesPaginate", "Classes")).toBe("Paginate");
+    });
+
+    test("other", () => {
+      expect(removeWord("useCreateServiceType", "ServiceTypes")).toBe("useCreate");
+    });
   });
 });

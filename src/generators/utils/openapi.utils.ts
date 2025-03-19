@@ -6,7 +6,7 @@ import { OperationObject, PrimitiveType, SingleType } from "../types/openapi";
 import { GenerateOptions } from "../types/options";
 import { invalidVariableNameCharactersToCamel } from "./js.utils";
 import { pick } from "./object.utils";
-import { capitalize, kebabToCamel, snakeToCamel } from "./string.utils";
+import { capitalize, kebabToCamel, removeWord, snakeToCamel } from "./string.utils";
 import { getOperationTag } from "./tag.utils";
 
 export const getSchemaRef = (schemaName: string) => `#/components/schemas/${schemaName}`;
@@ -112,38 +112,44 @@ export function getOperationName({
   method,
   operation,
   options,
-  keepOperationPrefixWithoutEnding,
+  tag,
+  keepOperationTag,
+  keepOperationPrefix,
 }: {
   path: string;
   method: string;
   operation: OperationObject;
   options: GenerateOptions;
-  keepOperationPrefixWithoutEnding?: boolean;
+  tag: string;
+  keepOperationTag?: boolean;
+  keepOperationPrefix?: boolean;
 }) {
   const pathOperationName = `${method}${pathToVariableName(path)}`;
   let operationName = operation.operationId
     ? invalidVariableNameCharactersToCamel(operation.operationId)
     : pathOperationName;
 
-  if (options.removeOperationPrefixEndingWith && keepOperationPrefixWithoutEnding) {
+  if (options.removeOperationPrefixEndingWith && keepOperationPrefix) {
     const splits = operationName.split(options.removeOperationPrefixEndingWith);
-    return splits.map((split, index) => (index === 0 ? split : capitalize(split))).join("");
-  }
-
-  if (options.removeOperationPrefixEndingWith && !keepOperationPrefixWithoutEnding) {
+    operationName = splits.map((split, index) => (index === 0 ? split : capitalize(split))).join("");
+  } else if (options.removeOperationPrefixEndingWith && !keepOperationPrefix) {
     const regex = new RegExp(`^.*${options.removeOperationPrefixEndingWith}`);
     operationName = operationName.replace(regex, "");
+  }
+
+  if (options.includeNamespaces && !keepOperationTag) {
+    const operationNameWithoutTag = removeWord(operationName, tag);
+    if (!RESERVED_WORDS.includes(operationNameWithoutTag)) {
+      operationName = operationNameWithoutTag;
+    }
   }
 
   return RESERVED_WORDS.includes(operationName) ? pathOperationName : operationName;
 }
 
 export function getUniqueOperationName({
-  path,
-  method,
-  operation,
   operationsByTag,
-  options,
+  ...params
 }: {
   path: string;
   method: string;
@@ -151,16 +157,24 @@ export function getUniqueOperationName({
   operationsByTag: Record<string, OperationObject[]>;
   options: GenerateOptions;
 }) {
+  const { operation, options } = params;
   const tag = options.splitByTags ? getOperationTag(operation, options) : options.defaultTag;
-  const operationName = getOperationName({ path, method, operation, options });
-  const operationsWithName = operationsByTag[tag].filter(
-    (operation) => getOperationName({ path, method, operation, options }) === operationName,
-  );
-  if (operationsWithName.length === 1) {
-    return operationName;
-  }
 
-  return getOperationName({ path, method, operation, options, keepOperationPrefixWithoutEnding: true });
+  const operationName = (keepOperationTag?: boolean) => {
+    const name = getOperationName({ ...params, tag, keepOperationTag });
+    const operationsWithName = operationsByTag[tag].filter(
+      (operation) => getOperationName({ ...params, operation, tag, keepOperationTag }) === name,
+    );
+    if (operationsWithName.length === 1) {
+      return name;
+    }
+  };
+
+  return (
+    operationName() ??
+    operationName(true) ??
+    getOperationName({ ...params, tag, keepOperationTag: true, keepOperationPrefix: true })
+  );
 }
 
 export function getUniqueOperationNamesWithoutSplitByTags(
