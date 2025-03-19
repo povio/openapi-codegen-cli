@@ -22,7 +22,7 @@ export function getOperationsByTag(openApiDoc: OpenAPIV3.Document, options: Gene
 
     for (const method in pathItem) {
       const operation = pathItem[method as keyof typeof pathItem] as OperationObject | undefined;
-      if (!operation || (operation.deprecated && !options?.withDeprecatedEndpoints)) {
+      if (!operation || (operation.deprecated && !options.withDeprecatedEndpoints)) {
         continue;
       }
 

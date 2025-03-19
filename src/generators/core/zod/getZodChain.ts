@@ -21,7 +21,7 @@ export function getZodChain({
     .with("array", () => chains.push(getZodChainableArrayValidations(schema)))
     .otherwise(() => void 0);
 
-  if (typeof schema.description === "string" && schema.description !== "" && options?.withDescription) {
+  if (typeof schema.description === "string" && schema.description !== "" && options.withDescription) {
     if (["\n", "\r", "\r\n"].some((c) => String.prototype.includes.call(schema.description, c))) {
       chains.push(`describe(\`${schema.description}\`)`);
     } else {
@@ -32,7 +32,7 @@ export function getZodChain({
   const output = chains
     .concat(
       getZodChainablePresence(schema, meta),
-      options?.withDefaultValues !== false ? getZodChainableDefault(schema) : [],
+      options.withDefaultValues !== false ? getZodChainableDefault(schema) : [],
     )
     .filter(Boolean)
     .join(".");

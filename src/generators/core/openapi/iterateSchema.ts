@@ -38,7 +38,7 @@ export function iterateSchema<TData>(
     const schemaObjs = schemaObj.allOf ?? schemaObj.anyOf ?? schemaObj.oneOf ?? [];
     for (const compositeObj of schemaObjs) {
       if (onSchema?.({ type: "composite", parentSchema: schema, schema: compositeObj, data }) === true) {
-        return;
+        continue;
       }
       iterateSchema(compositeObj, { data, onSchema });
     }
@@ -47,7 +47,7 @@ export function iterateSchema<TData>(
   if (schemaObj.properties) {
     for (const [propertyName, propertyObj] of Object.entries(schemaObj.properties)) {
       if (onSchema({ type: "property", parentSchema: schema, schema: propertyObj, data, propertyName }) === true) {
-        return;
+        continue;
       }
       iterateSchema(propertyObj, options);
     }
@@ -59,7 +59,7 @@ export function iterateSchema<TData>(
         !(propertyObj instanceof Object) ||
         onSchema({ type: "additionalProperty", parentSchema: schema, schema: propertyObj, data, propertyName }) === true
       ) {
-        return;
+        continue;
       }
       iterateSchema(propertyObj, options);
     }

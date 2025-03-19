@@ -1,6 +1,6 @@
 import { ZOD_IMPORT } from "../const/zod.const";
 import { getZodSchemaRefs } from "../core/zod/getZodSchemaRefs";
-import { GenerateType, GenerateTypeParams } from "../types/generate";
+import { GenerateType, GenerateTypeParams, GenerateZodSchemaData } from "../types/generate";
 import { getModelsImports } from "../utils/generate/generate.imports.utils";
 import { getNamespaceName } from "../utils/generate/generate.utils";
 import { getHbsTemplateDelegate } from "../utils/hbs/hbs-template.utils";
@@ -22,13 +22,21 @@ export function generateModels({ resolver, data, tag = "" }: GenerateTypeParams)
     zodSchemas: refZodSchemas,
   });
 
-  const zodSchemasData = Object.entries(zodSchemas).reduce((acc, [key, code]) => {
-    const ref = resolver.getRefByZodSchemaName(key);
-    return {
-      ...acc,
-      [key]: { code, isCircular: !!ref && resolver.isSchemaCircular(ref), isEnum: isEnumZodSchema(code) },
-    };
-  }, {});
+  const zodSchemasData: Record<string, GenerateZodSchemaData> = Object.entries(zodSchemas).reduce(
+    (acc, [key, code]) => {
+      const ref = resolver.getRefByZodSchemaName(key);
+      return {
+        ...acc,
+        [key]: {
+          code,
+          isCircular: !!ref && resolver.isSchemaCircular(ref),
+          isEnum: isEnumZodSchema(code),
+          schemaObj: resolver.getZodSchemaObj(key),
+        },
+      };
+    },
+    {},
+  );
 
   const hbsTemplate = getHbsTemplateDelegate(resolver, "models");
 
@@ -37,6 +45,7 @@ export function generateModels({ resolver, data, tag = "" }: GenerateTypeParams)
     modelsImports,
     includeNamespace: resolver.options.includeNamespaces,
     namespace: getNamespaceName({ type: GenerateType.Models, tag, options: resolver.options }),
+    tag,
     zodSchemasData,
   });
 }

@@ -11,7 +11,7 @@ import {
 } from "../generate/generate.endpoints.utils";
 import { isSchemaObject } from "../openapi-schema.utils";
 import { isParamMediaTypeAllowed } from "../openapi.utils";
-import { camelToSpaceSeparated, capitalize } from "../string.utils";
+import { getSchemaDescriptions } from "../generate/generate.openapi.utils";
 
 enum EndpointsHelpers {
   EndpointName = "endpointName",
@@ -95,25 +95,8 @@ function registerEndpointParamDescriptionHelper() {
       }
 
       if (schema) {
-        const schemaKeys: (keyof OpenAPIV3.SchemaObject)[] = [
-          "description",
-          "minimum",
-          "exclusiveMinimum",
-          "maximum",
-          "exclusiveMaximum",
-          "minItems",
-          "minLength",
-          "minProperties",
-          "maxItems",
-          "maxLength",
-          "maxProperties",
-          "example",
-        ];
-        schemaKeys
-          .filter((key) => schema[key])
-          .forEach((key) => {
-            strs.push(`${capitalize(camelToSpaceSeparated(key))}: \`${schema[key]}\``);
-          });
+        const schemaDescriptions = getSchemaDescriptions(schema);
+        strs.push(...schemaDescriptions);
       }
 
       if (mediaTypeObject?.example) {
