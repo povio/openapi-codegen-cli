@@ -43,6 +43,9 @@ class GenerateOptions implements GenerateParams {
 
   @YargOption({ envAlias: "baseUrl", default: "" })
   baseUrl!: string;
+
+  @YargOption({ envAlias: "replaceOptionalWithNullish", default: false, type: "boolean" })
+  replaceOptionalWithNullish!: boolean;
 }
 
 export const command: yargs.CommandModule = {

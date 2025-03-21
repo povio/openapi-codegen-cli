@@ -11,6 +11,7 @@ interface ZodGenerateOptions {
   strictObjects?: boolean;
   additionalPropertiesDefaultValue?: boolean | OpenAPIV3.SchemaObject;
   extractEnums?: boolean;
+  replaceOptionalWithNullish?: boolean;
 }
 
 interface EndpointsGenerateOptions {

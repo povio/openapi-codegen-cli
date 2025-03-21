@@ -22,6 +22,7 @@ export type GenerateParams = {
   | "extractEnums"
   | "standalone"
   | "baseUrl"
+  | "replaceOptionalWithNullish"
 >;
 
 export async function generate({ input, excludeTags, prettier, verbose, ...params }: GenerateParams) {

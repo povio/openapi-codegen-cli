@@ -42,6 +42,7 @@ yarn openapi-codegen generate --input http://localhost:3001/docs-json --standalo
   --verbose                           Show log messages during execution
   --standalone                        Add any missing classes or types—e.g., REST client class, React Query type extensions, etc. (default: false)
   --baseUrl                           (Standalone mode only) Base URL for the REST client; falls back to the one defined in the OpenAPI spec
+  --replaceOptionalWithNullish        Replace all `.optional()` zod chains wtih `.nullish()`
 ```
 
 #### Check command (checks if OpenAPI spec is compliant)

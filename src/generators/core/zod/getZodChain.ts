@@ -31,7 +31,7 @@ export function getZodChain({
 
   const output = chains
     .concat(
-      getZodChainablePresence(schema, meta),
+      getZodChainablePresence({ schema, meta, options }),
       options.withDefaultValues !== false ? getZodChainableDefault(schema) : [],
     )
     .filter(Boolean)
@@ -40,7 +40,15 @@ export function getZodChain({
   return output ? `.${output}` : "";
 }
 
-function getZodChainablePresence(schema: OpenAPIV3.SchemaObject, meta?: ZodSchemaMetaData) {
+function getZodChainablePresence({
+  schema,
+  meta,
+  options,
+}: {
+  schema: OpenAPIV3.SchemaObject;
+  meta?: ZodSchemaMetaData;
+  options: GenerateOptions;
+}) {
   if (schema.nullable && !meta?.isRequired) {
     return "nullish()";
   }
@@ -50,7 +58,7 @@ function getZodChainablePresence(schema: OpenAPIV3.SchemaObject, meta?: ZodSchem
   }
 
   if (!meta?.isRequired) {
-    return "optional()";
+    return options.replaceOptionalWithNullish ? "nullish()" : "optional()";
   }
 
   return "";
