@@ -12,6 +12,7 @@ export interface ZodSchemaMetaData {
   name?: string;
   parent?: ZodSchema;
   referencedBy?: ZodSchema[];
+  isParentPartial?: boolean;
 }
 
 export class ZodSchema {

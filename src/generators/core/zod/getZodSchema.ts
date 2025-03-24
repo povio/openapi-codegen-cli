@@ -115,6 +115,7 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag }: Get
               ? schema.required?.includes(prop)
               : resolver.options.withImplicitRequiredProps,
           name: prop,
+          isParentPartial: isPartial,
         } as ZodSchemaMetaData;
 
         let propActualSchema = propSchema;

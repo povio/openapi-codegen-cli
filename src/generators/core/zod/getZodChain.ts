@@ -53,7 +53,7 @@ function getZodChainablePresence({
     return "nullish()";
   }
 
-  if (schema.nullable) {
+  if (schema.nullable || (options.replaceOptionalWithNullish && meta?.isParentPartial)) {
     return "nullable()";
   }
 
