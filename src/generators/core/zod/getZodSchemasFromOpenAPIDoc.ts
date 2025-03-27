@@ -1,21 +1,41 @@
 import { getZodSchemaName } from "../../utils/zod-schema.utils";
-import { SchemaResolver } from "../SchemaResolver.class";
-import { getZodSchema } from "./getZodSchema";
+import { EnumZodSchemaData, SchemaResolver } from "../SchemaResolver.class";
+import { getEnumZodSchemaCode, getZodSchema } from "./getZodSchema";
 
 export function getZodSchemasFromOpenAPIDoc(resolver: SchemaResolver) {
   const zodSchemas = {} as Record<string, string>;
+  const enumZodSchemas = {} as Record<string, string>;
 
   Object.entries(resolver.openApiDoc.components?.schemas ?? {}).forEach(([name, schema]) => {
     const zodSchemaName = getZodSchemaName(name, resolver.options.schemaSuffix);
     if (!zodSchemas[zodSchemaName]) {
       const tag = resolver.getTagByZodSchemaName(zodSchemaName);
-      zodSchemas[zodSchemaName] = getZodSchema({
-        schema,
-        resolver,
-        tag,
-      }).getCodeString(tag);
+      const schemaObject = resolver.resolveObject(schema);
+      if (schemaObject.enum) {
+        enumZodSchemas[zodSchemaName] = getEnumZodSchemaCode(schemaObject);
+      } else {
+        zodSchemas[zodSchemaName] = getZodSchema({
+          schema,
+          resolver,
+          tag,
+        }).getCodeString(tag);
+      }
     }
   });
 
-  return zodSchemas;
+  return { zodSchemas, enumZodSchemas };
+}
+
+export function getEnumZodSchemasFromOpenAPIDoc(resolver: SchemaResolver) {
+  const enumZodSchemas: EnumZodSchemaData[] = [];
+
+  Object.entries(resolver.openApiDoc.components?.schemas ?? {}).forEach(([name, schema]) => {
+    const zodSchemaName = getZodSchemaName(name, resolver.options.schemaSuffix);
+    const schemaObject = resolver.resolveObject(schema);
+    if (!enumZodSchemas.find((enumZodSchema) => enumZodSchema.zodSchemaName === zodSchemaName) && schemaObject.enum) {
+      enumZodSchemas.push({ zodSchemaName, code: getEnumZodSchemaCode(schemaObject) });
+    }
+  });
+
+  return enumZodSchemas;
 }

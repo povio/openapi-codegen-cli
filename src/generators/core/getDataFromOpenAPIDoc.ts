@@ -15,10 +15,14 @@ export function getDataFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, options: G
   const endpoints = getEndpointsFromOpenAPIDoc(resolver);
   const zodSchemasFromDocSchemas = getZodSchemasFromOpenAPIDoc(resolver);
 
-  let zodSchemas = { ...zodSchemasFromDocSchemas, ...resolver.getZodSchemas() };
+  let zodSchemas = {
+    ...zodSchemasFromDocSchemas.zodSchemas,
+    ...resolver.getZodSchemas(),
+    ...zodSchemasFromDocSchemas.enumZodSchemas,
+  };
   zodSchemas = wrapCircularZodSchemas(resolver, zodSchemas);
   zodSchemas = sortZodSchemasByTopology(resolver, zodSchemas);
-  zodSchemas = { ...resolver.getEnumZodSchemas(), ...zodSchemas };
+  zodSchemas = { ...resolver.getExtractedEnumZodSchemas(), ...zodSchemas };
 
   return { resolver, data: splitDataByTags({ resolver, endpoints, zodSchemas, options }) };
 }

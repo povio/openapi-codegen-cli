@@ -7,7 +7,7 @@ export function getZodSchemaRefs(resolver: SchemaResolver, zodSchemaName: string
     const refs = Array.from(resolver.dependencyGraph.refsDependencyGraph[schemaRef] ?? []).map((ref) =>
       resolver.getZodSchemaNameByRef(ref),
     );
-    const enumRefs = resolver.getEnumZodSchemaNamesReferencedBySchemaRef(schemaRef);
+    const enumRefs = resolver.getExtractedEnumZodSchemaNamesReferencedBySchemaRef(schemaRef);
     return [...refs, ...enumRefs];
   }
 
