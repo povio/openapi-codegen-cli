@@ -14,7 +14,7 @@ const options: GenerateOptions = {
   splitByTags: true,
   defaultTag: "Common",
   excludeTags: [""],
-  includeNamespaces: true,
+  tsNamespaces: true,
   importPath: "ts",
   configs: {
     [GenerateType.Models]: {

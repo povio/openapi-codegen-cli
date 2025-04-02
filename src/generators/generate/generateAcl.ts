@@ -43,7 +43,7 @@ export function generateAcl({ resolver, data, tag = "" }: GenerateTypeParams) {
   return hbsTemplate({
     caslAbilityTupleImport,
     modelsImports,
-    includeNamespace: resolver.options.includeNamespaces,
+    includeNamespace: resolver.options.tsNamespaces,
     namespace: getNamespaceName({ type: GenerateType.Acl, tag, options: resolver.options }),
     endpoints,
   });
@@ -74,7 +74,7 @@ export function generateAppAcl(resolver: SchemaResolver, tags: string[]) {
     caslAbilityTupleImport,
     imports,
     allAbilities: ACL_ALL_ABILITIES,
-    includeNamespace: resolver.options.includeNamespaces,
+    includeNamespace: resolver.options.tsNamespaces,
     tags,
     namespaces,
   });

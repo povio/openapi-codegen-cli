@@ -78,10 +78,10 @@ export function getAclImports({
     const name = `${entityName}${getAliasEntityName ? ` as ${getAliasEntityName(tag)}` : ""}`;
     if (!imports.has(tag)) {
       imports.set(tag, {
-        bindings: [options.includeNamespaces ? getNamespaceName({ type: GenerateType.Acl, tag, options }) : name],
+        bindings: [options.tsNamespaces ? getNamespaceName({ type: GenerateType.Acl, tag, options }) : name],
         from: `${getImportPath(options)}${getTagImportPath({ type: GenerateType.Acl, tag, includeTagDir: true, options })}`,
       });
-    } else if (!options.includeNamespaces) {
+    } else if (!options.tsNamespaces) {
       imports.get(tag)!.bindings.push(name);
     }
   });
@@ -121,10 +121,10 @@ function getImports<T>({
     if (!imports.has(tag)) {
       const sameTagDir = currentTag === tag;
       imports.set(tag, {
-        bindings: [options.includeNamespaces ? getNamespaceName({ type, tag, options }) : getEntityName(entity)],
+        bindings: [options.tsNamespaces ? getNamespaceName({ type, tag, options }) : getEntityName(entity)],
         from: `${sameTagDir ? "./" : getImportPath(options)}${getTagImportPath({ type, tag, includeTagDir: !sameTagDir, options })}`,
       });
-    } else if (!options.includeNamespaces) {
+    } else if (!options.tsNamespaces) {
       imports.get(tag)!.bindings.push(getEntityName(entity));
     }
   });
@@ -137,7 +137,7 @@ function mergeImports(options: GenerateOptions, ...importArrs: Import[][]): Impo
     imports.forEach((importItem) => {
       if (!merged.has(importItem.from)) {
         merged.set(importItem.from, importItem);
-      } else if (!options.includeNamespaces) {
+      } else if (!options.tsNamespaces) {
         merged.get(importItem.from)!.bindings.push(...importItem.bindings);
       }
     });

@@ -56,7 +56,7 @@ export function generateQueries({ resolver, data, tag = "" }: GenerateTypeParams
     queryTypesImport,
     modelsImports,
     endpointsImports,
-    includeNamespace: resolver.options.includeNamespaces,
+    includeNamespace: resolver.options.tsNamespaces,
     namespace: getNamespaceName({ type: GenerateType.Queries, tag, options: resolver.options }),
     endpoints,
     queryEndpoints,

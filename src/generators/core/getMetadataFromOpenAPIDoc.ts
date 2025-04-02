@@ -49,7 +49,7 @@ export async function getMetadataFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, 
       queries.push({
         name: getQueryName(endpoint),
         importPath: getTagImportPath({ type: generateType, tag, includeTagDir: true, options }),
-        namespace: options.includeNamespaces ? getNamespaceName({ type: generateType, tag, options }) : undefined,
+        namespace: options.tsNamespaces ? getNamespaceName({ type: generateType, tag, options }) : undefined,
         isQuery: isQuery(endpoint),
         isMutation: isMutation(endpoint),
         params: getQueryMetadataParams({ resolver, endpoint }),

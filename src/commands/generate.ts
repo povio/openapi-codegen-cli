@@ -14,7 +14,7 @@ export type GenerateParams = {
   GenerateOptions,
   | "input"
   | "output"
-  | "includeNamespaces"
+  | "tsNamespaces"
   | "splitByTags"
   | "defaultTag"
   | "removeOperationPrefixEndingWith"

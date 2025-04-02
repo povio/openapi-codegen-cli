@@ -59,7 +59,7 @@ export class ZodSchema {
     }
 
     const zodSchemaTag = this.resolver?.getTagByZodSchemaName(zodSchemaName);
-    if (options?.includeNamespaces && zodSchemaTag && zodSchemaTag !== tag) {
+    if (options?.tsNamespaces && zodSchemaTag && zodSchemaTag !== tag) {
       return `${getNamespaceName({ type: GenerateType.Models, tag: zodSchemaTag, options })}.${zodSchemaName}`;
     }
 

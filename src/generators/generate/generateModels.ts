@@ -43,7 +43,7 @@ export function generateModels({ resolver, data, tag = "" }: GenerateTypeParams)
   return hbsTemplate({
     zodImport: ZOD_IMPORT,
     modelsImports,
-    includeNamespace: resolver.options.includeNamespaces,
+    includeNamespace: resolver.options.tsNamespaces,
     namespace: getNamespaceName({ type: GenerateType.Models, tag, options: resolver.options }),
     tag,
     zodSchemasData,

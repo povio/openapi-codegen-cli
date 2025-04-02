@@ -17,7 +17,7 @@ import { getImportedZodSchemaInferedTypeName } from "./generate.zod.utils";
 export const getEndpointName = (endpoint: Endpoint) => decapitalize(snakeToCamel(endpoint.operationName));
 
 export function getImportedEndpointName(endpoint: Endpoint, options: GenerateOptions) {
-  const namespacePrefix = options.includeNamespaces
+  const namespacePrefix = options.tsNamespaces
     ? `${getNamespaceName({ type: GenerateType.Endpoints, tag: getEndpointTag(endpoint, options), options })}.`
     : "";
   return `${namespacePrefix}${getEndpointName(endpoint)}`;

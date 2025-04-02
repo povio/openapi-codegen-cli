@@ -9,7 +9,7 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   splitByTags: true,
   defaultTag: "Common",
   excludeTags: [], // TODO: Only works for isolated tags
-  includeNamespaces: true,
+  tsNamespaces: true,
   importPath: "ts",
   extractEnums: true,
   configs: {

@@ -38,7 +38,7 @@ export function generateEndpoints({ resolver, data, tag = "" }: GenerateTypePara
     hasZodImport,
     zodImport: ZOD_IMPORT,
     modelsImports,
-    includeNamespace: resolver.options.includeNamespaces,
+    includeNamespace: resolver.options.tsNamespaces,
     namespace: getNamespaceName({ type: GenerateType.Endpoints, tag, options: resolver.options }),
     restClientName: APP_REST_CLIENT_NAME,
     endpoints,

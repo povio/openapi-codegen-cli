@@ -357,7 +357,7 @@ function getEnumZodSchema({ resolver, schema, zodSchema, meta, tag }: GetPartial
   }
 
   const namespacePrefix =
-    resolver.options.includeNamespaces && extractedEnumZodSchema.tag !== tag
+    resolver.options.tsNamespaces && extractedEnumZodSchema.tag !== tag
       ? `${getNamespaceName({ type: GenerateType.Models, tag: extractedEnumZodSchema.tag, options: resolver.options })}.`
       : "";
 

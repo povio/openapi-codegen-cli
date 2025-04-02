@@ -31,7 +31,7 @@ yarn openapi-codegen generate --input http://localhost:3001/docs-json --standalo
 ```sh
   --input                             Path/URL to OpenAPI/Swagger document as JSON/YAML
   --output                            Output path (default: 'output')
-  --includeNamespaces                 Include namespaces inside generated files (default: true)
+  --tsNamespaces                      Include namespaces inside generated files (default: true)
   --splitByTags                       Split output into directories based on tags in OpenAPI operations (default: true)
   --defaultTag                        Default tag name for code shared across multiple tags (default: 'Common')
   --excludeTags                       Comma-separated list of tags to exclude from the output
