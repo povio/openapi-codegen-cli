@@ -7,7 +7,7 @@ import { getQueryName } from "../utils/generate/generate.query.utils";
 import { getNamespaceName, getTagImportPath } from "../utils/generate/generate.utils";
 import { invalidVariableNameCharactersToCamel } from "../utils/js.utils";
 import { isMediaTypeAllowed, isParamMediaTypeAllowed } from "../utils/openapi.utils";
-import { isMutation, isQuery } from "../utils/queries.utils";
+import { isMutation, isQuery } from "../utils/query.utils";
 import { formatTag } from "../utils/tag.utils";
 import { getSchemaTsMetaType, getTsTypeBase } from "../utils/ts.utils";
 import { getDataFromOpenAPIDoc } from "./getDataFromOpenAPIDoc";
@@ -49,7 +49,7 @@ export async function getMetadataFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, 
       queries.push({
         name: getQueryName(endpoint),
         importPath: getTagImportPath({ type: generateType, tag, includeTagDir: true, options }),
-        namespace: options.includeNamespaces ? getNamespaceName({ type: generateType, tag, options }) : undefined,
+        namespace: options.tsNamespaces ? getNamespaceName({ type: generateType, tag, options }) : undefined,
         isQuery: isQuery(endpoint),
         isMutation: isMutation(endpoint),
         params: getQueryMetadataParams({ resolver, endpoint }),

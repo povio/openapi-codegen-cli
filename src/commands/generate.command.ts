@@ -11,8 +11,8 @@ class GenerateOptions implements GenerateParams {
   @YargOption({ envAlias: "output", default: "output" })
   output!: string;
 
-  @YargOption({ envAlias: "includeNamespaces", default: true, type: "boolean" })
-  includeNamespaces!: boolean;
+  @YargOption({ envAlias: "tsNamespaces", default: true, type: "boolean" })
+  tsNamespaces!: boolean;
 
   @YargOption({ envAlias: "splitByTags", default: true, type: "boolean" })
   splitByTags!: boolean;
@@ -46,6 +46,9 @@ class GenerateOptions implements GenerateParams {
 
   @YargOption({ envAlias: "replaceOptionalWithNullish", default: false, type: "boolean" })
   replaceOptionalWithNullish!: boolean;
+
+  @YargOption({ envAlias: "infiniteQueries", default: false, type: "boolean" })
+  infiniteQueries!: boolean;
 }
 
 export const command: yargs.CommandModule = {

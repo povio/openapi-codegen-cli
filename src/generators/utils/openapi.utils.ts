@@ -137,7 +137,7 @@ export function getOperationName({
     operationName = operationName.replace(regex, "");
   }
 
-  if (options.includeNamespaces && !keepOperationTag) {
+  if (options.tsNamespaces && !keepOperationTag) {
     const operationNameWithoutTag = removeWord(operationName, tag);
     if (!RESERVED_WORDS.includes(operationNameWithoutTag)) {
       operationName = operationNameWithoutTag;

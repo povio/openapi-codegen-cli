@@ -13,11 +13,12 @@ import { primitiveTypeToTsType } from "../ts.utils";
 import { isNamedZodSchema } from "../zod-schema.utils";
 import { getNamespaceName } from "./generate.utils";
 import { getImportedZodSchemaInferedTypeName } from "./generate.zod.utils";
+import { INFINITE_QUERY_PARAMS } from "src/generators/const/query.const";
 
 export const getEndpointName = (endpoint: Endpoint) => decapitalize(snakeToCamel(endpoint.operationName));
 
 export function getImportedEndpointName(endpoint: Endpoint, options: GenerateOptions) {
-  const namespacePrefix = options.includeNamespaces
+  const namespacePrefix = options.tsNamespaces
     ? `${getNamespaceName({ type: GenerateType.Endpoints, tag: getEndpointTag(endpoint, options), options })}.`
     : "";
   return `${namespacePrefix}${getEndpointName(endpoint)}`;
@@ -30,7 +31,11 @@ export function getEndpointTag(endpoint: Endpoint, options: GenerateOptions) {
   return formatTag(tag ?? options.defaultTag);
 }
 
-export function mapEndpointParamsToFunctionParams(resolver: SchemaResolver, endpoint: Endpoint) {
+export function mapEndpointParamsToFunctionParams(
+  resolver: SchemaResolver,
+  endpoint: Endpoint,
+  extra?: "removePageParam" | "replacePageParam",
+) {
   return endpoint.parameters
     .map((param) => {
       let type = "string";
@@ -58,7 +63,13 @@ export function mapEndpointParamsToFunctionParams(resolver: SchemaResolver, endp
         return sortedParamTypes.indexOf(a.paramType) - sortedParamTypes.indexOf(b.paramType);
       }
       return a.required ? -1 : 1;
-    });
+    })
+    .filter((param) => extra !== "removePageParam" || param.name !== INFINITE_QUERY_PARAMS.pageParamName)
+    .map((param) => ({
+      ...param,
+      name:
+        extra === "replacePageParam" && param.name === INFINITE_QUERY_PARAMS.pageParamName ? "pageParam" : param.name,
+    }));
 }
 
 export function getEndpointConfig(endpoint: Endpoint) {

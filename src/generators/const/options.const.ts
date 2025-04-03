@@ -9,9 +9,8 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   splitByTags: true,
   defaultTag: "Common",
   excludeTags: [], // TODO: Only works for isolated tags
-  includeNamespaces: true,
+  tsNamespaces: true,
   importPath: "ts",
-  extractEnums: true,
   configs: {
     [GenerateType.Models]: {
       outputFileNameSuffix: "models",
@@ -37,6 +36,9 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   enumSuffix: ENUM_SUFFIX,
   withDefaultValues: true,
   additionalPropertiesDefaultValue: false,
+  extractEnums: true,
   // Endpoints options
   removeOperationPrefixEndingWith: "Controller_",
+  // Queries options
+  infiniteQueries: true,
 };

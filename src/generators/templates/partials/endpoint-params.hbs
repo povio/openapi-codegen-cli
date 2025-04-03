@@ -1,1 +1,1 @@
-{{#each (endpointParams endpoint) as | endpointParam |}}{{endpointParam.name}}{{#unless endpointParam.required}}?{{/unless}}: {{endpointParam.type}}, {{/each}}
+{{#each (endpointParams endpoint extra) as | endpointParam |}}{{endpointParam.name}}{{#unless endpointParam.required}}?{{/unless}}: {{endpointParam.type}}, {{/each}}

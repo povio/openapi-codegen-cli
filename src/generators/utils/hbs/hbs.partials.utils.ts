@@ -1,11 +1,12 @@
 import Handlebars from "handlebars";
 import { CASL_ABILITY_BINDING } from "src/generators/const/acl.const";
-import { QUERY_HOOKS } from "../../const/query.const";
+import { INFINITE_QUERY_RESPONSE_PARAMS, QUERY_HOOKS } from "../../const/query.const";
 import { Endpoint } from "../../types/endpoint";
 import { GenerateZodSchemaData, Import } from "../../types/generate";
 import { getEndpointConfig } from "../generate/generate.endpoints.utils";
 import { getHbsPartialTemplateDelegate } from "../hbs/hbs-template.utils";
-import { isQuery } from "../queries.utils";
+import { isQuery } from "../query.utils";
+import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
 
 enum PartialsHelpers {
   ModelJsDocs = "genModelJsDocs",
@@ -14,18 +15,20 @@ enum PartialsHelpers {
   EndpointConfig = "genEndpointConfig",
   QueryKeys = "genQueryKeys",
   Query = "genQuery",
+  InfiniteQuery = "genInfiniteQuery",
   QueryJsDocs = "genQueryJsDocs",
   CaslAbilityType = "genCaslAbilityType",
   CaslAbilityFunction = "genCaslAbilityFunction",
 }
 
-export function registerPartialsHbsHelpers() {
+export function registerPartialsHbsHelpers(resolver: SchemaResolver) {
   registerGenerateModelJsDocsHelper();
   registerImportHelper();
   registerGenerateEndpointParamsHelper();
   registerGenerateEndpointConfigHelper();
-  registerGenerateQueryKeysHelper();
+  registerGenerateQueryKeysHelper(resolver);
   registerGenerateQueryHelper();
+  registerGenerateInfiniteQueryHelper();
   registerGenerateQueryJsDocsHelper();
   registerGenerateCaslAbilityTypeHelper();
   registerGenerateCaslAbilityFunctionHelper();
@@ -46,8 +49,10 @@ function registerImportHelper() {
 }
 
 function registerGenerateEndpointParamsHelper() {
-  Handlebars.registerHelper(PartialsHelpers.EndpointParams, (endpoint: Endpoint) =>
-    getHbsPartialTemplateDelegate("endpoint-params")({ endpoint }),
+  Handlebars.registerHelper(
+    PartialsHelpers.EndpointParams,
+    (endpoint: Endpoint, extra?: "removePageParam" | "replacePageParam") =>
+      getHbsPartialTemplateDelegate("endpoint-params")({ endpoint, extra }),
   );
 }
 
@@ -61,12 +66,16 @@ function registerGenerateEndpointConfigHelper() {
   });
 }
 
-function registerGenerateQueryKeysHelper() {
+function registerGenerateQueryKeysHelper(resolver: SchemaResolver) {
   Handlebars.registerHelper(PartialsHelpers.QueryKeys, (queryEndpoints: Endpoint[], namespace: string) => {
     if (queryEndpoints.length === 0) {
       return "";
     }
-    return getHbsPartialTemplateDelegate("query-keys")({ queryEndpoints, namespace });
+    return getHbsPartialTemplateDelegate("query-keys")({
+      queryEndpoints,
+      namespace,
+      generateInfiniteQueries: resolver.options.infiniteQueries,
+    });
   });
 }
 
@@ -87,9 +96,21 @@ function registerGenerateQueryHelper() {
   });
 }
 
+function registerGenerateInfiniteQueryHelper() {
+  Handlebars.registerHelper(PartialsHelpers.InfiniteQuery, (endpoint: Endpoint) =>
+    getHbsPartialTemplateDelegate("query-use-infinite-query")({
+      endpoint,
+      infiniteQueryHook: QUERY_HOOKS.infiniteQuery,
+      pageParamName: INFINITE_QUERY_RESPONSE_PARAMS.pageParamName,
+      totalItemsName: INFINITE_QUERY_RESPONSE_PARAMS.totalItemsName,
+      limitParamName: INFINITE_QUERY_RESPONSE_PARAMS.limitParamName,
+    }),
+  );
+}
+
 function registerGenerateQueryJsDocsHelper() {
-  Handlebars.registerHelper(PartialsHelpers.QueryJsDocs, (endpoint: Endpoint) =>
-    getHbsPartialTemplateDelegate("query-js-docs")({ endpoint }),
+  Handlebars.registerHelper(PartialsHelpers.QueryJsDocs, (endpoint: Endpoint, extra?: "infiniteQuery") =>
+    getHbsPartialTemplateDelegate("query-js-docs")({ endpoint, infiniteQuery: extra === "infiniteQuery" }),
   );
 }
 

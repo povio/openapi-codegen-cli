@@ -31,28 +31,34 @@ yarn openapi-codegen generate --input http://localhost:3001/docs-json --standalo
 ```sh
   --input                             Path/URL to OpenAPI/Swagger document as JSON/YAML
   --output                            Output path (default: 'output')
-  --includeNamespaces                 Include namespaces inside generated files (default: true)
-  --splitByTags                       Split output into directories based on tags in OpenAPI operations (default: true)
-  --defaultTag                        Default tag name for code shared across multiple tags (default: 'Common')
-  --excludeTags                       Comma-separated list of tags to exclude from the output
-  --extractEnums                      Extract enums as separate Zod schemas (default: true)
-  --removeOperationPrefixEndingWith   Remove prefixes that end with the specified value from operation names (default: 'Controller_')
-  --importPath                        Import path (default: 'ts', possible values: 'ts' | 'relative' | 'absolute')
   --prettier                          Run the Prettier command on the output after code generation (default: true)
   --verbose                           Show log messages during execution
-  --standalone                        Add any missing classes or types—e.g., REST client class, React Query type extensions, etc. (default: false)
-  --baseUrl                           (Standalone mode only) Base URL for the REST client; falls back to the one defined in the OpenAPI spec
+
+  --splitByTags                       Split output into directories based on tags in OpenAPI operations (default: true)
+  --defaultTag                        (Requires `splitByTags`) Default tag name for code shared across multiple tags (default: 'Common')
+  --excludeTags                       (Requires `splitByTags`) Comma-separated list of tags to exclude from the output
+
+  --tsNamespaces                      Include Typescript namespaces inside generated files (default: true)
+  --importPath                        Import path (default: 'ts', possible values: 'ts' | 'relative' | 'absolute')
+  --removeOperationPrefixEndingWith   Remove prefixes that end with the specified value from operation names (default: 'Controller_')
+  --extractEnums                      Extract enums as separate Zod schemas (default: true)
   --replaceOptionalWithNullish        Replace all `.optional()` zod chains wtih `.nullish()`
+
+  --infiniteQueries                   Generates infinite queries for API definitions that support pagination (default: false)
+
+  --standalone                        Add any missing classes or types—e.g., REST client class, React Query type extensions, etc. (default: false)
+  --baseUrl                           (Requires `standalone`) Base URL for the REST client; falls back to the one defined in the OpenAPI spec
 ```
 
 #### Check command (checks if OpenAPI spec is compliant)
 
 ```sh
   --input                             Path/URL to OpenAPI/Swagger document as JSON/YAML
+  --verbose                           Show log messages during execution
+
   --splitByTags                       Split output into directories based on tags in OpenAPI operations (default: true)
   --defaultTag                        Default tag name for code shared across multiple tags (default: 'Common')
   --excludeTags                       Comma-separated list of tags to exclude from the output
-  --verbose                           Show log messages during execution
 ```
 
 ## Development

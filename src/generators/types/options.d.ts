@@ -19,6 +19,10 @@ interface EndpointsGenerateOptions {
   removeOperationPrefixEndingWith?: string;
 }
 
+interface QueriesGenerateOptions {
+  infiniteQueries?: boolean;
+}
+
 interface GenerateConfig {
   outputFileNameSuffix: string;
   namespaceSuffix: string;
@@ -30,11 +34,14 @@ interface BaseGenerateOptions {
   splitByTags: boolean;
   defaultTag: string;
   excludeTags: string[];
-  includeNamespaces: boolean;
+  tsNamespaces: boolean;
   importPath: "ts" | "relative" | "absolute";
   configs: Record<GenerateType, GenerateConfig>;
   standalone: boolean;
   baseUrl: string;
 }
 
-export type GenerateOptions = BaseGenerateOptions & ZodGenerateOptions & EndpointsGenerateOptions;
+export type GenerateOptions = BaseGenerateOptions &
+  ZodGenerateOptions &
+  EndpointsGenerateOptions &
+  QueriesGenerateOptions;

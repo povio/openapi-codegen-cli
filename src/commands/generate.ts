@@ -14,7 +14,7 @@ export type GenerateParams = {
   GenerateOptions,
   | "input"
   | "output"
-  | "includeNamespaces"
+  | "tsNamespaces"
   | "splitByTags"
   | "defaultTag"
   | "removeOperationPrefixEndingWith"
@@ -23,6 +23,7 @@ export type GenerateParams = {
   | "standalone"
   | "baseUrl"
   | "replaceOptionalWithNullish"
+  | "infiniteQueries"
 >;
 
 export async function generate({ input, excludeTags, prettier, verbose, ...params }: GenerateParams) {

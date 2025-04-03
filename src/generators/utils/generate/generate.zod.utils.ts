@@ -20,7 +20,7 @@ export const getImportedZodSchemaName = (resolver: SchemaResolver, zodSchemaName
     return zodSchemaName;
   }
 
-  const namespacePrefix = resolver.options.includeNamespaces
+  const namespacePrefix = resolver.options.tsNamespaces
     ? `${getNamespaceName({ type: GenerateType.Models, tag: resolver.getTagByZodSchemaName(zodSchemaName), options: resolver.options })}.`
     : "";
   return `${namespacePrefix}${zodSchemaName}`;
@@ -37,7 +37,7 @@ export const getImportedZodSchemaInferedTypeName = (
 
   const tag = resolver.getTagByZodSchemaName(zodSchemaName);
   const namespacePrefix =
-    resolver.options.includeNamespaces && tag !== currentTag
+    resolver.options.tsNamespaces && tag !== currentTag
       ? `${getNamespaceName({ type: GenerateType.Models, tag, options: resolver.options })}.`
       : "";
   return `${namespacePrefix}${getZodSchemaInferedTypeName(zodSchemaName, resolver.options)}`;
