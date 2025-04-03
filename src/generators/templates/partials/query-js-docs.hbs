@@ -1,10 +1,22 @@
+{{#if infiniteQuery}}
 /** 
- * {{#if infiniteQuery}}Infinite query{{else if (isQuery endpoint)}}Query{{else}}Mutation{{/if}} {{#if infiniteQuery}}`{{infiniteQueryName endpoint}}`{{else}}`{{queryName endpoint}}`{{/if}}{{#if endpoint.summary}}
+ * Infinite query `{{infiniteQueryName endpoint}}{{#if endpoint.summary}}
  * @summary {{addAsteriskAfterNewLine endpoint.summary}}{{/if}}{{#if endpoint.description}} 
  * @description {{addAsteriskAfterNewLine endpoint.description}}{{/if}}{{#if endpoint.acl}}
  * @permission Requires `{{abilityFunctionName endpoint}}` ability {{/if}}
-{{#if (endpointParams endpoint)}}{{#each (endpointParams endpoint "removePageParam") as | endpointParam |}} * @param { {{endpointParam.type}} } {{#if (isQuery ../endpoint)}}object{{else}}mutation{{/if}}.{{endpointParam.name}} {{{endpointParamDescription endpointParam}}}
-{{/each}}{{/if}} * @param {{#if infiniteQuery}}{ AppInfiniteQueryOptions } options Infinite query options{{else if (isQuery endpoint)}}{ AppQueryOptions } options Query options{{else}}{ AppMutationOptions } options Mutation options{{/if}}
- * @returns { {{#if infiniteQuery}}UseInfiniteQueryResult{{else if (isQuery endpoint)}}UseQueryResult{{else}}UseMutationResult{{/if}}<{{{importedZodSchemaInferedType endpoint.response}}}> } {{endpoint.responseDescription}}
+{{#if (endpointParams endpoint)}}{{#each (endpointParams endpoint infiniteQuery "removePageParam") as | endpointParam |}} * @param { {{endpointParam.type}} } object.{{endpointParam.name}} {{{endpointParamDescription endpointParam}}}
+{{/each}}{{/if}} * @param { AppInfiniteQueryOptions } options Infinite query options
+ * @returns { UseInfiniteQueryResult<{{{importedZodSchemaInferedType endpoint.response}}}> } {{endpoint.responseDescription}}
  * @statusCodes [{{commaSeparated endpoint.responseStatusCodes}}]
  */
+ {{else}}
+ /** 
+ * {{#if (isQuery endpoint)}}Query{{else}}Mutation{{/if}} `{{queryName endpoint}}`{{#if endpoint.summary}}
+ * @summary {{addAsteriskAfterNewLine endpoint.summary}}{{/if}}{{#if endpoint.description}} 
+ * @description {{addAsteriskAfterNewLine endpoint.description}}{{/if}}{{#if endpoint.acl}}
+ * @permission Requires `{{abilityFunctionName endpoint}}` ability {{/if}}
+{{#if (endpointParams endpoint)}}{{#each (endpointParams endpoint) as | endpointParam |}} * @param { {{endpointParam.type}} } {{#if (isQuery ../endpoint)}}object{{else}}mutation{{/if}}.{{endpointParam.name}} {{{endpointParamDescription endpointParam}}}
+{{/each}}{{/if}} * @param {{#if (isQuery endpoint)}}{ AppQueryOptions } options Query options{{else}}{ AppMutationOptions } options Mutation options{{/if}}
+ * @returns { {{#if (isQuery endpoint)}}UseQueryResult{{else}}UseMutationResult{{/if}}<{{{importedZodSchemaInferedType endpoint.response}}}> } {{endpoint.responseDescription}}
+ * @statusCodes [{{commaSeparated endpoint.responseStatusCodes}}]
+ */{{/if}}

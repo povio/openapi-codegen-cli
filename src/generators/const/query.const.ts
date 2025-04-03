@@ -13,6 +13,9 @@ export const QUERY_IMPORT: Import = {
 
 export const INFINITE_QUERY_PARAMS = {
   pageParamName: "page",
+};
+export const INFINITE_QUERY_RESPONSE_PARAMS = {
+  pageParamName: "page",
   totalItemsName: "totalItems",
   limitParamName: "limit",
 };

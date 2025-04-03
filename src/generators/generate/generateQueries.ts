@@ -6,7 +6,7 @@ import { getUniqueArray } from "../utils/array.utils";
 import { getEndpointsImports, getModelsImports } from "../utils/generate/generate.imports.utils";
 import { getNamespaceName } from "../utils/generate/generate.utils";
 import { getHbsTemplateDelegate } from "../utils/hbs/hbs-template.utils";
-import { isInfiniteQuery, isMutation, isQuery } from "../utils/queries.utils";
+import { isInfiniteQuery, isMutation, isQuery } from "../utils/query.utils";
 import { isNamedZodSchema } from "../utils/zod-schema.utils";
 import { getQueryTypesImportPath } from "../utils/generate/generate.utils";
 

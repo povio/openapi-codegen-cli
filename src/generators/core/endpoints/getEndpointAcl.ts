@@ -2,7 +2,7 @@ import { OpenAPIV3 } from "openapi-types";
 import { AclConditionsPropertyType, Endpoint, EndpointAclInfo } from "src/generators/types/endpoint";
 import { OperationAclInfo, OperationObject } from "src/generators/types/openapi";
 import { isParamMediaTypeAllowed, isReferenceObject } from "src/generators/utils/openapi.utils";
-import { isQuery } from "src/generators/utils/queries.utils";
+import { isQuery } from "src/generators/utils/query.utils";
 import { decapitalize } from "src/generators/utils/string.utils";
 import { getMissingAclConditionPropertyError } from "src/generators/utils/validation.utils";
 import { SchemaResolver } from "../SchemaResolver.class";

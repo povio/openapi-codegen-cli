@@ -1,11 +1,11 @@
 import Handlebars from "handlebars";
 import { CASL_ABILITY_BINDING } from "src/generators/const/acl.const";
-import { INFINITE_QUERY_PARAMS, QUERY_HOOKS } from "../../const/query.const";
+import { INFINITE_QUERY_RESPONSE_PARAMS, QUERY_HOOKS } from "../../const/query.const";
 import { Endpoint } from "../../types/endpoint";
 import { GenerateZodSchemaData, Import } from "../../types/generate";
 import { getEndpointConfig } from "../generate/generate.endpoints.utils";
 import { getHbsPartialTemplateDelegate } from "../hbs/hbs-template.utils";
-import { isQuery } from "../queries.utils";
+import { isQuery } from "../query.utils";
 import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
 
 enum PartialsHelpers {
@@ -101,9 +101,9 @@ function registerGenerateInfiniteQueryHelper() {
     getHbsPartialTemplateDelegate("query-use-infinite-query")({
       endpoint,
       infiniteQueryHook: QUERY_HOOKS.infiniteQuery,
-      pageParamName: INFINITE_QUERY_PARAMS.pageParamName,
-      totalItemsName: INFINITE_QUERY_PARAMS.totalItemsName,
-      limitParamName: INFINITE_QUERY_PARAMS.limitParamName,
+      pageParamName: INFINITE_QUERY_RESPONSE_PARAMS.pageParamName,
+      totalItemsName: INFINITE_QUERY_RESPONSE_PARAMS.totalItemsName,
+      limitParamName: INFINITE_QUERY_RESPONSE_PARAMS.limitParamName,
     }),
   );
 }

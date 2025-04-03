@@ -47,7 +47,7 @@ class GenerateOptions implements GenerateParams {
   @YargOption({ envAlias: "replaceOptionalWithNullish", default: false, type: "boolean" })
   replaceOptionalWithNullish!: boolean;
 
-  @YargOption({ envAlias: "infiniteQueries", default: true, type: "boolean" })
+  @YargOption({ envAlias: "infiniteQueries", default: false, type: "boolean" })
   infiniteQueries!: boolean;
 }
 

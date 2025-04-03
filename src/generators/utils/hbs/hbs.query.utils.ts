@@ -1,6 +1,6 @@
 import Handlebars from "handlebars";
 import { getInfiniteQueryName, getQueryName } from "../generate/generate.query.utils";
-import { isInfiniteQuery, isQuery } from "../queries.utils";
+import { isInfiniteQuery, isQuery } from "../query.utils";
 import { Endpoint } from "src/generators/types/endpoint";
 import { INFINITE_QUERY_PARAMS } from "src/generators/const/query.const";
 

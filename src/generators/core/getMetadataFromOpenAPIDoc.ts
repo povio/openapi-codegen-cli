@@ -7,7 +7,7 @@ import { getQueryName } from "../utils/generate/generate.query.utils";
 import { getNamespaceName, getTagImportPath } from "../utils/generate/generate.utils";
 import { invalidVariableNameCharactersToCamel } from "../utils/js.utils";
 import { isMediaTypeAllowed, isParamMediaTypeAllowed } from "../utils/openapi.utils";
-import { isMutation, isQuery } from "../utils/queries.utils";
+import { isMutation, isQuery } from "../utils/query.utils";
 import { formatTag } from "../utils/tag.utils";
 import { getSchemaTsMetaType, getTsTypeBase } from "../utils/ts.utils";
 import { getDataFromOpenAPIDoc } from "./getDataFromOpenAPIDoc";
