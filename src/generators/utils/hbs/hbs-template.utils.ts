@@ -16,7 +16,7 @@ export function getHbsTemplateDelegate(resolver: SchemaResolver, templateName: s
   registerEndpointsHbsHelpers(resolver);
   registerQueryHbsHelpers();
   registerAclHbsHelpers();
-  registerPartialsHbsHelpers();
+  registerPartialsHbsHelpers(resolver);
 
   return Handlebars.compile(template);
 }

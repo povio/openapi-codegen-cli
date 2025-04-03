@@ -46,6 +46,9 @@ class GenerateOptions implements GenerateParams {
 
   @YargOption({ envAlias: "replaceOptionalWithNullish", default: false, type: "boolean" })
   replaceOptionalWithNullish!: boolean;
+
+  @YargOption({ envAlias: "infiniteQueries", default: true, type: "boolean" })
+  infiniteQueries!: boolean;
 }
 
 export const command: yargs.CommandModule = {

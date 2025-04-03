@@ -1,4 +1,10 @@
-import { UseInfiniteQueryOptions, UseMutationOptions, UseQueryOptions } from "@tanstack/react-query";
+import {
+  InfiniteData,
+  QueryKey,
+  UseInfiniteQueryOptions,
+  UseMutationOptions,
+  UseQueryOptions,
+} from "@tanstack/react-query";
 
 type Function = (...args: any) => any;
 type IfAny<T, Y, N> = 0 extends 1 & T ? Y : N;
@@ -18,7 +24,19 @@ export type AppMutationOptions<
   enableInvalidateAll?: boolean;
 };
 
-export type AppInfiniteQueryOptions<TFunction extends Function, TData = Awaited<ReturnType<TFunction>>> = Omit<
-  UseInfiniteQueryOptions<Awaited<ReturnType<TFunction>>, Error, IsUnknown<TData, Awaited<ReturnType<TFunction>>>>,
+export type AppInfiniteQueryOptions<
+  TFunction extends Function,
+  TData = InfiniteData<Awaited<ReturnType<TFunction>>>,
+  TQueryKey extends QueryKey = QueryKey,
+  TPageParam = number,
+> = Omit<
+  UseInfiniteQueryOptions<
+    Awaited<ReturnType<TFunction>>,
+    Error,
+    IsUnknown<TData, InfiniteData<Awaited<ReturnType<TFunction>>>>,
+    Awaited<ReturnType<TFunction>>,
+    TQueryKey,
+    TPageParam
+  >,
   "queryKey" | "queryFn" | "initialPageParam" | "getNextPageParam"
 >;

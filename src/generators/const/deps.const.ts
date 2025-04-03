@@ -4,6 +4,7 @@ export const APP_REST_CLIENT_NAME = "AppRestClient";
 
 export const QUERY_OPTIONS_TYPES = {
   query: "AppQueryOptions",
+  infiniteQuery: "AppInfiniteQueryOptions",
   mutation: "AppMutationOptions",
 };
 

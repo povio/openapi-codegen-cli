@@ -54,16 +54,20 @@ function registerEndpointBodyHelper() {
 }
 
 function registerEndpointParamsHelper(resolver: SchemaResolver) {
-  Handlebars.registerHelper(EndpointsHelpers.EndpointParams, (endpoint: Endpoint) =>
-    mapEndpointParamsToFunctionParams(resolver, endpoint),
+  Handlebars.registerHelper(
+    EndpointsHelpers.EndpointParams,
+    (endpoint: Endpoint, extra?: "removePageParam" | "replacePageParam") =>
+      mapEndpointParamsToFunctionParams(resolver, endpoint, extra),
   );
 }
 
 function registerEndpointArgsHelper(resolver: SchemaResolver) {
-  Handlebars.registerHelper(EndpointsHelpers.EndpointArgs, (endpoint: Endpoint) =>
-    mapEndpointParamsToFunctionParams(resolver, endpoint)
-      .map((param) => param.name)
-      .join(", "),
+  Handlebars.registerHelper(
+    EndpointsHelpers.EndpointArgs,
+    (endpoint: Endpoint, extra?: "removePageParam" | "replacePageParam") =>
+      mapEndpointParamsToFunctionParams(resolver, endpoint, extra)
+        .map((param) => param.name)
+        .join(", "),
   );
 }
 

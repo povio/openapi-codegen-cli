@@ -19,6 +19,10 @@ interface EndpointsGenerateOptions {
   removeOperationPrefixEndingWith?: string;
 }
 
+interface QueriesGenerateOptions {
+  infiniteQueries?: boolean;
+}
+
 interface GenerateConfig {
   outputFileNameSuffix: string;
   namespaceSuffix: string;
@@ -37,4 +41,7 @@ interface BaseGenerateOptions {
   baseUrl: string;
 }
 
-export type GenerateOptions = BaseGenerateOptions & ZodGenerateOptions & EndpointsGenerateOptions;
+export type GenerateOptions = BaseGenerateOptions &
+  ZodGenerateOptions &
+  EndpointsGenerateOptions &
+  QueriesGenerateOptions;

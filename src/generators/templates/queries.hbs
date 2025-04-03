@@ -21,6 +21,12 @@ export namespace {{namespace}} {
 {{#each endpoints as | endpoint |}}
 {{{genQuery endpoint ../queryEndpoints}}}
 
+{{#if generateInfiniteQueries}}
+{{#if (isInfiniteQuery endpoint)}}
+{{{genInfiniteQuery endpoint ../queryEndpoints}}}
+{{/if}}
+{{/if}}
+
 {{/each}}
 
 {{#if includeNamespace}}
