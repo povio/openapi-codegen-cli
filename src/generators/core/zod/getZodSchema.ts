@@ -149,6 +149,10 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag }: Get
     return zodSchema.assign(`z.object(${properties})${partial}${strict}${additionalPropsSchema}${readonly}`);
   }
 
+  if ((schemaType as unknown) === "any") {
+    return zodSchema.assign("z.any()");
+  }
+
   if (!schemaType) {
     return zodSchema.assign("z.unknown()");
   }
