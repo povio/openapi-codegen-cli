@@ -81,6 +81,7 @@ export function getZodSchemaPropertyDescriptions(resolver: SchemaResolver, data:
   }
 
   const ARRAY_INDEX = "[0]";
+  const ADDITIONAL_PROPERTIES_KEY = "[key]";
   const properties: Record<string, { type: string; description: string }> = {};
 
   const onSchema = (schemaData: OnSchemaCallbackData<{ pathSegments: string[] }>) => {
@@ -94,8 +95,10 @@ export function getZodSchemaPropertyDescriptions(resolver: SchemaResolver, data:
     const segments = [...(schemaData.data?.pathSegments ?? [])];
     if (schemaData.type === "array") {
       segments.push(ARRAY_INDEX);
-    } else if (schemaData.type === "property" || schemaData.type === "additionalProperty") {
+    } else if (schemaData.type === "property") {
       segments.push(schemaData.propertyName);
+    } else if (schemaData.type === "additionalProperties") {
+      segments.push(ADDITIONAL_PROPERTIES_KEY);
     }
 
     if (schemaData.schema && segments[segments.length - 1] !== ARRAY_INDEX) {

@@ -14,7 +14,7 @@ test("getOpenAPISchemaComplexity", async () => {
 
   expect(getComplexity({ type: "object" })).toMatchInlineSnapshot("1");
 
-  expect(getComplexity({ type: "object", additionalProperties: true })).toMatchInlineSnapshot("1");
+  expect(getComplexity({ type: "object", additionalProperties: true })).toMatchInlineSnapshot("2");
   expect(getComplexity({ type: "object", additionalProperties: { type: "string" } })).toMatchInlineSnapshot("2");
 
   expect(

@@ -163,7 +163,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
       },
     ]);
     expect(resolver.getZodSchemas()).toStrictEqual({
-      Order: `z.object({ id: z.number().int(), petId: z.number().int(), quantity: z.number().int(), shipDate: z.string().datetime({ offset: true }), status: z.enum(["placed", "approved", "delivered"]), complete: z.boolean() }).partial().passthrough()`,
+      Order: `z.object({ id: z.number().int(), petId: z.number().int(), quantity: z.number().int(), shipDate: z.string().datetime({ offset: true }), status: z.enum(["placed", "approved", "delivered"]), complete: z.boolean() }).partial()`,
     });
     expect(resolver["compositeZodSchemaData"]).toStrictEqual([]);
   });
@@ -337,9 +337,9 @@ describe("getEndpointsFromOpenAPIDoc", () => {
       },
     ]);
     expect(resolver.getZodSchemas()).toStrictEqual({
-      Category: "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
-      Pet: `z.object({ id: z.number().int().optional(), name: z.string(), category: Category.optional(), photoUrls: z.array(z.string()), tags: z.array(Tag).optional(), status: z.enum(["available", "pending", "sold"]).optional() }).passthrough()`,
-      Tag: "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
+      Category: "z.object({ id: z.number().int(), name: z.string() }).partial()",
+      Pet: `z.object({ id: z.number().int().optional(), name: z.string(), category: Category.optional(), photoUrls: z.array(z.string()), tags: z.array(Tag).optional(), status: z.enum(["available", "pending", "sold"]).optional() })`,
+      Tag: "z.object({ id: z.number().int(), name: z.string() }).partial()",
     });
     expect(resolver["compositeZodSchemaData"]).toStrictEqual([]);
   });
@@ -459,11 +459,11 @@ describe("getEndpointsFromOpenAPIDoc", () => {
       },
     ]);
     expect(resolver.getZodSchemas()).toStrictEqual({
-      Category: "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
-      Pet: `z.object({ id: z.number().int().optional(), name: z.string(), category: Category.optional(), photoUrls: z.array(z.string()), tags: z.array(Tag).optional(), status: z.enum(["available", "pending", "sold"]).optional() }).passthrough()`,
-      Reason: "z.object({ reason: ReasonDetails }).passthrough()",
-      ReasonDetails: "z.object({ details: z.string() }).passthrough()",
-      Tag: "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
+      Category: "z.object({ id: z.number().int(), name: z.string() }).partial()",
+      Pet: `z.object({ id: z.number().int().optional(), name: z.string(), category: Category.optional(), photoUrls: z.array(z.string()), tags: z.array(Tag).optional(), status: z.enum(["available", "pending", "sold"]).optional() })`,
+      Reason: "z.object({ reason: ReasonDetails })",
+      ReasonDetails: "z.object({ details: z.string() })",
+      Tag: "z.object({ id: z.number().int(), name: z.string() }).partial()",
       UpdatePetBody: "Pet.merge(Reason)",
     });
 
@@ -694,13 +694,13 @@ describe("getEndpointsFromOpenAPIDoc", () => {
       },
     ]);
     expect(resolver.getZodSchemas()).toStrictEqual({
-      Category: "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
+      Category: "z.object({ id: z.number().int(), name: z.string() }).partial()",
       FindPetsByStatusResponse: "z.array(Pet)",
       FindPetsByStatusStatusParam: `z.enum(["available", "pending", "sold"]).optional().default("available")`,
       FindPetsByTagsResponse: "z.array(Pet)",
       FindPetsByTagsTagsParam: "z.array(z.string()).optional()",
-      Pet: `z.object({ id: z.number().int().optional(), name: z.string(), category: Category.optional(), photoUrls: z.array(z.string()), tags: z.array(Tag).optional(), status: z.enum(["available", "pending", "sold"]).optional() }).passthrough()`,
-      Tag: "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
+      Pet: `z.object({ id: z.number().int().optional(), name: z.string(), category: Category.optional(), photoUrls: z.array(z.string()), tags: z.array(Tag).optional(), status: z.enum(["available", "pending", "sold"]).optional() })`,
+      Tag: "z.object({ id: z.number().int(), name: z.string() }).partial()",
     });
     expect(resolver["compositeZodSchemaData"]).toStrictEqual(
       expect.arrayContaining([
@@ -1630,19 +1630,18 @@ describe("getEndpointsFromOpenAPIDoc", () => {
       },
     ]);
     expect(resolver.getZodSchemas()).toStrictEqual({
-      ApiResponse:
-        "z.object({ code: z.number().int(), type: z.string(), message: z.string() }).partial().passthrough()",
-      Category: "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
+      ApiResponse: "z.object({ code: z.number().int(), type: z.string(), message: z.string() }).partial()",
+      Category: "z.object({ id: z.number().int(), name: z.string() }).partial()",
       CreateUsersWithListInputBody: "z.array(User)",
       FindPetsByStatusResponse: "z.array(Pet)",
       FindPetsByStatusStatusParam: `z.enum(["available", "pending", "sold"]).optional().default("available")`,
       FindPetsByTagsResponse: "z.array(Pet)",
       FindPetsByTagsTagsParam: "z.array(z.string()).optional()",
-      GetInventoryResponse: "z.record(z.number().int())",
-      Order: `z.object({ id: z.number().int(), petId: z.number().int(), quantity: z.number().int(), shipDate: z.string().datetime({ offset: true }), status: z.enum(["placed", "approved", "delivered"]), complete: z.boolean() }).partial().passthrough()`,
-      Pet: `z.object({ id: z.number().int().optional(), name: z.string(), category: Category.optional(), photoUrls: z.array(z.string()), tags: z.array(Tag).optional(), status: z.enum(["available", "pending", "sold"]).optional() }).passthrough()`,
-      Tag: "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
-      User: "z.object({ id: z.number().int(), username: z.string(), firstName: z.string(), lastName: z.string(), email: z.string(), password: z.string(), phone: z.string(), userStatus: z.number().int() }).partial().passthrough()",
+      GetInventoryResponse: "z.object({}).catchall(z.number().int())",
+      Order: `z.object({ id: z.number().int(), petId: z.number().int(), quantity: z.number().int(), shipDate: z.string().datetime({ offset: true }), status: z.enum(["placed", "approved", "delivered"]), complete: z.boolean() }).partial()`,
+      Pet: `z.object({ id: z.number().int().optional(), name: z.string(), category: Category.optional(), photoUrls: z.array(z.string()), tags: z.array(Tag).optional(), status: z.enum(["available", "pending", "sold"]).optional() })`,
+      Tag: "z.object({ id: z.number().int(), name: z.string() }).partial()",
+      User: "z.object({ id: z.number().int(), username: z.string(), firstName: z.string(), lastName: z.string(), email: z.string(), password: z.string(), phone: z.string(), userStatus: z.number().int() }).partial()",
     });
     expect(resolver["compositeZodSchemaData"]).toStrictEqual(
       expect.arrayContaining([
@@ -1676,7 +1675,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           ]),
         }),
         expect.objectContaining({
-          code: "z.record(z.number().int())",
+          code: "z.object({}).catchall(z.number().int())",
           zodSchemas: expect.arrayContaining([expect.objectContaining({ zodSchemaName: "GetInventoryResponse" })]),
         }),
       ]),
@@ -1817,11 +1816,11 @@ describe("getEndpointsFromOpenAPIDoc", () => {
       },
     ]);
     expect(resolver.getZodSchemas()).toStrictEqual({
-      Category: "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
+      Category: "z.object({ id: z.number().int(), name: z.string() }).partial()",
       FindPetsByStatusResponse: "z.array(Pet)",
       FindPetsByTagsResponse: "z.array(Pet)",
-      Pet: `z.object({ id: z.number().int().optional(), name: z.string(), category: Category.optional(), photoUrls: z.array(z.string()), tags: z.array(Tag).optional(), status: z.enum(["available", "pending", "sold"]).optional() }).passthrough()`,
-      Tag: "z.object({ id: z.number().int(), name: z.string() }).partial().passthrough()",
+      Pet: `z.object({ id: z.number().int().optional(), name: z.string(), category: Category.optional(), photoUrls: z.array(z.string()), tags: z.array(Tag).optional(), status: z.enum(["available", "pending", "sold"]).optional() })`,
+      Tag: "z.object({ id: z.number().int(), name: z.string() }).partial()",
     });
     expect(resolver["compositeZodSchemaData"]).toStrictEqual(
       expect.arrayContaining([

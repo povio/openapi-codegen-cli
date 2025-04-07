@@ -5,13 +5,13 @@ import { isReferenceObject } from "src/generators/utils/openapi.utils";
 export type OnSchemaCallbackData<TData> = { data?: TData } & (
   | { type: "reference"; schema: OpenAPIV3.ReferenceObject }
   | {
-      type: "property" | "additionalProperty";
+      type: "property";
       parentSchema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject;
       schema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject;
       propertyName: string;
     }
   | {
-      type: "composite" | "array";
+      type: "composite" | "array" | "additionalProperties";
       parentSchema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject;
       schema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject;
     }
@@ -53,16 +53,18 @@ export function iterateSchema<TData>(
     }
   }
 
-  if (schemaObj.additionalProperties) {
-    for (const [propertyName, propertyObj] of Object.entries(schemaObj.additionalProperties)) {
-      if (
-        !(propertyObj instanceof Object) ||
-        onSchema({ type: "additionalProperty", parentSchema: schema, schema: propertyObj, data, propertyName }) === true
-      ) {
-        continue;
-      }
-      iterateSchema(propertyObj, options);
+  if (schemaObj.additionalProperties && typeof schemaObj.additionalProperties === "object") {
+    if (
+      onSchema({
+        type: "additionalProperties",
+        parentSchema: schema,
+        schema: schemaObj.additionalProperties as OpenAPIV3.SchemaObject,
+        data,
+      }) === true
+    ) {
+      return;
     }
+    iterateSchema(schemaObj.additionalProperties as OpenAPIV3.SchemaObject, options);
   }
 
   if (schemaObj.type === "array") {

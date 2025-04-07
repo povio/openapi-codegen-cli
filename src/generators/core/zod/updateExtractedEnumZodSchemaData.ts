@@ -31,7 +31,7 @@ export function updateExtractedEnumZodSchemaData({
       return true;
     }
     const segments = [...(data.data?.nameSegments ?? [])];
-    if (data.type === "property" || data.type === "additionalProperty") {
+    if (data.type === "property") {
       segments.push(data.propertyName);
     }
     handleExtractedEnumZodSchemaDataUpdate({ schema: data.schema, nameSegments: [...segments], ...params });

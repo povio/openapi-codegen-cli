@@ -35,7 +35,6 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   schemaSuffix: SCHEMA_SUFFIX,
   enumSuffix: ENUM_SUFFIX,
   withDefaultValues: true,
-  additionalPropertiesDefaultValue: false,
   extractEnums: true,
   // Endpoints options
   removeOperationPrefixEndingWith: "Controller_",

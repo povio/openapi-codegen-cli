@@ -85,27 +85,26 @@ export function getOpenAPISchemaComplexity(
   }
 
   if (schema.type === "object" || schema.properties || schema.additionalProperties) {
-    if (schema.additionalProperties) {
-      if (schema.additionalProperties === true) {
-        return complexityByComposite("record") + getOpenAPISchemaComplexity(current);
-      }
-
-      return complexityByComposite("record") + getOpenAPISchemaComplexity(current, schema.additionalProperties);
-    }
-
     if (schema.properties) {
       const props = Object.values(schema.properties);
-
-      return current + complexityByComposite("object") + sum(props.map((prop) => getOpenAPISchemaComplexity(0, prop)));
+      current += complexityByComposite("object") + sum(props.map((prop) => getOpenAPISchemaComplexity(0, prop)));
+    } else {
+      current += complexityByComposite("empty-object");
     }
 
-    return complexityByComposite("empty-object") + getOpenAPISchemaComplexity(current);
+    if (schema.additionalProperties) {
+      if (typeof schema.additionalProperties === "object") {
+        current += getOpenAPISchemaComplexity(0, schema.additionalProperties);
+      } else {
+        current += getOpenAPISchemaComplexity(1);
+      }
+    }
   }
 
   return current;
 }
 
-function complexityByType(schema: OpenAPIV3.SchemaObject & { type: PrimitiveType }) {
+function complexityByType(schema: OpenAPIV3.SchemaObject) {
   return match(schema.type)
     .with("string", "number", "integer", "boolean", () => 1)
     .otherwise(() => 0);
@@ -116,7 +115,7 @@ function complexityByComposite(type?: CompositeType) {
     .with("oneOf", () => 2)
     .with("anyOf", () => 3)
     .with("allOf", () => 2)
-    .with("enum", "array", "record", "empty-object", () => 1)
+    .with("enum", "array", "empty-object", () => 1)
     .with("object", () => 2)
     .otherwise(() => 0);
 }

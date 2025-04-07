@@ -36,7 +36,6 @@ const options: GenerateOptions = {
   },
   schemaSuffix: "Schema",
   enumSuffix: "Enum",
-  additionalPropertiesDefaultValue: false,
   removeOperationPrefixEndingWith: "Controller_",
   standalone: false,
   baseUrl: "",

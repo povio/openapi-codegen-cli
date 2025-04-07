@@ -77,32 +77,10 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag }: Get
 
   const schemaType = schema.type ? (schema.type.toLowerCase() as NonNullable<typeof schema.type>) : undefined;
   if (schemaType === "object" || schema.properties || schema.additionalProperties) {
-    // additional properties default to true if additionalPropertiesDefaultValue not provided
-    const additionalPropsDefaultValue =
-      resolver.options.additionalPropertiesDefaultValue !== undefined
-        ? resolver.options.additionalPropertiesDefaultValue
-        : true;
-    const additionalProps =
-      schema.additionalProperties === null || schema.additionalProperties === undefined
-        ? additionalPropsDefaultValue
-        : schema.additionalProperties;
-    const additionalPropsSchema = additionalProps === false ? "" : ".passthrough()";
-
-    if (typeof schema.additionalProperties === "object" && Object.keys(schema.additionalProperties).length > 0) {
-      return zodSchema.assign(
-        `z.record(${
-          getZodSchema({ ...params, schema: schema.additionalProperties }).getCodeString(tag, resolver.options) +
-          getZodChain({
-            schema: schema.additionalProperties as OpenAPIV3.SchemaObject,
-            meta: { ...meta, isRequired: true },
-            options: resolver.options,
-          })
-        })`,
-      );
-    }
-
     const hasRequiredArray = schema.required && schema.required.length > 0;
-    const isPartial = resolver.options.withImplicitRequiredProps ? false : !schema.required?.length;
+    const isPartial = resolver.options.withImplicitRequiredProps
+      ? false
+      : schema.properties && !schema.required?.length;
     let properties = "{}";
 
     if (schema.properties) {
@@ -142,6 +120,20 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag }: Get
         "{ " +
         propsMap.map(([prop, propSchema]) => `${wrapWithQuotesIfNeeded(prop!)}: ${propSchema}`).join(", ") +
         " }";
+    }
+
+    let additionalPropsSchema = "";
+    if (schema.additionalProperties) {
+      const additionalPropsZodSchema =
+        typeof schema.additionalProperties === "object" && Object.keys(schema.additionalProperties).length > 0
+          ? getZodSchema({ ...params, schema: schema.additionalProperties }).getCodeString(tag, resolver.options) +
+            getZodChain({
+              schema: schema.additionalProperties as OpenAPIV3.SchemaObject,
+              meta: { ...meta, isRequired: true },
+              options: resolver.options,
+            })
+          : "z.any()";
+      additionalPropsSchema = `.catchall(${additionalPropsZodSchema})`;
     }
 
     const partial = isPartial ? ".partial()" : "";

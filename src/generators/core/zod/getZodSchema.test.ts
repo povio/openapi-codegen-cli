@@ -30,34 +30,34 @@ describe("getZodSchema", () => {
     expect(getZodSchemaString({ type: "integer" })).toStrictEqual("z.number()");
 
     expect(getZodSchemaString({ type: "array", items: { type: "string" } })).toStrictEqual("z.array(z.string())");
-    expect(getZodSchemaString({ type: "object" })).toStrictEqual("z.object({}).partial().passthrough()");
+    expect(getZodSchemaString({ type: "object" })).toStrictEqual("z.object({})");
     expect(getZodSchemaString({ type: "object", properties: { str: { type: "string" } } })).toStrictEqual(
-      "z.object({ str: z.string() }).partial().passthrough()",
+      "z.object({ str: z.string() }).partial()",
     );
 
     expect(getZodSchemaString({ type: "object", properties: { str: { type: "string" } } })).toStrictEqual(
-      "z.object({ str: z.string() }).partial().passthrough()",
+      "z.object({ str: z.string() }).partial()",
     );
 
     expect(getZodSchemaString({ type: "object", properties: { nb: { type: "integer" } } })).toStrictEqual(
-      "z.object({ nb: z.number().int() }).partial().passthrough()",
+      "z.object({ nb: z.number().int() }).partial()",
     );
 
     expect(getZodSchemaString({ type: "object", properties: { pa: { type: "number", minimum: 0 } } })).toStrictEqual(
-      "z.object({ pa: z.number().gte(0) }).partial().passthrough()",
+      "z.object({ pa: z.number().gte(0) }).partial()",
     );
 
     expect(
       getZodSchemaString({ type: "object", properties: { pa: { type: "number", minimum: 0, maximum: 100 } } }),
-    ).toStrictEqual("z.object({ pa: z.number().gte(0).lte(100) }).partial().passthrough()");
+    ).toStrictEqual("z.object({ pa: z.number().gte(0).lte(100) }).partial()");
 
     expect(getZodSchemaString({ type: "object", properties: { ml: { type: "string", minLength: 0 } } })).toStrictEqual(
-      "z.object({ ml: z.string().min(0) }).partial().passthrough()",
+      "z.object({ ml: z.string().min(0) }).partial()",
     );
 
     expect(
       getZodSchemaString({ type: "object", properties: { dt: { type: "string", format: "date-time" } } }),
-    ).toStrictEqual("z.object({ dt: z.string().datetime({ offset: true }) }).partial().passthrough()");
+    ).toStrictEqual("z.object({ dt: z.string().datetime({ offset: true }) }).partial()");
 
     expect(
       getZodSchemaString({
@@ -74,7 +74,7 @@ describe("getZodSchema", () => {
         },
       }),
     ).toStrictEqual(
-      "z.object({ str: z.string(), nb: z.number(), nested: z.object({ nested_prop: z.boolean() }).partial().passthrough() }).partial().passthrough()",
+      "z.object({ str: z.string(), nb: z.number(), nested: z.object({ nested_prop: z.boolean() }).partial() }).partial()",
     );
 
     expect(
@@ -87,7 +87,7 @@ describe("getZodSchema", () => {
           },
         },
       }),
-    ).toStrictEqual("z.array(z.object({ str: z.string() }).partial().passthrough())");
+    ).toStrictEqual("z.array(z.object({ str: z.string() }).partial())");
 
     expect(
       getZodSchemaString({
@@ -108,7 +108,7 @@ describe("getZodSchema", () => {
           union: { oneOf: [{ type: "string" }, { type: "number" }] },
         },
       }),
-    ).toStrictEqual("z.object({ union: z.union([z.string(), z.number()]) }).partial().passthrough()");
+    ).toStrictEqual("z.object({ union: z.union([z.string(), z.number()]) }).partial()");
 
     expect(
       getZodSchemaString({
@@ -144,7 +144,7 @@ describe("getZodSchema", () => {
         discriminator: { propertyName: "type" },
       }),
     ).toStrictEqual(
-      `z.discriminatedUnion("type", [z.object({ type: z.enum(["a"]), a: z.string() }).passthrough(), z.object({ type: z.enum(["b"]), b: z.string() }).passthrough()])`,
+      `z.discriminatedUnion("type", [z.object({ type: z.enum(["a"]), a: z.string() }), z.object({ type: z.enum(["b"]), b: z.string() })])`,
     );
 
     // returns z.discriminatedUnion, when allOf has single object
@@ -192,7 +192,7 @@ describe("getZodSchema", () => {
         discriminator: { propertyName: "type" },
       }),
     ).toStrictEqual(
-      `z.discriminatedUnion("type", [z.object({ type: z.enum(["a"]), a: z.string() }).passthrough(), z.object({ type: z.enum(["b"]), b: z.string() }).passthrough()])`,
+      `z.discriminatedUnion("type", [z.object({ type: z.enum(["a"]), a: z.string() }), z.object({ type: z.enum(["b"]), b: z.string() })])`,
     );
 
     // returns z.union, when allOf has multiple objects
@@ -266,7 +266,7 @@ describe("getZodSchema", () => {
         discriminator: { propertyName: "type" },
       }),
     ).toStrictEqual(
-      'z.union([z.object({ type: z.enum(["a"]), a: z.string() }).passthrough().merge(z.object({ type: z.enum(["c"]), c: z.string() }).passthrough()), z.object({ type: z.enum(["b"]), b: z.string() }).passthrough().merge(z.object({ type: z.enum(["d"]), d: z.string() }).passthrough())])',
+      'z.union([z.object({ type: z.enum(["a"]), a: z.string() }).merge(z.object({ type: z.enum(["c"]), c: z.string() })), z.object({ type: z.enum(["b"]), b: z.string() }).merge(z.object({ type: z.enum(["d"]), d: z.string() }))])',
     );
 
     expect(
@@ -276,7 +276,7 @@ describe("getZodSchema", () => {
           anyOfExample: { anyOf: [{ type: "string" }, { type: "number" }] },
         },
       }),
-    ).toStrictEqual("z.object({ anyOfExample: z.union([z.string(), z.number()]) }).partial().passthrough()");
+    ).toStrictEqual("z.object({ anyOfExample: z.union([z.string(), z.number()]) }).partial()");
 
     expect(
       getZodSchemaString({
@@ -285,7 +285,7 @@ describe("getZodSchema", () => {
           intersection: { allOf: [{ type: "string" }, { type: "number" }] },
         },
       }),
-    ).toStrictEqual("z.object({ intersection: z.string().merge(z.number()) }).partial().passthrough()");
+    ).toStrictEqual("z.object({ intersection: z.string().merge(z.number()) }).partial()");
 
     expect(getZodSchemaString({ type: "string", enum: ["aaa", "bbb", "ccc"] })).toStrictEqual(
       'z.enum(["aaa", "bbb", "ccc"])',
@@ -362,12 +362,12 @@ describe("getZodSchema", () => {
       tag: "",
     });
     expect(code.getCodeString()).toStrictEqual(
-      "z.object({ str: z.string(), reference: Example, inline: z.object({ nested_prop: z.boolean() }).partial().passthrough() }).partial().passthrough()",
+      "z.object({ str: z.string(), reference: Example, inline: z.object({ nested_prop: z.boolean() }).partial() }).partial()",
     );
     expect(code.children.map((value) => value.getCodeString())).toStrictEqual([
       "z.string()",
       "Example",
-      "z.object({ nested_prop: z.boolean() }).partial().passthrough()",
+      "z.object({ nested_prop: z.boolean() }).partial()",
     ]);
   });
 
@@ -415,22 +415,22 @@ describe("getZodSchema", () => {
       tag: "",
     });
     expect(code.getCodeString()).toStrictEqual(
-      "z.object({ str: z.string(), reference: ObjectWithArrayOfRef, inline: z.object({ nested_prop: z.boolean() }).partial().passthrough(), another: WithNested, basic: Basic, differentPropSameRef: Basic }).partial().passthrough()",
+      "z.object({ str: z.string(), reference: ObjectWithArrayOfRef, inline: z.object({ nested_prop: z.boolean() }).partial(), another: WithNested, basic: Basic, differentPropSameRef: Basic }).partial()",
     );
     expect(code.children.map((value) => value.getCodeString())).toStrictEqual([
       "z.string()",
       "ObjectWithArrayOfRef",
-      "z.object({ nested_prop: z.boolean() }).partial().passthrough()",
+      "z.object({ nested_prop: z.boolean() }).partial()",
       "WithNested",
       "Basic",
       "Basic",
     ]);
     expect(resolver.getZodSchemas()).toStrictEqual({
-      Basic: "z.object({ prop: z.string(), second: z.number() }).partial().passthrough()",
-      DeepNested: "z.object({ deep: z.boolean() }).partial().passthrough()",
+      Basic: "z.object({ prop: z.string(), second: z.number() }).partial()",
+      DeepNested: "z.object({ deep: z.boolean() }).partial()",
       ObjectWithArrayOfRef:
-        "z.object({ exampleProp: z.string(), another: z.number(), link: z.array(WithNested), someReference: Basic }).partial().passthrough()",
-      WithNested: "z.object({ nested: z.string(), nestedRef: DeepNested }).partial().passthrough()",
+        "z.object({ exampleProp: z.string(), another: z.number(), link: z.array(WithNested), someReference: Basic }).partial()",
+      WithNested: "z.object({ nested: z.string(), nestedRef: DeepNested }).partial()",
     });
     expect(resolver["compositeZodSchemaData"]).toStrictEqual([]);
   });

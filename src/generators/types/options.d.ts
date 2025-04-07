@@ -1,4 +1,3 @@
-import { OpenAPIV3 } from "openapi-types";
 import { GenerateType } from "./generate";
 
 interface ZodGenerateOptions {
@@ -9,7 +8,6 @@ interface ZodGenerateOptions {
   withDescription?: boolean;
   allReadonly?: boolean;
   strictObjects?: boolean;
-  additionalPropertiesDefaultValue?: boolean | OpenAPIV3.SchemaObject;
   extractEnums?: boolean;
   replaceOptionalWithNullish?: boolean;
 }
