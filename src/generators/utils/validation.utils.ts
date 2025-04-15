@@ -44,7 +44,7 @@ export function getMissingStatusCodeError(
 ): ValidationError {
   return {
     type: "missing-status-code",
-    message: `Missing status code ${getStatusCodeDescription(statusCode)} in operation ${getOperationDescriptor(operation, endpoint)}`,
+    message: `Missing HTTP status code ${getStatusCodeDescription(statusCode)} in operation ${getOperationDescriptor(operation, endpoint)}`,
   };
 }
 
