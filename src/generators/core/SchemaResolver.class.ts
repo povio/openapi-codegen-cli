@@ -312,7 +312,7 @@ export class SchemaResolver {
         operation.parameters?.map((parameter) => {
           const parameterObject = parameter as OpenAPIV3.ParameterObject;
           const parameterSchema = parameterObject.schema;
-          const schemaInfo = `operation ${operation.operationId ?? path} parameter ${parameterObject.name}`;
+          const schemaInfo = `Operation ${operation.operationId ?? path} parameter ${parameterObject.name}`;
 
           schemaRefObjs.push(...getSchemaRefObjs(this, parameterSchema, schemaInfo));
 
@@ -334,7 +334,7 @@ export class SchemaResolver {
           const matchingMediaType = mediaTypes.find(isParamMediaTypeAllowed);
           if (matchingMediaType) {
             const matchingMediaSchema = requestBodyObj.content?.[matchingMediaType]?.schema;
-            const schemaInfo = `operation ${operation.operationId} request body`;
+            const schemaInfo = `Operation ${operation.operationId} request body`;
 
             schemaRefObjs.push(...getSchemaRefObjs(this, matchingMediaSchema, schemaInfo));
 
@@ -356,7 +356,7 @@ export class SchemaResolver {
           const matchingMediaType = mediaTypes.find(isMediaTypeAllowed);
           if (matchingMediaType) {
             const matchingMediaSchema = responseObj.content?.[matchingMediaType]?.schema;
-            const schemaInfo = `operation ${operation.operationId} response body`;
+            const schemaInfo = `Operation ${operation.operationId} response body`;
 
             schemaRefObjs.push(...getSchemaRefObjs(this, matchingMediaSchema, schemaInfo));
 

@@ -1,3 +1,4 @@
+import { HTTP_STATUS_CODES, HttpStatusCode } from "../const/validation.const";
 import { Endpoint, EndpointParameter } from "../types/endpoint";
 import { OperationObject } from "../types/openapi";
 import { ValidationError, ValidationErrorType } from "../types/validation";
@@ -37,18 +38,33 @@ export function getMissingAclConditionPropertyError(
 }
 
 export function getMissingStatusCodeError(
-  statusCode: string,
+  statusCode: HttpStatusCode,
   operation: OperationObject,
   endpoint: Endpoint,
 ): ValidationError {
   return {
     type: "missing-status-code",
-    message: `Missing status code ${statusCode} in operation ${getOperationDescriptor(operation, endpoint)}`,
+    message: `Missing status code ${getStatusCodeDescription(statusCode)} in operation ${getOperationDescriptor(operation, endpoint)}`,
+  };
+}
+
+export function getInvalidStatusCodeError(
+  statusCode: { expected: HttpStatusCode; received: HttpStatusCode },
+  operation: OperationObject,
+  endpoint: Endpoint,
+): ValidationError {
+  return {
+    type: "invalid-status-code",
+    message: `Operation ${getOperationDescriptor(operation, endpoint)} expected HTTP status code ${getStatusCodeDescription(statusCode.expected)} but received ${getStatusCodeDescription(statusCode.received)}`,
   };
 }
 
 function getOperationDescriptor(operation: OperationObject, endpoint: Endpoint) {
   return operation.operationId ?? `${endpoint.method} ${endpoint.path}`;
+}
+
+function getStatusCodeDescription(statusCode: keyof typeof HTTP_STATUS_CODES) {
+  return `${statusCode} (${HTTP_STATUS_CODES[statusCode]})`;
 }
 
 export function groupByType(validationErrors: ValidationError[]): Record<ValidationErrorType, string[]> {

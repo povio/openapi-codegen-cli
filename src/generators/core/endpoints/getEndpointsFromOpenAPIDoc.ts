@@ -6,6 +6,7 @@ import { invalidVariableNameCharactersToCamel } from "src/generators/utils/js.ut
 import { formatTag, getOperationTag } from "src/generators/utils/tag.utils";
 import {
   getInvalidOperationIdError,
+  getInvalidStatusCodeError,
   getMissingPathParameterError,
   getMissingStatusCodeError,
 } from "src/generators/utils/validation.utils";
@@ -118,6 +119,11 @@ export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver) {
           schema = responseObj.content?.[matchingMediaType]?.schema;
         } else {
           responseZodSchema = VOID_SCHEMA;
+          if (statusCode === "200") {
+            resolver.validationErrors.push(
+              getInvalidStatusCodeError({ received: "200", expected: "204" }, operation, endpoint),
+            );
+          }
         }
 
         if (schema) {

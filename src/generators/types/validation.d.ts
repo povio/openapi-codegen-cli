@@ -5,7 +5,8 @@ export type ValidationErrorType =
   | "not-allowed-inline-enum"
   | "not-allowed-circular-schema"
   | "missing-acl-condition-property"
-  | "missing-status-code";
+  | "missing-status-code"
+  | "invalid-status-code";
 
 export interface ValidationError {
   type: ValidationErrorType;
