@@ -249,7 +249,7 @@ export class SchemaResolver {
   }
 
   getBaseUrl() {
-    const serverUrl = this.openApiDoc.servers?.[0].url;
+    const serverUrl = this.openApiDoc.servers?.[0]?.url;
     if (this.options.baseUrl === "" && serverUrl) {
       return serverUrl;
     }
