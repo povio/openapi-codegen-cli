@@ -15,6 +15,7 @@ interface ZodGenerateOptions {
 interface EndpointsGenerateOptions {
   withDeprecatedEndpoints?: boolean;
   removeOperationPrefixEndingWith?: string;
+  axiosRequestConfig?: boolean;
 }
 
 interface QueriesGenerateOptions {

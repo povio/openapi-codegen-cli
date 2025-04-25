@@ -24,6 +24,7 @@ export type GenerateParams = {
   | "baseUrl"
   | "replaceOptionalWithNullish"
   | "infiniteQueries"
+  | "axiosRequestConfig"
 >;
 
 export async function generate({ input, excludeTags, prettier, verbose, ...params }: GenerateParams) {

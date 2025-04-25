@@ -8,8 +8,7 @@
 {{/each}}{{/if}} * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<{{{importedZodSchemaInferedType endpoint.response}}}> } {{endpoint.responseDescription}}
  * @statusCodes [{{commaSeparated endpoint.responseStatusCodes}}]
- */
- {{else}}
+ */{{else}}
  /** 
  * {{#if (isQuery endpoint)}}Query{{else}}Mutation{{/if}} `{{queryName endpoint}}`{{#if endpoint.summary}}
  * @summary {{addAsteriskAfterNewLine endpoint.summary}}{{/if}}{{#if endpoint.description}} 

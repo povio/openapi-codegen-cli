@@ -1,10 +1,10 @@
 {{! Js docs }}
 {{{genQueryJsDocs endpoint}}}
 {{! Query definition}}
-export const {{queryName endpoint}} = <TData>({{#if (endpointParams endpoint)}}{ {{{endpointArgs endpoint}}} }: { {{{genEndpointParams endpoint}}} }, {{/if}}options?: AppQueryOptions<typeof {{importedEndpointName endpoint}}, TData>) => {
+export const {{queryName endpoint}} = <TData>({{#if (endpointParams endpoint)}}{ {{{endpointArgs endpoint}}} }: { {{{genEndpointParams endpoint}}} }, {{/if}}options?: AppQueryOptions<typeof {{importedEndpointName endpoint}}, TData>{{#if hasAxiosRequestConfig}}, {{axiosRequestConfigName}}?: {{axiosRequestConfigType}}{{/if}}) => {
   return {{queryHook}}({
     queryKey: keys.{{endpointName endpoint}}({{#if (endpointParams endpoint)}}{{{endpointArgs endpoint}}}{{/if}}),
-    queryFn: {{#if (endpointParams endpoint)}}() => {{importedEndpointName endpoint}}({{{endpointArgs endpoint}}}){{else}}{{importedEndpointName endpoint}}{{/if}},
+    queryFn: {{#if hasEndpointArgs}}() => {{importedEndpointName endpoint}}({{{endpointArgs endpoint}}}{{#if hasAxiosRequestConfig}}{{#if (endpointArgs endpoint)}}, {{/if}}{{axiosRequestConfigName}}{{/if}}){{else}}{{importedEndpointName endpoint}}{{/if}},
     ...options,
   });
 };

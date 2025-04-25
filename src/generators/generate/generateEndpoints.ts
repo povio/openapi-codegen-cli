@@ -1,11 +1,11 @@
 import { APP_REST_CLIENT_NAME } from "../const/deps.const";
+import { AXIOS_IMPORT, AXIOS_REQUEST_CONFIG_NAME, AXIOS_REQUEST_CONFIG_TYPE } from "../const/endpoints.const";
 import { ZOD_IMPORT } from "../const/zod.const";
 import { EndpointParameter } from "../types/endpoint";
 import { GenerateType, GenerateTypeParams, Import } from "../types/generate";
 import { getUniqueArray } from "../utils/array.utils";
-import { getAppRestClientImportPath } from "../utils/generate/generate.utils";
 import { getModelsImports } from "../utils/generate/generate.imports.utils";
-import { getNamespaceName } from "../utils/generate/generate.utils";
+import { getAppRestClientImportPath, getNamespaceName } from "../utils/generate/generate.utils";
 import { getHbsTemplateDelegate } from "../utils/hbs/hbs-template.utils";
 import { isNamedZodSchema } from "../utils/zod-schema.utils";
 
@@ -19,6 +19,8 @@ export function generateEndpoints({ resolver, data, tag = "" }: GenerateTypePara
     bindings: [APP_REST_CLIENT_NAME],
     from: getAppRestClientImportPath(resolver.options),
   };
+
+  const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
 
   const endpointResponseSchemas = endpoints.map((endpoint) => endpoint.response);
   const hasZodImport = endpointResponseSchemas.some((response) => !isNamedZodSchema(response));
@@ -35,12 +37,17 @@ export function generateEndpoints({ resolver, data, tag = "" }: GenerateTypePara
 
   return hbsTemplate({
     appRestClientImport,
+    hasAxiosImport: hasAxiosRequestConfig,
+    axiosImport: AXIOS_IMPORT,
     hasZodImport,
     zodImport: ZOD_IMPORT,
     modelsImports,
     includeNamespace: resolver.options.tsNamespaces,
     namespace: getNamespaceName({ type: GenerateType.Endpoints, tag, options: resolver.options }),
     restClientName: APP_REST_CLIENT_NAME,
+    hasAxiosRequestConfig,
+    axiosRequestConfigName: AXIOS_REQUEST_CONFIG_NAME,
+    axiosRequestConfigType: AXIOS_REQUEST_CONFIG_TYPE,
     endpoints,
   });
 }
