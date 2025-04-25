@@ -1,5 +1,8 @@
 {
     {{! Query params}}
+    {{#if hasAxiosRequestConfig}}
+    ...{{axiosRequestConfigName}},
+    {{/if}}
     {{#if endpointConfig.params}}
     params: {
         {{#each endpointConfig.params as | param |}}

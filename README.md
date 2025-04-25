@@ -44,6 +44,7 @@ yarn openapi-codegen generate --input http://localhost:3001/docs-json --standalo
   --extractEnums                      Extract enums as separate Zod schemas (default: true)
   --replaceOptionalWithNullish        Replace all `.optional()` zod chains wtih `.nullish()`
 
+  --axiosRequestConfig                       Adds Axios request config parameter to queries (default: false)
   --infiniteQueries                   Generates infinite queries for API definitions that support pagination (default: false)
 
   --standalone                        Add any missing classes or types—e.g., REST client class, React Query type extensions, etc. (default: false)

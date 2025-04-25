@@ -49,6 +49,9 @@ class GenerateOptions implements GenerateParams {
 
   @YargOption({ envAlias: "infiniteQueries", default: false, type: "boolean" })
   infiniteQueries!: boolean;
+
+  @YargOption({ envAlias: "axiosRequestConfig", default: false, type: "boolean" })
+  axiosRequestConfig!: boolean;
 }
 
 export const command: yargs.CommandModule = {

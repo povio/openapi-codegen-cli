@@ -1,12 +1,13 @@
 import Handlebars from "handlebars";
 import { CASL_ABILITY_BINDING } from "src/generators/const/acl.const";
+import { AXIOS_REQUEST_CONFIG_NAME, AXIOS_REQUEST_CONFIG_TYPE } from "src/generators/const/endpoints.const";
+import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
 import { INFINITE_QUERY_RESPONSE_PARAMS, QUERY_HOOKS } from "../../const/query.const";
 import { Endpoint } from "../../types/endpoint";
 import { GenerateZodSchemaData, Import } from "../../types/generate";
-import { getEndpointConfig } from "../generate/generate.endpoints.utils";
+import { getEndpointConfig, mapEndpointParamsToFunctionParams } from "../generate/generate.endpoints.utils";
 import { getHbsPartialTemplateDelegate } from "../hbs/hbs-template.utils";
 import { isQuery } from "../query.utils";
-import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
 
 enum PartialsHelpers {
   ModelJsDocs = "genModelJsDocs",
@@ -25,10 +26,10 @@ export function registerPartialsHbsHelpers(resolver: SchemaResolver) {
   registerGenerateModelJsDocsHelper();
   registerImportHelper();
   registerGenerateEndpointParamsHelper();
-  registerGenerateEndpointConfigHelper();
+  registerGenerateEndpointConfigHelper(resolver);
   registerGenerateQueryKeysHelper(resolver);
-  registerGenerateQueryHelper();
-  registerGenerateInfiniteQueryHelper();
+  registerGenerateQueryHelper(resolver);
+  registerGenerateInfiniteQueryHelper(resolver);
   registerGenerateQueryJsDocsHelper();
   registerGenerateCaslAbilityTypeHelper();
   registerGenerateCaslAbilityFunctionHelper();
@@ -56,13 +57,18 @@ function registerGenerateEndpointParamsHelper() {
   );
 }
 
-function registerGenerateEndpointConfigHelper() {
+function registerGenerateEndpointConfigHelper(resolver: SchemaResolver) {
   Handlebars.registerHelper(PartialsHelpers.EndpointConfig, (endpoint: Endpoint) => {
     const endpointConfig = getEndpointConfig(endpoint);
+    const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
     if (Object.keys(endpointConfig).length === 0) {
-      return "";
+      return hasAxiosRequestConfig ? AXIOS_REQUEST_CONFIG_NAME : "";
     }
-    return getHbsPartialTemplateDelegate("endpoint-config")({ endpointConfig });
+    return getHbsPartialTemplateDelegate("endpoint-config")({
+      endpointConfig,
+      hasAxiosRequestConfig,
+      axiosRequestConfigName: AXIOS_REQUEST_CONFIG_NAME,
+    });
   });
 }
 
@@ -79,7 +85,7 @@ function registerGenerateQueryKeysHelper(resolver: SchemaResolver) {
   });
 }
 
-function registerGenerateQueryHelper() {
+function registerGenerateQueryHelper(resolver: SchemaResolver) {
   Handlebars.registerHelper(PartialsHelpers.Query, (endpoint: Endpoint, queryEndpoints: Endpoint[]) => {
     let templateName: string;
     let queryHook: string;
@@ -92,11 +98,21 @@ function registerGenerateQueryHelper() {
       queryHook = QUERY_HOOKS.mutation;
     }
 
-    return getHbsPartialTemplateDelegate(templateName)({ endpoint, queryEndpoints, queryHook });
+    const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
+
+    return getHbsPartialTemplateDelegate(templateName)({
+      endpoint,
+      queryEndpoints,
+      queryHook,
+      hasEndpointArgs: mapEndpointParamsToFunctionParams(resolver, endpoint).length > 0 || hasAxiosRequestConfig,
+      hasAxiosRequestConfig,
+      axiosRequestConfigName: AXIOS_REQUEST_CONFIG_NAME,
+      axiosRequestConfigType: AXIOS_REQUEST_CONFIG_TYPE,
+    });
   });
 }
 
-function registerGenerateInfiniteQueryHelper() {
+function registerGenerateInfiniteQueryHelper(resolver: SchemaResolver) {
   Handlebars.registerHelper(PartialsHelpers.InfiniteQuery, (endpoint: Endpoint) =>
     getHbsPartialTemplateDelegate("query-use-infinite-query")({
       endpoint,
@@ -104,6 +120,9 @@ function registerGenerateInfiniteQueryHelper() {
       pageParamName: INFINITE_QUERY_RESPONSE_PARAMS.pageParamName,
       totalItemsName: INFINITE_QUERY_RESPONSE_PARAMS.totalItemsName,
       limitParamName: INFINITE_QUERY_RESPONSE_PARAMS.limitParamName,
+      hasAxiosRequestConfig: resolver.options.axiosRequestConfig,
+      axiosRequestConfigName: AXIOS_REQUEST_CONFIG_NAME,
+      axiosRequestConfigType: AXIOS_REQUEST_CONFIG_TYPE,
     }),
   );
 }
