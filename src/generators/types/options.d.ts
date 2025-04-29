@@ -15,11 +15,12 @@ interface ZodGenerateOptions {
 interface EndpointsGenerateOptions {
   withDeprecatedEndpoints?: boolean;
   removeOperationPrefixEndingWith?: string;
-  axiosRequestConfig?: boolean;
 }
 
 interface QueriesGenerateOptions {
+  axiosRequestConfig?: boolean;
   infiniteQueries?: boolean;
+  invalidateQueryOptions?: boolean;
 }
 
 interface GenerateConfig {

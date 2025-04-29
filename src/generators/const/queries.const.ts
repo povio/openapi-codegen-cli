@@ -19,3 +19,5 @@ export const INFINITE_QUERY_RESPONSE_PARAMS = {
   totalItemsName: "totalItems",
   limitParamName: "limit",
 };
+
+export const QUERIES_MODULE_NAME = "moduleName";

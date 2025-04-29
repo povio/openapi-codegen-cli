@@ -1,14 +1,16 @@
 import Handlebars from "handlebars";
-import { getInfiniteQueryName, getQueryName } from "../generate/generate.query.utils";
+import { getInfiniteQueryName, getQueryName, getTagKeys, getTagModuleName } from "../generate/generate.query.utils";
 import { isInfiniteQuery, isQuery } from "../query.utils";
 import { Endpoint } from "src/generators/types/endpoint";
-import { INFINITE_QUERY_PARAMS } from "src/generators/const/query.const";
+import { INFINITE_QUERY_PARAMS } from "src/generators/const/queries.const";
 
 enum QueryHelpers {
   QueryName = "queryName",
   IsQuery = "isQuery",
   InfiniteQueryName = "infiniteQueryName",
   IsInfiniteQuery = "isInfiniteQuery",
+  TagModuleName = "tagModuleName",
+  TagKeys = "tagKeys",
 }
 
 export function registerQueryHbsHelpers() {
@@ -16,6 +18,8 @@ export function registerQueryHbsHelpers() {
   registerIsQueryHelper();
   registerInfiniteQueryNameHelper();
   registerIsInfiniteQueryHelper();
+  registerTagModuleNameHelper();
+  registerTagKeysHelper();
 }
 
 function registerQueryNameHelper() {
@@ -34,4 +38,12 @@ function registerIsInfiniteQueryHelper() {
   Handlebars.registerHelper(QueryHelpers.IsInfiniteQuery, (endpoint: Endpoint) =>
     isInfiniteQuery(endpoint, Object.values(INFINITE_QUERY_PARAMS)),
   );
+}
+
+function registerTagModuleNameHelper() {
+  Handlebars.registerHelper(QueryHelpers.TagModuleName, getTagModuleName);
+}
+
+function registerTagKeysHelper() {
+  Handlebars.registerHelper(QueryHelpers.TagKeys, getTagKeys);
 }

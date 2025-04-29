@@ -4,7 +4,7 @@ import { ENUM_SUFFIX, SCHEMA_SUFFIX } from "./zod.const";
 
 export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   // Base options
-  input: "input.yaml",
+  input: "",
   output: "output",
   splitByTags: true,
   defaultTag: "Common",
@@ -36,8 +36,11 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   enumSuffix: ENUM_SUFFIX,
   withDefaultValues: true,
   extractEnums: true,
+  replaceOptionalWithNullish: false,
   // Endpoints options
   removeOperationPrefixEndingWith: "Controller_",
   // Queries options
-  infiniteQueries: true,
+  axiosRequestConfig: false,
+  infiniteQueries: false,
+  invalidateQueryOptions: true,
 };

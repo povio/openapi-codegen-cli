@@ -4,6 +4,10 @@
 {{/if}}
 {{! React query import }}
 {{{genImport queryImport}}}
+{{! Invalidate queries import }}
+{{#if hasInvalidateQueriesImport}}
+{{{genImport invalidateQueriesImport}}}
+{{/if}}
 {{! React query types import }}
 {{{genImport queryTypesImport}}}
 {{! Models import }}
@@ -18,16 +22,19 @@
 {{#if includeNamespace}}
 export namespace {{namespace}} {
 {{/if}}
+
+export const {{queriesModuleName}} = "{{namespace}}";
+
 {{! Query keys export}}
-{{{genQueryKeys queryEndpoints namespace}}}
+{{{genQueryKeys queryEndpoints}}}
 
 {{! Query export }}
 {{#each endpoints as | endpoint |}}
-{{{genQuery endpoint ../queryEndpoints}}}
+{{{genQuery endpoint}}}
 
 {{#if ../generateInfiniteQueries}}
 {{#if (isInfiniteQuery endpoint)}}
-{{{genInfiniteQuery endpoint ../queryEndpoints}}}
+{{{genInfiniteQuery endpoint}}}
 {{/if}}
 {{/if}}
 

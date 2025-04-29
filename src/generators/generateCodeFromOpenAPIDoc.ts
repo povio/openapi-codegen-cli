@@ -9,11 +9,12 @@ import { GenerateFileData, GenerateType, GenerateTypeParams } from "./types/gene
 import { GenerateOptions } from "./types/options";
 import { getOutputFileName, readAssetSync } from "./utils/file.utils";
 import { getFileNameWithExtension, getTagFileName } from "./utils/generate/generate.utils";
-import { STANDALONE_ASSETS } from "./const/deps.const";
+import { INVALIDATE_QUERY_OPTIONS_FILE, QUERY_MODULES_FILE, STANDALONE_ASSETS } from "./const/deps.const";
 import { SchemaResolver } from "./core/SchemaResolver.class";
 import { generateAppRestClient } from "./generate/generateAppRestClient";
 import { ACL_APP_ABILITY_FILE } from "./const/acl.const";
 import { STANDALONE_APP_REST_CLIENT_FILE } from "./const/deps.const";
+import { generateQueryModules } from "./generate/generateQueryModules";
 
 export function generateCodeFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, cliOptions: Partial<GenerateOptions>) {
   const importPath = cliOptions.standalone && cliOptions.importPath === "ts" ? "relative" : cliOptions.importPath;
@@ -61,6 +62,21 @@ export function generateCodeFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, cliOp
     generateFilesData.push({ fileName, content: appAclContent });
   }
 
+  if (options.invalidateQueryOptions) {
+    const fileName = getFileNameWithExtension(INVALIDATE_QUERY_OPTIONS_FILE);
+    generateFilesData.push({
+      content: readAssetSync(fileName),
+      fileName: getOutputFileName({ output: resolver.options.output, fileName }),
+    });
+    generateFilesData.push({
+      fileName: getOutputFileName({
+        output: resolver.options.output,
+        fileName: getFileNameWithExtension(QUERY_MODULES_FILE),
+      }),
+      content: generateQueryModules({ resolver, data }),
+    });
+  }
+
   if (options.standalone) {
     generateFilesData.push(...getStandaloneFiles(resolver));
   }
@@ -74,8 +90,8 @@ function getStandaloneFiles(resolver: SchemaResolver) {
   Object.values(STANDALONE_ASSETS).forEach((file) => {
     const fileName = getFileNameWithExtension(file);
     generateFilesData.push({
-      fileName: getOutputFileName({ output: resolver.options.output, fileName }),
       content: readAssetSync(fileName),
+      fileName: getOutputFileName({ output: resolver.options.output, fileName }),
     });
   });
 

@@ -1,17 +1,15 @@
 {{! Js docs }}
 {{{genQueryJsDocs endpoint}}}
 {{! Mutation definition}}
-export const {{queryName endpoint}} = (options?: AppMutationOptions<typeof {{importedEndpointName endpoint}}, { {{{genEndpointParams endpoint}}} }>{{#if hasAxiosRequestConfig}}, {{axiosRequestConfigName}}?: {{axiosRequestConfigType}}{{/if}}) => {
-  {{#if queryEndpoints}} const queryClient = useQueryClient();{{/if}}
+export const {{queryName endpoint}} = (options?: AppMutationOptions<typeof {{importedEndpointName endpoint}}, { {{{genEndpointParams endpoint}}} }>{{#if hasInvalidateQueryOptions}} & {{invalidateQueryOptionsType}}{{/if}}{{#if hasAxiosRequestConfig}}, {{axiosRequestConfigName}}?: {{axiosRequestConfigType}}{{/if}}) => {
+  {{#if hasInvalidateQueryOptions}} const queryClient = useQueryClient();{{/if}}
 
   return {{queryHook}}({
     mutationFn: ({{#if (endpointParams endpoint)}} { {{{endpointArgs endpoint}}} } {{/if}}) => {{importedEndpointName endpoint}}({{{endpointArgs endpoint}}}{{#if hasAxiosRequestConfig}}{{#if (endpointArgs endpoint)}}, {{/if}}{{axiosRequestConfigName}}{{/if}}),
-    ...options, {{#if queryEndpoints}}
+    ...options, {{#if hasInvalidateQueryOptions}}
     onSuccess: (...args) => {
       {{! Invalidation }}
-      if (options?.enableInvalidateAll) {
-        queryClient.invalidateQueries({ queryKey: keys.all });
-      }
+      invalidateQueries(queryClient, {{queriesModuleName}}, options);
       options?.onSuccess?.(...args);
     },{{/if}}
   });
