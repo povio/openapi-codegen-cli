@@ -29,26 +29,27 @@ yarn openapi-codegen generate --input http://localhost:3001/docs-json --standalo
 #### Generate command (generates Zod schemas, API definitions and React queries)
 
 ```sh
-  --input                             Path/URL to OpenAPI/Swagger document as JSON/YAML
-  --output                            Output path (default: 'output')
-  --prettier                          Run the Prettier command on the output after code generation (default: true)
-  --verbose                           Show log messages during execution
+  --input                             Path/URL to OpenAPI JSON/YAML document
+  --output                            Output directory path (default: 'output')
+  --prettier                          Format the generated code using Prettier (default: true)
+  --verbose                           Display detailed log messages during execution (default: false)
 
-  --splitByTags                       Split output into directories based on tags in OpenAPI operations (default: true)
-  --defaultTag                        (Requires `splitByTags`) Default tag name for code shared across multiple tags (default: 'Common')
-  --excludeTags                       (Requires `splitByTags`) Comma-separated list of tags to exclude from the output
+  --splitByTags                       Organize output into separate folders based on OpenAPI operation tags (default: true)
+  --defaultTag                        (Requires `--splitByTags`) Default tag for shared code across multiple tags (default: 'Common')
+  --excludeTags                       (Requires `--splitByTags`) Comma-separated list of tags to exclude from generation
 
-  --tsNamespaces                      Include Typescript namespaces inside generated files (default: true)
-  --importPath                        Import path (default: 'ts', possible values: 'ts' | 'relative' | 'absolute')
-  --removeOperationPrefixEndingWith   Remove prefixes that end with the specified value from operation names (default: 'Controller_')
-  --extractEnums                      Extract enums as separate Zod schemas (default: true)
-  --replaceOptionalWithNullish        Replace all `.optional()` zod chains wtih `.nullish()`
+  --tsNamespaces                      Wrap generated files in TypeScript namespaces (default: true)
+  --importPath                        Module import style for generated files (default: 'ts'; options: 'ts' | 'relative' | 'absolute')
+  --removeOperationPrefixEndingWith   Remove operation name prefixes that end with the specified string (Default: 'Controller_')
+  --extractEnums                      Extract enums into separate Zod schemas (default: true)
+  --replaceOptionalWithNullish        Replace `.optional()` chains with `.nullish()` in generated Zod schemas (default: false)
 
-  --axiosRequestConfig                       Adds Axios request config parameter to queries (default: false)
-  --infiniteQueries                   Generates infinite queries for API definitions that support pagination (default: false)
+  --axiosRequestConfig                Include Axios request config parameters in query hooks (default: false)
+  --infiniteQueries                   Generate infinite queries for paginated API endpoints (default: false)
+  --invalidateQueryOptions            Add query invalidation options to mutation hooks (default: true)
 
-  --standalone                        Add any missing classes or types—e.g., REST client class, React Query type extensions, etc. (default: false)
-  --baseUrl                           (Requires `standalone`) Base URL for the REST client; falls back to the one defined in the OpenAPI spec
+  --standalone                        Generate any missing supporting classes/types, e.g., REST client class, React Query type extensions, etc. (default: false)
+  --baseUrl                           (Requires `--standalone`) Base URL for the REST client; falls back to the OpenAPI spec if not provided
 ```
 
 #### Check command (checks if OpenAPI spec is compliant)
@@ -57,9 +58,9 @@ yarn openapi-codegen generate --input http://localhost:3001/docs-json --standalo
   --input                             Path/URL to OpenAPI/Swagger document as JSON/YAML
   --verbose                           Show log messages during execution
 
-  --splitByTags                       Split output into directories based on tags in OpenAPI operations (default: true)
-  --defaultTag                        Default tag name for code shared across multiple tags (default: 'Common')
-  --excludeTags                       Comma-separated list of tags to exclude from the output
+  --splitByTags                       Organize output into separate folders based on OpenAPI operation tags (default: true)
+  --defaultTag                        (Requires `--splitByTags`) Default tag for shared code across multiple tags (default: 'Common')
+  --excludeTags                       (Requires `--splitByTags`) Comma-separated list of tags to exclude from generation
 ```
 
 ## Development

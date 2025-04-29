@@ -28,3 +28,11 @@ export const STANDALONE_ASSETS: Record<StandaloneAssetEnum, GenerateFile> = {
 };
 
 export const STANDALONE_APP_REST_CLIENT_FILE: GenerateFile = { fileName: "app-rest-client", extension: "ts" };
+
+// InvalidateQueryOptions
+export const INVALIDATE_QUERIES = {
+  optionsType: "InvalidateQueryOptions",
+  functionName: "invalidateQueries",
+};
+export const INVALIDATE_QUERY_OPTIONS_FILE: GenerateFile = { fileName: "invalidateQueries", extension: "ts" };
+export const QUERY_MODULES_FILE: GenerateFile = { fileName: "queryModules", extension: "ts" };

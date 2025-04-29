@@ -1,11 +1,15 @@
-import { QUERY_OPTIONS_TYPES } from "../const/deps.const";
+import { INVALIDATE_QUERIES, QUERY_OPTIONS_TYPES } from "../const/deps.const";
 import { AXIOS_IMPORT } from "../const/endpoints.const";
-import { INFINITE_QUERY_PARAMS, QUERY_HOOKS, QUERY_IMPORT } from "../const/query.const";
+import { INFINITE_QUERY_PARAMS, QUERIES_MODULE_NAME, QUERY_HOOKS, QUERY_IMPORT } from "../const/queries.const";
 import { EndpointParameter } from "../types/endpoint";
 import { GenerateType, GenerateTypeParams, Import } from "../types/generate";
 import { getUniqueArray } from "../utils/array.utils";
 import { getEndpointsImports, getModelsImports } from "../utils/generate/generate.imports.utils";
-import { getNamespaceName, getQueryTypesImportPath } from "../utils/generate/generate.utils";
+import {
+  getInvalidateQueriesImportPath,
+  getNamespaceName,
+  getQueryTypesImportPath,
+} from "../utils/generate/generate.utils";
 import { getHbsTemplateDelegate } from "../utils/hbs/hbs-template.utils";
 import { isInfiniteQuery, isMutation, isQuery } from "../utils/query.utils";
 import { isNamedZodSchema } from "../utils/zod-schema.utils";
@@ -29,9 +33,14 @@ export function generateQueries({ resolver, data, tag = "" }: GenerateTypeParams
     bindings: [
       ...(queryEndpoints.length > 0 ? [QUERY_HOOKS.query] : []),
       ...(resolver.options.infiniteQueries && infiniteQueryEndpoints.length > 0 ? [QUERY_HOOKS.infiniteQuery] : []),
-      ...(mutationEndpoints.length > 0 ? [QUERY_HOOKS.mutation] : []),
-      ...(queryEndpoints.length > 0 && mutationEndpoints.length > 0 ? [QUERY_HOOKS.queryClient] : []),
+      ...(mutationEndpoints.length > 0 ? [QUERY_HOOKS.mutation, QUERY_HOOKS.queryClient] : []),
     ],
+  };
+
+  const hasInvalidateQueriesImport = resolver.options.invalidateQueryOptions && mutationEndpoints.length > 0;
+  const invalidateQueriesImport: Import = {
+    bindings: Object.values(INVALIDATE_QUERIES),
+    from: getInvalidateQueriesImportPath(resolver.options),
   };
 
   const queryTypesImport: Import = {
@@ -64,11 +73,14 @@ export function generateQueries({ resolver, data, tag = "" }: GenerateTypeParams
     hasAxiosImport,
     axiosImport: AXIOS_IMPORT,
     queryImport,
+    hasInvalidateQueriesImport,
+    invalidateQueriesImport,
     queryTypesImport,
     modelsImports,
     endpointsImports,
     includeNamespace: resolver.options.tsNamespaces,
     namespace: getNamespaceName({ type: GenerateType.Queries, tag, options: resolver.options }),
+    queriesModuleName: QUERIES_MODULE_NAME,
     endpoints,
     queryEndpoints,
     generateInfiniteQueries: resolver.options.infiniteQueries,

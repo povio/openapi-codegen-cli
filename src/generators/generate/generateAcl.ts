@@ -3,7 +3,7 @@ import { SchemaResolver } from "../core/SchemaResolver.class";
 import { GenerateType, GenerateTypeParams, Import } from "../types/generate";
 import { getUniqueArray } from "../utils/array.utils";
 import { getTagAllAbilitiesName } from "../utils/generate/generate.acl.utils";
-import { getAclImports, getModelsImports } from "../utils/generate/generate.imports.utils";
+import { getEntityImports, getModelsImports } from "../utils/generate/generate.imports.utils";
 import { getNamespaceName } from "../utils/generate/generate.utils";
 import { getHbsTemplateDelegate } from "../utils/hbs/hbs-template.utils";
 
@@ -59,10 +59,11 @@ export function generateAppAcl(resolver: SchemaResolver, tags: string[]) {
     bindings: [CASL_ABILITY_BINDING.pureAbility],
   };
 
-  const imports = getAclImports({
+  const imports = getEntityImports({
     tags,
     entityName: ACL_ALL_ABILITIES,
     getAliasEntityName: getTagAllAbilitiesName,
+    type: GenerateType.Acl,
     options: resolver.options,
   });
 

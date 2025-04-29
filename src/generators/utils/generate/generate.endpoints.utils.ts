@@ -13,7 +13,7 @@ import { primitiveTypeToTsType } from "../ts.utils";
 import { isNamedZodSchema } from "../zod-schema.utils";
 import { getNamespaceName } from "./generate.utils";
 import { getImportedZodSchemaInferedTypeName } from "./generate.zod.utils";
-import { INFINITE_QUERY_PARAMS } from "src/generators/const/query.const";
+import { INFINITE_QUERY_PARAMS } from "src/generators/const/queries.const";
 
 export const getEndpointName = (endpoint: Endpoint) => decapitalize(snakeToCamel(endpoint.operationName));
 

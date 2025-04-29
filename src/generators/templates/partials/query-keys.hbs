@@ -1,5 +1,5 @@
 export const keys = {
-    all: ["{{namespace}}"] as const,
+    all: [{{queriesModuleName}}] as const,
     {{#each queryEndpoints as | endpoint |}}
     {{endpointName endpoint}}: ({{{genEndpointParams endpoint}}}) => [...keys.all, "{{endpoint.path}}", {{{endpointArgs endpoint}}}] as const,
     {{#if ../generateInfiniteQueries}}

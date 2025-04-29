@@ -2,12 +2,13 @@ import Handlebars from "handlebars";
 import { CASL_ABILITY_BINDING } from "src/generators/const/acl.const";
 import { AXIOS_REQUEST_CONFIG_NAME, AXIOS_REQUEST_CONFIG_TYPE } from "src/generators/const/endpoints.const";
 import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
-import { INFINITE_QUERY_RESPONSE_PARAMS, QUERY_HOOKS } from "../../const/query.const";
+import { INFINITE_QUERY_RESPONSE_PARAMS, QUERIES_MODULE_NAME, QUERY_HOOKS } from "../../const/queries.const";
 import { Endpoint } from "../../types/endpoint";
 import { GenerateZodSchemaData, Import } from "../../types/generate";
 import { getEndpointConfig, mapEndpointParamsToFunctionParams } from "../generate/generate.endpoints.utils";
 import { getHbsPartialTemplateDelegate } from "../hbs/hbs-template.utils";
 import { isQuery } from "../query.utils";
+import { INVALIDATE_QUERIES } from "src/generators/const/deps.const";
 
 enum PartialsHelpers {
   ModelJsDocs = "genModelJsDocs",
@@ -30,7 +31,7 @@ export function registerPartialsHbsHelpers(resolver: SchemaResolver) {
   registerGenerateQueryKeysHelper(resolver);
   registerGenerateQueryHelper(resolver);
   registerGenerateInfiniteQueryHelper(resolver);
-  registerGenerateQueryJsDocsHelper();
+  registerGenerateQueryJsDocsHelper(resolver);
   registerGenerateCaslAbilityTypeHelper();
   registerGenerateCaslAbilityFunctionHelper();
 }
@@ -73,20 +74,20 @@ function registerGenerateEndpointConfigHelper(resolver: SchemaResolver) {
 }
 
 function registerGenerateQueryKeysHelper(resolver: SchemaResolver) {
-  Handlebars.registerHelper(PartialsHelpers.QueryKeys, (queryEndpoints: Endpoint[], namespace: string) => {
+  Handlebars.registerHelper(PartialsHelpers.QueryKeys, (queryEndpoints: Endpoint[]) => {
     if (queryEndpoints.length === 0) {
       return "";
     }
     return getHbsPartialTemplateDelegate("query-keys")({
       queryEndpoints,
-      namespace,
+      queriesModuleName: QUERIES_MODULE_NAME,
       generateInfiniteQueries: resolver.options.infiniteQueries,
     });
   });
 }
 
 function registerGenerateQueryHelper(resolver: SchemaResolver) {
-  Handlebars.registerHelper(PartialsHelpers.Query, (endpoint: Endpoint, queryEndpoints: Endpoint[]) => {
+  Handlebars.registerHelper(PartialsHelpers.Query, (endpoint: Endpoint) => {
     let templateName: string;
     let queryHook: string;
 
@@ -102,12 +103,14 @@ function registerGenerateQueryHelper(resolver: SchemaResolver) {
 
     return getHbsPartialTemplateDelegate(templateName)({
       endpoint,
-      queryEndpoints,
       queryHook,
+      queriesModuleName: QUERIES_MODULE_NAME,
       hasEndpointArgs: mapEndpointParamsToFunctionParams(resolver, endpoint).length > 0 || hasAxiosRequestConfig,
       hasAxiosRequestConfig,
       axiosRequestConfigName: AXIOS_REQUEST_CONFIG_NAME,
       axiosRequestConfigType: AXIOS_REQUEST_CONFIG_TYPE,
+      hasInvalidateQueryOptions: resolver.options.invalidateQueryOptions,
+      invalidateQueryOptionsType: INVALIDATE_QUERIES.optionsType,
     });
   });
 }
@@ -127,9 +130,14 @@ function registerGenerateInfiniteQueryHelper(resolver: SchemaResolver) {
   );
 }
 
-function registerGenerateQueryJsDocsHelper() {
+function registerGenerateQueryJsDocsHelper(resolver: SchemaResolver) {
   Handlebars.registerHelper(PartialsHelpers.QueryJsDocs, (endpoint: Endpoint, extra?: "infiniteQuery") =>
-    getHbsPartialTemplateDelegate("query-js-docs")({ endpoint, infiniteQuery: extra === "infiniteQuery" }),
+    getHbsPartialTemplateDelegate("query-js-docs")({
+      endpoint,
+      infiniteQuery: extra === "infiniteQuery",
+      hasInvalidateQueryOptions: resolver.options.invalidateQueryOptions,
+      invalidateQueryOptionsType: INVALIDATE_QUERIES.optionsType,
+    }),
   );
 }
 

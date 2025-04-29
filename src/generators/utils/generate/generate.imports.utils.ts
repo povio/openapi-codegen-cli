@@ -62,15 +62,19 @@ export function getEndpointsImports({
   });
 }
 
-export function getAclImports({
+export function getEntityImports({
   tags,
   entityName,
   getAliasEntityName,
+  type,
+  sameDir,
   options,
 }: {
   tags: string[];
   entityName: string;
   getAliasEntityName?: (tag: string) => string;
+  type: GenerateType;
+  sameDir?: boolean;
   options: GenerateOptions;
 }) {
   const imports = new Map<string, Import>();
@@ -78,8 +82,8 @@ export function getAclImports({
     const name = `${entityName}${getAliasEntityName ? ` as ${getAliasEntityName(tag)}` : ""}`;
     if (!imports.has(tag)) {
       imports.set(tag, {
-        bindings: [options.tsNamespaces ? getNamespaceName({ type: GenerateType.Acl, tag, options }) : name],
-        from: `${getImportPath(options)}${getTagImportPath({ type: GenerateType.Acl, tag, includeTagDir: true, options })}`,
+        bindings: [options.tsNamespaces ? getNamespaceName({ type, tag, options }) : name],
+        from: `${getImportPath(options, sameDir)}${getTagImportPath({ type, tag, includeTagDir: true, options })}`,
       });
     } else if (!options.tsNamespaces) {
       imports.get(tag)!.bindings.push(name);
@@ -88,10 +92,10 @@ export function getAclImports({
   return Array.from(imports.values());
 }
 
-export function getImportPath(options: Pick<GenerateOptions, "output" | "importPath">) {
+export function getImportPath(options: Pick<GenerateOptions, "output" | "importPath">, sameDir?: boolean) {
   let importPath = TEMPLATE_DATA_TS_PATH;
   if (options.importPath === "relative") {
-    importPath = "../";
+    importPath = sameDir ? "./" : "../";
   } else if (options.importPath === "absolute") {
     importPath = options.output;
   } else if (new RegExp(`${TEMPLATE_DATA_FILE_PATH}`, "g").test(options.output)) {
@@ -131,7 +135,7 @@ function getImports<T>({
   return Array.from(imports.values());
 }
 
-function mergeImports(options: GenerateOptions, ...importArrs: Import[][]): Import[] {
+export function mergeImports(options: GenerateOptions, ...importArrs: Import[][]): Import[] {
   const merged = new Map<string, Import>();
   importArrs.forEach((imports) => {
     imports.forEach((importItem) => {

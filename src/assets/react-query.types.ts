@@ -20,9 +20,7 @@ export type AppMutationOptions<
   TFunction extends Function,
   TVariables = void,
   TData = Awaited<ReturnType<TFunction>>,
-> = Omit<UseMutationOptions<TData, Error, TVariables>, "mutationKey" | "mutationFn"> & {
-  enableInvalidateAll?: boolean;
-};
+> = Omit<UseMutationOptions<TData, Error, TVariables>, "mutationKey" | "mutationFn">;
 
 export type AppInfiniteQueryOptions<
   TFunction extends Function,

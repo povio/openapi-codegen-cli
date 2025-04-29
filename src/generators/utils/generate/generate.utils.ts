@@ -1,4 +1,5 @@
 import {
+  INVALIDATE_QUERY_OPTIONS_FILE,
   STANDALONE_APP_REST_CLIENT_FILE,
   STANDALONE_ASSETS,
   StandaloneAssetEnum,
@@ -62,4 +63,8 @@ export function getQueryTypesImportPath(options: GenerateOptions) {
     return TEMPLATE_IMPORT_PATH_QUERY_TYPES;
   }
   return `${getImportPath(options)}${STANDALONE_ASSETS[StandaloneAssetEnum.ReactQueryTypes].fileName}`;
+}
+
+export function getInvalidateQueriesImportPath(options: GenerateOptions) {
+  return `${getImportPath(options)}${INVALIDATE_QUERY_OPTIONS_FILE.fileName}`;
 }
