@@ -12,10 +12,10 @@ export const QueriesModuleKeysAll = {
 export type QueriesModuleType = keyof typeof QueriesModuleKeysAll;
 
 {{! Queries modules record }}
-export const QueriesModule: Record<string, QueriesModuleType> = {
+export const QueriesModule = {
     {{#if includeNamespace}}{{#each modules as | module |}} {{module.tag}}: {{module.namespace}}.{{../queriesModuleName}}, {{/each}}
     {{else}}{{#each modules as | module |}} {{module.tag}}:  {{tagModuleName module.tag}}, {{/each}}{{/if}}
-};
+} satisfies Record<string, QueriesModuleType>;
 
 
 
