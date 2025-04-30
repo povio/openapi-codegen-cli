@@ -1,16 +1,16 @@
 import { QueryClient } from "@tanstack/react-query";
 
-import { QueriesModule, QueriesModuleKeysAll } from "./queryModules";
+import { QueriesModuleType, QueriesModuleKeysAll } from "./queryModules";
 
 export interface InvalidateQueryOptions {
   invalidateCurrentModule?: boolean;
-  invalidateModules?: QueriesModule[];
+  invalidateModules?: QueriesModuleType[];
   invalidateKeys?: readonly unknown[][];
 }
 
 export async function invalidateQueries(
   queryClient: QueryClient,
-  currentModule: QueriesModule,
+  currentModule: QueriesModuleType,
   options: InvalidateQueryOptions = {},
 ) {
   const { invalidateCurrentModule, invalidateModules, invalidateKeys } = options;

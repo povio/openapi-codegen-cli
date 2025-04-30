@@ -9,6 +9,13 @@ export const QueriesModuleKeysAll = {
     {{else}}{{#each modules as | module |}} [{{tagModuleName module.tag}}]:{{#if module.hasKeys}}{{tagKeys module.tag}}.all{{else}}undefined{{/if}}, {{/each}}{{/if}}
 } as const;
 
-export type QueriesModule = keyof typeof QueriesModuleKeysAll;
+export type QueriesModuleType = keyof typeof QueriesModuleKeysAll;
+
+{{! Queries modules record }}
+export const QueriesModule: Record<string, QueriesModuleType> = {
+    {{#if includeNamespace}}{{#each modules as | module |}} {{module.tag}}: {{module.namespace}}.{{../queriesModuleName}}, {{/each}}
+    {{else}}{{#each modules as | module |}} {{module.tag}}:  {{tagModuleName module.tag}}, {{/each}}{{/if}}
+};
+
 
 
