@@ -37,6 +37,7 @@ export function mapEndpointParamsToFunctionParams(
   options?: {
     removePageParam?: boolean;
     replacePageParam?: boolean;
+    includeFileParam?: boolean;
   },
 ) {
   const params = endpoint.parameters.map((param) => {
@@ -59,6 +60,17 @@ export function mapEndpointParamsToFunctionParams(
       bodyObject: param.bodyObject,
     };
   });
+
+  if (options?.includeFileParam && endpoint.fileUpload) {
+    params.push({
+      name: "file",
+      type: "File",
+      paramType: "Body",
+      required: true,
+      parameterObject: undefined,
+      bodyObject: undefined,
+    });
+  }
 
   return params
     .sort((a, b) => {

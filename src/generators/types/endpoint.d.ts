@@ -45,4 +45,5 @@ export interface Endpoint {
   errors: Array<EndpointError>;
   responseStatusCodes: string[];
   acl?: EndpointAclInfo[];
+  fileUpload?: boolean;
 }

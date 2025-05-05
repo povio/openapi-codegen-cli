@@ -74,6 +74,7 @@ export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver) {
         response: "",
         errors: [],
         responseStatusCodes: [],
+        fileUpload: !!operation["x-file-upload"],
       };
 
       if (operation.requestBody) {

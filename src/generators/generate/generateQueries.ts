@@ -1,5 +1,5 @@
 import { INVALIDATE_QUERIES, QUERY_OPTIONS_TYPES } from "../const/deps.const";
-import { AXIOS_IMPORT } from "../const/endpoints.const";
+import { AXIOS_DEFAULT_IMPORT_NAME, AXIOS_IMPORT } from "../const/endpoints.const";
 import { INFINITE_QUERY_PARAMS, QUERIES_MODULE_NAME, QUERY_HOOKS, QUERY_IMPORT } from "../const/queries.const";
 import { EndpointParameter } from "../types/endpoint";
 import { GenerateType, GenerateTypeParams, Import } from "../types/generate";
@@ -20,7 +20,13 @@ export function generateQueries({ resolver, data, tag = "" }: GenerateTypeParams
     return;
   }
 
-  const hasAxiosImport = resolver.options.axiosRequestConfig;
+  const hasFileUploadEndpoint = endpoints.some(({ fileUpload }) => fileUpload);
+  const hasAxiosImport = resolver.options.axiosRequestConfig || hasFileUploadEndpoint;
+  const axiosImport: Import = {
+    defaultImport: hasFileUploadEndpoint ? AXIOS_DEFAULT_IMPORT_NAME : undefined,
+    bindings: resolver.options.axiosRequestConfig ? AXIOS_IMPORT.bindings : [],
+    from: AXIOS_IMPORT.from,
+  };
 
   const queryEndpoints = endpoints.filter(isQuery);
   const infiniteQueryEndpoints = queryEndpoints.filter((endpoint) =>
@@ -29,12 +35,12 @@ export function generateQueries({ resolver, data, tag = "" }: GenerateTypeParams
   const mutationEndpoints = endpoints.filter(isMutation);
 
   const queryImport: Import = {
-    ...QUERY_IMPORT,
     bindings: [
       ...(queryEndpoints.length > 0 ? [QUERY_HOOKS.query] : []),
       ...(resolver.options.infiniteQueries && infiniteQueryEndpoints.length > 0 ? [QUERY_HOOKS.infiniteQuery] : []),
       ...(mutationEndpoints.length > 0 ? [QUERY_HOOKS.mutation, QUERY_HOOKS.queryClient] : []),
     ],
+    from: QUERY_IMPORT.from,
   };
 
   const hasInvalidateQueriesImport = resolver.options.invalidateQueryOptions && mutationEndpoints.length > 0;
@@ -71,7 +77,7 @@ export function generateQueries({ resolver, data, tag = "" }: GenerateTypeParams
 
   return hbsTemplate({
     hasAxiosImport,
-    axiosImport: AXIOS_IMPORT,
+    axiosImport,
     queryImport,
     hasInvalidateQueriesImport,
     invalidateQueriesImport,
