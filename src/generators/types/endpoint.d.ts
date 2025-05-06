@@ -46,4 +46,5 @@ export interface Endpoint {
   responseStatusCodes: string[];
   acl?: EndpointAclInfo[];
   fileUpload?: boolean;
+  fileDownload?: boolean;
 }

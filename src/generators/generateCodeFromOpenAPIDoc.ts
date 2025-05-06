@@ -9,7 +9,12 @@ import { GenerateFileData, GenerateType, GenerateTypeParams } from "./types/gene
 import { GenerateOptions } from "./types/options";
 import { getOutputFileName, getUtilsOutputFileName, readAssetSync } from "./utils/file.utils";
 import { getFileNameWithExtension, getTagFileName } from "./utils/generate/generate.utils";
-import { INVALIDATE_QUERY_OPTIONS_FILE, QUERY_MODULES_FILE, STANDALONE_ASSETS } from "./const/deps.const";
+import {
+  FILE_ACTION_OPTIONS_FILE,
+  INVALIDATE_QUERY_OPTIONS_FILE,
+  QUERY_MODULES_FILE,
+  STANDALONE_ASSETS,
+} from "./const/deps.const";
 import { SchemaResolver } from "./core/SchemaResolver.class";
 import { generateAppRestClient } from "./generate/generateAppRestClient";
 import { ACL_APP_ABILITY_FILE } from "./const/acl.const";
@@ -74,6 +79,14 @@ export function generateCodeFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, cliOp
         fileName: getFileNameWithExtension(QUERY_MODULES_FILE),
       }),
       content: generateQueryModules({ resolver, data }),
+    });
+  }
+
+  if (options.fileActions) {
+    const fileName = getFileNameWithExtension(FILE_ACTION_OPTIONS_FILE);
+    generateFilesData.push({
+      content: readAssetSync(fileName),
+      fileName: getUtilsOutputFileName({ output: resolver.options.output, fileName }),
     });
   }
 

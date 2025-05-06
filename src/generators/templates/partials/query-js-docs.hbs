@@ -15,7 +15,7 @@
  * @description {{addAsteriskAfterNewLine endpoint.description}}{{/if}}{{#if endpoint.acl}}
  * @permission Requires `{{abilityFunctionName endpoint}}` ability {{/if}}
 {{#if (endpointParams endpoint includeFileParam=true)}}{{#each (endpointParams endpoint includeFileParam=true) as | endpointParam |}} * @param { {{endpointParam.type}} } {{#if (isQuery ../endpoint)}}object{{else}}mutation{{/if}}.{{endpointParam.name}} {{{endpointParamDescription endpointParam}}}
-{{/each}}{{/if}} * @param {{#if (isQuery endpoint)}}{ AppQueryOptions } options Query options{{else}}{ AppMutationOptions{{#if hasInvalidateQueryOptions}} & {{invalidateQueryOptionsType}}{{/if}} } options Mutation options{{/if}}
+{{/each}}{{/if}} * @param {{#if (isQuery endpoint)}}{ AppQueryOptions{{#if hasFileActionQueryOptions}} & {{fileActionQueryOptionsType}}{{/if}} } options Query options{{else}}{ AppMutationOptions{{#if hasInvalidateQueryOptions}} & {{invalidateQueryOptionsType}}{{/if}} } options Mutation options{{/if}}
  * @returns { {{#if (isQuery endpoint)}}UseQueryResult{{else}}UseMutationResult{{/if}}<{{{importedZodSchemaInferedType endpoint.response}}}> } {{endpoint.responseDescription}}
  * @statusCodes [{{commaSeparated endpoint.responseStatusCodes}}]
  */{{/if}}

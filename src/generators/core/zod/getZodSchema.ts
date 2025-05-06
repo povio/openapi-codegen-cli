@@ -5,7 +5,7 @@ import { isPrimitiveType, isReferenceObject, wrapWithQuotesIfNeeded } from "../.
 import { SchemaResolver } from "../SchemaResolver.class";
 import { ZodSchema, ZodSchemaMetaData } from "./ZodSchema.class";
 import { getZodChain } from "./getZodChain";
-import { ENUM_SCHEMA } from "src/generators/const/zod.const";
+import { BLOB_SCHEMA, ENUM_SCHEMA } from "src/generators/const/zod.const";
 import { GenerateType } from "src/generators/types/generate";
 import { getNamespaceName } from "src/generators/utils/generate/generate.utils";
 
@@ -310,7 +310,7 @@ function getPrimitiveZodSchema({ schema, zodSchema, resolver, meta, tag }: GetPa
         .with("integer", () => "z.number()")
         .with("string", () =>
           match(schema.format)
-            .with("binary", () => "z.instanceof(File)")
+            .with("binary", () => BLOB_SCHEMA)
             .otherwise(() => "z.string()"),
         )
         .otherwise((type) => `z.${type}()`),

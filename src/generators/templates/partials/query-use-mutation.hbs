@@ -5,8 +5,8 @@ export const {{queryName endpoint}} = (options?: AppMutationOptions<typeof {{imp
   {{#if hasInvalidateQueryOptions}} const queryClient = useQueryClient();{{/if}}
 
   return {{queryHook}}({
-    mutationFn: {{#if endpoint.fileUpload}}async {{/if}}({{#if (endpointParams endpoint includeFileParam=true)}} { {{{endpointArgs endpoint includeFileParam=true}}} } {{/if}}) => {{#if endpoint.fileUpload}} {
-      const uploadInstructions = await{{/if}} {{importedEndpointName endpoint}}({{{endpointArgs endpoint}}}{{#if hasAxiosRequestConfig}}{{#if (endpointArgs endpoint)}}, {{/if}}{{axiosRequestConfigName}}{{/if}}){{#if endpoint.fileUpload}}; 
+    mutationFn: {{#if hasFileUpload}}async {{/if}}({{#if (endpointParams endpoint includeFileParam=true)}} { {{{endpointArgs endpoint includeFileParam=true}}} } {{/if}}) => {{#if hasFileUpload}} {
+      const uploadInstructions = await{{/if}} {{importedEndpointName endpoint}}({{{endpointArgs endpoint}}}{{#if hasAxiosRequestConfig}}{{#if (endpointArgs endpoint)}}, {{/if}}{{axiosRequestConfigName}}{{/if}}){{#if hasFileUpload}}; 
       
       if (file && uploadInstructions.url) {
         await axios.put(uploadInstructions.url, file, {

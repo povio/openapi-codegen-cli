@@ -22,4 +22,10 @@
         {{/each}}
     },
     {{/if}}
+    {{#if hasBlobResponse}}
+    responseType: "blob",
+    {{/if}}
+    {{#if hasFileDownload}}
+    rawResponse: true,
+    {{/if}}
 }

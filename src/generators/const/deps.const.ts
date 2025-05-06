@@ -38,3 +38,10 @@ export const INVALIDATE_QUERIES = {
 };
 export const INVALIDATE_QUERY_OPTIONS_FILE: GenerateFile = { fileName: "invalidateQueries", extension: "ts" };
 export const QUERY_MODULES_FILE: GenerateFile = { fileName: "queryModules", extension: "ts" };
+
+// FileActionQueryOptions
+export const FILE_ACTION_QUERY_OPTIONS = {
+  optionsType: "FileActionQueryOptions",
+  functionName: "responseFileAction",
+};
+export const FILE_ACTION_OPTIONS_FILE: GenerateFile = { fileName: "fileAction", extension: "ts" };

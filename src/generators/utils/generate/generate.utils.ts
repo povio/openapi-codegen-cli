@@ -1,4 +1,5 @@
 import {
+  FILE_ACTION_OPTIONS_FILE,
   INVALIDATE_QUERY_OPTIONS_FILE,
   STANDALONE_APP_REST_CLIENT_FILE,
   STANDALONE_ASSETS,
@@ -68,4 +69,8 @@ export function getQueryTypesImportPath(options: GenerateOptions) {
 
 export function getInvalidateQueriesImportPath(options: GenerateOptions) {
   return `${getImportPath(options)}${UTILS_DIR}/${INVALIDATE_QUERY_OPTIONS_FILE.fileName}`;
+}
+
+export function getFileActionImportPath(options: GenerateOptions) {
+  return `${getImportPath(options)}${UTILS_DIR}/${FILE_ACTION_OPTIONS_FILE.fileName}`;
 }

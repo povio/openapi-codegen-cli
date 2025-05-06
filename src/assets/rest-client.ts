@@ -43,7 +43,7 @@ export class RestClient {
     url: string,
     requestConfig?: AxiosRequestConfig & RequestConfig<RawRes>,
   ): Promise<RawRes extends true ? AxiosResponse<Res> : Res> {
-    return this.makeRequest(requestInfo, { method: "get", url, ...requestConfig });
+    return this.makeRequest(requestInfo, { ...requestConfig, method: "get", url });
   }
 
   public async post<ZResDto extends z.ZodRawShape, ResDto, Res, RawRes extends boolean = false>(
@@ -52,7 +52,7 @@ export class RestClient {
     data?: any,
     requestConfig?: AxiosRequestConfig & RequestConfig<RawRes>,
   ): Promise<RawRes extends true ? AxiosResponse<Res> : Res> {
-    return this.makeRequest(requestInfo, { method: "post", url, data, ...requestConfig });
+    return this.makeRequest(requestInfo, { ...requestConfig, method: "post", url, data });
   }
 
   public async patch<ZResDto extends z.ZodRawShape, ResDto, Res, RawRes extends boolean = false>(
@@ -61,7 +61,7 @@ export class RestClient {
     data?: any,
     requestConfig?: AxiosRequestConfig & RequestConfig<RawRes>,
   ): Promise<RawRes extends true ? AxiosResponse<Res> : Res> {
-    return this.makeRequest(requestInfo, { method: "patch", url, data, ...requestConfig });
+    return this.makeRequest(requestInfo, { ...requestConfig, method: "patch", url, data });
   }
 
   public async put<ZResDto extends z.ZodRawShape, ResDto, Res, RawRes extends boolean = false>(
@@ -70,7 +70,7 @@ export class RestClient {
     data?: any,
     requestConfig?: AxiosRequestConfig & RequestConfig<RawRes>,
   ): Promise<RawRes extends true ? AxiosResponse<Res> : Res> {
-    return this.makeRequest(requestInfo, { method: "put", url, data, ...requestConfig });
+    return this.makeRequest(requestInfo, { ...requestConfig, method: "put", url, data });
   }
 
   public async delete<ZResDto extends z.ZodRawShape, ResDto, Res, RawRes extends boolean = false>(
@@ -79,7 +79,7 @@ export class RestClient {
     data?: any,
     requestConfig?: AxiosRequestConfig & RequestConfig<RawRes>,
   ): Promise<RawRes extends true ? AxiosResponse<Res> : Res> {
-    return this.makeRequest(requestInfo, { method: "delete", url, data, ...requestConfig });
+    return this.makeRequest(requestInfo, { ...requestConfig, method: "delete", url, data });
   }
 
   private async makeRequest<ZResDto extends z.ZodRawShape, ResDto, Res, RawRes extends boolean = false>(
