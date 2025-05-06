@@ -6,15 +6,9 @@ interface RequestInfo<ZResDto extends z.ZodRawShape, ResDto, Res> {
   resSchema: z.ZodEffects<z.ZodObject<ZResDto, "strip", z.ZodTypeAny, ResDto>, Res> | z.ZodSchema<Res>;
 }
 
-type Method = "get" | "post" | "patch" | "put" | "delete";
-
-const MethodHasBody: Record<Method, boolean> = {
-  get: false,
-  post: true,
-  patch: true,
-  put: true,
-  delete: true,
-};
+interface RequestConfig<RawRes extends boolean = false> {
+  rawResponse?: RawRes;
+}
 
 export class RestClient {
   private client: AxiosInstance;
@@ -44,64 +38,60 @@ export class RestClient {
     interceptor.removeInterceptor(this.client);
   }
 
-  public async get<ZResDto extends z.ZodRawShape, ResDto, Res>(
+  public async get<ZResDto extends z.ZodRawShape, ResDto, Res, RawRes extends boolean = false>(
     requestInfo: RequestInfo<ZResDto, ResDto, Res>,
     url: string,
-    config?: AxiosRequestConfig,
-  ): Promise<Res> {
-    return this.makeRequest(requestInfo, "get", url, undefined, config);
+    requestConfig?: AxiosRequestConfig & RequestConfig<RawRes>,
+  ): Promise<RawRes extends true ? AxiosResponse<Res> : Res> {
+    return this.makeRequest(requestInfo, { method: "get", url, ...requestConfig });
   }
 
-  public async post<ZResDto extends z.ZodRawShape, ResDto, Res>(
+  public async post<ZResDto extends z.ZodRawShape, ResDto, Res, RawRes extends boolean = false>(
     requestInfo: RequestInfo<ZResDto, ResDto, Res>,
     url: string,
     data?: any,
-    config?: AxiosRequestConfig,
-  ): Promise<Res> {
-    return this.makeRequest(requestInfo, "post", url, data, config);
+    requestConfig?: AxiosRequestConfig & RequestConfig<RawRes>,
+  ): Promise<RawRes extends true ? AxiosResponse<Res> : Res> {
+    return this.makeRequest(requestInfo, { method: "post", url, data, ...requestConfig });
   }
 
-  public async patch<ZResDto extends z.ZodRawShape, ResDto, Res>(
+  public async patch<ZResDto extends z.ZodRawShape, ResDto, Res, RawRes extends boolean = false>(
     requestInfo: RequestInfo<ZResDto, ResDto, Res>,
     url: string,
     data?: any,
-    config?: AxiosRequestConfig,
-  ): Promise<Res> {
-    return this.makeRequest(requestInfo, "patch", url, data, config);
+    requestConfig?: AxiosRequestConfig & RequestConfig<RawRes>,
+  ): Promise<RawRes extends true ? AxiosResponse<Res> : Res> {
+    return this.makeRequest(requestInfo, { method: "patch", url, data, ...requestConfig });
   }
 
-  public async put<ZResDto extends z.ZodRawShape, ResDto, Res>(
+  public async put<ZResDto extends z.ZodRawShape, ResDto, Res, RawRes extends boolean = false>(
     requestInfo: RequestInfo<ZResDto, ResDto, Res>,
     url: string,
     data?: any,
-    config?: AxiosRequestConfig,
-  ): Promise<Res> {
-    return this.makeRequest(requestInfo, "put", url, data, config);
+    requestConfig?: AxiosRequestConfig & RequestConfig<RawRes>,
+  ): Promise<RawRes extends true ? AxiosResponse<Res> : Res> {
+    return this.makeRequest(requestInfo, { method: "put", url, data, ...requestConfig });
   }
 
-  public async delete<ZResDto extends z.ZodRawShape, ResDto, Res>(
+  public async delete<ZResDto extends z.ZodRawShape, ResDto, Res, RawRes extends boolean = false>(
     requestInfo: RequestInfo<ZResDto, ResDto, Res>,
     url: string,
     data?: any,
-    config?: AxiosRequestConfig,
-  ): Promise<Res> {
-    return this.makeRequest(requestInfo, "delete", url, data, config);
+    requestConfig?: AxiosRequestConfig & RequestConfig<RawRes>,
+  ): Promise<RawRes extends true ? AxiosResponse<Res> : Res> {
+    return this.makeRequest(requestInfo, { method: "delete", url, data, ...requestConfig });
   }
 
-  private async makeRequest<ZResDto extends z.ZodRawShape, ResDto, Res>(
+  private async makeRequest<ZResDto extends z.ZodRawShape, ResDto, Res, RawRes extends boolean = false>(
     requestInfo: RequestInfo<ZResDto, ResDto, Res>,
-    method: Method,
-    url: string,
-    data?: any,
-    config?: AxiosRequestConfig,
-  ): Promise<Res> {
-    let res: AxiosResponse;
-    if (MethodHasBody[method]) {
-      res = await this.client[method](url, data, config);
-    } else {
-      res = await this.client[method](url, config);
-    }
+    requestConfig: AxiosRequestConfig & RequestConfig<RawRes>,
+  ): Promise<RawRes extends true ? AxiosResponse<Res> : Res> {
+    const { rawResponse, ...config } = requestConfig;
 
-    return requestInfo.resSchema.parse(res);
+    const res = await this.client(config);
+
+    const resData = requestInfo.resSchema.parse(res.data);
+
+    return (rawResponse ? { ...res, data: resData } : resData) as RawRes extends true ? AxiosResponse<Res> : Res;
   }
 }
