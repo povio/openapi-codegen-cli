@@ -1,6 +1,6 @@
 import Handlebars from "handlebars";
 
-enum CommonHelpers {
+enum ImportsHelpers {
   ImportNames = "importNames",
 }
 
@@ -9,7 +9,7 @@ export function registerImportsHbsHelpers() {
 }
 
 function registerBindingsHelper() {
-  Handlebars.registerHelper(CommonHelpers.ImportNames, (bindings: string[], defaultImport?: string) =>
+  Handlebars.registerHelper(ImportsHelpers.ImportNames, (bindings: string[], defaultImport?: string) =>
     [...(defaultImport ? [defaultImport] : []), ...(bindings ? [`{ ${bindings.join(", ")} }`] : [])].join(", "),
   );
 }
