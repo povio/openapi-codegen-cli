@@ -34,7 +34,6 @@ export function generateQueryModules({ resolver, data }: Omit<GenerateTypeParams
     entityName: QUERIES_MODULE_NAME,
     getAliasEntityName: getTagModuleName,
     type: GenerateType.Queries,
-    sameDir: true,
     options: resolver.options,
   });
 
@@ -43,7 +42,6 @@ export function generateQueryModules({ resolver, data }: Omit<GenerateTypeParams
     entityName: "keys",
     getAliasEntityName: getTagKeys,
     type: GenerateType.Queries,
-    sameDir: true,
     options: resolver.options,
   });
 

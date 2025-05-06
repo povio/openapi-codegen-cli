@@ -67,14 +67,12 @@ export function getEntityImports({
   entityName,
   getAliasEntityName,
   type,
-  sameDir,
   options,
 }: {
   tags: string[];
   entityName: string;
   getAliasEntityName?: (tag: string) => string;
   type: GenerateType;
-  sameDir?: boolean;
   options: GenerateOptions;
 }) {
   const imports = new Map<string, Import>();
@@ -83,7 +81,7 @@ export function getEntityImports({
     if (!imports.has(tag)) {
       imports.set(tag, {
         bindings: [options.tsNamespaces ? getNamespaceName({ type, tag, options }) : name],
-        from: `${getImportPath(options, sameDir)}${getTagImportPath({ type, tag, includeTagDir: true, options })}`,
+        from: `${getImportPath(options)}${getTagImportPath({ type, tag, includeTagDir: true, options })}`,
       });
     } else if (!options.tsNamespaces) {
       imports.get(tag)!.bindings.push(name);
@@ -92,10 +90,10 @@ export function getEntityImports({
   return Array.from(imports.values());
 }
 
-export function getImportPath(options: Pick<GenerateOptions, "output" | "importPath">, sameDir?: boolean) {
+export function getImportPath(options: Pick<GenerateOptions, "output" | "importPath">) {
   let importPath = TEMPLATE_DATA_TS_PATH;
   if (options.importPath === "relative") {
-    importPath = sameDir ? "./" : "../";
+    importPath = "../";
   } else if (options.importPath === "absolute") {
     importPath = options.output;
   } else if (new RegExp(`${TEMPLATE_DATA_FILE_PATH}`, "g").test(options.output)) {
