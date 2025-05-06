@@ -7,11 +7,13 @@ import { registerEndpointsHbsHelpers } from "./hbs.endpoints.utils";
 import { registerPartialsHbsHelpers } from "./hbs.partials.utils";
 import { registerQueryHbsHelpers } from "./hbs.query.utils";
 import { registerZodHbsHelpers } from "./hbs.zod.utils";
+import { registerImportsHbsHelpers } from "./hbs.imports.utils";
 
 export function getHbsTemplateDelegate(resolver: SchemaResolver, templateName: string) {
   const template = readHbsTemplateSync(templateName);
 
   registerCommonHbsHelpers();
+  registerImportsHbsHelpers();
   registerZodHbsHelpers(resolver);
   registerEndpointsHbsHelpers(resolver);
   registerQueryHbsHelpers();

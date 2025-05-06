@@ -104,7 +104,7 @@ export function isErrorStatus(status: number) {
 }
 
 export function isMediaTypeAllowed(mediaType: string) {
-  return mediaType === "application/json";
+  return ["application/json", "application/pdf"].includes(mediaType);
 }
 
 export function getOperationName({

@@ -56,16 +56,16 @@ function registerEndpointBodyHelper() {
 function registerEndpointParamsHelper(resolver: SchemaResolver) {
   Handlebars.registerHelper(
     EndpointsHelpers.EndpointParams,
-    (endpoint: Endpoint, extra?: "removePageParam" | "replacePageParam") =>
-      mapEndpointParamsToFunctionParams(resolver, endpoint, extra),
+    (endpoint: Endpoint, options: { hash: Parameters<typeof mapEndpointParamsToFunctionParams>[2] }) =>
+      mapEndpointParamsToFunctionParams(resolver, endpoint, options.hash),
   );
 }
 
 function registerEndpointArgsHelper(resolver: SchemaResolver) {
   Handlebars.registerHelper(
     EndpointsHelpers.EndpointArgs,
-    (endpoint: Endpoint, extra?: "removePageParam" | "replacePageParam") =>
-      mapEndpointParamsToFunctionParams(resolver, endpoint, extra)
+    (endpoint: Endpoint, options: { hash: Parameters<typeof mapEndpointParamsToFunctionParams>[2] }) =>
+      mapEndpointParamsToFunctionParams(resolver, endpoint, options.hash)
         .map((param) => param.name)
         .join(", "),
   );

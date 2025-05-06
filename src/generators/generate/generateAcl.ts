@@ -17,11 +17,11 @@ export function generateAcl({ resolver, data, tag = "" }: GenerateTypeParams) {
     ({ acl }) => acl?.[0].conditions && Object.keys(acl[0].conditions).length > 0,
   );
   const caslAbilityTupleImport: Import = {
-    ...CASL_ABILITY_IMPORT,
     bindings: [
       CASL_ABILITY_BINDING.abilityTuple,
       ...(hasAdditionalAbilityImports ? [CASL_ABILITY_BINDING.forcedSubject, CASL_ABILITY_BINDING.subject] : []),
     ],
+    from: CASL_ABILITY_IMPORT.from,
   };
 
   const aclZodSchemas = endpoints.reduce((acc, endpoint) => {
@@ -55,8 +55,8 @@ export function generateAppAcl(resolver: SchemaResolver, tags: string[]) {
   }
 
   const caslAbilityTupleImport: Import = {
-    ...CASL_ABILITY_IMPORT,
     bindings: [CASL_ABILITY_BINDING.pureAbility],
+    from: CASL_ABILITY_IMPORT.from,
   };
 
   const imports = getEntityImports({

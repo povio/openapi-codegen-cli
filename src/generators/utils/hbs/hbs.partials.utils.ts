@@ -8,7 +8,8 @@ import { GenerateZodSchemaData, Import } from "../../types/generate";
 import { getEndpointConfig, mapEndpointParamsToFunctionParams } from "../generate/generate.endpoints.utils";
 import { getHbsPartialTemplateDelegate } from "../hbs/hbs-template.utils";
 import { isQuery } from "../query.utils";
-import { INVALIDATE_QUERIES } from "src/generators/const/deps.const";
+import { FILE_ACTION_QUERY_OPTIONS, INVALIDATE_QUERIES } from "src/generators/const/deps.const";
+import { BLOB_SCHEMA } from "src/generators/const/zod.const";
 
 enum PartialsHelpers {
   ModelJsDocs = "genModelJsDocs",
@@ -53,8 +54,8 @@ function registerImportHelper() {
 function registerGenerateEndpointParamsHelper() {
   Handlebars.registerHelper(
     PartialsHelpers.EndpointParams,
-    (endpoint: Endpoint, extra?: "removePageParam" | "replacePageParam") =>
-      getHbsPartialTemplateDelegate("endpoint-params")({ endpoint, extra }),
+    (endpoint: Endpoint, options: { hash: Parameters<typeof mapEndpointParamsToFunctionParams>[2] }) =>
+      getHbsPartialTemplateDelegate("endpoint-params")({ endpoint, options }),
   );
 }
 
@@ -68,6 +69,8 @@ function registerGenerateEndpointConfigHelper(resolver: SchemaResolver) {
     return getHbsPartialTemplateDelegate("endpoint-config")({
       endpointConfig,
       hasAxiosRequestConfig,
+      hasBlobResponse: endpoint.response === BLOB_SCHEMA,
+      hasFileDownload: resolver.options.fileActions && endpoint.fileDownload,
       axiosRequestConfigName: AXIOS_REQUEST_CONFIG_NAME,
     });
   });
@@ -100,17 +103,23 @@ function registerGenerateQueryHelper(resolver: SchemaResolver) {
     }
 
     const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
+    const hasFileDownload = resolver.options.fileActions && endpoint.fileDownload;
 
     return getHbsPartialTemplateDelegate(templateName)({
       endpoint,
       queryHook,
       queriesModuleName: QUERIES_MODULE_NAME,
-      hasEndpointArgs: mapEndpointParamsToFunctionParams(resolver, endpoint).length > 0 || hasAxiosRequestConfig,
+      hasQueryFn:
+        mapEndpointParamsToFunctionParams(resolver, endpoint).length > 0 || hasAxiosRequestConfig || hasFileDownload,
       hasAxiosRequestConfig,
       axiosRequestConfigName: AXIOS_REQUEST_CONFIG_NAME,
       axiosRequestConfigType: AXIOS_REQUEST_CONFIG_TYPE,
       hasInvalidateQueryOptions: resolver.options.invalidateQueryOptions,
       invalidateQueryOptionsType: INVALIDATE_QUERIES.optionsType,
+      hasFileActionQueryOptions: resolver.options.fileActions && endpoint.fileDownload,
+      fileActionQueryOptionsType: FILE_ACTION_QUERY_OPTIONS.optionsType,
+      hasFileUpload: resolver.options.fileActions && endpoint.fileUpload,
+      hasFileDownload,
     });
   });
 }
@@ -131,13 +140,17 @@ function registerGenerateInfiniteQueryHelper(resolver: SchemaResolver) {
 }
 
 function registerGenerateQueryJsDocsHelper(resolver: SchemaResolver) {
-  Handlebars.registerHelper(PartialsHelpers.QueryJsDocs, (endpoint: Endpoint, extra?: "infiniteQuery") =>
-    getHbsPartialTemplateDelegate("query-js-docs")({
-      endpoint,
-      infiniteQuery: extra === "infiniteQuery",
-      hasInvalidateQueryOptions: resolver.options.invalidateQueryOptions,
-      invalidateQueryOptionsType: INVALIDATE_QUERIES.optionsType,
-    }),
+  Handlebars.registerHelper(
+    PartialsHelpers.QueryJsDocs,
+    (endpoint: Endpoint, options: { hash: { infiniteQuery?: boolean } }) =>
+      getHbsPartialTemplateDelegate("query-js-docs")({
+        endpoint,
+        infiniteQuery: options.hash.infiniteQuery,
+        hasInvalidateQueryOptions: resolver.options.invalidateQueryOptions,
+        invalidateQueryOptionsType: INVALIDATE_QUERIES.optionsType,
+        hasFileActionQueryOptions: resolver.options.fileActions && endpoint.fileDownload,
+        fileActionQueryOptionsType: FILE_ACTION_QUERY_OPTIONS.optionsType,
+      }),
   );
 }
 

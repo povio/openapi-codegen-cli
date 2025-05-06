@@ -1,10 +1,10 @@
 {{! Js docs }}
-{{{genQueryJsDocs endpoint "infiniteQuery" }}}
+{{{genQueryJsDocs endpoint infiniteQuery=true}}}
 {{! Infinite query definition}}
-export const {{infiniteQueryName endpoint}} = <TData>({{#if (endpointParams endpoint)}}{ {{{endpointArgs endpoint "removePageParam"}}} }: { {{{genEndpointParams endpoint "removePageParam"}}} }, {{/if}}options?: AppInfiniteQueryOptions<typeof {{importedEndpointName endpoint}}, TData>{{#if hasAxiosRequestConfig}}, {{axiosRequestConfigName}}?: {{axiosRequestConfigType}}{{/if}}) => {
+export const {{infiniteQueryName endpoint}} = <TData>({{#if (endpointParams endpoint)}}{ {{{endpointArgs endpoint removePageParam=true}}} }: { {{{genEndpointParams endpoint removePageParam=true}}} }, {{/if}}options?: AppInfiniteQueryOptions<typeof {{importedEndpointName endpoint}}, TData>{{#if hasAxiosRequestConfig}}, {{axiosRequestConfigName}}?: {{axiosRequestConfigType}}{{/if}}) => {
   return {{infiniteQueryHook}}({
-    queryKey: keys.{{endpointName endpoint}}Infinite({{#if (endpointParams endpoint)}}{{{endpointArgs endpoint "removePageParam"}}}{{/if}}),
-    queryFn: ({ pageParam }) => {{importedEndpointName endpoint}}({{{endpointArgs endpoint "replacePageParam"}}}{{#if hasAxiosRequestConfig}}, {{axiosRequestConfigName}}{{/if}}),
+    queryKey: keys.{{endpointName endpoint}}Infinite({{#if (endpointParams endpoint)}}{{{endpointArgs endpoint removePageParam=true}}}{{/if}}),
+    queryFn: ({ pageParam }) => {{importedEndpointName endpoint}}({{{endpointArgs endpoint replacePageParam=true}}}{{#if hasAxiosRequestConfig}}, {{axiosRequestConfigName}}{{/if}}),
     initialPageParam: 1,
     getNextPageParam: ({ {{pageParamName}}, {{totalItemsName}}, {{limitParamName}}: limitParam }) => {
       const pageParam = {{pageParamName}} ?? 1;

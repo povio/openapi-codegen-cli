@@ -26,6 +26,7 @@ export type GenerateParams = {
   | "infiniteQueries"
   | "axiosRequestConfig"
   | "invalidateQueryOptions"
+  | "fileActions"
 >;
 
 export async function generate({ input, excludeTags, prettier, verbose, ...params }: GenerateParams) {

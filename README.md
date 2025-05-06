@@ -47,6 +47,7 @@ yarn openapi-codegen generate --input http://localhost:3001/docs-json --standalo
   --axiosRequestConfig                Include Axios request config parameters in query hooks (default: false)
   --infiniteQueries                   Generate infinite queries for paginated API endpoints (default: false)
   --invalidateQueryOptions            Add query invalidation options to mutation hooks (default: true)
+  --fileActions                       Add query file actions to query hooks for `x-file-*` operations (default: true)
 
   --standalone                        Generate any missing supporting classes/types, e.g., REST client class, React Query type extensions, etc. (default: false)
   --baseUrl                           (Requires `--standalone`) Base URL for the REST client; falls back to the OpenAPI spec if not provided

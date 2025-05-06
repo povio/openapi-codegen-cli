@@ -34,29 +34,45 @@ export function getEndpointTag(endpoint: Endpoint, options: GenerateOptions) {
 export function mapEndpointParamsToFunctionParams(
   resolver: SchemaResolver,
   endpoint: Endpoint,
-  extra?: "removePageParam" | "replacePageParam",
+  options?: {
+    removePageParam?: boolean;
+    replacePageParam?: boolean;
+    includeFileParam?: boolean;
+  },
 ) {
-  return endpoint.parameters
-    .map((param) => {
-      let type = "string";
-      if (isNamedZodSchema(param.zodSchema)) {
-        type = getImportedZodSchemaInferedTypeName(resolver, param.zodSchema);
-      } else if (param.parameterObject?.schema && isSchemaObject(param.parameterObject.schema)) {
-        const openApiSchemaType = (param.parameterObject?.schema as OpenAPIV3.SchemaObject)?.type;
-        if (openApiSchemaType && isPrimitiveType(openApiSchemaType)) {
-          type = primitiveTypeToTsType(openApiSchemaType);
-        }
+  const params = endpoint.parameters.map((param) => {
+    let type = "string";
+    if (isNamedZodSchema(param.zodSchema)) {
+      type = getImportedZodSchemaInferedTypeName(resolver, param.zodSchema);
+    } else if (param.parameterObject?.schema && isSchemaObject(param.parameterObject.schema)) {
+      const openApiSchemaType = (param.parameterObject?.schema as OpenAPIV3.SchemaObject)?.type;
+      if (openApiSchemaType && isPrimitiveType(openApiSchemaType)) {
+        type = primitiveTypeToTsType(openApiSchemaType);
       }
+    }
 
-      return {
-        name: invalidVariableNameCharactersToCamel(param.name),
-        type,
-        paramType: param.type,
-        required: param.parameterObject?.required ?? true,
-        parameterObject: param.parameterObject,
-        bodyObject: param.bodyObject,
-      };
-    })
+    return {
+      name: invalidVariableNameCharactersToCamel(param.name),
+      type,
+      paramType: param.type,
+      required: param.parameterObject?.required ?? true,
+      parameterObject: param.parameterObject,
+      bodyObject: param.bodyObject,
+    };
+  });
+
+  if (options?.includeFileParam && resolver.options.fileActions && endpoint.fileUpload) {
+    params.push({
+      name: "file",
+      type: "File",
+      paramType: "Body",
+      required: true,
+      parameterObject: undefined,
+      bodyObject: undefined,
+    });
+  }
+
+  return params
     .sort((a, b) => {
       if (a.required === b.required) {
         const sortedParamTypes = ["Path", "Body", "Query", "Header"];
@@ -64,11 +80,10 @@ export function mapEndpointParamsToFunctionParams(
       }
       return a.required ? -1 : 1;
     })
-    .filter((param) => extra !== "removePageParam" || param.name !== INFINITE_QUERY_PARAMS.pageParamName)
+    .filter((param) => !options?.removePageParam || param.name !== INFINITE_QUERY_PARAMS.pageParamName)
     .map((param) => ({
       ...param,
-      name:
-        extra === "replacePageParam" && param.name === INFINITE_QUERY_PARAMS.pageParamName ? "pageParam" : param.name,
+      name: options?.replacePageParam && param.name === INFINITE_QUERY_PARAMS.pageParamName ? "pageParam" : param.name,
     }));
 }
 

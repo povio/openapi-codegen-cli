@@ -160,6 +160,8 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         },
         tags: ["store"],
         responseStatusCodes: ["200", "405"],
+        fileUpload: false,
+        fileDownload: false,
       },
     ]);
     expect(resolver.getZodSchemas()).toStrictEqual({
@@ -290,6 +292,8 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         },
         tags: ["pet"],
         responseStatusCodes: ["200", "400", "404", "405"],
+        fileUpload: false,
+        fileDownload: false,
       },
       {
         description: "Add a new pet to the store",
@@ -334,6 +338,8 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         },
         tags: ["pet"],
         responseStatusCodes: ["200", "405"],
+        fileUpload: false,
+        fileDownload: false,
       },
     ]);
     expect(resolver.getZodSchemas()).toStrictEqual({
@@ -456,6 +462,8 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         },
         tags: ["pet"],
         responseStatusCodes: ["200", "400", "404", "405"],
+        fileUpload: false,
+        fileDownload: false,
       },
     ]);
     expect(resolver.getZodSchemas()).toStrictEqual({
@@ -644,6 +652,8 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         },
         tags: ["pet"],
         responseStatusCodes: ["200", "400"],
+        fileUpload: false,
+        fileDownload: false,
       },
       {
         description: "Multiple tags can be provided with comma separated strings. Use tag1, tag2, tag3 for testing.",
@@ -691,6 +701,8 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         },
         tags: ["pet"],
         responseStatusCodes: ["200", "400"],
+        fileUpload: false,
+        fileDownload: false,
       },
     ]);
     expect(resolver.getZodSchemas()).toStrictEqual({
@@ -806,6 +818,8 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         },
         tags: ["pet"],
         responseStatusCodes: ["200", "400", "404", "405"],
+        fileUpload: false,
+        fileDownload: false,
       },
       {
         description: "Add a new pet to the store",
@@ -850,6 +864,8 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         },
         tags: ["pet"],
         responseStatusCodes: ["200", "405"],
+        fileUpload: false,
+        fileDownload: false,
       },
       {
         description: "Multiple status values can be provided with comma separated strings",
@@ -910,6 +926,8 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         },
         tags: ["pet"],
         responseStatusCodes: ["200", "400"],
+        fileUpload: false,
+        fileDownload: false,
       },
       {
         description: "Multiple tags can be provided with comma separated strings. Use tag1, tag2, tag3 for testing.",
@@ -957,6 +975,8 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         },
         tags: ["pet"],
         responseStatusCodes: ["200", "400"],
+        fileUpload: false,
+        fileDownload: false,
       },
       {
         description: "Returns a single pet",
@@ -1006,6 +1026,8 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         },
         tags: ["pet"],
         responseStatusCodes: ["200", "400", "404"],
+        fileUpload: false,
+        fileDownload: false,
       },
       {
         description: "",
@@ -1067,6 +1089,8 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         response: "z.void()",
         tags: ["pet"],
         responseStatusCodes: ["405"],
+        fileUpload: false,
+        fileDownload: false,
       },
       {
         description: "delete a pet",
@@ -1116,6 +1140,8 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         response: "z.void()",
         tags: ["pet"],
         responseStatusCodes: ["400"],
+        fileUpload: false,
+        fileDownload: false,
       },
       {
         description: "",
@@ -1127,7 +1153,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           {
             description: undefined,
             name: "data",
-            zodSchema: "z.instanceof(File)",
+            zodSchema: "z.instanceof(Blob)",
             type: "Body",
             bodyObject: {
               content: {
@@ -1176,6 +1202,8 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         },
         tags: ["pet"],
         responseStatusCodes: ["200"],
+        fileUpload: false,
+        fileDownload: false,
       },
       {
         description: "Returns a map of status codes to quantities",
@@ -1205,6 +1233,8 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         },
         tags: ["store"],
         responseStatusCodes: ["200"],
+        fileUpload: false,
+        fileDownload: false,
       },
       {
         description: "Place a new order in the store",
@@ -1246,6 +1276,8 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         },
         tags: ["store"],
         responseStatusCodes: ["200", "405"],
+        fileUpload: false,
+        fileDownload: false,
       },
       {
         description:
@@ -1296,6 +1328,8 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         },
         tags: ["store"],
         responseStatusCodes: ["200", "400", "404"],
+        fileUpload: false,
+        fileDownload: false,
       },
       {
         description:
@@ -1337,6 +1371,8 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         response: "z.void()",
         tags: ["store"],
         responseStatusCodes: ["400", "404"],
+        fileUpload: false,
+        fileDownload: false,
       },
       {
         description: "This can only be done by the logged in user.",
@@ -1366,6 +1402,8 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         responseFormat: "application/json",
         tags: ["user"],
         responseStatusCodes: ["default"],
+        fileUpload: false,
+        fileDownload: false,
       },
       {
         description: "Creates list of users with given input array",
@@ -1400,6 +1438,8 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         },
         tags: ["user"],
         responseStatusCodes: ["200", "default"],
+        fileUpload: false,
+        fileDownload: false,
       },
       {
         description: "",
@@ -1473,6 +1513,8 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         },
         tags: ["user"],
         responseStatusCodes: ["200", "400"],
+        fileUpload: false,
+        fileDownload: false,
       },
       {
         description: "",
@@ -1486,6 +1528,8 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         response: "z.void()",
         tags: ["user"],
         responseStatusCodes: ["default"],
+        fileUpload: false,
+        fileDownload: false,
       },
       {
         description: "",
@@ -1534,6 +1578,8 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         },
         tags: ["user"],
         responseStatusCodes: ["200", "400", "404"],
+        fileUpload: false,
+        fileDownload: false,
       },
       {
         description: "This can only be done by the logged in user.",
@@ -1588,6 +1634,8 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         response: "z.void()",
         tags: ["user"],
         responseStatusCodes: ["default"],
+        fileUpload: false,
+        fileDownload: false,
       },
       {
         description: "This can only be done by the logged in user.",
@@ -1627,6 +1675,8 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         response: "z.void()",
         tags: ["user"],
         responseStatusCodes: ["400", "404"],
+        fileUpload: false,
+        fileDownload: false,
       },
     ]);
     expect(resolver.getZodSchemas()).toStrictEqual({
@@ -1786,6 +1836,8 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         },
         tags: ["pet"],
         responseStatusCodes: ["200", "400", "500"],
+        fileUpload: false,
+        fileDownload: false,
       },
       {
         description: "Multiple tags can be provided with comma separated strings. Use tag1, tag2, tag3 for testing.",
@@ -1813,6 +1865,8 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           description: "Successful operation",
         },
         responseStatusCodes: ["200", "400"],
+        fileUpload: false,
+        fileDownload: false,
       },
     ]);
     expect(resolver.getZodSchemas()).toStrictEqual({

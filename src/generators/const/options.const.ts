@@ -43,4 +43,5 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   axiosRequestConfig: false,
   infiniteQueries: false,
   invalidateQueryOptions: true,
+  fileActions: true,
 };

@@ -1,11 +1,23 @@
 {{! Js docs }}
 {{{genQueryJsDocs endpoint}}}
 {{! Mutation definition}}
-export const {{queryName endpoint}} = (options?: AppMutationOptions<typeof {{importedEndpointName endpoint}}, { {{{genEndpointParams endpoint}}} }>{{#if hasInvalidateQueryOptions}} & {{invalidateQueryOptionsType}}{{/if}}{{#if hasAxiosRequestConfig}}, {{axiosRequestConfigName}}?: {{axiosRequestConfigType}}{{/if}}) => {
+export const {{queryName endpoint}} = (options?: AppMutationOptions<typeof {{importedEndpointName endpoint}}, { {{{genEndpointParams endpoint includeFileParam=true}}} }>{{#if hasInvalidateQueryOptions}} & {{invalidateQueryOptionsType}}{{/if}}{{#if hasAxiosRequestConfig}}, {{axiosRequestConfigName}}?: {{axiosRequestConfigType}}{{/if}}) => {
   {{#if hasInvalidateQueryOptions}} const queryClient = useQueryClient();{{/if}}
 
   return {{queryHook}}({
-    mutationFn: ({{#if (endpointParams endpoint)}} { {{{endpointArgs endpoint}}} } {{/if}}) => {{importedEndpointName endpoint}}({{{endpointArgs endpoint}}}{{#if hasAxiosRequestConfig}}{{#if (endpointArgs endpoint)}}, {{/if}}{{axiosRequestConfigName}}{{/if}}),
+    mutationFn: {{#if hasFileUpload}}async {{/if}}({{#if (endpointParams endpoint includeFileParam=true)}} { {{{endpointArgs endpoint includeFileParam=true}}} } {{/if}}) => {{#if hasFileUpload}} {
+      const uploadInstructions = await{{/if}} {{importedEndpointName endpoint}}({{{endpointArgs endpoint}}}{{#if hasAxiosRequestConfig}}{{#if (endpointArgs endpoint)}}, {{/if}}{{axiosRequestConfigName}}{{/if}}){{#if hasFileUpload}}; 
+      
+      if (file && uploadInstructions.url) {
+        await axios.put(uploadInstructions.url, file, {
+          headers: {
+            "Content-Type": file.type,
+          },
+        });
+      }
+
+      return uploadInstructions;
+    }{{/if}},
     ...options, {{#if hasInvalidateQueryOptions}}
     onSuccess: (...args) => {
       {{! Invalidation }}

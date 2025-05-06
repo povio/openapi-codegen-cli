@@ -3,6 +3,7 @@ import { SchemaResolver } from "../core/SchemaResolver.class";
 import { Endpoint } from "./endpoint";
 
 export interface Import {
+  defaultImport?: string;
   bindings: string[];
   from: string;
 }

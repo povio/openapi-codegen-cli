@@ -21,6 +21,10 @@ export function generateEndpoints({ resolver, data, tag = "" }: GenerateTypePara
   };
 
   const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
+  const axiosImport: Import = {
+    bindings: hasAxiosRequestConfig ? AXIOS_IMPORT.bindings : [],
+    from: AXIOS_IMPORT.from,
+  };
 
   const endpointResponseSchemas = endpoints.map((endpoint) => endpoint.response);
   const hasZodImport = endpointResponseSchemas.some((response) => !isNamedZodSchema(response));
@@ -38,7 +42,7 @@ export function generateEndpoints({ resolver, data, tag = "" }: GenerateTypePara
   return hbsTemplate({
     appRestClientImport,
     hasAxiosImport: hasAxiosRequestConfig,
-    axiosImport: AXIOS_IMPORT,
+    axiosImport,
     hasZodImport,
     zodImport: ZOD_IMPORT,
     modelsImports,
