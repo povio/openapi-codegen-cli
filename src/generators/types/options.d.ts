@@ -21,7 +21,6 @@ interface QueriesGenerateOptions {
   axiosRequestConfig?: boolean;
   infiniteQueries?: boolean;
   invalidateQueryOptions?: boolean;
-  fileActions?: boolean;
 }
 
 interface GenerateConfig {

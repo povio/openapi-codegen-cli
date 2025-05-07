@@ -1,14 +1,10 @@
 {{! Js docs }}
 {{{genQueryJsDocs endpoint}}}
 {{! Query definition}}
-export const {{queryName endpoint}} = <TData>({{#if (endpointParams endpoint)}}{ {{{endpointArgs endpoint}}} }: { {{{genEndpointParams endpoint}}} }, {{/if}}options?: AppQueryOptions<typeof {{importedEndpointName endpoint}}, TData>{{#if hasFileActionQueryOptions}} & {{fileActionQueryOptionsType}}{{/if}}{{#if hasAxiosRequestConfig}}, {{axiosRequestConfigName}}?: {{axiosRequestConfigType}}{{/if}}) => {
+export const {{queryName endpoint}} = <TData>({{#if (endpointParams endpoint)}}{ {{{endpointArgs endpoint}}} }: { {{{genEndpointParams endpoint}}} }, {{/if}}options?: AppQueryOptions<typeof {{importedEndpointName endpoint}}, TData>{{#if hasAxiosRequestConfig}}, {{axiosRequestConfigName}}?: {{axiosRequestConfigType}}{{/if}}) => {
   return {{queryHook}}({
     queryKey: keys.{{endpointName endpoint}}({{#if (endpointParams endpoint)}}{{{endpointArgs endpoint}}}{{/if}}),
-    queryFn: {{#if hasFileDownload}}async {{/if}}{{#if hasQueryFn}}() => {{#if hasFileDownload}} {
-      const res = await{{/if}} {{importedEndpointName endpoint}}({{{endpointArgs endpoint}}}{{#if hasAxiosRequestConfig}}{{#if (endpointArgs endpoint)}}, {{/if}}{{axiosRequestConfigName}}{{/if}}){{else}}{{importedEndpointName endpoint}}{{/if}}{{#if hasFileDownload}}; 
-      responseFileAction(res, options);
-      return res;
-    }{{/if}},
+    queryFn: {{#if hasQueryFn}}() => {{importedEndpointName endpoint}}({{{endpointArgs endpoint}}}{{#if hasAxiosRequestConfig}}{{#if (endpointArgs endpoint)}}, {{/if}}{{axiosRequestConfigName}}{{/if}}){{else}}{{importedEndpointName endpoint}}{{/if}},
     ...options,
   });
 };

@@ -59,13 +59,6 @@ class GenerateOptions implements GenerateParams {
   })
   invalidateQueryOptions!: boolean;
 
-  @YargOption({
-    envAlias: "fileActions",
-    default: DEFAULT_GENERATE_OPTIONS.fileActions,
-    type: "boolean",
-  })
-  fileActions!: boolean;
-
   @YargOption({ envAlias: "axiosRequestConfig", default: DEFAULT_GENERATE_OPTIONS.axiosRequestConfig, type: "boolean" })
   axiosRequestConfig!: boolean;
 

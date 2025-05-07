@@ -8,7 +8,7 @@ import { GenerateZodSchemaData, Import } from "../../types/generate";
 import { getEndpointConfig, mapEndpointParamsToFunctionParams } from "../generate/generate.endpoints.utils";
 import { getHbsPartialTemplateDelegate } from "../hbs/hbs-template.utils";
 import { isQuery } from "../query.utils";
-import { FILE_ACTION_QUERY_OPTIONS, INVALIDATE_QUERIES } from "src/generators/const/deps.const";
+import { INVALIDATE_QUERIES } from "src/generators/const/deps.const";
 import { BLOB_SCHEMA } from "src/generators/const/zod.const";
 
 enum PartialsHelpers {
@@ -70,7 +70,7 @@ function registerGenerateEndpointConfigHelper(resolver: SchemaResolver) {
       endpointConfig,
       hasAxiosRequestConfig,
       hasBlobResponse: endpoint.response === BLOB_SCHEMA,
-      hasFileDownload: resolver.options.fileActions && endpoint.fileDownload,
+      hasFileDownload: endpoint.fileDownload,
       axiosRequestConfigName: AXIOS_REQUEST_CONFIG_NAME,
     });
   });
@@ -103,23 +103,19 @@ function registerGenerateQueryHelper(resolver: SchemaResolver) {
     }
 
     const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
-    const hasFileDownload = resolver.options.fileActions && endpoint.fileDownload;
 
     return getHbsPartialTemplateDelegate(templateName)({
       endpoint,
       queryHook,
       queriesModuleName: QUERIES_MODULE_NAME,
-      hasQueryFn:
-        mapEndpointParamsToFunctionParams(resolver, endpoint).length > 0 || hasAxiosRequestConfig || hasFileDownload,
+      hasQueryFn: mapEndpointParamsToFunctionParams(resolver, endpoint).length > 0 || hasAxiosRequestConfig,
       hasAxiosRequestConfig,
       axiosRequestConfigName: AXIOS_REQUEST_CONFIG_NAME,
       axiosRequestConfigType: AXIOS_REQUEST_CONFIG_TYPE,
       hasInvalidateQueryOptions: resolver.options.invalidateQueryOptions,
       invalidateQueryOptionsType: INVALIDATE_QUERIES.optionsType,
-      hasFileActionQueryOptions: resolver.options.fileActions && endpoint.fileDownload,
-      fileActionQueryOptionsType: FILE_ACTION_QUERY_OPTIONS.optionsType,
-      hasFileUpload: resolver.options.fileActions && endpoint.fileUpload,
-      hasFileDownload,
+      hasFileUpload: endpoint.fileUpload,
+      hasFileDownload: endpoint.fileDownload,
     });
   });
 }
@@ -148,8 +144,6 @@ function registerGenerateQueryJsDocsHelper(resolver: SchemaResolver) {
         infiniteQuery: options.hash.infiniteQuery,
         hasInvalidateQueryOptions: resolver.options.invalidateQueryOptions,
         invalidateQueryOptionsType: INVALIDATE_QUERIES.optionsType,
-        hasFileActionQueryOptions: resolver.options.fileActions && endpoint.fileDownload,
-        fileActionQueryOptionsType: FILE_ACTION_QUERY_OPTIONS.optionsType,
       }),
   );
 }
