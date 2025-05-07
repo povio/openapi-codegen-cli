@@ -7,7 +7,7 @@ import { Endpoint } from "../../types/endpoint";
 import { GenerateZodSchemaData, Import } from "../../types/generate";
 import { getEndpointConfig, mapEndpointParamsToFunctionParams } from "../generate/generate.endpoints.utils";
 import { getHbsPartialTemplateDelegate } from "../hbs/hbs-template.utils";
-import { isQuery } from "../query.utils";
+import { isInfiniteQuery, isMutation, isQuery } from "../query.utils";
 import { INVALIDATE_QUERIES } from "src/generators/const/deps.const";
 import { BLOB_SCHEMA } from "src/generators/const/zod.const";
 
@@ -18,10 +18,12 @@ enum PartialsHelpers {
   EndpointConfig = "genEndpointConfig",
   QueryKeys = "genQueryKeys",
   Query = "genQuery",
+  Mutation = "genMutation",
   InfiniteQuery = "genInfiniteQuery",
   QueryJsDocs = "genQueryJsDocs",
   CaslAbilityType = "genCaslAbilityType",
   CaslAbilityFunction = "genCaslAbilityFunction",
+  CaslAbilityQuery = "genCaslAbilityQuery",
 }
 
 export function registerPartialsHbsHelpers(resolver: SchemaResolver) {
@@ -31,10 +33,12 @@ export function registerPartialsHbsHelpers(resolver: SchemaResolver) {
   registerGenerateEndpointConfigHelper(resolver);
   registerGenerateQueryKeysHelper(resolver);
   registerGenerateQueryHelper(resolver);
+  registerGenerateMutationHelper(resolver);
   registerGenerateInfiniteQueryHelper(resolver);
   registerGenerateQueryJsDocsHelper(resolver);
   registerGenerateCaslAbilityTypeHelper();
   registerGenerateCaslAbilityFunctionHelper();
+  registerGenerateCaslAbilityQueryHelper();
 }
 
 function registerGenerateModelJsDocsHelper() {
@@ -91,38 +95,49 @@ function registerGenerateQueryKeysHelper(resolver: SchemaResolver) {
 
 function registerGenerateQueryHelper(resolver: SchemaResolver) {
   Handlebars.registerHelper(PartialsHelpers.Query, (endpoint: Endpoint) => {
-    let templateName: string;
-    let queryHook: string;
-
-    if (isQuery(endpoint)) {
-      templateName = "query-use-query";
-      queryHook = QUERY_HOOKS.query;
-    } else {
-      templateName = "query-use-mutation";
-      queryHook = QUERY_HOOKS.mutation;
+    if (!isQuery(endpoint)) {
+      return;
     }
 
     const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
 
-    return getHbsPartialTemplateDelegate(templateName)({
+    return getHbsPartialTemplateDelegate("query-use-query")({
       endpoint,
-      queryHook,
-      queriesModuleName: QUERIES_MODULE_NAME,
+      queryHook: QUERY_HOOKS.query,
       hasQueryFn: mapEndpointParamsToFunctionParams(resolver, endpoint).length > 0 || hasAxiosRequestConfig,
       hasAxiosRequestConfig,
       axiosRequestConfigName: AXIOS_REQUEST_CONFIG_NAME,
       axiosRequestConfigType: AXIOS_REQUEST_CONFIG_TYPE,
+    });
+  });
+}
+
+function registerGenerateMutationHelper(resolver: SchemaResolver) {
+  Handlebars.registerHelper(PartialsHelpers.Mutation, (endpoint: Endpoint) => {
+    if (!isMutation(endpoint)) {
+      return;
+    }
+
+    return getHbsPartialTemplateDelegate("query-use-mutation")({
+      endpoint,
+      queryHook: QUERY_HOOKS.mutation,
+      queriesModuleName: QUERIES_MODULE_NAME,
+      hasAxiosRequestConfig: resolver.options.axiosRequestConfig,
+      axiosRequestConfigName: AXIOS_REQUEST_CONFIG_NAME,
+      axiosRequestConfigType: AXIOS_REQUEST_CONFIG_TYPE,
       hasInvalidateQueryOptions: resolver.options.invalidateQueryOptions,
       invalidateQueryOptionsType: INVALIDATE_QUERIES.optionsType,
-      hasFileUpload: endpoint.fileUpload,
-      hasFileDownload: endpoint.fileDownload,
     });
   });
 }
 
 function registerGenerateInfiniteQueryHelper(resolver: SchemaResolver) {
-  Handlebars.registerHelper(PartialsHelpers.InfiniteQuery, (endpoint: Endpoint) =>
-    getHbsPartialTemplateDelegate("query-use-infinite-query")({
+  Handlebars.registerHelper(PartialsHelpers.InfiniteQuery, (endpoint: Endpoint) => {
+    if (!resolver.options.infiniteQueries || !isInfiniteQuery(endpoint)) {
+      return;
+    }
+
+    return getHbsPartialTemplateDelegate("query-use-infinite-query")({
       endpoint,
       infiniteQueryHook: QUERY_HOOKS.infiniteQuery,
       pageParamName: INFINITE_QUERY_RESPONSE_PARAMS.pageParamName,
@@ -131,16 +146,18 @@ function registerGenerateInfiniteQueryHelper(resolver: SchemaResolver) {
       hasAxiosRequestConfig: resolver.options.axiosRequestConfig,
       axiosRequestConfigName: AXIOS_REQUEST_CONFIG_NAME,
       axiosRequestConfigType: AXIOS_REQUEST_CONFIG_TYPE,
-    }),
-  );
+    });
+  });
 }
 
 function registerGenerateQueryJsDocsHelper(resolver: SchemaResolver) {
   Handlebars.registerHelper(
     PartialsHelpers.QueryJsDocs,
-    (endpoint: Endpoint, options: { hash: { infiniteQuery?: boolean } }) =>
+    (endpoint: Endpoint, options: { hash: { query?: boolean; mutation?: boolean; infiniteQuery?: boolean } }) =>
       getHbsPartialTemplateDelegate("query-js-docs")({
         endpoint,
+        query: options.hash.query,
+        mutation: options.hash.mutation,
         infiniteQuery: options.hash.infiniteQuery,
         hasInvalidateQueryOptions: resolver.options.invalidateQueryOptions,
         invalidateQueryOptionsType: INVALIDATE_QUERIES.optionsType,
@@ -160,5 +177,11 @@ function registerGenerateCaslAbilityTypeHelper() {
 function registerGenerateCaslAbilityFunctionHelper() {
   Handlebars.registerHelper(PartialsHelpers.CaslAbilityFunction, (endpoint: Endpoint) =>
     getHbsPartialTemplateDelegate("casl-ability-function")({ endpoint }),
+  );
+}
+
+function registerGenerateCaslAbilityQueryHelper() {
+  Handlebars.registerHelper(PartialsHelpers.CaslAbilityQuery, (endpoint: Endpoint) =>
+    getHbsPartialTemplateDelegate("casl-ability-query")({ endpoint }),
   );
 }

@@ -8,14 +8,24 @@
 {{/each}}{{/if}} * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<{{{importedZodSchemaInferedType endpoint.response}}}> } {{endpoint.responseDescription}}
  * @statusCodes [{{commaSeparated endpoint.responseStatusCodes}}]
- */{{else}}
+ */{{else if query}}
  /** 
- * {{#if (isQuery endpoint)}}Query{{else}}Mutation{{/if}} `{{queryName endpoint}}`{{#if endpoint.summary}}
+ * Query `{{queryName endpoint}}`{{#if endpoint.summary}}{{#if endpoint.fileDownload}} - recommended when file should be cached{{/if}}
  * @summary {{addAsteriskAfterNewLine endpoint.summary}}{{/if}}{{#if endpoint.description}} 
  * @description {{addAsteriskAfterNewLine endpoint.description}}{{/if}}{{#if endpoint.acl}}
  * @permission Requires `{{abilityFunctionName endpoint}}` ability {{/if}}
-{{#if (endpointParams endpoint includeFileParam=true)}}{{#each (endpointParams endpoint includeFileParam=true) as | endpointParam |}} * @param { {{endpointParam.type}} } {{#if (isQuery ../endpoint)}}object{{else}}mutation{{/if}}.{{endpointParam.name}} {{{endpointParamDescription endpointParam}}}
-{{/each}}{{/if}} * @param {{#if (isQuery endpoint)}}{ AppQueryOptions } options Query options{{else}}{ AppMutationOptions{{#if hasInvalidateQueryOptions}} & {{invalidateQueryOptionsType}}{{/if}} } options Mutation options{{/if}}
- * @returns { {{#if (isQuery endpoint)}}UseQueryResult{{else}}UseMutationResult{{/if}}<{{{importedZodSchemaInferedType endpoint.response}}}> } {{endpoint.responseDescription}}
+{{#if (endpointParams endpoint includeFileParam=true)}}{{#each (endpointParams endpoint includeFileParam=true) as | endpointParam |}} * @param { {{endpointParam.type}} } object.{{endpointParam.name}} {{{endpointParamDescription endpointParam}}}
+{{/each}}{{/if}} * @param { AppQueryOptions } options Query options
+ * @returns { UseQueryResult<{{#if endpoint.fileDownload}}AxiosResponse<{{/if}}{{{importedZodSchemaInferedType endpoint.response}}}{{#if endpoint.fileDownload}}>{{/if}}> } {{endpoint.responseDescription}}
+ * @statusCodes [{{commaSeparated endpoint.responseStatusCodes}}]
+ */{{else if mutation}}
+ /** 
+ * Mutation `{{queryName endpoint mutation=true}}`{{#if endpoint.summary}}{{#if endpoint.fileDownload}} - recommended when file should not be cached{{/if}}
+ * @summary {{addAsteriskAfterNewLine endpoint.summary}}{{/if}}{{#if endpoint.description}} 
+ * @description {{addAsteriskAfterNewLine endpoint.description}}{{/if}}{{#if endpoint.acl}}
+ * @permission Requires `{{abilityFunctionName endpoint}}` ability {{/if}}
+{{#if (endpointParams endpoint includeFileParam=true)}}{{#each (endpointParams endpoint includeFileParam=true) as | endpointParam |}} * @param { {{endpointParam.type}} } mutation.{{endpointParam.name}} {{{endpointParamDescription endpointParam}}}
+{{/each}}{{/if}} * @param { AppMutationOptions{{#if hasInvalidateQueryOptions}} & {{invalidateQueryOptionsType}}{{/if}} } options Mutation options
+ * @returns { UseMutationResult<{{#if endpoint.fileDownload}}AxiosResponse<{{/if}}{{{importedZodSchemaInferedType endpoint.response}}}{{#if endpoint.fileDownload}}>{{/if}}> } {{endpoint.responseDescription}}
  * @statusCodes [{{commaSeparated endpoint.responseStatusCodes}}]
  */{{/if}}

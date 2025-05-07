@@ -1,6 +1,6 @@
 import { INVALIDATE_QUERIES, QUERY_OPTIONS_TYPES } from "../const/deps.const";
-import { AXIOS_DEFAULT_IMPORT_NAME, AXIOS_IMPORT } from "../const/endpoints.const";
-import { INFINITE_QUERY_PARAMS, QUERIES_MODULE_NAME, QUERY_HOOKS, QUERY_IMPORT } from "../const/queries.const";
+import { AXIOS_DEFAULT_IMPORT_NAME, AXIOS_IMPORT, AXIOS_REQUEST_CONFIG_TYPE } from "../const/endpoints.const";
+import { QUERIES_MODULE_NAME, QUERY_HOOKS, QUERY_IMPORT } from "../const/queries.const";
 import { EndpointParameter } from "../types/endpoint";
 import { GenerateType, GenerateTypeParams, Import } from "../types/generate";
 import { getUniqueArray } from "../utils/array.utils";
@@ -20,18 +20,17 @@ export function generateQueries({ resolver, data, tag = "" }: GenerateTypeParams
     return;
   }
 
+  const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
   const hasAxiosDefaultImport = endpoints.some(({ fileUpload }) => fileUpload);
-  const hasAxiosImport = resolver.options.axiosRequestConfig || hasAxiosDefaultImport;
+  const hasAxiosImport = hasAxiosRequestConfig || hasAxiosDefaultImport;
   const axiosImport: Import = {
     defaultImport: hasAxiosDefaultImport ? AXIOS_DEFAULT_IMPORT_NAME : undefined,
-    bindings: resolver.options.axiosRequestConfig ? AXIOS_IMPORT.bindings : [],
+    bindings: hasAxiosRequestConfig ? [AXIOS_REQUEST_CONFIG_TYPE] : [],
     from: AXIOS_IMPORT.from,
   };
 
   const queryEndpoints = endpoints.filter(isQuery);
-  const infiniteQueryEndpoints = queryEndpoints.filter((endpoint) =>
-    isInfiniteQuery(endpoint, Object.values(INFINITE_QUERY_PARAMS)),
-  );
+  const infiniteQueryEndpoints = queryEndpoints.filter((endpoint) => isInfiniteQuery(endpoint));
   const mutationEndpoints = endpoints.filter(isMutation);
 
   const queryImport: Import = {
@@ -89,6 +88,5 @@ export function generateQueries({ resolver, data, tag = "" }: GenerateTypeParams
     queriesModuleName: QUERIES_MODULE_NAME,
     endpoints,
     queryEndpoints,
-    generateInfiniteQueries: resolver.options.infiniteQueries,
   });
 }

@@ -1,5 +1,5 @@
 {{! Js docs }}
-{{{genQueryJsDocs endpoint}}}
+{{{genQueryJsDocs endpoint query=true}}}
 {{! Query definition}}
 export const {{queryName endpoint}} = <TData>({{#if (endpointParams endpoint)}}{ {{{endpointArgs endpoint}}} }: { {{{genEndpointParams endpoint}}} }, {{/if}}options?: AppQueryOptions<typeof {{importedEndpointName endpoint}}, TData>{{#if hasAxiosRequestConfig}}, {{axiosRequestConfigName}}?: {{axiosRequestConfigType}}{{/if}}) => {
   return {{queryHook}}({
