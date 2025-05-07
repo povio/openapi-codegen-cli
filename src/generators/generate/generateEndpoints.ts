@@ -21,8 +21,9 @@ export function generateEndpoints({ resolver, data, tag = "" }: GenerateTypePara
   };
 
   const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
+  const hasAxiosImport = hasAxiosRequestConfig;
   const axiosImport: Import = {
-    bindings: hasAxiosRequestConfig ? AXIOS_IMPORT.bindings : [],
+    bindings: hasAxiosRequestConfig ? [AXIOS_REQUEST_CONFIG_TYPE] : [],
     from: AXIOS_IMPORT.from,
   };
 
@@ -41,7 +42,7 @@ export function generateEndpoints({ resolver, data, tag = "" }: GenerateTypePara
 
   return hbsTemplate({
     appRestClientImport,
-    hasAxiosImport: hasAxiosRequestConfig,
+    hasAxiosImport,
     axiosImport,
     hasZodImport,
     zodImport: ZOD_IMPORT,

@@ -61,7 +61,7 @@ export function mapEndpointParamsToFunctionParams(
     };
   });
 
-  if (options?.includeFileParam && resolver.options.fileActions && endpoint.fileUpload) {
+  if (options?.includeFileParam && endpoint.fileUpload) {
     params.push({
       name: "file",
       type: "File",

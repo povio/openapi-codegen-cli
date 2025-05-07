@@ -1,8 +1,8 @@
 /**
- * Use for `{{queryName endpoint}}` {{#if (isQuery endpoint)}}query{{else}}mutation{{/if}} ability. {{#if (hasAbilityConditions endpoint)}}For global ability, omit the object parameter.{{/if}}{{#if (abilityDescription endpoint)}}
+ * Use for {{{genCaslAbilityQuery endpoint}}} ability. {{#if (hasAbilityConditions endpoint)}}For global ability, omit the object parameter.{{/if}}{{#if (abilityDescription endpoint)}}
  * @description {{abilityDescription endpoint}}{{/if}} 
 {{#if (hasAbilityConditions endpoint)}}{{#each (abilityConditionsTypes endpoint) as | propertyType |}} * @param { {{propertyType.type}}{{propertyType.zodSchemaName}} } object.{{propertyType.name}} {{propertyType.name}} from {{propertyType.info}}
-{{/each}}{{/if}} * @returns { {{abilityTypeName endpoint}} } An ability tuple indicating the user's ability to use `{{queryName endpoint}}` {{#if (isQuery endpoint)}}query{{else}}mutation{{/if}}
+{{/each}}{{/if}} * @returns { {{abilityTypeName endpoint}} } An ability tuple indicating the user's ability to use {{{genCaslAbilityQuery endpoint}}}
  */
 export const {{abilityFunctionName endpoint}} = (
   {{#if (hasAbilityConditions endpoint)}}object?: { {{#each (abilityConditionsTypes endpoint) as | propertyType |}}{{propertyType.name}}{{#unless propertyType.required}}?{{/unless}}: {{propertyType.type}}{{propertyType.zodSchemaName}}, {{/each}} } {{/if}}

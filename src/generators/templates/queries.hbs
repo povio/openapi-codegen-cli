@@ -8,10 +8,6 @@
 {{#if hasInvalidateQueriesImport}}
 {{{genImport invalidateQueriesImport}}}
 {{/if}}
-{{! File action import }}
-{{#if hasFileActionImport}}
-{{{genImport fileActionImport}}}
-{{/if}}
 {{! React query types import }}
 {{{genImport queryTypesImport}}}
 {{! Models import }}
@@ -36,11 +32,9 @@ export const {{queriesModuleName}} = "{{namespace}}";
 {{#each endpoints as | endpoint |}}
 {{{genQuery endpoint}}}
 
-{{#if ../generateInfiniteQueries}}
-{{#if (isInfiniteQuery endpoint)}}
+{{{genMutation endpoint}}}
+
 {{{genInfiniteQuery endpoint}}}
-{{/if}}
-{{/if}}
 
 {{/each}}
 

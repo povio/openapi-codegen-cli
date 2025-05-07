@@ -1,12 +1,11 @@
-import { FILE_ACTION_QUERY_OPTIONS, INVALIDATE_QUERIES, QUERY_OPTIONS_TYPES } from "../const/deps.const";
-import { AXIOS_DEFAULT_IMPORT_NAME, AXIOS_IMPORT } from "../const/endpoints.const";
-import { INFINITE_QUERY_PARAMS, QUERIES_MODULE_NAME, QUERY_HOOKS, QUERY_IMPORT } from "../const/queries.const";
+import { INVALIDATE_QUERIES, QUERY_OPTIONS_TYPES } from "../const/deps.const";
+import { AXIOS_DEFAULT_IMPORT_NAME, AXIOS_IMPORT, AXIOS_REQUEST_CONFIG_TYPE } from "../const/endpoints.const";
+import { QUERIES_MODULE_NAME, QUERY_HOOKS, QUERY_IMPORT } from "../const/queries.const";
 import { EndpointParameter } from "../types/endpoint";
 import { GenerateType, GenerateTypeParams, Import } from "../types/generate";
 import { getUniqueArray } from "../utils/array.utils";
 import { getEndpointsImports, getModelsImports } from "../utils/generate/generate.imports.utils";
 import {
-  getFileActionImportPath,
   getInvalidateQueriesImportPath,
   getNamespaceName,
   getQueryTypesImportPath,
@@ -21,18 +20,17 @@ export function generateQueries({ resolver, data, tag = "" }: GenerateTypeParams
     return;
   }
 
-  const hasAxiosDefaultImport = resolver.options.fileActions && endpoints.some(({ fileUpload }) => fileUpload);
-  const hasAxiosImport = resolver.options.axiosRequestConfig || hasAxiosDefaultImport;
+  const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
+  const hasAxiosDefaultImport = endpoints.some(({ fileUpload }) => fileUpload);
+  const hasAxiosImport = hasAxiosRequestConfig || hasAxiosDefaultImport;
   const axiosImport: Import = {
     defaultImport: hasAxiosDefaultImport ? AXIOS_DEFAULT_IMPORT_NAME : undefined,
-    bindings: resolver.options.axiosRequestConfig ? AXIOS_IMPORT.bindings : [],
+    bindings: hasAxiosRequestConfig ? [AXIOS_REQUEST_CONFIG_TYPE] : [],
     from: AXIOS_IMPORT.from,
   };
 
   const queryEndpoints = endpoints.filter(isQuery);
-  const infiniteQueryEndpoints = queryEndpoints.filter((endpoint) =>
-    isInfiniteQuery(endpoint, Object.values(INFINITE_QUERY_PARAMS)),
-  );
+  const infiniteQueryEndpoints = queryEndpoints.filter((endpoint) => isInfiniteQuery(endpoint));
   const mutationEndpoints = endpoints.filter(isMutation);
 
   const queryImport: Import = {
@@ -48,12 +46,6 @@ export function generateQueries({ resolver, data, tag = "" }: GenerateTypeParams
   const invalidateQueriesImport: Import = {
     bindings: Object.values(INVALIDATE_QUERIES),
     from: getInvalidateQueriesImportPath(resolver.options),
-  };
-
-  const hasFileActionImport = resolver.options.fileActions && queryEndpoints.some(({ fileDownload }) => fileDownload);
-  const fileActionImport: Import = {
-    bindings: Object.values(FILE_ACTION_QUERY_OPTIONS),
-    from: getFileActionImportPath(resolver.options),
   };
 
   const queryTypesImport: Import = {
@@ -88,8 +80,6 @@ export function generateQueries({ resolver, data, tag = "" }: GenerateTypeParams
     queryImport,
     hasInvalidateQueriesImport,
     invalidateQueriesImport,
-    hasFileActionImport,
-    fileActionImport,
     queryTypesImport,
     modelsImports,
     endpointsImports,
@@ -98,6 +88,5 @@ export function generateQueries({ resolver, data, tag = "" }: GenerateTypeParams
     queriesModuleName: QUERIES_MODULE_NAME,
     endpoints,
     queryEndpoints,
-    generateInfiniteQueries: resolver.options.infiniteQueries,
   });
 }
