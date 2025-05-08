@@ -15,8 +15,8 @@ export interface OperationAclInfo {
 
 interface OperationObjectAdditions {
   "x-acl"?: OperationAclInfo[];
-  "x-file-upload"?: any;
-  "x-file-download"?: any;
+  "x-media-upload"?: any;
+  "x-media-download"?: any;
 }
 
 export type OperationObject = OpenAPIV3.OperationObject<OperationObjectAdditions>;

@@ -1,4 +1,5 @@
 import { OpenAPIV3 } from "openapi-types";
+import { INFINITE_QUERY_PARAMS } from "src/generators/const/queries.const";
 import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
 import { GenerateType } from "src/generators/types/generate";
 import { GenerateOptions } from "src/generators/types/options";
@@ -13,7 +14,6 @@ import { primitiveTypeToTsType } from "../ts.utils";
 import { isNamedZodSchema } from "../zod-schema.utils";
 import { getNamespaceName } from "./generate.utils";
 import { getImportedZodSchemaInferedTypeName } from "./generate.zod.utils";
-import { INFINITE_QUERY_PARAMS } from "src/generators/const/queries.const";
 
 export const getEndpointName = (endpoint: Endpoint) => decapitalize(snakeToCamel(endpoint.operationName));
 
@@ -61,7 +61,7 @@ export function mapEndpointParamsToFunctionParams(
     };
   });
 
-  if (options?.includeFileParam && endpoint.fileUpload) {
+  if (options?.includeFileParam && endpoint.mediaUpload) {
     params.push({
       name: "file",
       type: "File",

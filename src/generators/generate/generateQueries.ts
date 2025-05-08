@@ -21,7 +21,7 @@ export function generateQueries({ resolver, data, tag = "" }: GenerateTypeParams
   }
 
   const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
-  const hasAxiosDefaultImport = endpoints.some(({ fileUpload }) => fileUpload);
+  const hasAxiosDefaultImport = endpoints.some(({ mediaUpload }) => mediaUpload);
   const hasAxiosImport = hasAxiosRequestConfig || hasAxiosDefaultImport;
   const axiosImport: Import = {
     defaultImport: hasAxiosDefaultImport ? AXIOS_DEFAULT_IMPORT_NAME : undefined,

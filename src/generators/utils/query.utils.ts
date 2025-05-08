@@ -3,7 +3,7 @@ import { Endpoint } from "../types/endpoint";
 
 export const isQuery = (endpoint: Endpoint) => endpoint.method === "get";
 
-export const isMutation = (endpoint: Endpoint) => endpoint.method !== "get" || !!endpoint.fileDownload;
+export const isMutation = (endpoint: Endpoint) => endpoint.method !== "get" || !!endpoint.mediaDownload;
 
 export const isInfiniteQuery = (endpoint: Endpoint, infiniteQueryParams?: string[]) =>
   isQuery(endpoint) &&
