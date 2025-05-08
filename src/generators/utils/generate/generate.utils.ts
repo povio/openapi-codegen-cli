@@ -5,7 +5,6 @@ import {
   StandaloneAssetEnum,
   TEMPLATE_IMPORT_PATH_APP_REST_CLIENT,
   TEMPLATE_IMPORT_PATH_QUERY_TYPES,
-  UTILS_DIR,
 } from "src/generators/const/deps.const";
 import { GenerateFile, GenerateType } from "../../types/generate";
 import { GenerateOptions } from "../../types/options";
@@ -67,5 +66,5 @@ export function getQueryTypesImportPath(options: GenerateOptions) {
 }
 
 export function getInvalidateQueriesImportPath(options: GenerateOptions) {
-  return `${getImportPath(options)}${UTILS_DIR}/${INVALIDATE_QUERY_OPTIONS_FILE.fileName}`;
+  return `${getImportPath(options)}${INVALIDATE_QUERY_OPTIONS_FILE.fileName}`;
 }

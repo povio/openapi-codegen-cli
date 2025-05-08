@@ -42,9 +42,11 @@ export function generateQueries({ resolver, data, tag = "" }: GenerateTypeParams
     from: QUERY_IMPORT.from,
   };
 
-  const hasInvalidateQueriesImport = resolver.options.invalidateQueryOptions && mutationEndpoints.length > 0;
   const invalidateQueriesImport: Import = {
-    bindings: Object.values(INVALIDATE_QUERIES),
+    bindings: [
+      INVALIDATE_QUERIES.queryModuleEnum,
+      ...(mutationEndpoints.length > 0 ? [INVALIDATE_QUERIES.optionsType, INVALIDATE_QUERIES.functionName] : []),
+    ],
     from: getInvalidateQueriesImportPath(resolver.options),
   };
 
@@ -78,14 +80,16 @@ export function generateQueries({ resolver, data, tag = "" }: GenerateTypeParams
     hasAxiosImport,
     axiosImport,
     queryImport,
-    hasInvalidateQueriesImport,
+    hasInvalidateQueryOptions: resolver.options.invalidateQueryOptions,
     invalidateQueriesImport,
     queryTypesImport,
     modelsImports,
     endpointsImports,
     includeNamespace: resolver.options.tsNamespaces,
+    tag,
     namespace: getNamespaceName({ type: GenerateType.Queries, tag, options: resolver.options }),
     queriesModuleName: QUERIES_MODULE_NAME,
+    queryModuleEnum: INVALIDATE_QUERIES.queryModuleEnum,
     endpoints,
     queryEndpoints,
   });

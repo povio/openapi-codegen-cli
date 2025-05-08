@@ -1,20 +1,19 @@
 import { OpenAPIV3 } from "openapi-types";
+import { ACL_APP_ABILITY_FILE } from "./const/acl.const";
+import { INVALIDATE_QUERY_OPTIONS_FILE, STANDALONE_APP_REST_CLIENT_FILE, STANDALONE_ASSETS } from "./const/deps.const";
 import { DEFAULT_GENERATE_OPTIONS } from "./const/options.const";
 import { getDataFromOpenAPIDoc } from "./core/getDataFromOpenAPIDoc";
+import { SchemaResolver } from "./core/SchemaResolver.class";
 import { generateAcl, generateAppAcl } from "./generate/generateAcl";
+import { generateAppRestClient } from "./generate/generateAppRestClient";
 import { generateEndpoints } from "./generate/generateEndpoints";
+import { generateInvalidateQueries } from "./generate/generateInvalidateQueries";
 import { generateModels } from "./generate/generateModels";
 import { generateQueries } from "./generate/generateQueries";
 import { GenerateFileData, GenerateType, GenerateTypeParams } from "./types/generate";
 import { GenerateOptions } from "./types/options";
-import { getOutputFileName, getUtilsOutputFileName, readAssetSync } from "./utils/file.utils";
+import { getOutputFileName, readAssetSync } from "./utils/file.utils";
 import { getFileNameWithExtension, getTagFileName } from "./utils/generate/generate.utils";
-import { INVALIDATE_QUERY_OPTIONS_FILE, QUERY_MODULES_FILE, STANDALONE_ASSETS } from "./const/deps.const";
-import { SchemaResolver } from "./core/SchemaResolver.class";
-import { generateAppRestClient } from "./generate/generateAppRestClient";
-import { ACL_APP_ABILITY_FILE } from "./const/acl.const";
-import { STANDALONE_APP_REST_CLIENT_FILE } from "./const/deps.const";
-import { generateQueryModules } from "./generate/generateQueryModules";
 
 export function generateCodeFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, cliOptions: Partial<GenerateOptions>) {
   const importPath = cliOptions.standalone && cliOptions.importPath === "ts" ? "relative" : cliOptions.importPath;
@@ -63,17 +62,12 @@ export function generateCodeFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, cliOp
   }
 
   if (options.invalidateQueryOptions) {
-    const fileName = getFileNameWithExtension(INVALIDATE_QUERY_OPTIONS_FILE);
     generateFilesData.push({
-      content: readAssetSync(fileName),
-      fileName: getUtilsOutputFileName({ output: resolver.options.output, fileName }),
-    });
-    generateFilesData.push({
-      fileName: getUtilsOutputFileName({
+      fileName: getOutputFileName({
         output: resolver.options.output,
-        fileName: getFileNameWithExtension(QUERY_MODULES_FILE),
+        fileName: getFileNameWithExtension(INVALIDATE_QUERY_OPTIONS_FILE),
       }),
-      content: generateQueryModules({ resolver, data }),
+      content: generateInvalidateQueries({ resolver, data }),
     });
   }
 

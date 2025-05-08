@@ -1,7 +1,7 @@
 import Handlebars from "handlebars";
-import { getInfiniteQueryName, getQueryName, getTagKeys, getTagModuleName } from "../generate/generate.query.utils";
-import { isInfiniteQuery, isMutation, isQuery } from "../query.utils";
 import { Endpoint } from "src/generators/types/endpoint";
+import { getInfiniteQueryName, getQueryName } from "../generate/generate.query.utils";
+import { isInfiniteQuery, isMutation, isQuery } from "../query.utils";
 
 enum QueryHelpers {
   QueryName = "queryName",
@@ -9,8 +9,6 @@ enum QueryHelpers {
   IsMutation = "isMutation",
   InfiniteQueryName = "infiniteQueryName",
   IsInfiniteQuery = "isInfiniteQuery",
-  TagModuleName = "tagModuleName",
-  TagKeys = "tagKeys",
 }
 
 export function registerQueryHbsHelpers() {
@@ -19,8 +17,6 @@ export function registerQueryHbsHelpers() {
   registerIsMutationHelper();
   registerInfiniteQueryNameHelper();
   registerIsInfiniteQueryHelper();
-  registerTagModuleNameHelper();
-  registerTagKeysHelper();
 }
 
 function registerQueryNameHelper() {
@@ -43,12 +39,4 @@ function registerIsMutationHelper() {
 
 function registerIsInfiniteQueryHelper() {
   Handlebars.registerHelper(QueryHelpers.IsInfiniteQuery, (endpoint: Endpoint) => isInfiniteQuery(endpoint));
-}
-
-function registerTagModuleNameHelper() {
-  Handlebars.registerHelper(QueryHelpers.TagModuleName, getTagModuleName);
-}
-
-function registerTagKeysHelper() {
-  Handlebars.registerHelper(QueryHelpers.TagKeys, getTagKeys);
 }

@@ -1,7 +1,6 @@
 import fs from "fs";
 import path from "path";
 import { GenerateFileData } from "../types/generate";
-import { UTILS_DIR } from "../const/deps.const";
 
 function readFileSync(filePath: string) {
   if (process.env.NODE_ENV === "production") {
@@ -23,10 +22,6 @@ export function readAssetSync(fileName: string) {
 
 export function getOutputFileName({ output, fileName }: { output: string; fileName: string }) {
   return `${output}/${fileName}`;
-}
-
-export function getUtilsOutputFileName({ output, fileName }: { output: string; fileName: string }) {
-  return `${output}/${UTILS_DIR}/${fileName}`;
 }
 
 function writeFileWithDirSync(file: string, data: string) {

@@ -5,7 +5,7 @@
 {{! React query import }}
 {{{genImport queryImport}}}
 {{! Invalidate queries import }}
-{{#if hasInvalidateQueriesImport}}
+{{#if hasInvalidateQueryOptions}}
 {{{genImport invalidateQueriesImport}}}
 {{/if}}
 {{! React query types import }}
@@ -23,7 +23,7 @@
 export namespace {{namespace}} {
 {{/if}}
 
-export const {{queriesModuleName}} = "{{namespace}}";
+export const {{queriesModuleName}} = {{#if hasInvalidateQueryOptions}}{{queryModuleEnum}}.{{tag}}{{else}}"{{namespace}}"{{/if}};
 
 {{! Query keys export}}
 {{{genQueryKeys queryEndpoints}}}
