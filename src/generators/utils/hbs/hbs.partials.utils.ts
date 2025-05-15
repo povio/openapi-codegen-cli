@@ -1,6 +1,6 @@
 import Handlebars from "handlebars";
 import { CASL_ABILITY_BINDING } from "src/generators/const/acl.const";
-import { INVALIDATE_QUERIES } from "src/generators/const/deps.const";
+import { INVALIDATE_QUERIES, ZOD_EXTENDED } from "src/generators/const/deps.const";
 import { AXIOS_REQUEST_CONFIG_NAME, AXIOS_REQUEST_CONFIG_TYPE } from "src/generators/const/endpoints.const";
 import { BLOB_SCHEMA } from "src/generators/const/zod.const";
 import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
@@ -16,6 +16,7 @@ enum PartialsHelpers {
   Import = "genImport",
   EndpointParams = "genEndpointParams",
   EndpointConfig = "genEndpointConfig",
+  EndpointParamSorting = "genEndpointParamSorting",
   QueryKeys = "genQueryKeys",
   Query = "genQuery",
   Mutation = "genMutation",
@@ -31,6 +32,7 @@ export function registerPartialsHbsHelpers(resolver: SchemaResolver) {
   registerImportHelper();
   registerGenerateEndpointParamsHelper();
   registerGenerateEndpointConfigHelper(resolver);
+  registerGenerateEndpointParamSortingHelper();
   registerGenerateQueryKeysHelper(resolver);
   registerGenerateQueryHelper(resolver);
   registerGenerateMutationHelper(resolver);
@@ -78,6 +80,17 @@ function registerGenerateEndpointConfigHelper(resolver: SchemaResolver) {
       axiosRequestConfigName: AXIOS_REQUEST_CONFIG_NAME,
     });
   });
+}
+
+function registerGenerateEndpointParamSortingHelper() {
+  Handlebars.registerHelper(PartialsHelpers.EndpointParamSorting, (enumSchemaName: string, paramName: string) =>
+    getHbsPartialTemplateDelegate("endpoint-param-sorting")({
+      enumSchemaName,
+      paramName,
+      zodExtended: ZOD_EXTENDED.name,
+      sortingString: ZOD_EXTENDED.properties.sortingString,
+    }),
+  );
 }
 
 function registerGenerateQueryKeysHelper(resolver: SchemaResolver) {

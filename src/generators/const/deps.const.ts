@@ -37,3 +37,12 @@ export const INVALIDATE_QUERIES = {
   functionName: "invalidateQueries",
 };
 export const INVALIDATE_QUERY_OPTIONS_FILE: GenerateFile = { fileName: "invalidateQueries", extension: "ts" };
+
+// ZodExtended
+export const ZOD_EXTENDED = {
+  name: "zodExtended",
+  properties: {
+    sortingString: "sortingString",
+  },
+};
+export const ZOD_EXTENDED_FILE: GenerateFile = { fileName: "zodExtended", extension: "ts" };

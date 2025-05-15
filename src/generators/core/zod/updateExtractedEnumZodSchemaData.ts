@@ -1,6 +1,7 @@
 import { OpenAPIV3 } from "openapi-types";
 import { getUniqueArray } from "src/generators/utils/array.utils";
-import { getSchemaNameByRef, isReferenceObject } from "src/generators/utils/openapi.utils";
+import { isReferenceObject } from "src/generators/utils/openapi-schema.utils";
+import { getSchemaNameByRef } from "src/generators/utils/openapi.utils";
 import { capitalize, getMostCommonAdjacentCombinationSplit } from "src/generators/utils/string.utils";
 import { getNotAllowedInlineEnumError } from "src/generators/utils/validation.utils";
 import { getEnumZodSchemaName } from "src/generators/utils/zod-schema.utils";

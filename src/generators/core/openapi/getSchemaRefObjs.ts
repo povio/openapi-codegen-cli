@@ -1,5 +1,6 @@
 import { OpenAPIV3 } from "openapi-types";
-import { autocorrectRef, isReferenceObject } from "src/generators/utils/openapi.utils";
+import { isReferenceObject } from "src/generators/utils/openapi-schema.utils";
+import { autocorrectRef } from "src/generators/utils/openapi.utils";
 import { getInvalidSchemaError } from "src/generators/utils/validation.utils";
 import { SchemaResolver } from "../SchemaResolver.class";
 import { iterateSchema, OnSchemaCallbackData } from "./iterateSchema";

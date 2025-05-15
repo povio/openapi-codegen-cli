@@ -20,3 +20,12 @@ interface OperationObjectAdditions {
 }
 
 export type OperationObject = OpenAPIV3.OperationObject<OperationObjectAdditions>;
+
+interface ParameterObjectAdditions {
+  "x-enumNames"?: string[];
+}
+
+export type ParameterObject = OpenAPIV3.ParameterObject & ParameterObjectAdditions;
+
+export type SortingParameterObject = OpenAPIV3.ParameterObject &
+  Required<Pick<ParameterObjectAdditions, "x-enumNames">>;

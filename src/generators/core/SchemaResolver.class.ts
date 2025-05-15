@@ -5,6 +5,7 @@ import { GenerateOptions } from "../types/options";
 import { ValidationError } from "../types/validation";
 import { getUniqueArray } from "../utils/array.utils";
 import { pick } from "../utils/object.utils";
+import { isReferenceObject } from "../utils/openapi-schema.utils";
 import {
   autocorrectRef,
   getSchemaNameByRef,
@@ -13,7 +14,6 @@ import {
   getUniqueOperationNamesWithoutSplitByTags,
   isMediaTypeAllowed,
   isParamMediaTypeAllowed,
-  isReferenceObject,
 } from "../utils/openapi.utils";
 import { snakeToCamel } from "../utils/string.utils";
 import { formatTag, getOperationsByTag, getOperationTag } from "../utils/tag.utils";
@@ -26,12 +26,12 @@ import {
 import { DependencyGraph, getOpenAPISchemaDependencyGraph } from "./openapi/getOpenAPISchemaDependencyGraph";
 import { getDeepSchemaRefObjs, getSchemaRefObjs } from "./openapi/getSchemaRefObjs";
 import { ZodSchema } from "./zod/ZodSchema.class";
+import { getEnumZodSchemasFromOpenAPIDoc } from "./zod/getZodSchemasFromOpenAPIDoc";
 import {
   resolveExtractedEnumZodSchemaNames,
   resolveExtractedEnumZodSchemaTags,
   updateExtractedEnumZodSchemaData,
 } from "./zod/updateExtractedEnumZodSchemaData";
-import { getEnumZodSchemasFromOpenAPIDoc } from "./zod/getZodSchemasFromOpenAPIDoc";
 
 interface SchemaData {
   ref: string;
@@ -80,10 +80,9 @@ export class SchemaResolver {
 
   readonly dependencyGraph: DependencyGraph;
   readonly enumZodSchemas: EnumZodSchemaData[] = [];
+  readonly extractedEnumZodSchemaData: ExtractedEnumZodSchemaData[] = [];
   readonly operationsByTag: Record<string, OperationObject[]> = {};
   readonly operationNames: string[] = [];
-
-  extractedEnumZodSchemaData: ExtractedEnumZodSchemaData[] = [];
 
   readonly validationErrors: ValidationError[] = [];
 
@@ -109,10 +108,6 @@ export class SchemaResolver {
 
   getSchemaByRef(ref: string) {
     return this.docSchemas[getSchemaNameByRef(ref)] as OpenAPIV3.SchemaObject;
-  }
-
-  getSchemaDataByRef(ref: string) {
-    return this.schemaData.find((data) => data.ref === ref);
   }
 
   getZodSchemaNameByRef(ref: string) {
@@ -204,10 +199,6 @@ export class SchemaResolver {
     return this.extractedEnumZodSchemaData.find((data) => data.code === code);
   }
 
-  getExtractedEnumZodSchemaDataByName(enumZodSchemaName: string) {
-    return this.extractedEnumZodSchemaData.find(({ zodSchemaName }) => zodSchemaName === enumZodSchemaName);
-  }
-
   getExtractedEnumZodSchemaNamesReferencedBySchemaRef(schemaRef: string) {
     return this.extractedEnumZodSchemaData.reduce((acc, { zodSchemaName, meta }) => {
       if (zodSchemaName && meta.schemaRefs.includes(schemaRef)) {
@@ -274,6 +265,14 @@ export class SchemaResolver {
         {} as OpenAPIV3.SchemaObject,
       );
     }
+  }
+
+  private getSchemaDataByRef(ref: string) {
+    return this.schemaData.find((data) => data.ref === ref);
+  }
+
+  private getExtractedEnumZodSchemaDataByName(enumZodSchemaName: string) {
+    return this.extractedEnumZodSchemaData.find(({ zodSchemaName }) => zodSchemaName === enumZodSchemaName);
   }
 
   private initialize() {
@@ -431,6 +430,10 @@ export class SchemaResolver {
       });
     });
 
-    this.extractedEnumZodSchemaData = this.extractedEnumZodSchemaData.filter(({ code }) => !codes.includes(code));
+    this.extractedEnumZodSchemaData.splice(
+      0,
+      this.extractedEnumZodSchemaData.length,
+      ...this.extractedEnumZodSchemaData.filter(({ code }) => !codes.includes(code)),
+    );
   }
 }

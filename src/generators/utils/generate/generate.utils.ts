@@ -5,6 +5,7 @@ import {
   StandaloneAssetEnum,
   TEMPLATE_IMPORT_PATH_APP_REST_CLIENT,
   TEMPLATE_IMPORT_PATH_QUERY_TYPES,
+  ZOD_EXTENDED_FILE,
 } from "src/generators/const/deps.const";
 import { GenerateFile, GenerateType } from "../../types/generate";
 import { GenerateOptions } from "../../types/options";
@@ -67,4 +68,8 @@ export function getQueryTypesImportPath(options: GenerateOptions) {
 
 export function getInvalidateQueriesImportPath(options: GenerateOptions) {
   return `${getImportPath(options)}${INVALIDATE_QUERY_OPTIONS_FILE.fileName}`;
+}
+
+export function getZodExtendedImportPath(options: GenerateOptions) {
+  return `${getImportPath(options)}${ZOD_EXTENDED_FILE.fileName}`;
 }

@@ -2,10 +2,11 @@ import { OpenAPIV3 } from "openapi-types";
 import { match, P } from "ts-pattern";
 import { RESERVED_WORDS } from "../const/js.const";
 import { ALLOWED_METHODS, ALLOWED_PARAM_MEDIA_TYPES, PRIMITIVE_TYPE_LIST } from "../const/openapi.const";
-import { OperationObject, PrimitiveType, SingleType } from "../types/openapi";
+import { OperationObject, ParameterObject, PrimitiveType, SingleType, SortingParameterObject } from "../types/openapi";
 import { GenerateOptions } from "../types/options";
 import { invalidVariableNameCharactersToCamel } from "./js.utils";
 import { pick } from "./object.utils";
+import { isSchemaObject } from "./openapi-schema.utils";
 import { capitalize, kebabToCamel, removeWord, snakeToCamel } from "./string.utils";
 import { getOperationTag } from "./tag.utils";
 
@@ -14,10 +15,6 @@ export const getSchemaRef = (schemaName: string) => `#/components/schemas/${sche
 export const autocorrectRef = (ref: string) => (ref[1] === "/" ? ref : "#/" + ref.slice(1));
 
 export const getSchemaNameByRef = (ref: string) => autocorrectRef(ref).split("/").at(-1)!;
-
-export function isReferenceObject(obj: any): obj is OpenAPIV3.ReferenceObject {
-  return obj != null && Object.prototype.hasOwnProperty.call(obj, "$ref");
-}
 
 export function normalizeString(text: string) {
   const formatted = prefixStringStartingWithNumberIfNeeded(text)
@@ -228,3 +225,10 @@ export function replaceHyphenatedPath(path: string) {
   });
   return path;
 }
+
+export const isSortingParameterObject = (param: ParameterObject): param is SortingParameterObject => {
+  const enumNames = param["x-enumNames"];
+  const hasEnumNames = Array.isArray(enumNames) && enumNames.length > 0;
+  const isStringSchema = !!param.schema && isSchemaObject(param.schema) && param.schema.type === "string";
+  return hasEnumNames && isStringSchema;
+};

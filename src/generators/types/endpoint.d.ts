@@ -1,12 +1,13 @@
 import { OpenAPIV3 } from "openapi-types";
-import { OperationAclInfo } from "./openapi";
+import { OperationAclInfo, ParameterObject } from "./openapi";
 
 export interface EndpointParameter {
   name: string;
   description?: string;
   type: "Query" | "Body" | "Header" | "Path";
   zodSchema: string;
-  parameterObject?: OpenAPIV3.ParameterObject;
+  parameterObject?: ParameterObject;
+  parameterSortingEnumSchemaName?: string;
   bodyObject?: OpenAPIV3.RequestBodyObject;
 }
 

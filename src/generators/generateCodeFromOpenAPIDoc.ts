@@ -1,6 +1,11 @@
 import { OpenAPIV3 } from "openapi-types";
 import { ACL_APP_ABILITY_FILE } from "./const/acl.const";
-import { INVALIDATE_QUERY_OPTIONS_FILE, STANDALONE_APP_REST_CLIENT_FILE, STANDALONE_ASSETS } from "./const/deps.const";
+import {
+  INVALIDATE_QUERY_OPTIONS_FILE,
+  STANDALONE_APP_REST_CLIENT_FILE,
+  STANDALONE_ASSETS,
+  ZOD_EXTENDED_FILE,
+} from "./const/deps.const";
 import { DEFAULT_GENERATE_OPTIONS } from "./const/options.const";
 import { getDataFromOpenAPIDoc } from "./core/getDataFromOpenAPIDoc";
 import { SchemaResolver } from "./core/SchemaResolver.class";
@@ -10,7 +15,7 @@ import { generateEndpoints } from "./generate/generateEndpoints";
 import { generateInvalidateQueries } from "./generate/generateInvalidateQueries";
 import { generateModels } from "./generate/generateModels";
 import { generateQueries } from "./generate/generateQueries";
-import { GenerateFileData, GenerateType, GenerateTypeParams } from "./types/generate";
+import { GenerateData, GenerateFileData, GenerateType, GenerateTypeParams } from "./types/generate";
 import { GenerateOptions } from "./types/options";
 import { getOutputFileName, readAssetSync } from "./utils/file.utils";
 import { getFileNameWithExtension, getTagFileName } from "./utils/generate/generate.utils";
@@ -75,6 +80,14 @@ export function generateCodeFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, cliOp
     generateFilesData.push(...getStandaloneFiles(resolver));
   }
 
+  if (hasZodExtendedFile(data)) {
+    const fileName = getFileNameWithExtension(ZOD_EXTENDED_FILE);
+    generateFilesData.push({
+      content: readAssetSync(fileName),
+      fileName: getOutputFileName({ output: resolver.options.output, fileName }),
+    });
+  }
+
   return generateFilesData;
 }
 
@@ -98,4 +111,10 @@ function getStandaloneFiles(resolver: SchemaResolver) {
   });
 
   return generateFilesData;
+}
+
+function hasZodExtendedFile(data: GenerateData) {
+  return Array.from(data.values()).some(({ endpoints }) =>
+    endpoints.some((endpoint) => endpoint.parameters.some((param) => param.parameterSortingEnumSchemaName)),
+  );
 }

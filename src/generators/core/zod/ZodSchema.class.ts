@@ -3,7 +3,7 @@ import { WithRequired } from "src/generators/types/common";
 import { GenerateType } from "src/generators/types/generate";
 import { GenerateOptions } from "src/generators/types/options";
 import { getNamespaceName } from "src/generators/utils/generate/generate.utils";
-import { isReferenceObject } from "../../utils/openapi.utils";
+import { isReferenceObject } from "src/generators/utils/openapi-schema.utils";
 import { SchemaResolver } from "../SchemaResolver.class";
 import { getOpenAPISchemaComplexity } from "../openapi/getOpenAPISchemaComplexity";
 

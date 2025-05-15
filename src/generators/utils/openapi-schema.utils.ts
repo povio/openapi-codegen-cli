@@ -1,5 +1,8 @@
 import { OpenAPIV3 } from "openapi-types";
-import { isReferenceObject } from "./openapi.utils";
+
+export function isReferenceObject(obj: any): obj is OpenAPIV3.ReferenceObject {
+  return obj != null && Object.prototype.hasOwnProperty.call(obj, "$ref");
+}
 
 export function isSchemaObject(
   schema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject,

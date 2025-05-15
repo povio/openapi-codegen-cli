@@ -9,9 +9,9 @@ import {
   getImportedEndpointName,
   mapEndpointParamsToFunctionParams,
 } from "../generate/generate.endpoints.utils";
+import { getSchemaDescriptions } from "../generate/generate.openapi.utils";
 import { isSchemaObject } from "../openapi-schema.utils";
 import { isParamMediaTypeAllowed } from "../openapi.utils";
-import { getSchemaDescriptions } from "../generate/generate.openapi.utils";
 
 enum EndpointsHelpers {
   EndpointName = "endpointName",

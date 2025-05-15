@@ -1,8 +1,9 @@
 import { OpenAPIV3 } from "openapi-types";
 import { ALLOWED_METHODS } from "src/generators/const/openapi.const";
-import { VOID_SCHEMA } from "src/generators/const/zod.const";
+import { STRING_SCHEMA, VOID_SCHEMA } from "src/generators/const/zod.const";
 import { OperationObject } from "src/generators/types/openapi";
 import { invalidVariableNameCharactersToCamel } from "src/generators/utils/js.utils";
+import { isReferenceObject } from "src/generators/utils/openapi-schema.utils";
 import { formatTag, getOperationTag } from "src/generators/utils/tag.utils";
 import {
   getInvalidOperationIdError,
@@ -18,7 +19,6 @@ import {
   isErrorStatus,
   isMainResponseStatus,
   isMediaTypeAllowed,
-  isReferenceObject,
   replaceHyphenatedPath,
 } from "../../utils/openapi.utils";
 import { SchemaResolver } from "../SchemaResolver.class";
@@ -207,7 +207,7 @@ function getPathParameterFromName(name: string): EndpointParameter {
   return {
     name,
     type: "Path",
-    zodSchema: "z.string()",
+    zodSchema: STRING_SCHEMA,
     parameterObject: { name, required: true, in: "path", schema: { type: "string" } },
   };
 }

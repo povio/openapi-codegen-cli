@@ -1,12 +1,21 @@
 import { OpenAPIV3 } from "openapi-types";
 import { ALLOWED_PATH_IN } from "src/generators/const/openapi.const";
 import { EndpointParameter } from "src/generators/types/endpoint";
-import { isParamMediaTypeAllowed, pathParamToVariableName } from "src/generators/utils/openapi.utils";
-import { getParamZodSchemaName, getZodSchemaOperationName } from "src/generators/utils/zod-schema.utils";
+import { ParameterObject } from "src/generators/types/openapi";
+import {
+  isParamMediaTypeAllowed,
+  isSortingParameterObject,
+  pathParamToVariableName,
+} from "src/generators/utils/openapi.utils";
+import {
+  getEnumZodSchemaName,
+  getParamZodSchemaName,
+  getZodSchemaOperationName,
+} from "src/generators/utils/zod-schema.utils";
 import { match } from "ts-pattern";
 import { SchemaResolver } from "../SchemaResolver.class";
 import { getZodChain } from "../zod/getZodChain";
-import { getZodSchema } from "../zod/getZodSchema";
+import { getEnumZodSchemaCodeFromEnumNames, getZodSchema } from "../zod/getZodSchema";
 import { resolveZodSchemaName } from "../zod/resolveZodSchemaName";
 
 export function getEndpointParameter({
@@ -17,7 +26,7 @@ export function getEndpointParameter({
   tag,
 }: {
   resolver: SchemaResolver;
-  param: OpenAPIV3.ReferenceObject | OpenAPIV3.ParameterObject;
+  param: OpenAPIV3.ReferenceObject | ParameterObject;
   operationName: string;
   isUniqueOperationName: boolean;
   tag: string;
@@ -53,6 +62,23 @@ export function getEndpointParameter({
     (schema as OpenAPIV3.SchemaObject).description = (paramObj.description ?? "").trim();
   }
 
+  const fallbackName = getParamZodSchemaName(
+    getZodSchemaOperationName(operationName, isUniqueOperationName, tag),
+    paramObj.name,
+  );
+
+  let parameterSortingEnumSchemaName: string | undefined = undefined;
+  if (isSortingParameterObject(paramObj)) {
+    const enumZodSchemaName = getEnumZodSchemaName(
+      fallbackName,
+      resolver.options.enumSuffix,
+      resolver.options.schemaSuffix,
+    );
+    const code = getEnumZodSchemaCodeFromEnumNames(paramObj["x-enumNames"]);
+    resolver.setZodSchema(enumZodSchemaName, code, tag);
+    parameterSortingEnumSchemaName = enumZodSchemaName;
+  }
+
   const zodSchema = getZodSchema({
     schema,
     resolver,
@@ -67,10 +93,7 @@ export function getEndpointParameter({
   const zodSchemaName = resolveZodSchemaName({
     schema: schemaObject,
     zodSchema: zodSchema.assign(zodSchema.getCodeString(tag) + zodChain),
-    fallbackName: getParamZodSchemaName(
-      getZodSchemaOperationName(operationName, isUniqueOperationName, tag),
-      paramObj.name,
-    ),
+    fallbackName,
     resolver,
     tag,
   });
@@ -86,5 +109,6 @@ export function getEndpointParameter({
       .run() as "Header" | "Query" | "Path",
     zodSchema: zodSchemaName,
     parameterObject: paramObj,
+    parameterSortingEnumSchemaName,
   };
 }

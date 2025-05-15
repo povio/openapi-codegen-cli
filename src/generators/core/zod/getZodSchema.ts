@@ -1,13 +1,18 @@
 import { OpenAPIV3 } from "openapi-types";
+import { BLOB_SCHEMA, ENUM_SCHEMA, STRING_SCHEMA } from "src/generators/const/zod.const";
+import { GenerateType } from "src/generators/types/generate";
+import { getNamespaceName } from "src/generators/utils/generate/generate.utils";
 import { match } from "ts-pattern";
-import { inferRequiredSchema, isArraySchemaObject, isSchemaObject } from "../../utils/openapi-schema.utils";
-import { isPrimitiveType, isReferenceObject, wrapWithQuotesIfNeeded } from "../../utils/openapi.utils";
+import {
+  inferRequiredSchema,
+  isArraySchemaObject,
+  isReferenceObject,
+  isSchemaObject,
+} from "../../utils/openapi-schema.utils";
+import { isPrimitiveType, wrapWithQuotesIfNeeded } from "../../utils/openapi.utils";
 import { SchemaResolver } from "../SchemaResolver.class";
 import { ZodSchema, ZodSchemaMetaData } from "./ZodSchema.class";
 import { getZodChain } from "./getZodChain";
-import { BLOB_SCHEMA, ENUM_SCHEMA } from "src/generators/const/zod.const";
-import { GenerateType } from "src/generators/types/generate";
-import { getNamespaceName } from "src/generators/utils/generate/generate.utils";
 
 type GetZodSchemaParams = {
   schema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject;
@@ -311,7 +316,7 @@ function getPrimitiveZodSchema({ schema, zodSchema, resolver, meta, tag }: GetPa
         .with("string", () =>
           match(schema.format)
             .with("binary", () => BLOB_SCHEMA)
-            .otherwise(() => "z.string()"),
+            .otherwise(() => STRING_SCHEMA),
         )
         .otherwise((type) => `z.${type}()`),
     );
@@ -362,4 +367,8 @@ function getEnumZodSchema({ resolver, schema, zodSchema, meta, tag }: GetPartial
 
 export function getEnumZodSchemaCode(schema: OpenAPIV3.SchemaObject) {
   return `${ENUM_SCHEMA}([${schema.enum?.map((value) => (value === null ? "null" : `"${value}"`)).join(", ")}])`;
+}
+
+export function getEnumZodSchemaCodeFromEnumNames(enumNames: string[]) {
+  return `${ENUM_SCHEMA}([${enumNames.map((value) => `"${value}"`).join(", ")}])`;
 }

@@ -66,3 +66,5 @@ export const removeWord = (source: string, wordToRemove: string) => {
   );
   return source.replace(pattern, "");
 };
+
+export const isString = (str: string | undefined): str is string => str !== undefined;

@@ -1,16 +1,16 @@
+import { OpenAPIV3 } from "openapi-types";
+import { COMPOSITE_KEYWORDS } from "src/generators/const/openapi.const";
+import { VOID_SCHEMA } from "src/generators/const/zod.const";
+import { iterateSchema, OnSchemaCallbackData } from "src/generators/core/openapi/iterateSchema";
 import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
 import { GenerateType, GenerateZodSchemaData } from "src/generators/types/generate";
 import { GenerateOptions } from "src/generators/types/options";
+import { isReferenceObject } from "src/generators/utils/openapi-schema.utils";
+import { isArraySchemaObject } from "../openapi-schema.utils";
 import { removeSuffix } from "../string.utils";
 import { isNamedZodSchema } from "../zod-schema.utils";
-import { getNamespaceName } from "./generate.utils";
-import { VOID_SCHEMA } from "src/generators/const/zod.const";
 import { getSchemaDescriptions } from "./generate.openapi.utils";
-import { iterateSchema, OnSchemaCallbackData } from "src/generators/core/openapi/iterateSchema";
-import { isReferenceObject } from "../openapi.utils";
-import { OpenAPIV3 } from "openapi-types";
-import { isArraySchemaObject } from "../openapi-schema.utils";
-import { COMPOSITE_KEYWORDS } from "src/generators/const/openapi.const";
+import { getNamespaceName } from "./generate.utils";
 
 export const getZodSchemaInferedTypeName = (zodSchemaName: string, options: GenerateOptions) =>
   removeSuffix(zodSchemaName, options.schemaSuffix);
