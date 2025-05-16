@@ -7,7 +7,7 @@ export const zodExtended = {
       if (!isSortingStringValid(val, enumSchema)) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "Invalid order string.",
+          message: "Invalid sorting string.",
         });
       }
     }),
