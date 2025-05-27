@@ -4,6 +4,7 @@ import { STRING_SCHEMA, VOID_SCHEMA } from "src/generators/const/zod.const";
 import { OperationObject } from "src/generators/types/openapi";
 import { invalidVariableNameCharactersToCamel } from "src/generators/utils/js.utils";
 import { isReferenceObject } from "src/generators/utils/openapi-schema.utils";
+import { getUniqueOperationName } from "src/generators/utils/operation.utils";
 import { formatTag, getOperationTag } from "src/generators/utils/tag.utils";
 import {
   getInvalidOperationIdError,
@@ -15,7 +16,6 @@ import { getResponseZodSchemaName } from "src/generators/utils/zod-schema.utils"
 import { Endpoint, EndpointParameter } from "../../types/endpoint";
 import { pick } from "../../utils/object.utils";
 import {
-  getUniqueOperationName,
   isErrorStatus,
   isMainResponseStatus,
   isMediaTypeAllowed,

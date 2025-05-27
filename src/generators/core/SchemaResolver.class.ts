@@ -10,11 +10,10 @@ import {
   autocorrectRef,
   getSchemaNameByRef,
   getSchemaRef,
-  getUniqueOperationName,
-  getUniqueOperationNamesWithoutSplitByTags,
   isMediaTypeAllowed,
   isParamMediaTypeAllowed,
 } from "../utils/openapi.utils";
+import { getUniqueOperationName, getUniqueOperationNamesWithoutSplitByTags } from "../utils/operation.utils";
 import { snakeToCamel } from "../utils/string.utils";
 import { formatTag, getOperationsByTag, getOperationTag } from "../utils/tag.utils";
 import {
