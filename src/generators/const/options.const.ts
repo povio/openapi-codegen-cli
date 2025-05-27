@@ -8,7 +8,8 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   output: "output",
   splitByTags: true,
   defaultTag: "Common",
-  excludeTags: [], // TODO: Only works for isolated tags
+  excludeTags: [],
+  excludePathRegex: "",
   tsNamespaces: true,
   importPath: "ts",
   configs: {

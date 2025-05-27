@@ -34,6 +34,7 @@ interface BaseGenerateOptions {
   splitByTags: boolean;
   defaultTag: string;
   excludeTags: string[];
+  excludePathRegex: string;
   tsNamespaces: boolean;
   importPath: "ts" | "relative" | "absolute";
   configs: Record<GenerateType, GenerateConfig>;

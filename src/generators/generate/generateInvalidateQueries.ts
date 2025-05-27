@@ -1,15 +1,13 @@
 import { GenerateType, GenerateTypeParams } from "../types/generate";
 import { getNamespaceName } from "../utils/generate/generate.utils";
 import { getHbsTemplateDelegate } from "../utils/hbs/hbs-template.utils";
+import { isTagExcluded } from "../utils/tag.utils";
 
 export function generateInvalidateQueries({ resolver, data }: Omit<GenerateTypeParams, "tag">) {
   const modules: { tag: string; namespace: string }[] = [];
 
   data.forEach((_, tag) => {
-    const excludedTag = resolver.options.excludeTags.find(
-      (excludeTag) => excludeTag.toLowerCase() === tag.toLowerCase(),
-    );
-    if (excludedTag) {
+    if (isTagExcluded(tag, resolver.options)) {
       return;
     }
 

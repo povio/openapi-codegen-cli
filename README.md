@@ -36,7 +36,9 @@ yarn openapi-codegen generate --input http://localhost:3001/docs-json --standalo
 
   --splitByTags                       Organize output into separate folders based on OpenAPI operation tags (default: true)
   --defaultTag                        (Requires `--splitByTags`) Default tag for shared code across multiple tags (default: 'Common')
-  --excludeTags                       (Requires `--splitByTags`) Comma-separated list of tags to exclude from generation
+
+  --excludeTags                       Comma-separated list of tags to exclude from generation
+  --excludePathRegex                  Exclude operations whose paths match the given regular expression, along with any associated redundant Zod schemas
 
   --tsNamespaces                      Wrap generated files in TypeScript namespaces (default: true)
   --importPath                        Module import style for generated files (default: 'ts'; options: 'ts' | 'relative' | 'absolute')
@@ -60,7 +62,9 @@ yarn openapi-codegen generate --input http://localhost:3001/docs-json --standalo
 
   --splitByTags                       Organize output into separate folders based on OpenAPI operation tags (default: true)
   --defaultTag                        (Requires `--splitByTags`) Default tag for shared code across multiple tags (default: 'Common')
-  --excludeTags                       (Requires `--splitByTags`) Comma-separated list of tags to exclude from generation
+
+  --excludeTags                       Comma-separated list of tags to exclude from generation
+  --excludePathRegex                  Exclude operations whose paths match the given regular expression, along with any associated redundant Zod schemas
 ```
 
 ## Development

@@ -35,3 +35,7 @@ export function getOperationsByTag(openApiDoc: OpenAPIV3.Document, options: Gene
   }
   return operationsByTag;
 }
+
+export function isTagExcluded(tag: string, options: GenerateOptions) {
+  return options.excludeTags.some((excludeTag) => excludeTag.toLowerCase() === tag.toLowerCase());
+}

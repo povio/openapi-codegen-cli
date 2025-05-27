@@ -8,6 +8,7 @@ import { GenerateOptions } from "./types/options";
 import { ValidationErrorType } from "./types/validation";
 import { getOutputFileName } from "./utils/file.utils";
 import { getTagFileName } from "./utils/generate/generate.utils";
+import { isTagExcluded } from "./utils/tag.utils";
 import { groupByType } from "./utils/validation.utils";
 
 export function checkOpenAPIDoc(openApiDoc: OpenAPIV3.Document, cliOptions?: Partial<GenerateOptions>) {
@@ -23,10 +24,10 @@ export function checkOpenAPIDoc(openApiDoc: OpenAPIV3.Document, cliOptions?: Par
       );
     });
   } else {
-    const outputs = [...data.keys()].reduce((acc, tag) => {
-      const excludedTag = options.excludeTags.find((excludeTag) => excludeTag.toLowerCase() === tag.toLowerCase());
-      return excludedTag ? acc : [...acc, ...getOutputFileNames(tag, options)];
-    }, [] as string[]);
+    const outputs = [...data.keys()].reduce(
+      (acc, tag) => [...acc, ...(isTagExcluded(tag, options) ? [] : getOutputFileNames(tag, options))],
+      [] as string[],
+    );
     console.log(`${chk.green("Outputs:")}\n${outputs.map((output) => `- ${output}`).join("\n")}\n`);
   }
 
