@@ -4,7 +4,7 @@ import { STRING_SCHEMA, VOID_SCHEMA } from "src/generators/const/zod.const";
 import { OperationObject } from "src/generators/types/openapi";
 import { invalidVariableNameCharactersToCamel } from "src/generators/utils/js.utils";
 import { isReferenceObject } from "src/generators/utils/openapi-schema.utils";
-import { getUniqueOperationName } from "src/generators/utils/operation.utils";
+import { getUniqueOperationName, isOperationExcluded } from "src/generators/utils/operation.utils";
 import { formatTag, getOperationTag } from "src/generators/utils/tag.utils";
 import {
   getInvalidOperationIdError,
@@ -19,6 +19,7 @@ import {
   isErrorStatus,
   isMainResponseStatus,
   isMediaTypeAllowed,
+  isPathExcluded,
   replaceHyphenatedPath,
 } from "../../utils/openapi.utils";
 import { SchemaResolver } from "../SchemaResolver.class";
@@ -33,13 +34,17 @@ export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver) {
   const endpoints = [];
 
   for (const path in resolver.openApiDoc.paths) {
+    if (isPathExcluded(path, resolver.options)) {
+      continue;
+    }
+
     const pathItemObj = resolver.openApiDoc.paths[path] as OpenAPIV3.PathItemObject;
     const pathItem = pick(pathItemObj, ALLOWED_METHODS);
     const pathParameters = getParameters(pathItemObj.parameters ?? []);
 
     for (const method in pathItem) {
       const operation = pathItem[method as keyof typeof pathItem] as OperationObject | undefined;
-      if (!operation || (operation.deprecated && !resolver.options.withDeprecatedEndpoints)) {
+      if (!operation || isOperationExcluded(operation, resolver.options)) {
         continue;
       }
 

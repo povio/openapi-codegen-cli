@@ -5,9 +5,16 @@ import { OperationObject } from "../types/openapi";
 import { GenerateOptions } from "../types/options";
 import { invalidVariableNameCharactersToCamel } from "./js.utils";
 import { pick } from "./object.utils";
-import { pathToVariableName } from "./openapi.utils";
+import { isPathExcluded, pathToVariableName } from "./openapi.utils";
 import { capitalize, removeWord } from "./string.utils";
-import { getOperationTag } from "./tag.utils";
+import { getOperationTag, isTagExcluded } from "./tag.utils";
+
+export function isOperationExcluded(operation: OperationObject, options: GenerateOptions) {
+  const isDeprecated = operation.deprecated && !options.withDeprecatedEndpoints;
+  const tag = getOperationTag(operation, options);
+  const isExcluded = isTagExcluded(tag, options);
+  return isDeprecated || isExcluded;
+}
 
 export function getOperationName({
   path,
@@ -86,12 +93,16 @@ export function getUniqueOperationNamesWithoutSplitByTags(
 ) {
   const operationNames: string[] = [];
   for (const path in openApiDoc.paths) {
+    if (isPathExcluded(path, options)) {
+      continue;
+    }
+
     const pathItemObj = openApiDoc.paths[path] as OpenAPIV3.PathItemObject;
     const pathItem = pick(pathItemObj, ALLOWED_METHODS);
 
     for (const method in pathItem) {
       const operation = pathItem[method as keyof typeof pathItem] as OperationObject | undefined;
-      if (!operation || (operation.deprecated && !options.withDeprecatedEndpoints)) {
+      if (!operation || isOperationExcluded(operation, options)) {
         continue;
       }
 
@@ -100,4 +111,30 @@ export function getUniqueOperationNamesWithoutSplitByTags(
     }
   }
   return operationNames;
+}
+
+export function getOperationsByTag(openApiDoc: OpenAPIV3.Document, options: GenerateOptions) {
+  const operationsByTag: Record<string, OperationObject[]> = {};
+  for (const path in openApiDoc.paths) {
+    if (isPathExcluded(path, options)) {
+      continue;
+    }
+
+    const pathItemObj = openApiDoc.paths[path] as OpenAPIV3.PathItemObject;
+    const pathItem = pick(pathItemObj, ALLOWED_METHODS);
+
+    for (const method in pathItem) {
+      const operation = pathItem[method as keyof typeof pathItem] as OperationObject | undefined;
+      if (!operation || isOperationExcluded(operation, options)) {
+        continue;
+      }
+
+      const tag = options.splitByTags ? getOperationTag(operation, options) : options.defaultTag;
+      if (!operationsByTag[tag]) {
+        operationsByTag[tag] = [];
+      }
+      operationsByTag[tag].push(operation);
+    }
+  }
+  return operationsByTag;
 }

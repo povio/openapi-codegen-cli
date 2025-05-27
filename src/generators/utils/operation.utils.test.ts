@@ -2,8 +2,7 @@ import { OpenAPIV3 } from "openapi-types";
 import { describe, expect, test } from "vitest";
 import { GenerateType } from "../types/generate";
 import { GenerateOptions } from "../types/options";
-import { getOperationName, getUniqueOperationName } from "./operation.utils";
-import { getOperationsByTag } from "./tag.utils";
+import { getOperationName, getOperationsByTag, getUniqueOperationName } from "./operation.utils";
 
 const path = "/auth/provider/local/login";
 const method = "post";

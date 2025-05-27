@@ -12,10 +12,16 @@ import {
   getSchemaRef,
   isMediaTypeAllowed,
   isParamMediaTypeAllowed,
+  isPathExcluded,
 } from "../utils/openapi.utils";
-import { getUniqueOperationName, getUniqueOperationNamesWithoutSplitByTags } from "../utils/operation.utils";
+import {
+  getOperationsByTag,
+  getUniqueOperationName,
+  getUniqueOperationNamesWithoutSplitByTags,
+  isOperationExcluded,
+} from "../utils/operation.utils";
 import { snakeToCamel } from "../utils/string.utils";
-import { formatTag, getOperationsByTag, getOperationTag } from "../utils/tag.utils";
+import { formatTag, getOperationTag } from "../utils/tag.utils";
 import {
   getBodyZodSchemaName,
   getResponseZodSchemaName,
@@ -287,13 +293,16 @@ export class SchemaResolver {
     });
 
     for (const path in this.openApiDoc.paths) {
+      if (isPathExcluded(path, this.options)) {
+        continue;
+      }
+
       const pathItemObj = this.openApiDoc.paths[path] as OpenAPIV3.PathItemObject;
 
       const pathItem = pick(pathItemObj, ALLOWED_METHODS);
       for (const method in pathItem) {
         const operation = pathItem[method as keyof typeof pathItem] as OperationObject | undefined;
-
-        if (!operation || (operation.deprecated && !this.options.withDeprecatedEndpoints)) {
+        if (!operation || isOperationExcluded(operation, this.options)) {
           continue;
         }
 

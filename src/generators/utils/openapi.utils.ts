@@ -133,3 +133,11 @@ export const isSortingParameterObject = (param: ParameterObject): param is Sorti
   const isStringSchema = !!param.schema && isSchemaObject(param.schema) && param.schema.type === "string";
   return hasEnumNames && isStringSchema;
 };
+
+export const isPathExcluded = (path: string, options: { excludePathRegex: string }) => {
+  if (!options.excludePathRegex) {
+    return false;
+  }
+  const regex = new RegExp(options.excludePathRegex);
+  return regex.test(path);
+};

@@ -19,7 +19,6 @@ import { GenerateData, GenerateFileData, GenerateType, GenerateTypeParams } from
 import { GenerateOptions } from "./types/options";
 import { getOutputFileName, readAssetSync } from "./utils/file.utils";
 import { getFileNameWithExtension, getTagFileName } from "./utils/generate/generate.utils";
-import { isTagExcluded } from "./utils/tag.utils";
 
 export function generateCodeFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, cliOptions: Partial<GenerateOptions>) {
   const importPath = cliOptions.standalone && cliOptions.importPath === "ts" ? "relative" : cliOptions.importPath;
@@ -38,10 +37,6 @@ export function generateCodeFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, cliOp
   };
 
   data.forEach((_, tag) => {
-    if (isTagExcluded(tag, options)) {
-      return;
-    }
-
     generateTypes.forEach((type) => {
       const content = generateFunctions[type]({ resolver, data, tag });
       if (content) {
