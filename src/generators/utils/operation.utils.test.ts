@@ -1,45 +1,15 @@
 import { OpenAPIV3 } from "openapi-types";
 import { describe, expect, test } from "vitest";
-import { GenerateType } from "../types/generate";
+import { DEFAULT_GENERATE_OPTIONS } from "../const/options.const";
 import { GenerateOptions } from "../types/options";
 import { getOperationName, getOperationsByTag, getUniqueOperationName } from "./operation.utils";
 
 const path = "/auth/provider/local/login";
 const method = "post";
 
-const options: GenerateOptions = {
-  input: "input",
-  output: "output",
-  splitByTags: true,
-  defaultTag: "Common",
-  excludeTags: [""],
-  excludePathRegex: "",
-  tsNamespaces: true,
-  importPath: "ts",
-  configs: {
-    [GenerateType.Models]: {
-      outputFileNameSuffix: "models",
-      namespaceSuffix: "Models",
-    },
-    [GenerateType.Endpoints]: {
-      outputFileNameSuffix: "api",
-      namespaceSuffix: "Api",
-    },
-    [GenerateType.Queries]: {
-      outputFileNameSuffix: "queries",
-      namespaceSuffix: "Queries",
-    },
-    [GenerateType.Acl]: {
-      outputFileNameSuffix: "acl",
-      namespaceSuffix: "Acl",
-    },
-  },
-  schemaSuffix: "Schema",
-  enumSuffix: "Enum",
-  removeOperationPrefixEndingWith: "Controller_",
-  standalone: false,
-  baseUrl: "",
-};
+const options = {
+  ...DEFAULT_GENERATE_OPTIONS,
+} as GenerateOptions;
 
 const pathNames = ["/auth/provider/local/login", "/auth/provider/local/register"];
 

@@ -1,5 +1,6 @@
 import { OpenAPIV3 } from "openapi-types";
 import { describe, expect, test } from "vitest";
+import { DEFAULT_GENERATE_OPTIONS } from "../../const/options.const";
 import { GenerateOptions } from "../../types/options";
 import { getSchemaRef } from "../../utils/openapi.utils";
 import { SchemaResolver } from "../SchemaResolver.class";
@@ -7,8 +8,8 @@ import { ZodSchemaMetaData } from "./ZodSchema.class";
 import { getZodSchema } from "./getZodSchema";
 
 const generateOptions = {
+  ...DEFAULT_GENERATE_OPTIONS,
   schemaSuffix: "",
-  defaultTag: "",
 } as GenerateOptions;
 
 const makeSchema = (schema: OpenAPIV3.SchemaObject) => schema;

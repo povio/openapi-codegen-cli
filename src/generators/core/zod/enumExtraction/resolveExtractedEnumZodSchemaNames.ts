@@ -1,92 +1,6 @@
-import { OpenAPIV3 } from "openapi-types";
-import { getUniqueArray } from "src/generators/utils/array.utils";
-import { isReferenceObject } from "src/generators/utils/openapi-schema.utils";
-import { getSchemaNameByRef } from "src/generators/utils/openapi.utils";
 import { capitalize, getMostCommonAdjacentCombinationSplit } from "src/generators/utils/string.utils";
-import { getNotAllowedInlineEnumError } from "src/generators/utils/validation.utils";
 import { getEnumZodSchemaName } from "src/generators/utils/zod-schema.utils";
-import { iterateSchema, OnSchemaCallbackData } from "../openapi/iterateSchema";
-import { ExtractedEnumZodSchemaData, SchemaResolver } from "../SchemaResolver.class";
-import { getEnumZodSchemaCode } from "./getZodSchema";
-
-export function updateExtractedEnumZodSchemaData({
-  schema,
-  nameSegments = [],
-  includeSelf,
-  ...params
-}: {
-  resolver: SchemaResolver;
-  schema: OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject | undefined;
-  schemaRef?: string;
-  schemaInfo?: string;
-  tags: string[];
-  nameSegments?: string[];
-  includeSelf?: boolean;
-}) {
-  if (includeSelf) {
-    handleExtractedEnumZodSchemaDataUpdate({ schema, nameSegments, ...params });
-  }
-
-  const onSchema = (data: OnSchemaCallbackData<{ nameSegments: string[] }>) => {
-    if (data.type === "reference") {
-      return true;
-    }
-    const segments = [...(data.data?.nameSegments ?? [])];
-    if (data.type === "property") {
-      segments.push(data.propertyName);
-    }
-    handleExtractedEnumZodSchemaDataUpdate({ schema: data.schema, nameSegments: [...segments], ...params });
-  };
-
-  iterateSchema(schema, { data: { nameSegments }, onSchema });
-}
-
-function handleExtractedEnumZodSchemaDataUpdate({
-  resolver,
-  schema,
-  schemaRef,
-  schemaInfo,
-  tags,
-  nameSegments = [],
-}: {
-  resolver: SchemaResolver;
-  schema: OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject | undefined;
-  schemaRef?: string;
-  schemaInfo?: string;
-  tags: string[];
-  nameSegments?: string[];
-}) {
-  if (!schema || isReferenceObject(schema) || !schema.enum) {
-    return;
-  }
-
-  const code = getEnumZodSchemaCode(schema);
-  const enumZodSchema = resolver.extractedEnumZodSchemaData.find((data) => data.code === code);
-  if (enumZodSchema) {
-    enumZodSchema.meta.zodSchemaNameSegments.push(nameSegments);
-    enumZodSchema.meta.tags.push(...tags);
-    enumZodSchema.meta.schemaRefs.push(...(schemaRef ? [schemaRef] : []));
-    enumZodSchema.meta.schemas.push(...(schema ? [schema] : []));
-  } else {
-    resolver.extractedEnumZodSchemaData.push({
-      code,
-      meta: {
-        zodSchemaNameSegments: [nameSegments],
-        tags: [...tags],
-        schemaRefs: schemaRef ? [schemaRef] : [],
-        schemas: schema ? [schema] : [],
-      },
-    });
-  }
-
-  resolver.validationErrors.push(
-    getNotAllowedInlineEnumError(
-      schemaRef
-        ? `Schema ${getSchemaNameByRef(schemaRef)} property ${nameSegments[nameSegments.length - 1]}`
-        : schemaInfo ?? nameSegments.join("->"),
-    ),
-  );
-}
+import { ExtractedEnumZodSchemaData, SchemaResolver } from "../../SchemaResolver.class";
 
 export function resolveExtractedEnumZodSchemaNames(resolver: SchemaResolver) {
   resolver.extractedEnumZodSchemaData.forEach((enumData) => {
@@ -164,13 +78,6 @@ function suffixWithPreviousSegmentName(enumsData: ExtractedEnumZodSchemaData[], 
         .join("");
       data.zodSchemaName = zodSchemaName;
     }
-  });
-}
-
-export function resolveExtractedEnumZodSchemaTags(resolver: SchemaResolver) {
-  resolver.extractedEnumZodSchemaData.forEach((enumData) => {
-    const tags = getUniqueArray(enumData.meta.tags);
-    enumData.tag = tags.length === 1 ? tags[0] : resolver.options.defaultTag;
   });
 }
 
