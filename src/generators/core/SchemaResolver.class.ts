@@ -41,6 +41,7 @@ interface SchemaData {
   name: string;
   zodSchemaName: string;
   tags: string[];
+  deepRefOperations: OperationObject[];
 }
 
 interface ZodSchemaData {
@@ -111,6 +112,10 @@ export class SchemaResolver {
 
   getSchemaByRef(ref: string) {
     return this.docSchemas[getSchemaNameByRef(ref)] as OpenAPIV3.SchemaObject;
+  }
+
+  getSchemaDataByName(name: string) {
+    return this.schemaData.find((data) => data.name === name);
   }
 
   getZodSchemaNameByRef(ref: string) {
@@ -287,7 +292,7 @@ export class SchemaResolver {
       const correctRef = autocorrectRef(ref);
       const name = getSchemaNameByRef(correctRef);
       const zodSchemaName = getZodSchemaName(name, this.options.schemaSuffix);
-      this.schemaData.push({ ref: correctRef, name, zodSchemaName, tags: [] });
+      this.schemaData.push({ ref: correctRef, name, zodSchemaName, tags: [], deepRefOperations: [] });
     });
 
     for (const path in this.openApiDoc.paths) {
@@ -386,6 +391,7 @@ export class SchemaResolver {
           const schemaData = this.getSchemaDataByRef(schemaRef);
           if (schemaData) {
             schemaData.tags.push(tag);
+            schemaData.deepRefOperations.push(operation);
           }
         });
       }

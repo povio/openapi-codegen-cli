@@ -7,19 +7,26 @@ export function getZodSchemasFromOpenAPIDoc(resolver: SchemaResolver) {
   const enumZodSchemas = {} as Record<string, string>;
 
   Object.entries(resolver.openApiDoc.components?.schemas ?? {}).forEach(([name, schema]) => {
+    const schemaData = resolver.getSchemaDataByName(name);
+    if (resolver.options.excludeRedundantZodSchemas && (!schemaData || schemaData.deepRefOperations.length === 0)) {
+      return;
+    }
+
     const zodSchemaName = getZodSchemaName(name, resolver.options.schemaSuffix);
-    if (!zodSchemas[zodSchemaName]) {
-      const tag = resolver.getTagByZodSchemaName(zodSchemaName);
-      const schemaObject = resolver.resolveObject(schema);
-      if (schemaObject.enum) {
-        enumZodSchemas[zodSchemaName] = getEnumZodSchemaCode(schemaObject);
-      } else {
-        zodSchemas[zodSchemaName] = getZodSchema({
-          schema,
-          resolver,
-          tag,
-        }).getCodeString(tag);
-      }
+    if (zodSchemas[zodSchemaName]) {
+      return;
+    }
+
+    const tag = resolver.getTagByZodSchemaName(zodSchemaName);
+    const schemaObject = resolver.resolveObject(schema);
+    if (schemaObject.enum) {
+      enumZodSchemas[zodSchemaName] = getEnumZodSchemaCode(schemaObject);
+    } else {
+      zodSchemas[zodSchemaName] = getZodSchema({
+        schema,
+        resolver,
+        tag,
+      }).getCodeString(tag);
     }
   });
 

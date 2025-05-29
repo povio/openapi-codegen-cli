@@ -21,6 +21,13 @@ class CheckOptions implements CheckParams {
   @YargOption({ envAlias: "excludePathRegex", default: DEFAULT_GENERATE_OPTIONS.excludePathRegex })
   excludePathRegex!: string;
 
+  @YargOption({
+    envAlias: "excludeRedundantZodSchemas",
+    default: DEFAULT_GENERATE_OPTIONS.excludeRedundantZodSchemas,
+    type: "boolean",
+  })
+  excludeRedundantZodSchemas!: boolean;
+
   @YargOption({ envAlias: "verbose", default: false, type: "boolean" })
   verbose!: boolean;
 }

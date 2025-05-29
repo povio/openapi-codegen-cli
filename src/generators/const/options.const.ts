@@ -10,6 +10,7 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   defaultTag: "Common",
   excludeTags: [],
   excludePathRegex: "",
+  excludeRedundantZodSchemas: true,
   tsNamespaces: true,
   importPath: "ts",
   configs: {
