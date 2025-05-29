@@ -1,6 +1,7 @@
 import SwaggerParser from "@apidevtools/swagger-parser";
 import { OpenAPIV3 } from "openapi-types";
 import { describe, expect, test } from "vitest";
+import { DEFAULT_GENERATE_OPTIONS } from "../../const/options.const";
 import { GenerateOptions } from "../../types/options";
 import { SchemaResolver } from "../SchemaResolver.class";
 import { getEndpointsFromOpenAPIDoc } from "./getEndpointsFromOpenAPIDoc";
@@ -83,8 +84,10 @@ const schemas = {
 } as const;
 
 const generateOptions = {
+  ...DEFAULT_GENERATE_OPTIONS,
+  tsNamespaces: false,
+  extractEnums: false,
   schemaSuffix: "",
-  defaultTag: "",
 } as GenerateOptions;
 
 describe("getEndpointsFromOpenAPIDoc", () => {

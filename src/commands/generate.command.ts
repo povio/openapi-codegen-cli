@@ -1,9 +1,9 @@
+import { DEFAULT_GENERATE_OPTIONS } from "src/generators/const/options.const";
 import yargs from "yargs";
 import { logBanner, logVariable } from "../helpers/cli.helper";
 import { getVersion } from "../helpers/version.helper";
 import { getBuilder, YargOption } from "../helpers/yargs.helper";
 import { generate, GenerateParams } from "./generate";
-import { DEFAULT_GENERATE_OPTIONS } from "src/generators/const/options.const";
 
 class GenerateOptions implements GenerateParams {
   @YargOption({ envAlias: "input", demandOption: true })
@@ -23,6 +23,16 @@ class GenerateOptions implements GenerateParams {
 
   @YargOption({ envAlias: "excludeTags", default: DEFAULT_GENERATE_OPTIONS.excludeTags.join(",") })
   excludeTags!: string;
+
+  @YargOption({ envAlias: "excludePathRegex", default: DEFAULT_GENERATE_OPTIONS.excludePathRegex })
+  excludePathRegex!: string;
+
+  @YargOption({
+    envAlias: "excludeRedundantZodSchemas",
+    default: DEFAULT_GENERATE_OPTIONS.excludeRedundantZodSchemas,
+    type: "boolean",
+  })
+  excludeRedundantZodSchemas!: boolean;
 
   @YargOption({ envAlias: "importPath", default: DEFAULT_GENERATE_OPTIONS.importPath })
   importPath!: "ts" | "relative" | "absolute";

@@ -37,11 +37,6 @@ export function generateCodeFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, cliOp
   };
 
   data.forEach((_, tag) => {
-    const excludedTag = options.excludeTags.find((excludeTag) => excludeTag.toLowerCase() === tag.toLowerCase());
-    if (excludedTag) {
-      return;
-    }
-
     generateTypes.forEach((type) => {
       const content = generateFunctions[type]({ resolver, data, tag });
       if (content) {

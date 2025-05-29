@@ -23,10 +23,10 @@ export function checkOpenAPIDoc(openApiDoc: OpenAPIV3.Document, cliOptions?: Par
       );
     });
   } else {
-    const outputs = [...data.keys()].reduce((acc, tag) => {
-      const excludedTag = options.excludeTags.find((excludeTag) => excludeTag.toLowerCase() === tag.toLowerCase());
-      return excludedTag ? acc : [...acc, ...getOutputFileNames(tag, options)];
-    }, [] as string[]);
+    const outputs = [...data.keys()].reduce(
+      (acc, tag) => [...acc, ...getOutputFileNames(tag, options)],
+      [] as string[],
+    );
     console.log(`${chk.green("Outputs:")}\n${outputs.map((output) => `- ${output}`).join("\n")}\n`);
   }
 

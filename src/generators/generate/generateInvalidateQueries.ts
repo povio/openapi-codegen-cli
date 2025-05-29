@@ -6,13 +6,6 @@ export function generateInvalidateQueries({ resolver, data }: Omit<GenerateTypeP
   const modules: { tag: string; namespace: string }[] = [];
 
   data.forEach((_, tag) => {
-    const excludedTag = resolver.options.excludeTags.find(
-      (excludeTag) => excludeTag.toLowerCase() === tag.toLowerCase(),
-    );
-    if (excludedTag) {
-      return;
-    }
-
     const endpoints = data.get(tag)?.endpoints;
     if (!endpoints || endpoints.length === 0) {
       return;

@@ -404,7 +404,10 @@ describe("getMetadataFromOpenAPIDoc", async () => {
   ];
 
   test("getMetadataFromOpenAPIDoc", async () => {
-    const metadata = await getMetadataFromOpenAPIDoc(openApiDoc, DEFAULT_GENERATE_OPTIONS);
+    const metadata = await getMetadataFromOpenAPIDoc(openApiDoc, {
+      ...DEFAULT_GENERATE_OPTIONS,
+      excludeRedundantZodSchemas: false,
+    });
 
     expect(metadata.models).toEqual(models());
     expect(metadata.queries).toEqual(queries);
@@ -412,7 +415,11 @@ describe("getMetadataFromOpenAPIDoc", async () => {
 
   test("getMetadataFromOpenAPIDoc", async () => {
     const extractEnums = false;
-    const metadata = await getMetadataFromOpenAPIDoc(openApiDoc, { ...DEFAULT_GENERATE_OPTIONS, extractEnums });
+    const metadata = await getMetadataFromOpenAPIDoc(openApiDoc, {
+      ...DEFAULT_GENERATE_OPTIONS,
+      excludeRedundantZodSchemas: false,
+      extractEnums,
+    });
 
     expect(metadata.models).toEqual(models(extractEnums));
     expect(metadata.queries).toEqual(queries);

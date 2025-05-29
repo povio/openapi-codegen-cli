@@ -10,13 +10,18 @@ import {
   autocorrectRef,
   getSchemaNameByRef,
   getSchemaRef,
-  getUniqueOperationName,
-  getUniqueOperationNamesWithoutSplitByTags,
   isMediaTypeAllowed,
   isParamMediaTypeAllowed,
+  isPathExcluded,
 } from "../utils/openapi.utils";
+import {
+  getOperationsByTag,
+  getUniqueOperationName,
+  getUniqueOperationNamesWithoutSplitByTags,
+  isOperationExcluded,
+} from "../utils/operation.utils";
 import { snakeToCamel } from "../utils/string.utils";
-import { formatTag, getOperationsByTag, getOperationTag } from "../utils/tag.utils";
+import { formatTag, getOperationTag } from "../utils/tag.utils";
 import {
   getBodyZodSchemaName,
   getResponseZodSchemaName,
@@ -26,18 +31,17 @@ import {
 import { DependencyGraph, getOpenAPISchemaDependencyGraph } from "./openapi/getOpenAPISchemaDependencyGraph";
 import { getDeepSchemaRefObjs, getSchemaRefObjs } from "./openapi/getSchemaRefObjs";
 import { ZodSchema } from "./zod/ZodSchema.class";
+import { resolveExtractedEnumZodSchemaNames } from "./zod/enumExtraction/resolveExtractedEnumZodSchemaNames";
+import { resolveExtractedEnumZodSchemaTags } from "./zod/enumExtraction/resolveExtractedEnumZodSchemaTags";
+import { updateExtractedEnumZodSchemaData } from "./zod/enumExtraction/updateExtractedEnumZodSchemaData";
 import { getEnumZodSchemasFromOpenAPIDoc } from "./zod/getZodSchemasFromOpenAPIDoc";
-import {
-  resolveExtractedEnumZodSchemaNames,
-  resolveExtractedEnumZodSchemaTags,
-  updateExtractedEnumZodSchemaData,
-} from "./zod/updateExtractedEnumZodSchemaData";
 
 interface SchemaData {
   ref: string;
   name: string;
   zodSchemaName: string;
   tags: string[];
+  deepRefOperations: OperationObject[];
 }
 
 interface ZodSchemaData {
@@ -108,6 +112,10 @@ export class SchemaResolver {
 
   getSchemaByRef(ref: string) {
     return this.docSchemas[getSchemaNameByRef(ref)] as OpenAPIV3.SchemaObject;
+  }
+
+  getSchemaDataByName(name: string) {
+    return this.schemaData.find((data) => data.name === name);
   }
 
   getZodSchemaNameByRef(ref: string) {
@@ -284,17 +292,20 @@ export class SchemaResolver {
       const correctRef = autocorrectRef(ref);
       const name = getSchemaNameByRef(correctRef);
       const zodSchemaName = getZodSchemaName(name, this.options.schemaSuffix);
-      this.schemaData.push({ ref: correctRef, name, zodSchemaName, tags: [] });
+      this.schemaData.push({ ref: correctRef, name, zodSchemaName, tags: [], deepRefOperations: [] });
     });
 
     for (const path in this.openApiDoc.paths) {
+      if (isPathExcluded(path, this.options)) {
+        continue;
+      }
+
       const pathItemObj = this.openApiDoc.paths[path] as OpenAPIV3.PathItemObject;
 
       const pathItem = pick(pathItemObj, ALLOWED_METHODS);
       for (const method in pathItem) {
         const operation = pathItem[method as keyof typeof pathItem] as OperationObject | undefined;
-
-        if (!operation || (operation.deprecated && !this.options.withDeprecatedEndpoints)) {
+        if (!operation || isOperationExcluded(operation, this.options)) {
           continue;
         }
 
@@ -380,6 +391,7 @@ export class SchemaResolver {
           const schemaData = this.getSchemaDataByRef(schemaRef);
           if (schemaData) {
             schemaData.tags.push(tag);
+            schemaData.deepRefOperations.push(operation);
           }
         });
       }
