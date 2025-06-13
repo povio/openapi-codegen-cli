@@ -133,3 +133,20 @@ export class ParentDto {
   nested: NestedDto;
 }
 ```
+
+```ts
+export class NestedDto {
+  @ApiProperty()
+  @Expose()
+  name: string;
+}
+
+export class ParentDto {
+  @ApiProperty({ type: NestedDto, isArray: true })
+  @Expose()
+  @ValidateNested({ each: true })
+  @Type(() => NestedDto)
+  @IsArray()
+  nestedList: NestedDto[];
+}
+```
