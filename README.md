@@ -92,3 +92,76 @@ yarn build
 yarn start --help
 yarn start:dist generate --input ./test/petstore.yaml --verbose
 ```
+## Common Issues
+
+### Enums
+
+If you're using Enums in your backend DTOs with `@Expose()` and `@IsEnum`, they may still not appear correctly in the OpenAPI schema unless you also provide both `enum` **and** `enumName` to `@ApiProperty`.
+
+```ts
+enum Status {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+}
+
+export class ExampleDto {
+  @ApiProperty({ enum: Status, enumName: 'Status' })
+  @Expose()
+  @IsEnum(Status)
+  status: Status;
+}
+```
+
+```ts
+enum Status {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+}
+
+export class ExampleDto {
+  @ApiProperty({ enum: Status, enumName: 'Status', isArray: true })
+  @Expose()
+  @IsEnum(Status, { each: true })
+  @IsArray()
+  status: Status[];
+}
+```
+---
+
+### Nested objects
+
+When using nested DTOs, ensure you explicitly specify the type using `@ApiProperty({ type: NestedDto })`:
+
+```ts
+export class NestedDto {
+  @ApiProperty()
+  @Expose()
+  name: string;
+}
+
+export class ParentDto {
+  @ApiProperty({ type: NestedDto })
+  @Expose()
+  @ValidateNested()
+  @Type(() => NestedDto)
+  @IsObject()
+  nested: NestedDto;
+}
+```
+
+```ts
+export class NestedDto {
+  @ApiProperty()
+  @Expose()
+  name: string;
+}
+
+export class ParentDto {
+  @ApiProperty({ type: NestedDto, isArray: true })
+  @Expose()
+  @ValidateNested({ each: true })
+  @Type(() => NestedDto)
+  @IsArray()
+  nestedList: NestedDto[];
+}
+```
