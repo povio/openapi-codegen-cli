@@ -94,7 +94,7 @@ yarn start:dist generate --input ./test/petstore.yaml --verbose
 ```
 ## Common Issues
 
-### 1. Enums Not Recognized in Generated Schema
+### 1. Enums
 
 If you're using Enums in your backend DTOs with `@Expose()` and `@IsEnum`, they may still not appear correctly in the OpenAPI schema unless you also provide both `enum` **and** `enumName` to `@ApiProperty`.
 
@@ -115,7 +115,7 @@ export class ExampleDto {
 ```
 ---
 
-### 2. Nested Objects Missing in Schema
+### 2. Nested objects
 
 When using nested DTOs, ensure you explicitly specify the type using `@ApiProperty({ type: NestedDto })`:
 
