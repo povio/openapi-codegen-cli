@@ -111,6 +111,21 @@ export class ExampleDto {
   status: Status;
 }
 ```
+
+```ts
+enum Status {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+}
+
+export class ExampleDto {
+  @ApiProperty({ enum: Status, enumName: 'Status', isArray: true })
+  @Expose()
+  @IsEnum(Status, { each: true })
+  @IsArray()
+  status: Status[];
+}
+```
 ---
 
 ### Nested objects
