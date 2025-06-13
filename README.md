@@ -94,11 +94,9 @@ yarn start:dist generate --input ./test/petstore.yaml --verbose
 ```
 ## Common Issues
 
-### 1. Enums
+### Enums
 
 If you're using Enums in your backend DTOs with `@Expose()` and `@IsEnum`, they may still not appear correctly in the OpenAPI schema unless you also provide both `enum` **and** `enumName` to `@ApiProperty`.
-
-**Correct usage:**
 
 ```ts
 enum Status {
@@ -115,11 +113,9 @@ export class ExampleDto {
 ```
 ---
 
-### 2. Nested objects
+### Nested objects
 
 When using nested DTOs, ensure you explicitly specify the type using `@ApiProperty({ type: NestedDto })`:
-
-**Correct usage:**
 
 ```ts
 export class NestedDto {
