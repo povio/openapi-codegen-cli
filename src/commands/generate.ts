@@ -1,6 +1,7 @@
 import SwaggerParser from "@apidevtools/swagger-parser";
 import { exec } from "child_process";
 import { OpenAPIV3 } from "openapi-types";
+import { TEMPLATE_IMPORTS } from "src/generators/const/deps.const";
 import { generateCodeFromOpenAPIDoc } from "src/generators/generateCodeFromOpenAPIDoc";
 import { GenerateOptions } from "src/generators/types/options";
 import { writeGenerateFileData } from "src/generators/utils/file.utils";
@@ -8,6 +9,7 @@ import { logError, logInfo, logSuccess } from "src/helpers/cli.helper";
 
 export type GenerateParams = {
   excludeTags: string;
+  monorepo: boolean;
   prettier: boolean;
   verbose: boolean;
 } & Pick<
@@ -28,7 +30,7 @@ export type GenerateParams = {
   | "invalidateQueryOptions"
 >;
 
-export async function generate({ input, excludeTags, prettier, verbose, ...params }: GenerateParams) {
+export async function generate({ input, excludeTags, monorepo, prettier, verbose, ...params }: GenerateParams) {
   const start = Date.now();
 
   if (verbose) {
@@ -42,9 +44,12 @@ export async function generate({ input, excludeTags, prettier, verbose, ...param
   if (verbose) {
     logInfo("Generating code...");
   }
+  const template = monorepo ? "monorepoTemplate" : "template";
   const filesData = generateCodeFromOpenAPIDoc(openApiDoc, {
     input,
     excludeTags: excludeTags.split(","),
+    restClientImportPath: TEMPLATE_IMPORTS.appRestClient[template],
+    queryTypesImportPath: TEMPLATE_IMPORTS.queryTypes[template],
     ...params,
   });
   if (verbose) {
