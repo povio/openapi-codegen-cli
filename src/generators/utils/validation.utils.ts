@@ -18,8 +18,11 @@ export function getMissingPathParameterError(params: EndpointParameter[], path: 
   };
 }
 
-export function getNotAllowedInlineEnumError(message: string): ValidationError {
-  return { type: "not-allowed-inline-enum", message };
+export function getNotAllowedInlineEnumError(enumProperty: string): ValidationError {
+  return {
+    type: "not-allowed-inline-enum",
+    message: `${enumProperty} is missing @IsEnum() and @ApiProperty(enum:, enumName:)`,
+  };
 }
 
 export function getNotAllowedCircularSchemaError(message: string): ValidationError {
