@@ -6,6 +6,8 @@ import { iterateSchema, OnSchemaCallbackData } from "../../openapi/iterateSchema
 import { SchemaResolver } from "../../SchemaResolver.class";
 import { getEnumZodSchemaCode } from "../getZodSchema";
 
+type SchemaInfo = { schemaRef: string; schemaInfo?: string } | { schemaRef?: string; schemaInfo: string };
+
 export function updateExtractedEnumZodSchemaData({
   schema,
   nameSegments = [],
@@ -14,12 +16,10 @@ export function updateExtractedEnumZodSchemaData({
 }: {
   resolver: SchemaResolver;
   schema: OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject | undefined;
-  schemaRef?: string;
-  schemaInfo?: string;
   tags: string[];
   nameSegments?: string[];
   includeSelf?: boolean;
-}) {
+} & SchemaInfo) {
   if (includeSelf) {
     handleExtractedEnumZodSchemaDataUpdate({ schema, nameSegments, ...params });
   }
@@ -48,11 +48,9 @@ function handleExtractedEnumZodSchemaDataUpdate({
 }: {
   resolver: SchemaResolver;
   schema: OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject | undefined;
-  schemaRef?: string;
-  schemaInfo?: string;
   tags: string[];
   nameSegments?: string[];
-}) {
+} & SchemaInfo) {
   if (!schema || isReferenceObject(schema) || !schema.enum) {
     return;
   }
@@ -79,8 +77,8 @@ function handleExtractedEnumZodSchemaDataUpdate({
   resolver.validationErrors.push(
     getNotAllowedInlineEnumError(
       schemaRef
-        ? `Schema ${getSchemaNameByRef(schemaRef)} property ${nameSegments[nameSegments.length - 1]}`
-        : schemaInfo ?? nameSegments.join("->"),
+        ? `${getSchemaNameByRef(schemaRef)}.${nameSegments[nameSegments.length - 1]}`
+        : schemaInfo ?? nameSegments.join("."),
     ),
   );
 }
