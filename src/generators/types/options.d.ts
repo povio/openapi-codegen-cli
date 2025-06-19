@@ -13,11 +13,13 @@ interface ZodGenerateOptions {
 }
 
 interface EndpointsGenerateOptions {
+  restClientImportPath: string;
   withDeprecatedEndpoints?: boolean;
   removeOperationPrefixEndingWith?: string;
 }
 
 interface QueriesGenerateOptions {
+  queryTypesImportPath: string;
   axiosRequestConfig?: boolean;
   infiniteQueries?: boolean;
   invalidateQueryOptions?: boolean;

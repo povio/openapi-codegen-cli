@@ -1,6 +1,6 @@
 # OpenAPI code generation CLI
 
-**NOTE:** This CLI tool is primarily designed for use within our organization. The generated code output aligns with our internal template. If you are using this tool without our internal template, make sure to use it in standalone mode.
+**NOTE:** This CLI tool is primarily designed for use within our organization. The generated code output aligns with our internal template. If you are using this tool without our internal template, make sure to use it in **standalone** mode.
 
 Use this tool to generate code (Zod schemas, TypeScript types, API definitions, and React queries) from an OpenAPI v3 specification. API definitions are generated to use a REST client wrapper that utilizes Axios. React queries are generated in alignment with our code standards, without the need for explicit types.
 
@@ -53,6 +53,9 @@ yarn openapi-codegen generate --input http://localhost:3001/docs-json --standalo
 
   --standalone                        Generate any missing supporting classes/types, e.g., REST client class, React Query type extensions, etc. (default: false)
   --baseUrl                           (Requires `--standalone`) Base URL for the REST client; falls back to the OpenAPI spec if not provided
+
+  # Command args designed specifically for use within our organization
+  --monorepo                         Configure output structure and imports adjusted for monorepo architecture
 ```
 
 #### Check command (checks if OpenAPI spec is compliant)
@@ -92,6 +95,7 @@ yarn build
 yarn start --help
 yarn start:dist generate --input ./test/petstore.yaml --verbose
 ```
+
 ## Common Issues
 
 ### Enums
@@ -100,12 +104,12 @@ If you're using Enums in your backend DTOs with `@Expose()` and `@IsEnum`, they 
 
 ```ts
 enum Status {
-  ACTIVE = 'active',
-  INACTIVE = 'inactive',
+  ACTIVE = "active",
+  INACTIVE = "inactive",
 }
 
 export class ExampleDto {
-  @ApiProperty({ enum: Status, enumName: 'Status' })
+  @ApiProperty({ enum: Status, enumName: "Status" })
   @Expose()
   @IsEnum(Status)
   status: Status;
@@ -114,18 +118,19 @@ export class ExampleDto {
 
 ```ts
 enum Status {
-  ACTIVE = 'active',
-  INACTIVE = 'inactive',
+  ACTIVE = "active",
+  INACTIVE = "inactive",
 }
 
 export class ExampleDto {
-  @ApiProperty({ enum: Status, enumName: 'Status', isArray: true })
+  @ApiProperty({ enum: Status, enumName: "Status", isArray: true })
   @Expose()
   @IsEnum(Status, { each: true })
   @IsArray()
   status: Status[];
 }
 ```
+
 ---
 
 ### Nested objects

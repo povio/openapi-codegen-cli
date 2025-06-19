@@ -3,8 +3,6 @@ import {
   STANDALONE_APP_REST_CLIENT_FILE,
   STANDALONE_ASSETS,
   StandaloneAssetEnum,
-  TEMPLATE_IMPORT_PATH_APP_REST_CLIENT,
-  TEMPLATE_IMPORT_PATH_QUERY_TYPES,
   ZOD_EXTENDED_FILE,
 } from "src/generators/const/deps.const";
 import { GenerateFile, GenerateType } from "../../types/generate";
@@ -54,14 +52,14 @@ export const getNamespaceName = ({
 
 export function getAppRestClientImportPath(options: GenerateOptions) {
   if (!options.standalone) {
-    return TEMPLATE_IMPORT_PATH_APP_REST_CLIENT;
+    return options.restClientImportPath;
   }
   return `${getImportPath(options)}${STANDALONE_APP_REST_CLIENT_FILE.fileName}`;
 }
 
 export function getQueryTypesImportPath(options: GenerateOptions) {
   if (!options.standalone) {
-    return TEMPLATE_IMPORT_PATH_QUERY_TYPES;
+    return options.queryTypesImportPath;
   }
   return `${getImportPath(options)}${STANDALONE_ASSETS[StandaloneAssetEnum.ReactQueryTypes].fileName}`;
 }

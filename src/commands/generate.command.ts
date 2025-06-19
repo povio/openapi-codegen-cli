@@ -72,6 +72,9 @@ class GenerateOptions implements GenerateParams {
   @YargOption({ envAlias: "axiosRequestConfig", default: DEFAULT_GENERATE_OPTIONS.axiosRequestConfig, type: "boolean" })
   axiosRequestConfig!: boolean;
 
+  @YargOption({ envAlias: "monorepo", default: false, type: "boolean" })
+  monorepo!: boolean;
+
   @YargOption({ envAlias: "prettier", default: true, type: "boolean" })
   prettier!: boolean;
 

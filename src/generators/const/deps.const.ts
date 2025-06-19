@@ -12,8 +12,16 @@ export const QUERY_OPTIONS_TYPES = {
 export const TEMPLATE_DATA_FILE_PATH = "src/data";
 export const TEMPLATE_DATA_TS_PATH = "@/data";
 
-export const TEMPLATE_IMPORT_PATH_APP_REST_CLIENT = "@/util/rest/clients/app-rest-client";
-export const TEMPLATE_IMPORT_PATH_QUERY_TYPES = "@/types/react-query";
+export const TEMPLATE_IMPORTS: Record<string, { template: string; monorepoTemplate: string }> = {
+  appRestClient: {
+    template: "@/util/rest/clients/app-rest-client",
+    monorepoTemplate: "@/data/app-rest-client",
+  },
+  queryTypes: {
+    template: "@/types/react-query",
+    monorepoTemplate: "@povio/utils/types/react-query",
+  },
+};
 
 // Standalone
 export enum StandaloneAssetEnum {

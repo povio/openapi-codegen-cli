@@ -1,5 +1,6 @@
 import { GenerateType } from "../types/generate";
 import { GenerateOptions } from "../types/options";
+import { TEMPLATE_IMPORTS } from "./deps.const";
 import { ENUM_SUFFIX, SCHEMA_SUFFIX } from "./zod.const";
 
 export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
@@ -40,8 +41,10 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   extractEnums: true,
   replaceOptionalWithNullish: false,
   // Endpoints options
+  restClientImportPath: TEMPLATE_IMPORTS.appRestClient.template,
   removeOperationPrefixEndingWith: "Controller_",
   // Queries options
+  queryTypesImportPath: TEMPLATE_IMPORTS.queryTypes.template,
   axiosRequestConfig: false,
   infiniteQueries: false,
   invalidateQueryOptions: true,
