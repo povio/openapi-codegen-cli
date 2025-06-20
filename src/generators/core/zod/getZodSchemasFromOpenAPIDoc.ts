@@ -8,7 +8,10 @@ export function getZodSchemasFromOpenAPIDoc(resolver: SchemaResolver) {
 
   Object.entries(resolver.openApiDoc.components?.schemas ?? {}).forEach(([name, schema]) => {
     const schemaData = resolver.getSchemaDataByName(name);
-    if (resolver.options.excludeRedundantZodSchemas && (!schemaData || schemaData.deepRefOperations.length === 0)) {
+    if (
+      resolver.options.excludeRedundantZodSchemas &&
+      (!schemaData || (schemaData.deepRefOperations.length === 0 && schemaData.tags.length === 0))
+    ) {
       return;
     }
 

@@ -427,7 +427,7 @@ export class SchemaResolver {
       }
 
       const duplicate = this.extractedEnumZodSchemaData.find(({ code }) => code === duplicateCode);
-      if (!duplicate) {
+      if (!duplicate || this.getEnumZodSchemaDataByCode(duplicate.code)?.zodSchemaName !== schemaData.zodSchemaName) {
         return;
       }
 

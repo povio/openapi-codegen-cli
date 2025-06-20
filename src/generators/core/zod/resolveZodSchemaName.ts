@@ -61,5 +61,9 @@ export function resolveZodSchemaName({
     return result;
   }
 
+  if (zodSchema.ref) {
+    return resolver.getZodSchemaNameByRef(zodSchema.ref);
+  }
+
   throw new Error(`Invalid ref: ${zodSchema.ref}`);
 }
