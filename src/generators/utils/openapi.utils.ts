@@ -95,7 +95,7 @@ export function isErrorStatus(status: number) {
 }
 
 export function isMediaTypeAllowed(mediaType: string) {
-  return ["application/json", "application/pdf"].includes(mediaType);
+  return mediaType.startsWith("application/");
 }
 
 const PATH_PARAM_WITH_BRACKETS_REGEX = /({\w+})/g;
