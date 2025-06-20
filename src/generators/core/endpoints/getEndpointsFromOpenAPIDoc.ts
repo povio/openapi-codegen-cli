@@ -160,7 +160,7 @@ export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver) {
         if (responseZodSchema) {
           const status = Number(statusCode);
 
-          if (isMainResponseStatus(status)) {
+          if (isMainResponseStatus(status) && !endpoint.response) {
             endpoint.response = responseZodSchema;
             endpoint.responseObject = responseObj;
             endpoint.responseDescription = responseObj.description;

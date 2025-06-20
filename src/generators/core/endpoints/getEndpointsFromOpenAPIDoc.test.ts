@@ -1490,7 +1490,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         requestFormat: "application/json",
         response: "z.string()",
         responseDescription: "Successful operation",
-        responseFormat: "application/json",
+        responseFormat: "application/xml",
         responseObject: {
           content: {
             "application/json": { schema: { type: "string" } },
