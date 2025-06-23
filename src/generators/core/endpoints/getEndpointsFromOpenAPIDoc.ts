@@ -11,6 +11,7 @@ import {
   getInvalidStatusCodeError,
   getMissingPathParameterError,
   getMissingStatusCodeError,
+  getMultipleSuccessStatusCodesError,
 } from "src/generators/utils/validation.utils";
 import { getResponseZodSchemaName } from "src/generators/utils/zod-schema.utils";
 import { Endpoint, EndpointParameter } from "../../types/endpoint";
@@ -29,6 +30,7 @@ import { resolveZodSchemaName } from "../zod/resolveZodSchemaName";
 import { getEndpointAcl } from "./getEndpointAcl";
 import { getEndpointBody } from "./getEndpointBody";
 import { getEndpointParameter } from "./getEndpointParameter";
+import { HttpStatusCode } from "src/generators/const/validation.const";
 
 export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver) {
   const endpoints = [];
@@ -176,6 +178,13 @@ export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver) {
 
       if (!endpoint.response) {
         endpoint.response = VOID_SCHEMA;
+      }
+
+      const mainStatusCodes = Object.keys(operation.responses).map(Number).filter(isMainResponseStatus);
+      if (mainStatusCodes.length > 1) {
+        resolver.validationErrors.push(
+          getMultipleSuccessStatusCodesError(mainStatusCodes.map(String) as HttpStatusCode[], operation, endpoint),
+        );
       }
 
       endpoint.acl = getEndpointAcl({ resolver, endpoint, operation });

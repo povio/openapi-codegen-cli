@@ -62,6 +62,17 @@ export function getInvalidStatusCodeError(
   };
 }
 
+export function getMultipleSuccessStatusCodesError(
+  statusCodes: HttpStatusCode[],
+  operation: OperationObject,
+  endpoint: Endpoint,
+): ValidationError {
+  return {
+    type: "multiple-success-status-codes",
+    message: `Operation ${getOperationDescriptor(operation, endpoint)} has multiple success HTTP status codes: ${statusCodes.map(getStatusCodeDescription).join(", ")}`,
+  };
+}
+
 function getOperationDescriptor(operation: OperationObject, endpoint: Endpoint) {
   return operation.operationId ?? `${endpoint.method} ${endpoint.path}`;
 }
