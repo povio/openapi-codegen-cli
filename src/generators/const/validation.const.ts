@@ -62,4 +62,5 @@ export const VALIDATION_ERROR_TYPE_TITLE: Record<ValidationErrorType, string> = 
   "missing-acl-condition-property": "Missing x-acl Condition Properties",
   "missing-status-code": "Missing HTTP Status Codes",
   "invalid-status-code": "Invalid HTTP Status Codes",
+  "multiple-success-status-codes": "Multiple Success HTTP Status Codes",
 };
