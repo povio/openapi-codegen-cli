@@ -15,6 +15,7 @@ import { generateEndpoints } from "./generate/generateEndpoints";
 import { generateInvalidateQueries } from "./generate/generateInvalidateQueries";
 import { generateModels } from "./generate/generateModels";
 import { generateQueries } from "./generate/generateQueries";
+import { generateZod } from "./generate/generateZod";
 import { GenerateData, GenerateFileData, GenerateType, GenerateTypeParams } from "./types/generate";
 import { GenerateOptions } from "./types/options";
 import { getOutputFileName, readAssetSync } from "./utils/file.utils";
@@ -76,11 +77,14 @@ export function generateCodeFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, cliOp
   }
 
   if (hasZodExtendedFile(data)) {
-    const fileName = getFileNameWithExtension(ZOD_EXTENDED_FILE);
-    generateFilesData.push({
-      content: readAssetSync(fileName),
-      fileName: getOutputFileName({ output: resolver.options.output, fileName }),
-    });
+    const zodContent = generateZod(resolver);
+    if (zodContent) {
+      const fileName = getOutputFileName({
+        output: options.output,
+        fileName: getFileNameWithExtension(ZOD_EXTENDED_FILE),
+      });
+      generateFilesData.push({ fileName, content: zodContent });
+    }
   }
 
   return generateFilesData;

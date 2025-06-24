@@ -1,0 +1,40 @@
+/* eslint-disable no-useless-escape */
+{{! Zod import }}
+{{{genImport zodImport}}}
+{{! Error handling import }}
+{{{genImport errorHandlingImport}}}
+
+export const {{zodExtension}} = {
+  {{sortingString}}: (enumSchema: z.ZodEnum<[string, ...string[]]>) =>
+    z
+      .string()
+      .optional()
+      .superRefine((arg, ctx) => {
+        if (!isSortingStringValid(enumSchema, arg)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Invalid sorting string.",
+          });
+        }
+      }),
+  {{parse}},
+};
+
+function isSortingStringValid(enumSchema: z.ZodEnum<[string, ...string[]]>, data?: string) {
+  if (data === undefined || data === "" || enumSchema.options.length === 0) {
+    return true;
+  }
+
+  const prefixedEnumOptions = `([+-]?(${enumSchema.options.join("|")}))`;
+  const commaSeparatedOptions = `(${prefixedEnumOptions})(\s*,\s*${prefixedEnumOptions})*`;
+  return new RegExp(`^${commaSeparatedOptions}$`).test(data);
+}
+
+function {{parse}}(schema: z.ZodSchema, data: unknown, errorHandler?: {{errorHandler}}<never>) {
+  try {
+    return schema.parse(data);
+  } catch (e: unknown) {
+    (errorHandler ?? {{sharedErrorHandler}}).rethrowError(e);
+    throw e;
+  }
+}

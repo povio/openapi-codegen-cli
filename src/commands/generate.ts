@@ -49,6 +49,7 @@ export async function generate({ input, excludeTags, monorepo, prettier, verbose
     input,
     excludeTags: excludeTags.split(","),
     restClientImportPath: TEMPLATE_IMPORTS.appRestClient[template],
+    errorHandlingImportPath: TEMPLATE_IMPORTS.errorHandling[template],
     queryTypesImportPath: TEMPLATE_IMPORTS.queryTypes[template],
     ...params,
   });

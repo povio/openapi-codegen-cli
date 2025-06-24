@@ -89,6 +89,7 @@ function registerGenerateEndpointParamSortingHelper() {
       paramName,
       zodExtended: ZOD_EXTENDED.name,
       sortingString: ZOD_EXTENDED.properties.sortingString,
+      parse: ZOD_EXTENDED.properties.parse,
     }),
   );
 }

@@ -14,6 +14,7 @@ interface ZodGenerateOptions {
 
 interface EndpointsGenerateOptions {
   restClientImportPath: string;
+  errorHandlingImportPath: string;
   withDeprecatedEndpoints?: boolean;
   removeOperationPrefixEndingWith?: string;
 }

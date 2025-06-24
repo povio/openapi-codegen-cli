@@ -42,6 +42,7 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   replaceOptionalWithNullish: false,
   // Endpoints options
   restClientImportPath: TEMPLATE_IMPORTS.appRestClient.template,
+  errorHandlingImportPath: TEMPLATE_IMPORTS.errorHandling.template,
   removeOperationPrefixEndingWith: "Controller_",
   // Queries options
   queryTypesImportPath: TEMPLATE_IMPORTS.queryTypes.template,

@@ -1,4 +1,4 @@
-import { GenerateFile } from "../types/generate";
+import { GenerateFile, Import } from "../types/generate";
 
 export const APP_REST_CLIENT_NAME = "AppRestClient";
 
@@ -21,6 +21,19 @@ export const TEMPLATE_IMPORTS: Record<string, { template: string; monorepoTempla
     template: "@/types/react-query",
     monorepoTemplate: "@povio/utils/types/react-query",
   },
+  errorHandling: {
+    template: "@/util/vendor/error-handling",
+    monorepoTemplate: "@povio/utils/vendor/error-handling",
+  },
+};
+
+export const ERROR_HANDLERS = {
+  ErrorHandler: "ErrorHandler",
+  SharedErrorHandler: "SharedErrorHandler",
+};
+export const ERROR_HANDLING_IMPORT: Import = {
+  bindings: [ERROR_HANDLERS.ErrorHandler, ERROR_HANDLERS.SharedErrorHandler],
+  from: "@/util/vendor/error-handling",
 };
 
 // Standalone
@@ -48,9 +61,10 @@ export const INVALIDATE_QUERY_OPTIONS_FILE: GenerateFile = { fileName: "invalida
 
 // ZodExtended
 export const ZOD_EXTENDED = {
-  name: "zodExtended",
+  name: "zod",
   properties: {
     sortingString: "sortingString",
+    parse: "parse",
   },
 };
-export const ZOD_EXTENDED_FILE: GenerateFile = { fileName: "zodExtended", extension: "ts" };
+export const ZOD_EXTENDED_FILE: GenerateFile = { fileName: "zod", extension: "ts" };
