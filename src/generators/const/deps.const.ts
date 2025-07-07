@@ -15,7 +15,7 @@ export const TEMPLATE_DATA_TS_PATH = "@/data";
 export const TEMPLATE_IMPORTS: Record<string, { template: string; monorepoTemplate: string }> = {
   appRestClient: {
     template: "@/util/rest/clients/app-rest-client",
-    monorepoTemplate: "@/data/app-rest-client",
+    monorepoTemplate: "@/clients/app-rest-client",
   },
   queryTypes: {
     template: "@/types/react-query",
