@@ -27,7 +27,7 @@ export type GenerateParams = {
   | "replaceOptionalWithNullish"
   | "infiniteQueries"
   | "axiosRequestConfig"
-  | "invalidateQueryOptions"
+  | "mutationEffects"
 >;
 
 export async function generate({ input, excludeTags, monorepo, prettier, verbose, ...params }: GenerateParams) {

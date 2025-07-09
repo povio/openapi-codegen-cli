@@ -2,7 +2,7 @@ import { GenerateType, GenerateTypeParams } from "../types/generate";
 import { getNamespaceName } from "../utils/generate/generate.utils";
 import { getHbsTemplateDelegate } from "../utils/hbs/hbs-template.utils";
 
-export function generateInvalidateQueries({ resolver, data }: Omit<GenerateTypeParams, "tag">) {
+export function generateQueryModules({ resolver, data }: Omit<GenerateTypeParams, "tag">) {
   const modules: { tag: string; namespace: string }[] = [];
 
   data.forEach((_, tag) => {
@@ -17,7 +17,7 @@ export function generateInvalidateQueries({ resolver, data }: Omit<GenerateTypeP
     });
   });
 
-  const hbsTemplate = getHbsTemplateDelegate(resolver, "invalidate-queries");
+  const hbsTemplate = getHbsTemplateDelegate(resolver, "query-modules");
 
   return hbsTemplate({ modules });
 }

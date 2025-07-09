@@ -63,11 +63,11 @@ class GenerateOptions implements GenerateParams {
   infiniteQueries!: boolean;
 
   @YargOption({
-    envAlias: "invalidateQueryOptions",
-    default: DEFAULT_GENERATE_OPTIONS.invalidateQueryOptions,
+    envAlias: "mutationEffects",
+    default: DEFAULT_GENERATE_OPTIONS.mutationEffects,
     type: "boolean",
   })
-  invalidateQueryOptions!: boolean;
+  mutationEffects!: boolean;
 
   @YargOption({ envAlias: "axiosRequestConfig", default: DEFAULT_GENERATE_OPTIONS.axiosRequestConfig, type: "boolean" })
   axiosRequestConfig!: boolean;

@@ -1,5 +1,6 @@
 import {
-  INVALIDATE_QUERY_OPTIONS_FILE,
+  MUTATION_EFFECTS_FILE,
+  QUERY_MODULES_FILE,
   STANDALONE_APP_REST_CLIENT_FILE,
   STANDALONE_ASSETS,
   StandaloneAssetEnum,
@@ -64,8 +65,12 @@ export function getQueryTypesImportPath(options: GenerateOptions) {
   return `${getImportPath(options)}${STANDALONE_ASSETS[StandaloneAssetEnum.ReactQueryTypes].fileName}`;
 }
 
-export function getInvalidateQueriesImportPath(options: GenerateOptions) {
-  return `${getImportPath(options)}${INVALIDATE_QUERY_OPTIONS_FILE.fileName}`;
+export function getQueryModulesImportPath(options: GenerateOptions) {
+  return `${getImportPath(options)}${QUERY_MODULES_FILE.fileName}`;
+}
+
+export function getMutationEffectsImportPath(options: GenerateOptions) {
+  return `${getImportPath(options)}${MUTATION_EFFECTS_FILE.fileName}`;
 }
 
 export function getZodExtendedImportPath(options: GenerateOptions) {

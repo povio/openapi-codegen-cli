@@ -1,8 +1,9 @@
 {{! Js docs }}
 {{{genQueryJsDocs endpoint mutation=true}}}
 {{! Mutation definition}}
-export const {{queryName endpoint mutation=true}} = (options?: AppMutationOptions<typeof {{importedEndpointName endpoint}}, { {{{genEndpointParams endpoint includeFileParam=true}}} }>{{#if hasInvalidateQueryOptions}} & {{invalidateQueryOptionsType}}{{/if}}{{#if hasAxiosRequestConfig}}, {{axiosRequestConfigName}}?: {{axiosRequestConfigType}}{{/if}}) => {
-  {{#if hasInvalidateQueryOptions}} const queryClient = useQueryClient();{{/if}}
+export const {{queryName endpoint mutation=true}} = (options?: AppMutationOptions<typeof {{importedEndpointName endpoint}}, { {{{genEndpointParams endpoint includeFileParam=true}}} }>{{#if hasMutationEffects}} & {{mutationEffectsType}}{{/if}}{{#if hasAxiosRequestConfig}}, {{axiosRequestConfigName}}?: {{axiosRequestConfigType}}{{/if}}) => {
+  {{! Use mutation effects }}
+  {{#if hasMutationEffects}}const { runMutationEffects } = useMutationEffects({ currentModule: {{queriesModuleName}} });{{/if}}
 
   return {{queryHook}}({
     mutationFn: {{#if endpoint.mediaUpload}}async {{/if}}({{#if (endpointParams endpoint includeFileParam=true)}} { {{{endpointArgs endpoint includeFileParam=true}}} } {{/if}}) => {{#if endpoint.mediaUpload}} {
@@ -18,11 +19,15 @@ export const {{queryName endpoint mutation=true}} = (options?: AppMutationOption
 
       return uploadInstructions;
     }{{/if}},
-    ...options, {{#if hasInvalidateQueryOptions}}
-    onSuccess: (...args) => {
-      {{! Invalidation }}
-      invalidateQueries(queryClient, {{queriesModuleName}}, options);
-      options?.onSuccess?.(...args);
+    ...options, {{#if hasMutationEffects}}
+    onSuccess: async (resData, variables, context) => {
+      {{! Mutation effects }}
+      {{#if updateQueryEndpoints}}
+      const { {{endpointArgs endpoint includeOnlyRequiredParams=true excludeBodyParam=true}} } = variables;
+      const updateKeys = [{{#each updateQueryEndpoints as | endpoint |}}keys.{{endpointName endpoint}}({{{endpointArgs endpoint includeOnlyRequiredParams=true}}}), {{/each}}];
+      {{/if}}
+      await runMutationEffects(resData, options{{#if updateQueryEndpoints}}, updateKeys{{/if}});
+      options?.onSuccess?.(resData, variables, context);
     },{{/if}}
   });
 };

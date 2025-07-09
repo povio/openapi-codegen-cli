@@ -1,13 +1,17 @@
 import Handlebars from "handlebars";
 import { CASL_ABILITY_BINDING } from "src/generators/const/acl.const";
-import { INVALIDATE_QUERIES, ZOD_EXTENDED } from "src/generators/const/deps.const";
+import { MUTATION_EFFECTS, ZOD_EXTENDED } from "src/generators/const/deps.const";
 import { AXIOS_REQUEST_CONFIG_NAME, AXIOS_REQUEST_CONFIG_TYPE } from "src/generators/const/endpoints.const";
 import { BLOB_SCHEMA } from "src/generators/const/zod.const";
 import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
 import { INFINITE_QUERY_RESPONSE_PARAMS, QUERIES_MODULE_NAME, QUERY_HOOKS } from "../../const/queries.const";
 import { Endpoint } from "../../types/endpoint";
 import { GenerateZodSchemaData, Import } from "../../types/generate";
-import { getEndpointConfig, mapEndpointParamsToFunctionParams } from "../generate/generate.endpoints.utils";
+import {
+  getEndpointConfig,
+  getUpdateQueryEndpoints,
+  mapEndpointParamsToFunctionParams,
+} from "../generate/generate.endpoints.utils";
 import { getHbsPartialTemplateDelegate } from "../hbs/hbs-template.utils";
 import { isInfiniteQuery, isMutation, isQuery } from "../query.utils";
 
@@ -72,6 +76,7 @@ function registerGenerateEndpointConfigHelper(resolver: SchemaResolver) {
     if (Object.keys(endpointConfig).length === 0) {
       return hasAxiosRequestConfig ? AXIOS_REQUEST_CONFIG_NAME : "";
     }
+
     return getHbsPartialTemplateDelegate("endpoint-config")({
       endpointConfig,
       hasAxiosRequestConfig,
@@ -99,6 +104,7 @@ function registerGenerateQueryKeysHelper(resolver: SchemaResolver) {
     if (queryEndpoints.length === 0) {
       return "";
     }
+
     return getHbsPartialTemplateDelegate("query-keys")({
       queryEndpoints,
       queriesModuleName: QUERIES_MODULE_NAME,
@@ -127,10 +133,12 @@ function registerGenerateQueryHelper(resolver: SchemaResolver) {
 }
 
 function registerGenerateMutationHelper(resolver: SchemaResolver) {
-  Handlebars.registerHelper(PartialsHelpers.Mutation, (endpoint: Endpoint) => {
+  Handlebars.registerHelper(PartialsHelpers.Mutation, (endpoint: Endpoint, queryEndpoints: Endpoint[]) => {
     if (!isMutation(endpoint)) {
       return;
     }
+
+    const updateQueryEndpoints = getUpdateQueryEndpoints(endpoint, queryEndpoints);
 
     return getHbsPartialTemplateDelegate("query-use-mutation")({
       endpoint,
@@ -139,8 +147,9 @@ function registerGenerateMutationHelper(resolver: SchemaResolver) {
       hasAxiosRequestConfig: resolver.options.axiosRequestConfig,
       axiosRequestConfigName: AXIOS_REQUEST_CONFIG_NAME,
       axiosRequestConfigType: AXIOS_REQUEST_CONFIG_TYPE,
-      hasInvalidateQueryOptions: resolver.options.invalidateQueryOptions,
-      invalidateQueryOptionsType: INVALIDATE_QUERIES.optionsType,
+      hasMutationEffects: resolver.options.mutationEffects,
+      mutationEffectsType: MUTATION_EFFECTS.optionsType,
+      updateQueryEndpoints,
     });
   });
 }
@@ -173,8 +182,8 @@ function registerGenerateQueryJsDocsHelper(resolver: SchemaResolver) {
         query: options.hash.query,
         mutation: options.hash.mutation,
         infiniteQuery: options.hash.infiniteQuery,
-        hasInvalidateQueryOptions: resolver.options.invalidateQueryOptions,
-        invalidateQueryOptionsType: INVALIDATE_QUERIES.optionsType,
+        hasMutationEffects: resolver.options.mutationEffects,
+        mutationEffectsType: MUTATION_EFFECTS.optionsType,
       }),
   );
 }

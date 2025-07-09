@@ -4,7 +4,7 @@ export const keys = {
     {{endpointName endpoint}}: ({{{genEndpointParams endpoint}}}) => [...keys.all, "{{endpoint.path}}", {{{endpointArgs endpoint}}}] as const,
     {{#if ../generateInfiniteQueries}}
     {{#if (isInfiniteQuery endpoint)}}
-    {{endpointName endpoint}}Infinite: ({{{genEndpointParams endpoint removePageParam=true}}}) => [...keys.all, "{{endpoint.path}}", "infinite", {{{endpointArgs endpoint removePageParam=true}}}] as const,
+    {{endpointName endpoint}}Infinite: ({{{genEndpointParams endpoint excludePageParam=true}}}) => [...keys.all, "{{endpoint.path}}", "infinite", {{{endpointArgs endpoint excludePageParam=true}}}] as const,
     {{/if}}
     {{/if}}
     {{/each}}
