@@ -48,5 +48,5 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   queryTypesImportPath: TEMPLATE_IMPORTS.queryTypes.template,
   axiosRequestConfig: false,
   infiniteQueries: false,
-  invalidateQueryOptions: true,
+  mutationEffects: true,
 };

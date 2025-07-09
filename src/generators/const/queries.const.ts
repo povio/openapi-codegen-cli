@@ -4,10 +4,9 @@ export const QUERY_HOOKS = {
   query: "useQuery",
   infiniteQuery: "useInfiniteQuery",
   mutation: "useMutation",
-  queryClient: "useQueryClient",
 };
 export const QUERY_IMPORT: Import = {
-  bindings: [QUERY_HOOKS.query, QUERY_HOOKS.infiniteQuery, QUERY_HOOKS.mutation, QUERY_HOOKS.queryClient],
+  bindings: [QUERY_HOOKS.query, QUERY_HOOKS.infiniteQuery, QUERY_HOOKS.mutation],
   from: "@tanstack/react-query",
 };
 

@@ -50,14 +50,20 @@ export const STANDALONE_ASSETS: Record<StandaloneAssetEnum, GenerateFile> = {
 
 export const STANDALONE_APP_REST_CLIENT_FILE: GenerateFile = { fileName: "app-rest-client", extension: "ts" };
 
-// InvalidateQueryOptions
+// QueryModules
 export const QUERY_MODULE_ENUM = "QueryModule";
-export const INVALIDATE_QUERIES = {
-  queryModuleEnum: QUERY_MODULE_ENUM,
-  optionsType: "InvalidateQueryOptions",
-  functionName: "invalidateQueries",
+export const QUERY_MODULES_FILE: GenerateFile = { fileName: "queryModules", extension: "ts" };
+
+// QueryConfig
+export const QUERY_CONFIG_FILE: GenerateFile = { fileName: "queryConfig.context", extension: "tsx" };
+
+// MutationEffects
+export const MUTATION_EFFECTS = {
+  optionsType: "MutationEffectsOptions",
+  hookName: "useMutationEffects",
+  runFunctionName: "runMutationEffects",
 };
-export const INVALIDATE_QUERY_OPTIONS_FILE: GenerateFile = { fileName: "invalidateQueries", extension: "ts" };
+export const MUTATION_EFFECTS_FILE: GenerateFile = { fileName: "useMutationEffects", extension: "ts" };
 
 // ZodExtended
 export const ZOD_EXTENDED = {

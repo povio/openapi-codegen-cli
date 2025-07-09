@@ -1,4 +1,4 @@
-import { INVALIDATE_QUERIES, QUERY_OPTIONS_TYPES } from "../const/deps.const";
+import { MUTATION_EFFECTS, QUERY_MODULE_ENUM, QUERY_OPTIONS_TYPES } from "../const/deps.const";
 import { AXIOS_DEFAULT_IMPORT_NAME, AXIOS_IMPORT, AXIOS_REQUEST_CONFIG_TYPE } from "../const/endpoints.const";
 import { QUERIES_MODULE_NAME, QUERY_HOOKS, QUERY_IMPORT } from "../const/queries.const";
 import { EndpointParameter } from "../types/endpoint";
@@ -6,8 +6,9 @@ import { GenerateType, GenerateTypeParams, Import } from "../types/generate";
 import { getUniqueArray } from "../utils/array.utils";
 import { getEndpointsImports, getModelsImports } from "../utils/generate/generate.imports.utils";
 import {
-  getInvalidateQueriesImportPath,
+  getMutationEffectsImportPath,
   getNamespaceName,
+  getQueryModulesImportPath,
   getQueryTypesImportPath,
 } from "../utils/generate/generate.utils";
 import { getHbsTemplateDelegate } from "../utils/hbs/hbs-template.utils";
@@ -37,17 +38,21 @@ export function generateQueries({ resolver, data, tag = "" }: GenerateTypeParams
     bindings: [
       ...(queryEndpoints.length > 0 ? [QUERY_HOOKS.query] : []),
       ...(resolver.options.infiniteQueries && infiniteQueryEndpoints.length > 0 ? [QUERY_HOOKS.infiniteQuery] : []),
-      ...(mutationEndpoints.length > 0 ? [QUERY_HOOKS.mutation, QUERY_HOOKS.queryClient] : []),
+      ...(mutationEndpoints.length > 0 ? [QUERY_HOOKS.mutation] : []),
     ],
     from: QUERY_IMPORT.from,
   };
 
-  const invalidateQueriesImport: Import = {
-    bindings: [
-      INVALIDATE_QUERIES.queryModuleEnum,
-      ...(mutationEndpoints.length > 0 ? [INVALIDATE_QUERIES.optionsType, INVALIDATE_QUERIES.functionName] : []),
-    ],
-    from: getInvalidateQueriesImportPath(resolver.options),
+  const hasMutationEffects = resolver.options.mutationEffects;
+  const queryModulesImport: Import = {
+    bindings: [QUERY_MODULE_ENUM],
+    from: getQueryModulesImportPath(resolver.options),
+  };
+
+  const hasMutationEffectsImport = hasMutationEffects && mutationEndpoints.length > 0;
+  const mutationEffectsImport: Import = {
+    bindings: [...(mutationEndpoints.length > 0 ? [MUTATION_EFFECTS.optionsType, MUTATION_EFFECTS.hookName] : [])],
+    from: getMutationEffectsImportPath(resolver.options),
   };
 
   const queryTypesImport: Import = {
@@ -80,8 +85,10 @@ export function generateQueries({ resolver, data, tag = "" }: GenerateTypeParams
     hasAxiosImport,
     axiosImport,
     queryImport,
-    hasInvalidateQueryOptions: resolver.options.invalidateQueryOptions,
-    invalidateQueriesImport,
+    hasMutationEffects,
+    queryModulesImport,
+    hasMutationEffectsImport,
+    mutationEffectsImport,
     queryTypesImport,
     modelsImports,
     endpointsImports,
@@ -89,7 +96,7 @@ export function generateQueries({ resolver, data, tag = "" }: GenerateTypeParams
     tag,
     namespace: getNamespaceName({ type: GenerateType.Queries, tag, options: resolver.options }),
     queriesModuleName: QUERIES_MODULE_NAME,
-    queryModuleEnum: INVALIDATE_QUERIES.queryModuleEnum,
+    queryModuleEnum: QUERY_MODULE_ENUM,
     endpoints,
     queryEndpoints,
   });

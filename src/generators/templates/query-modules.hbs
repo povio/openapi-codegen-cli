@@ -1,0 +1,5 @@
+export const enum QueryModule {
+   {{#each modules as | module |}}
+   {{module.tag}} = "{{module.namespace}}",
+   {{/each}}
+}

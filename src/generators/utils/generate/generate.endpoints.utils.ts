@@ -3,11 +3,12 @@ import { INFINITE_QUERY_PARAMS } from "src/generators/const/queries.const";
 import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
 import { GenerateType } from "src/generators/types/generate";
 import { GenerateOptions } from "src/generators/types/options";
-import { DEFAULT_HEADERS } from "../../const/endpoints.const";
+import { BODY_PARAMETER_NAME, DEFAULT_HEADERS } from "../../const/endpoints.const";
 import { Endpoint } from "../../types/endpoint";
 import { invalidVariableNameCharactersToCamel, isValidPropertyName } from "../js.utils";
 import { isSchemaObject } from "../openapi-schema.utils";
 import { isPrimitiveType } from "../openapi.utils";
+import { isQuery } from "../query.utils";
 import { decapitalize, snakeToCamel } from "../string.utils";
 import { formatTag } from "../tag.utils";
 import { primitiveTypeToTsType } from "../ts.utils";
@@ -35,9 +36,11 @@ export function mapEndpointParamsToFunctionParams(
   resolver: SchemaResolver,
   endpoint: Endpoint,
   options?: {
-    removePageParam?: boolean;
+    excludeBodyParam?: boolean;
+    excludePageParam?: boolean;
     replacePageParam?: boolean;
     includeFileParam?: boolean;
+    includeOnlyRequiredParams?: boolean;
   },
 ) {
   const params = endpoint.parameters.map((param) => {
@@ -80,7 +83,12 @@ export function mapEndpointParamsToFunctionParams(
       }
       return a.required ? -1 : 1;
     })
-    .filter((param) => !options?.removePageParam || param.name !== INFINITE_QUERY_PARAMS.pageParamName)
+    .filter(
+      (param) =>
+        (!options?.excludeBodyParam || param.name !== BODY_PARAMETER_NAME) &&
+        (!options?.excludePageParam || param.name !== INFINITE_QUERY_PARAMS.pageParamName) &&
+        (!options?.includeOnlyRequiredParams || param.required),
+    )
     .map((param) => ({
       ...param,
       name: options?.replacePageParam && param.name === INFINITE_QUERY_PARAMS.pageParamName ? "pageParam" : param.name,
@@ -118,4 +126,15 @@ export function getEndpointConfig(endpoint: Endpoint) {
     ...(Object.keys(headers).length ? { headers } : {}),
   };
   return endpointConfig;
+}
+
+export function getUpdateQueryEndpoints(endpoint: Endpoint, endpoints: Endpoint[]) {
+  return endpoints.filter(
+    (e) =>
+      isQuery(e) &&
+      e.parameters
+        .filter((param) => param.parameterObject?.required)
+        .every((pathParam) => endpoint.parameters.some((param) => param.name === pathParam.name)) &&
+      e.response === endpoint.response,
+  );
 }
