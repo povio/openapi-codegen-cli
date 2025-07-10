@@ -1,6 +1,6 @@
 import { createContext, use, useMemo } from "react";
 
-export namespace QueryConfig {
+export namespace OpenApiQueryConfig {
   interface Type {
     preferUpdate?: boolean;
   }

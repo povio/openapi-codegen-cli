@@ -1,7 +1,7 @@
 import { QueryKey, useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 
-import { QueryConfig } from "./queryConfig.context";
+import { OpenApiQueryConfig } from "./queryConfig.context";
 import { QueryModule } from "./queryModules";
 
 export interface MutationEffectsOptions {
@@ -17,7 +17,7 @@ export interface UseMutationEffectsOptions {
 
 export function useMutationEffects({ currentModule }: UseMutationEffectsOptions) {
   const queryClient = useQueryClient();
-  const config = QueryConfig.useConfig();
+  const config = OpenApiQueryConfig.useConfig();
 
   const runMutationEffects = useCallback(
     async <TData>(data: TData, options: MutationEffectsOptions = {}, updateKeys?: QueryKey[]) => {
