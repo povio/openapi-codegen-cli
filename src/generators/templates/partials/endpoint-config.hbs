@@ -7,9 +7,9 @@
     params: {
         {{#each endpointConfig.params as | param |}}
         {{#if (isEqual param.name param.value) }}
-        {{{param.name}}}{{#if param.parameterSortingEnumSchemaName}}: {{{genEndpointParamSorting param.parameterSortingEnumSchemaName param.name}}}{{/if}}, 
+        {{{param.name}}}{{#if ../generateParse}}: {{{genEndpointParamParse param param.name}}}{{/if}}, 
         {{else}}
-        {{{param.name}}}: {{#if param.parameterSortingEnumSchemaName}}{{{genEndpointParamSorting param.parameterSortingEnumSchemaName param.value}}}{{else}}{{param.value}}{{/if}},
+        {{{param.name}}}: {{#if ../generateParse}}{{{genEndpointParamParse param param.value}}}{{else}}{{param.value}}{{/if}},
         {{/if}}
         {{/each}}
     },

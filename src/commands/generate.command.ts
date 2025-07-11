@@ -69,6 +69,13 @@ class GenerateOptions implements GenerateParams {
   })
   mutationEffects!: boolean;
 
+  @YargOption({
+    envAlias: "parseRequestParams",
+    default: DEFAULT_GENERATE_OPTIONS.parseRequestParams,
+    type: "boolean",
+  })
+  parseRequestParams!: boolean;
+
   @YargOption({ envAlias: "axiosRequestConfig", default: DEFAULT_GENERATE_OPTIONS.axiosRequestConfig, type: "boolean" })
   axiosRequestConfig!: boolean;
 
