@@ -5,7 +5,7 @@ import { AXIOS_REQUEST_CONFIG_NAME, AXIOS_REQUEST_CONFIG_TYPE } from "src/genera
 import { BLOB_SCHEMA } from "src/generators/const/zod.const";
 import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
 import { INFINITE_QUERY_RESPONSE_PARAMS, QUERIES_MODULE_NAME, QUERY_HOOKS } from "../../const/queries.const";
-import { Endpoint } from "../../types/endpoint";
+import { Endpoint, EndpointParameter } from "../../types/endpoint";
 import { GenerateZodSchemaData, Import } from "../../types/generate";
 import {
   getEndpointConfig,
@@ -14,13 +14,14 @@ import {
 } from "../generate/generate.endpoints.utils";
 import { getHbsPartialTemplateDelegate } from "../hbs/hbs-template.utils";
 import { isInfiniteQuery, isMutation, isQuery } from "../query.utils";
+import { isNamedZodSchema } from "../zod-schema.utils";
 
 enum PartialsHelpers {
   ModelJsDocs = "genModelJsDocs",
   Import = "genImport",
   EndpointParams = "genEndpointParams",
   EndpointConfig = "genEndpointConfig",
-  EndpointParamSorting = "genEndpointParamSorting",
+  EndpointParamParse = "genEndpointParamParse",
   QueryKeys = "genQueryKeys",
   Query = "genQuery",
   Mutation = "genMutation",
@@ -36,7 +37,7 @@ export function registerPartialsHbsHelpers(resolver: SchemaResolver) {
   registerImportHelper();
   registerGenerateEndpointParamsHelper();
   registerGenerateEndpointConfigHelper(resolver);
-  registerGenerateEndpointParamSortingHelper();
+  registerGenerateEndpointParamParseHelper();
   registerGenerateQueryKeysHelper(resolver);
   registerGenerateQueryHelper(resolver);
   registerGenerateMutationHelper(resolver);
@@ -83,18 +84,22 @@ function registerGenerateEndpointConfigHelper(resolver: SchemaResolver) {
       hasBlobResponse: endpoint.response === BLOB_SCHEMA,
       hasFileDownload: endpoint.mediaDownload,
       axiosRequestConfigName: AXIOS_REQUEST_CONFIG_NAME,
+      generateParse: resolver.options.parseRequestParams,
     });
   });
 }
 
-function registerGenerateEndpointParamSortingHelper() {
-  Handlebars.registerHelper(PartialsHelpers.EndpointParamSorting, (enumSchemaName: string, paramName: string) =>
-    getHbsPartialTemplateDelegate("endpoint-param-sorting")({
-      enumSchemaName,
+function registerGenerateEndpointParamParseHelper() {
+  Handlebars.registerHelper(PartialsHelpers.EndpointParamParse, (param: EndpointParameter, paramName: string) =>
+    getHbsPartialTemplateDelegate("endpoint-param-parse")({
+      param,
       paramName,
       zodExtended: ZOD_EXTENDED.name,
       sortingString: ZOD_EXTENDED.properties.sortingString,
       parse: ZOD_EXTENDED.properties.parse,
+      addOptional:
+        !(param.parameterObject ?? param.bodyObject)?.required &&
+        (param.parameterSortingEnumSchemaName || isNamedZodSchema(param.zodSchema)),
     }),
   );
 }

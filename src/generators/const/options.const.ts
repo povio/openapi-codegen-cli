@@ -44,6 +44,7 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   restClientImportPath: TEMPLATE_IMPORTS.appRestClient.template,
   errorHandlingImportPath: TEMPLATE_IMPORTS.errorHandling.template,
   removeOperationPrefixEndingWith: "Controller_",
+  parseRequestParams: false,
   // Queries options
   queryTypesImportPath: TEMPLATE_IMPORTS.queryTypes.template,
   axiosRequestConfig: false,

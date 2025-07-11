@@ -1,6 +1,6 @@
 {
   "name": "@povio/openapi-codegen-cli",
-  "version": "0.11.1",
+  "version": "0.12.0",
   "main": "./dist/index.js",
   "bin": {
     "openapi-codegen": "./dist/sh.js"

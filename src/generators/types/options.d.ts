@@ -17,6 +17,7 @@ interface EndpointsGenerateOptions {
   errorHandlingImportPath: string;
   withDeprecatedEndpoints?: boolean;
   removeOperationPrefixEndingWith?: string;
+  parseRequestParams?: boolean;
 }
 
 interface QueriesGenerateOptions {
