@@ -48,7 +48,9 @@ export function getOperationName({
 
   if (options.tsNamespaces && !keepOperationTag) {
     const operationNameWithoutTag = removeWord(operationName, tag);
-    if (!RESERVED_WORDS.includes(operationNameWithoutTag)) {
+    if (operationNameWithoutTag === "") {
+      operationName = method.toLowerCase();
+    } else if (!RESERVED_WORDS.includes(operationNameWithoutTag)) {
       operationName = operationNameWithoutTag;
     }
   }
