@@ -1,4 +1,4 @@
-import { ACL_ALL_ABILITIES, CASL_ABILITY_BINDING, CASL_ABILITY_IMPORT } from "../const/acl.const";
+import { ACL_ALL_ABILITIES, ACL_APP_ABILITIES, CASL_ABILITY_BINDING, CASL_ABILITY_IMPORT } from "../const/acl.const";
 import { SchemaResolver } from "../core/SchemaResolver.class";
 import { GenerateType, GenerateTypeParams, Import } from "../types/generate";
 import { getUniqueArray } from "../utils/array.utils";
@@ -75,6 +75,7 @@ export function generateAppAcl(resolver: SchemaResolver, tags: string[]) {
     caslAbilityTupleImport,
     imports,
     allAbilities: ACL_ALL_ABILITIES,
+    appAbilities: ACL_APP_ABILITIES,
     includeNamespace: resolver.options.tsNamespaces,
     tags,
     namespaces,

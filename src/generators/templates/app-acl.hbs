@@ -6,8 +6,8 @@
 {{/each}}
 
 {{! AppAbilities union type }}
-export type AppAbilities = 
+export type {{appAbilities}} = 
 {{#if includeNamespace}}{{#each namespaces as | namespace |}} | {{namespace}}.{{../allAbilities}}{{/each}}
 {{else}}{{#each tags as | tag |}} | {{tagAllAbilitiesName tag}}{{/each}}{{/if}}
 
-export type AppAbility = PureAbility<AppAbilities>;
+export type AppAbility = PureAbility<{{appAbilities}}>;

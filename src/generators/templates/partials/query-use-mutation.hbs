@@ -2,12 +2,15 @@
 {{{genQueryJsDocs endpoint mutation=true}}}
 {{! Mutation definition}}
 export const {{queryName endpoint mutation=true}} = (options?: AppMutationOptions<typeof {{importedEndpointName endpoint}}, { {{{genEndpointParams endpoint includeFileParam=true}}} }>{{#if hasMutationEffects}} & {{mutationEffectsType}}{{/if}}{{#if hasAxiosRequestConfig}}, {{axiosRequestConfigName}}?: {{axiosRequestConfigType}}{{/if}}) => {
+  {{! Use acl check }}
+  {{#if hasAclCheck}}const { checkAcl } = {{aclCheckHook}}();{{/if}}
   {{! Use mutation effects }}
   {{#if hasMutationEffects}}const { runMutationEffects } = useMutationEffects({ currentModule: {{queriesModuleName}} });{{/if}}
 
   return {{queryHook}}({
-    mutationFn: {{#if endpoint.mediaUpload}}async {{/if}}({{#if (endpointParams endpoint includeFileParam=true)}} { {{{endpointArgs endpoint includeFileParam=true}}} } {{/if}}) => {{#if endpoint.mediaUpload}} {
-      const uploadInstructions = await{{/if}} {{importedEndpointName endpoint}}({{{endpointArgs endpoint}}}{{#if hasAxiosRequestConfig}}{{#if (endpointArgs endpoint)}}, {{/if}}{{axiosRequestConfigName}}{{/if}}){{#if endpoint.mediaUpload}}; 
+    mutationFn: {{#if endpoint.mediaUpload}}async {{/if}}({{#if (endpointParams endpoint includeFileParam=true)}} { {{{endpointArgs endpoint includeFileParam=true}}} } {{/if}}) => {{#if hasMutationFnBody}} { {{/if}}
+      {{#if hasAclCheck}}checkAcl({{genAclCheckParams endpoint}});{{/if}}
+      {{#if endpoint.mediaUpload}}const uploadInstructions = await {{importedEndpointName endpoint}}({{{endpointArgs endpoint}}}{{#if hasAxiosRequestConfig}}{{#if (endpointArgs endpoint)}}, {{/if}}{{axiosRequestConfigName}}{{/if}}); 
       
       if (file && uploadInstructions.url) {
         await axios.put(uploadInstructions.url, file, {
@@ -16,9 +19,12 @@ export const {{queryName endpoint mutation=true}} = (options?: AppMutationOption
           },
         });
       }
-
+      
       return uploadInstructions;
-    }{{/if}},
+      {{else}}
+      {{#if hasMutationFnBody}}return {{/if}}{{importedEndpointName endpoint}}({{{endpointArgs endpoint}}}{{#if hasAxiosRequestConfig}}{{#if (endpointArgs endpoint)}}, {{/if}}{{axiosRequestConfigName}}{{/if}})
+      {{/if}}
+    {{#if hasMutationFnBody}} }{{/if}},
     ...options, {{#if hasMutationEffects}}
     onSuccess: async (resData, variables, context) => {
       {{! Mutation effects }}

@@ -76,6 +76,13 @@ class GenerateOptions implements GenerateParams {
   })
   parseRequestParams!: boolean;
 
+  @YargOption({
+    envAlias: "checkAcl",
+    default: DEFAULT_GENERATE_OPTIONS.checkAcl,
+    type: "boolean",
+  })
+  checkAcl!: boolean;
+
   @YargOption({ envAlias: "axiosRequestConfig", default: DEFAULT_GENERATE_OPTIONS.axiosRequestConfig, type: "boolean" })
   axiosRequestConfig!: boolean;
 

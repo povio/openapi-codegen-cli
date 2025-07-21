@@ -25,6 +25,10 @@ export const TEMPLATE_IMPORTS: Record<string, { template: string; monorepoTempla
     template: "@/util/vendor/error-handling",
     monorepoTemplate: "@povio/utils/vendor/error-handling",
   },
+  abilityContext: {
+    template: "@/data/acl/ability.context",
+    monorepoTemplate: "@povio/auth/acl/ability.context",
+  },
 };
 
 export const ERROR_HANDLERS = {
@@ -33,7 +37,12 @@ export const ERROR_HANDLERS = {
 };
 export const ERROR_HANDLING_IMPORT: Import = {
   bindings: [ERROR_HANDLERS.ErrorHandler, ERROR_HANDLERS.SharedErrorHandler],
-  from: "@/util/vendor/error-handling",
+  from: TEMPLATE_IMPORTS.errorHandling.template,
+};
+export const ABILITY_CONTEXT = "AbilityContext";
+export const ABILITY_CONTEXT_IMPORT: Import = {
+  bindings: [ABILITY_CONTEXT],
+  from: TEMPLATE_IMPORTS.abilityContext.template,
 };
 
 // Standalone

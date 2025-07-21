@@ -12,6 +12,10 @@
 {{#if hasMutationEffectsImport}}
 {{{genImport mutationEffectsImport}}}
 {{/if}}
+{{! Acl check import }}
+{{#if hasAclCheck}}
+{{{genImport aclCheckImport}}}
+{{/if}}
 {{! React query types import }}
 {{{genImport queryTypesImport}}}
 {{! Models import }}

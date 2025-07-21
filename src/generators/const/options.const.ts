@@ -34,6 +34,7 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   },
   standalone: false,
   baseUrl: "",
+  abilityContextImportPath: TEMPLATE_IMPORTS.abilityContext.template,
   // Zod options
   schemaSuffix: SCHEMA_SUFFIX,
   enumSuffix: ENUM_SUFFIX,
@@ -45,6 +46,7 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   errorHandlingImportPath: TEMPLATE_IMPORTS.errorHandling.template,
   removeOperationPrefixEndingWith: "Controller_",
   parseRequestParams: false,
+  checkAcl: false,
   // Queries options
   queryTypesImportPath: TEMPLATE_IMPORTS.queryTypes.template,
   axiosRequestConfig: false,

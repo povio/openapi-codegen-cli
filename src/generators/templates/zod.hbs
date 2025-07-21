@@ -29,10 +29,19 @@ function isSortingStringValid(enumSchema: z.ZodEnum<[string, ...string[]]>, data
   return new RegExp(`^${commaSeparatedOptions}$`).test(data);
 }
 
-function {{parse}}(schema: z.ZodSchema, data: unknown, errorHandler?: {{errorHandler}}<never>) {
+interface ParseOptions {
+  type: "body" | "query";
+  name?: string;
+  errorHandler?: {{errorHandler}}<never>;
+}
+
+function {{parse}}(schema: z.ZodSchema, data: unknown, { type, name, errorHandler }: ParseOptions = { type: "body" }) {
   try {
     return schema.parse(data);
-  } catch (e: unknown) {
+  } catch (e) {
+    if (e instanceof z.ZodError) {
+      e.name = `FE Request ${type === "body" ? "body" : "query param"}${name ? ` ("${name}")` : ""} schema mismatch - ZodError`;
+    }
     (errorHandler ?? {{sharedErrorHandler}}).rethrowError(e);
     throw e;
   }
