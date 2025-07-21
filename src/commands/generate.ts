@@ -22,14 +22,16 @@ export type GenerateParams = {
   | "removeOperationPrefixEndingWith"
   | "importPath"
   | "extractEnums"
+  | "acl"
+  | "checkAcl"
   | "standalone"
   | "baseUrl"
+  | "branded"
   | "replaceOptionalWithNullish"
   | "infiniteQueries"
   | "axiosRequestConfig"
   | "mutationEffects"
   | "parseRequestParams"
-  | "checkAcl"
 >;
 
 export async function generate({ input, excludeTags, monorepo, prettier, verbose, ...params }: GenerateParams) {

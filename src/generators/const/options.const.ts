@@ -32,6 +32,8 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
       namespaceSuffix: "Acl",
     },
   },
+  acl: true,
+  checkAcl: false,
   standalone: false,
   baseUrl: "",
   abilityContextImportPath: TEMPLATE_IMPORTS.abilityContext.template,
@@ -40,13 +42,13 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   enumSuffix: ENUM_SUFFIX,
   withDefaultValues: true,
   extractEnums: true,
+  branded: true,
   replaceOptionalWithNullish: false,
   // Endpoints options
   restClientImportPath: TEMPLATE_IMPORTS.appRestClient.template,
   errorHandlingImportPath: TEMPLATE_IMPORTS.errorHandling.template,
   removeOperationPrefixEndingWith: "Controller_",
   parseRequestParams: false,
-  checkAcl: false,
   // Queries options
   queryTypesImportPath: TEMPLATE_IMPORTS.queryTypes.template,
   axiosRequestConfig: false,

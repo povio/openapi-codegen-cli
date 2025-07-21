@@ -46,11 +46,32 @@ class GenerateOptions implements GenerateParams {
   })
   removeOperationPrefixEndingWith!: string;
 
+  @YargOption({
+    envAlias: "acl",
+    default: DEFAULT_GENERATE_OPTIONS.acl,
+    type: "boolean",
+  })
+  acl!: boolean;
+
+  @YargOption({
+    envAlias: "checkAcl",
+    default: DEFAULT_GENERATE_OPTIONS.checkAcl,
+    type: "boolean",
+  })
+  checkAcl!: boolean;
+
   @YargOption({ envAlias: "standalone", default: DEFAULT_GENERATE_OPTIONS.standalone, type: "boolean" })
   standalone!: boolean;
 
   @YargOption({ envAlias: "baseUrl", default: DEFAULT_GENERATE_OPTIONS.baseUrl })
   baseUrl!: string;
+
+  @YargOption({
+    envAlias: "branded",
+    default: DEFAULT_GENERATE_OPTIONS.branded,
+    type: "boolean",
+  })
+  branded!: boolean;
 
   @YargOption({
     envAlias: "replaceOptionalWithNullish",
@@ -75,13 +96,6 @@ class GenerateOptions implements GenerateParams {
     type: "boolean",
   })
   parseRequestParams!: boolean;
-
-  @YargOption({
-    envAlias: "checkAcl",
-    default: DEFAULT_GENERATE_OPTIONS.checkAcl,
-    type: "boolean",
-  })
-  checkAcl!: boolean;
 
   @YargOption({ envAlias: "axiosRequestConfig", default: DEFAULT_GENERATE_OPTIONS.axiosRequestConfig, type: "boolean" })
   axiosRequestConfig!: boolean;

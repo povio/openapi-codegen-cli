@@ -9,6 +9,7 @@ interface ZodGenerateOptions {
   allReadonly?: boolean;
   strictObjects?: boolean;
   extractEnums?: boolean;
+  branded?: boolean;
   replaceOptionalWithNullish?: boolean;
 }
 
@@ -18,7 +19,6 @@ interface EndpointsGenerateOptions {
   withDeprecatedEndpoints?: boolean;
   removeOperationPrefixEndingWith?: string;
   parseRequestParams?: boolean;
-  checkAcl?: boolean;
 }
 
 interface QueriesGenerateOptions {
@@ -26,6 +26,7 @@ interface QueriesGenerateOptions {
   axiosRequestConfig?: boolean;
   infiniteQueries?: boolean;
   mutationEffects?: boolean;
+  checkAcl?: boolean;
 }
 
 interface GenerateConfig {
@@ -44,6 +45,7 @@ interface BaseGenerateOptions {
   tsNamespaces: boolean;
   importPath: "ts" | "relative" | "absolute";
   configs: Record<GenerateType, GenerateConfig>;
+  acl: boolean;
   standalone: boolean;
   baseUrl: string;
   abilityContextImportPath: string;

@@ -45,12 +45,15 @@ yarn openapi-codegen generate --input http://localhost:3001/docs-json --standalo
   --importPath                        Module import style for generated files (default: 'ts'; options: 'ts' | 'relative' | 'absolute')
   --removeOperationPrefixEndingWith   Remove operation name prefixes that end with the specified string (Default: 'Controller_')
   --extractEnums                      Extract enums into separate Zod schemas (default: true)
+  --branded                           Apply branded types to ambiguous Zod schemas (default: true)
   --replaceOptionalWithNullish        Replace `.optional()` chains with `.nullish()` in generated Zod schemas (default: false)
 
   --axiosRequestConfig                Include Axios request config parameters in query hooks (default: false)
   --infiniteQueries                   Generate infinite queries for paginated API endpoints (default: false)
   --mutationEffects                   Add mutation effects options to mutation hooks (default: true)
   --parseRequestParams                Add Zod parsing to API endpoints (default: false)
+
+  --acl                               Generate ACL related files (default: true)
   --checkAcl                          Add ACL check to queries (default: false)
 
   --standalone                        Generate any missing supporting classes/types, e.g., REST client class, React Query type extensions, etc. (default: false)

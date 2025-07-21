@@ -58,7 +58,7 @@ describe("getZodSchema", () => {
 
     expect(
       getZodSchemaString({ type: "object", properties: { dt: { type: "string", format: "date-time" } } }),
-    ).toStrictEqual("z.object({ dt: z.string().datetime({ offset: true }) }).partial()");
+    ).toStrictEqual("z.object({ dt: z.string().datetime({ offset: true }).brand('datetime') }).partial()");
 
     expect(
       getZodSchemaString({

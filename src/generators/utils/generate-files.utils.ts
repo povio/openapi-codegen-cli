@@ -18,7 +18,9 @@ import { getOutputFileName, readAssetSync } from "./file.utils";
 import { getFileNameWithExtension } from "./generate/generate.utils";
 
 export function getAclFiles(appAclTags: string[], resolver: SchemaResolver): GenerateFileData[] {
-  const appAclContent = generateAppAcl(resolver, appAclTags);
+  if (!resolver.options.acl) {
+    return [];
+  }
 
   return [
     {
@@ -26,7 +28,7 @@ export function getAclFiles(appAclTags: string[], resolver: SchemaResolver): Gen
         output: resolver.options.output,
         fileName: getFileNameWithExtension(ACL_APP_ABILITY_FILE),
       }),
-      content: appAclContent,
+      content: generateAppAcl(resolver, appAclTags),
     },
     ...(resolver.options.checkAcl
       ? [
