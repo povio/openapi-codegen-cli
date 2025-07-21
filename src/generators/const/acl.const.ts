@@ -11,7 +11,7 @@ export const CASL_ABILITY_BINDING = {
   abilityTuple: "AbilityTuple",
   pureAbility: "PureAbility",
   forcedSubject: "ForcedSubject",
-  subject: "subject",
+  subject: "Subject",
 };
 export const CASL_ABILITY_IMPORT: Import = {
   bindings: [

@@ -50,12 +50,11 @@ export function generateAcl({ resolver, data, tag = "" }: GenerateTypeParams) {
 }
 
 export function generateAppAcl(resolver: SchemaResolver, tags: string[]) {
-  if (!tags || tags.length === 0) {
-    return;
-  }
-
   const caslAbilityTupleImport: Import = {
-    bindings: [CASL_ABILITY_BINDING.pureAbility],
+    bindings: [
+      CASL_ABILITY_BINDING.pureAbility,
+      ...(tags.length === 0 ? [CASL_ABILITY_BINDING.subject, CASL_ABILITY_BINDING.abilityTuple] : []),
+    ],
     from: CASL_ABILITY_IMPORT.from,
   };
 
@@ -79,5 +78,7 @@ export function generateAppAcl(resolver: SchemaResolver, tags: string[]) {
     includeNamespace: resolver.options.tsNamespaces,
     tags,
     namespaces,
+    abilityTuple: CASL_ABILITY_BINDING.abilityTuple,
+    subject: CASL_ABILITY_BINDING.subject,
   });
 }

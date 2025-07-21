@@ -19,9 +19,6 @@ import { getFileNameWithExtension } from "./generate/generate.utils";
 
 export function getAclFiles(appAclTags: string[], resolver: SchemaResolver): GenerateFileData[] {
   const appAclContent = generateAppAcl(resolver, appAclTags);
-  if (!appAclContent) {
-    return [];
-  }
 
   return [
     {
