@@ -14,7 +14,7 @@ import {
   mapEndpointParamsToFunctionParams,
 } from "../generate/generate.endpoints.utils";
 import { getHbsPartialTemplateDelegate } from "../hbs/hbs-template.utils";
-import { isInfiniteQuery, isMutation, isQuery } from "../query.utils";
+import { getDestructuredVariables, isInfiniteQuery, isMutation, isQuery } from "../query.utils";
 import { isNamedZodSchema } from "../zod-schema.utils";
 
 enum PartialsHelpers {
@@ -153,6 +153,7 @@ function registerGenerateMutationHelper(resolver: SchemaResolver) {
     }
 
     const updateQueryEndpoints = getUpdateQueryEndpoints(endpoint, queryEndpoints);
+    const destructuredVariables = getDestructuredVariables(resolver, endpoint, updateQueryEndpoints);
     const hasAclCheck = resolver.options.checkAcl && endpoint.acl;
 
     return getHbsPartialTemplateDelegate("query-use-mutation")({
@@ -166,6 +167,7 @@ function registerGenerateMutationHelper(resolver: SchemaResolver) {
       hasMutationEffects: resolver.options.mutationEffects,
       mutationEffectsType: MUTATION_EFFECTS.optionsType,
       updateQueryEndpoints,
+      destructuredVariables,
       hasAclCheck,
       aclCheckHook: ACL_CHECK_HOOK,
     });

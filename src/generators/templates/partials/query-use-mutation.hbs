@@ -29,7 +29,7 @@ export const {{queryName endpoint mutation=true}} = (options?: AppMutationOption
     onSuccess: async (resData, variables, context) => {
       {{! Mutation effects }}
       {{#if updateQueryEndpoints}}
-      const { {{endpointArgs endpoint includeOnlyRequiredParams=true excludeBodyParam=true}} } = variables;
+      {{#if destructuredVariables}}const { {{commaSeparated destructuredVariables }} } = variables;{{/if}}
       const updateKeys = [{{#each updateQueryEndpoints as | endpoint |}}keys.{{endpointName endpoint}}({{{endpointArgs endpoint includeOnlyRequiredParams=true}}}), {{/each}}];
       {{/if}}
       await runMutationEffects(resData, options{{#if updateQueryEndpoints}}, updateKeys{{/if}});
