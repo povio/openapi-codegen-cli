@@ -18,6 +18,7 @@ interface EndpointsGenerateOptions {
   withDeprecatedEndpoints?: boolean;
   removeOperationPrefixEndingWith?: string;
   parseRequestParams?: boolean;
+  checkAcl?: boolean;
 }
 
 interface QueriesGenerateOptions {
@@ -45,6 +46,7 @@ interface BaseGenerateOptions {
   configs: Record<GenerateType, GenerateConfig>;
   standalone: boolean;
   baseUrl: string;
+  abilityContextImportPath: string;
 }
 
 export type GenerateOptions = BaseGenerateOptions &

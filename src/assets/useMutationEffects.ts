@@ -11,11 +11,11 @@ export interface MutationEffectsOptions {
   preferUpdate?: boolean;
 }
 
-export interface UseMutationEffectsOptions {
+export interface UseMutationEffectsProps {
   currentModule: QueryModule;
 }
 
-export function useMutationEffects({ currentModule }: UseMutationEffectsOptions) {
+export function useMutationEffects({ currentModule }: UseMutationEffectsProps) {
   const queryClient = useQueryClient();
   const config = OpenApiQueryConfig.useConfig();
 

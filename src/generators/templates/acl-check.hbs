@@ -1,0 +1,23 @@
+import { useCallback } from "react";
+{{! Ability context import }}
+{{{genImport abilityContextImport}}}
+{{! Error handling import }}
+{{{genImport errorHandlingImport}}}
+{{! App abilities import }}
+{{{genImport appAbilitiesImport}}}
+
+interface UseAclCheckProps {
+  errorHandler?: {{errorHandler}}<never>;
+}
+
+export function {{aclCheckHook}}({ errorHandler }: UseAclCheckProps = {}) {
+  const ability = {{abilityContext}}.useAbility();
+
+  const checkAcl = useCallback((appAbility: {{appAbilities}}) => {
+    if (!ability.can(...appAbility)) {
+      (errorHandler ?? {{sharedErrorHandler}}).rethrowError(new Error("ACL check failed"));
+    }
+  }, [ability, errorHandler]);
+
+  return { checkAcl };
+}

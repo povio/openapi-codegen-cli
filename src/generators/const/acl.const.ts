@@ -2,6 +2,10 @@ import { GenerateFile, Import } from "../types/generate";
 
 export const ACL_APP_ABILITY_FILE: GenerateFile = { fileName: "acl/app.ability", extension: "ts" };
 export const ACL_ALL_ABILITIES = "AllAbilities";
+export const ACL_APP_ABILITIES = "AppAbilities";
+
+export const ACL_CHECK_FILE: GenerateFile = { fileName: "acl/useAclCheck", extension: "ts" };
+export const ACL_CHECK_HOOK = "useAclCheck";
 
 export const CASL_ABILITY_BINDING = {
   abilityTuple: "AbilityTuple",

@@ -29,6 +29,7 @@ export type GenerateParams = {
   | "axiosRequestConfig"
   | "mutationEffects"
   | "parseRequestParams"
+  | "checkAcl"
 >;
 
 export async function generate({ input, excludeTags, monorepo, prettier, verbose, ...params }: GenerateParams) {
@@ -52,6 +53,7 @@ export async function generate({ input, excludeTags, monorepo, prettier, verbose
     restClientImportPath: TEMPLATE_IMPORTS.appRestClient[template],
     errorHandlingImportPath: TEMPLATE_IMPORTS.errorHandling[template],
     queryTypesImportPath: TEMPLATE_IMPORTS.queryTypes[template],
+    abilityContextImportPath: TEMPLATE_IMPORTS.abilityContext[template],
     ...params,
   });
   if (verbose) {

@@ -1,3 +1,4 @@
+import { ACL_APP_ABILITY_FILE, ACL_CHECK_FILE } from "src/generators/const/acl.const";
 import {
   MUTATION_EFFECTS_FILE,
   QUERY_MODULES_FILE,
@@ -73,6 +74,14 @@ export function getMutationEffectsImportPath(options: GenerateOptions) {
   return `${getImportPath(options)}${MUTATION_EFFECTS_FILE.fileName}`;
 }
 
+export function getAclCheckImportPath(options: GenerateOptions) {
+  return `${getImportPath(options)}${ACL_CHECK_FILE.fileName}`;
+}
+
 export function getZodExtendedImportPath(options: GenerateOptions) {
   return `${getImportPath(options)}${ZOD_EXTENDED_FILE.fileName}`;
+}
+
+export function getAppAbilitiesImportPath() {
+  return `./${ACL_APP_ABILITY_FILE.fileName}`;
 }

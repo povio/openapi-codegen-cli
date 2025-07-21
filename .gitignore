@@ -15,3 +15,6 @@ node_modules
 .idea
 .DS_Store
 
+# Test specs
+test/*
+!config/petstore.yaml

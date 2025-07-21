@@ -51,6 +51,7 @@ yarn openapi-codegen generate --input http://localhost:3001/docs-json --standalo
   --infiniteQueries                   Generate infinite queries for paginated API endpoints (default: false)
   --mutationEffects                   Add mutation effects options to mutation hooks (default: true)
   --parseRequestParams                Add Zod parsing to API endpoints (default: false)
+  --checkAcl                          Add ACL check to queries (default: false)
 
   --standalone                        Generate any missing supporting classes/types, e.g., REST client class, React Query type extensions, etc. (default: false)
   --baseUrl                           (Requires `--standalone`) Base URL for the REST client; falls back to the OpenAPI spec if not provided

@@ -1,4 +1,4 @@
-import { ACL_APP_ABILITY_FILE } from "../const/acl.const";
+import { ACL_APP_ABILITY_FILE, ACL_CHECK_FILE } from "../const/acl.const";
 import {
   MUTATION_EFFECTS_FILE,
   QUERY_CONFIG_FILE,
@@ -9,6 +9,7 @@ import {
 } from "../const/deps.const";
 import { SchemaResolver } from "../core/SchemaResolver.class";
 import { generateAppAcl } from "../generate/generateAcl";
+import { generateAclCheck } from "../generate/generateAclCheck";
 import { generateAppRestClient } from "../generate/generateAppRestClient";
 import { generateQueryModules } from "../generate/generateQueryModules";
 import { generateZod } from "../generate/generateZod";
@@ -30,6 +31,17 @@ export function getAclFiles(appAclTags: string[], resolver: SchemaResolver): Gen
       }),
       content: appAclContent,
     },
+    ...(resolver.options.checkAcl
+      ? [
+          {
+            fileName: getOutputFileName({
+              output: resolver.options.output,
+              fileName: getFileNameWithExtension(ACL_CHECK_FILE),
+            }),
+            content: generateAclCheck(resolver),
+          },
+        ]
+      : []),
   ];
 }
 

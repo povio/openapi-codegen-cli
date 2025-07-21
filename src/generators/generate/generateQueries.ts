@@ -1,3 +1,4 @@
+import { ACL_CHECK_HOOK } from "../const/acl.const";
 import { MUTATION_EFFECTS, QUERY_MODULE_ENUM, QUERY_OPTIONS_TYPES } from "../const/deps.const";
 import { AXIOS_DEFAULT_IMPORT_NAME, AXIOS_IMPORT, AXIOS_REQUEST_CONFIG_TYPE } from "../const/endpoints.const";
 import { QUERIES_MODULE_NAME, QUERY_HOOKS, QUERY_IMPORT } from "../const/queries.const";
@@ -6,6 +7,7 @@ import { GenerateType, GenerateTypeParams, Import } from "../types/generate";
 import { getUniqueArray } from "../utils/array.utils";
 import { getEndpointsImports, getModelsImports } from "../utils/generate/generate.imports.utils";
 import {
+  getAclCheckImportPath,
   getMutationEffectsImportPath,
   getNamespaceName,
   getQueryModulesImportPath,
@@ -55,6 +57,12 @@ export function generateQueries({ resolver, data, tag = "" }: GenerateTypeParams
     from: getMutationEffectsImportPath(resolver.options),
   };
 
+  const hasAclCheck = resolver.options.checkAcl && endpoints.some((endpoint) => endpoint.acl);
+  const aclCheckImport: Import = {
+    bindings: [ACL_CHECK_HOOK],
+    from: getAclCheckImportPath(resolver.options),
+  };
+
   const queryTypesImport: Import = {
     bindings: [
       ...(queryEndpoints.length > 0 ? [QUERY_OPTIONS_TYPES.query] : []),
@@ -89,6 +97,8 @@ export function generateQueries({ resolver, data, tag = "" }: GenerateTypeParams
     queryModulesImport,
     hasMutationEffectsImport,
     mutationEffectsImport,
+    hasAclCheck,
+    aclCheckImport,
     queryTypesImport,
     modelsImports,
     endpointsImports,
