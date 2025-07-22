@@ -82,6 +82,6 @@ export function getZodExtendedImportPath(options: GenerateOptions) {
   return `${getImportPath(options)}${ZOD_EXTENDED_FILE.fileName}`;
 }
 
-export function getAppAbilitiesImportPath() {
-  return `./${ACL_APP_ABILITY_FILE.fileName}`;
+export function getAppAbilitiesImportPath(options: GenerateOptions) {
+  return `${getImportPath(options)}${ACL_APP_ABILITY_FILE.fileName}`;
 }
