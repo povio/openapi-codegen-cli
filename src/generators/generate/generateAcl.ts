@@ -53,7 +53,7 @@ export function generateAppAcl(resolver: SchemaResolver, tags: string[]) {
   const caslAbilityTupleImport: Import = {
     bindings: [
       CASL_ABILITY_BINDING.pureAbility,
-      ...(tags.length === 0 ? [CASL_ABILITY_BINDING.subject, CASL_ABILITY_BINDING.abilityTuple] : []),
+      ...(tags.length === 0 ? [CASL_ABILITY_BINDING.subjectType, CASL_ABILITY_BINDING.abilityTuple] : []),
     ],
     from: CASL_ABILITY_IMPORT.from,
   };
@@ -79,6 +79,6 @@ export function generateAppAcl(resolver: SchemaResolver, tags: string[]) {
     tags,
     namespaces,
     abilityTuple: CASL_ABILITY_BINDING.abilityTuple,
-    subject: CASL_ABILITY_BINDING.subject,
+    subjectType: CASL_ABILITY_BINDING.subjectType,
   });
 }

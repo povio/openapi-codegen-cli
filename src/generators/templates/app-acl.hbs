@@ -11,7 +11,7 @@ export type {{appAbilities}} =
 {{#if includeNamespace}}{{#each namespaces as | namespace |}} | {{namespace}}.{{../allAbilities}}{{/each}}
 {{else}}{{#each tags as | tag |}} | {{tagAllAbilitiesName tag}}{{/each}}{{/if}}
 {{else}}
-{{abilityTuple}}<string, {{subject}}>;
+{{abilityTuple}}<string, {{subjectType}}>;
 {{/if}}
 
 export type AppAbility = PureAbility<{{appAbilities}}>;
