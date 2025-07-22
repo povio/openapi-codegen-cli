@@ -31,7 +31,7 @@ enum PartialsHelpers {
   CaslAbilityType = "genCaslAbilityType",
   CaslAbilityFunction = "genCaslAbilityFunction",
   CaslAbilityQuery = "genCaslAbilityQuery",
-  AclCheckParams = "genAclCheckParams",
+  AclCheckCall = "genAclCheckCall",
 }
 
 export function registerPartialsHbsHelpers(resolver: SchemaResolver) {
@@ -48,7 +48,7 @@ export function registerPartialsHbsHelpers(resolver: SchemaResolver) {
   registerGenerateCaslAbilityTypeHelper();
   registerGenerateCaslAbilityFunctionHelper();
   registerGenerateCaslAbilityQueryHelper();
-  registerGenerateAclCheckParamsHelper();
+  registerGenerateAclCheckCallHelper();
 }
 
 function registerGenerateModelJsDocsHelper() {
@@ -234,13 +234,13 @@ function registerGenerateCaslAbilityQueryHelper() {
   );
 }
 
-function registerGenerateAclCheckParamsHelper() {
-  Handlebars.registerHelper(PartialsHelpers.AclCheckParams, (endpoint: Endpoint) => {
+function registerGenerateAclCheckCallHelper() {
+  Handlebars.registerHelper(PartialsHelpers.AclCheckCall, (endpoint: Endpoint) => {
     const checkParams = getAbilityConditionsTypes(endpoint)?.map((condition) => condition.name);
     const params = endpoint.parameters.map((param) => param.name);
     const hasAllCheckParams = checkParams?.every((param) => params.includes(param));
 
-    return getHbsPartialTemplateDelegate("acl-check-params")({
+    return getHbsPartialTemplateDelegate("acl-check-call")({
       endpoint,
       generateAclCheckParams: hasAbilityConditions(endpoint) && hasAllCheckParams,
     });

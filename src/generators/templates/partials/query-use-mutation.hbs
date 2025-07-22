@@ -9,7 +9,7 @@ export const {{queryName endpoint mutation=true}} = (options?: AppMutationOption
 
   return {{queryHook}}({
     mutationFn: {{#if endpoint.mediaUpload}}async {{/if}}({{#if (endpointParams endpoint includeFileParam=true)}} { {{{endpointArgs endpoint includeFileParam=true}}} } {{/if}}) => {{#if hasMutationFnBody}} { {{/if}}
-      {{#if hasAclCheck}}checkAcl({{genAclCheckParams endpoint}});{{/if}}
+      {{#if hasAclCheck}}{{{genAclCheckCall endpoint}}}{{/if}}
       {{#if endpoint.mediaUpload}}const uploadInstructions = await {{importedEndpointName endpoint}}({{{endpointArgs endpoint}}}{{#if hasAxiosRequestConfig}}{{#if (endpointArgs endpoint)}}, {{/if}}{{axiosRequestConfigName}}{{/if}}); 
       
       if (file && uploadInstructions.url) {

@@ -5,7 +5,7 @@ import { QUERIES_MODULE_NAME, QUERY_HOOKS, QUERY_IMPORT } from "../const/queries
 import { EndpointParameter } from "../types/endpoint";
 import { GenerateType, GenerateTypeParams, Import } from "../types/generate";
 import { getUniqueArray } from "../utils/array.utils";
-import { getEndpointsImports, getModelsImports } from "../utils/generate/generate.imports.utils";
+import { getAclImports, getEndpointsImports, getModelsImports } from "../utils/generate/generate.imports.utils";
 import {
   getAclCheckImportPath,
   getMutationEffectsImportPath,
@@ -57,7 +57,8 @@ export function generateQueries({ resolver, data, tag = "" }: GenerateTypeParams
     from: getMutationEffectsImportPath(resolver.options),
   };
 
-  const hasAclCheck = resolver.options.checkAcl && endpoints.some((endpoint) => endpoint.acl);
+  const aclEndpoints = endpoints.filter((endpoint) => endpoint.acl);
+  const hasAclCheck = resolver.options.checkAcl && aclEndpoints.length > 0;
   const aclCheckImport: Import = {
     bindings: [ACL_CHECK_HOOK],
     from: getAclCheckImportPath(resolver.options),
@@ -87,6 +88,12 @@ export function generateQueries({ resolver, data, tag = "" }: GenerateTypeParams
     options: resolver.options,
   });
 
+  const aclImports = getAclImports({
+    tag,
+    endpoints: aclEndpoints,
+    options: resolver.options,
+  });
+
   const hbsTemplate = getHbsTemplateDelegate(resolver, "queries");
 
   return hbsTemplate({
@@ -102,6 +109,7 @@ export function generateQueries({ resolver, data, tag = "" }: GenerateTypeParams
     queryTypesImport,
     modelsImports,
     endpointsImports,
+    aclImports,
     includeNamespace: resolver.options.tsNamespaces,
     tag,
     namespace: getNamespaceName({ type: GenerateType.Queries, tag, options: resolver.options }),

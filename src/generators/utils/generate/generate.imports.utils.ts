@@ -4,6 +4,7 @@ import { Endpoint } from "../../types/endpoint";
 import { GenerateType, Import } from "../../types/generate";
 import { GenerateOptions } from "../../types/options";
 import { getUniqueArray } from "../array.utils";
+import { getAbilityFunctionName } from "./generate.acl.utils";
 import { getEndpointName, getEndpointTag } from "./generate.endpoints.utils";
 import { getNamespaceName, getTagImportPath } from "./generate.utils";
 import { getZodSchemaInferedTypeName } from "./generate.zod.utils";
@@ -58,6 +59,25 @@ export function getEndpointsImports({
     entities: endpoints,
     getTag: (endpoint) => getEndpointTag(endpoint, options),
     getEntityName: getEndpointName,
+    options,
+  });
+}
+
+export function getAclImports({
+  tag,
+  endpoints,
+  options,
+}: {
+  tag: string;
+  endpoints: Endpoint[];
+  options: GenerateOptions;
+}) {
+  return getImports({
+    type: GenerateType.Acl,
+    tag,
+    entities: endpoints,
+    getTag: (endpoint) => getEndpointTag(endpoint, options),
+    getEntityName: getAbilityFunctionName,
     options,
   });
 }

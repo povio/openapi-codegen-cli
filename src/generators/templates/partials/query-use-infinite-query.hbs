@@ -8,7 +8,7 @@ export const {{infiniteQueryName endpoint}} = <TData>({{#if (endpointParams endp
   return {{infiniteQueryHook}}({
     queryKey: keys.{{endpointName endpoint}}Infinite({{#if (endpointParams endpoint)}}{{{endpointArgs endpoint excludePageParam=true}}}{{/if}}),
     queryFn: ({ pageParam }) => {{#if hasQueryFnBody}}{ {{/if}} 
-    {{#if hasAclCheck}}checkAcl({{genAclCheckParams endpoint}});{{/if}}
+    {{#if hasAclCheck}}{{{genAclCheckCall endpoint}}}{{/if}}
     {{#if hasQueryFnBody}}return {{/if}}{{importedEndpointName endpoint}}({{{endpointArgs endpoint replacePageParam=true}}}{{#if hasAxiosRequestConfig}}, {{axiosRequestConfigName}}{{/if}})
     {{#if hasQueryFnBody}} }{{/if}},
     initialPageParam: 1,

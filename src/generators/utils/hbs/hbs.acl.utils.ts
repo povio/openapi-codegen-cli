@@ -1,4 +1,7 @@
 import Handlebars from "handlebars";
+import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
+import { Endpoint } from "src/generators/types/endpoint";
+import { GenerateOptions } from "src/generators/types/options";
 import {
   getAbilityAction,
   getAbilityConditionsTypes,
@@ -6,6 +9,7 @@ import {
   getAbilityFunctionName,
   getAbilitySubject,
   getAbilityTypeName,
+  getImportedAbilityFunctionName,
   getTagAllAbilitiesName,
   hasAbilityConditions,
 } from "../generate/generate.acl.utils";
@@ -13,6 +17,7 @@ import {
 enum AclHelpers {
   AbilityTypeName = "abilityTypeName",
   AbilityFunctionName = "abilityFunctionName",
+  ImportedAbilityFunctionName = "importedAbilityFunctionName",
   AbilityAction = "ablityAction",
   AbilitySubject = "ablitySubject",
   HasAbilityConditions = "hasAbilityConditions",
@@ -21,9 +26,10 @@ enum AclHelpers {
   TagAllAbilitiesName = "tagAllAbilitiesName",
 }
 
-export function registerAclHbsHelpers() {
+export function registerAclHbsHelpers(resolver: SchemaResolver) {
   registerAbilityTypeNameHelper();
   registerAbilityFunctionNameHelper();
+  registerImportedAbilityFunctionNameHelper(resolver.options);
   registerAbilityActionHelper();
   registerAbilitySubjectHelper();
   registerHasAbilityConditionsHelper();
@@ -38,6 +44,12 @@ function registerAbilityTypeNameHelper() {
 
 function registerAbilityFunctionNameHelper() {
   Handlebars.registerHelper(AclHelpers.AbilityFunctionName, getAbilityFunctionName);
+}
+
+function registerImportedAbilityFunctionNameHelper(options: GenerateOptions) {
+  Handlebars.registerHelper(AclHelpers.ImportedAbilityFunctionName, (endpoint: Endpoint) =>
+    getImportedAbilityFunctionName(endpoint, options),
+  );
 }
 
 function registerAbilityActionHelper() {
