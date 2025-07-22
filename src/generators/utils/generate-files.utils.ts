@@ -79,15 +79,7 @@ export function getStandaloneFiles(resolver: SchemaResolver): GenerateFileData[]
 }
 
 export function getZodExtendedFiles(data: GenerateData, resolver: SchemaResolver): GenerateFileData[] {
-  const hasZodExtendedFile = Array.from(data.values()).some(({ endpoints }) =>
-    endpoints.some((endpoint) => endpoint.parameters.some((param) => param.parameterSortingEnumSchemaName)),
-  );
-  if (!hasZodExtendedFile) {
-    return [];
-  }
-
-  const zodContent = generateZod(resolver);
-  if (!zodContent) {
+  if (!resolver.options.parseRequestParams) {
     return [];
   }
 
@@ -97,7 +89,7 @@ export function getZodExtendedFiles(data: GenerateData, resolver: SchemaResolver
         output: resolver.options.output,
         fileName: getFileNameWithExtension(ZOD_EXTENDED_FILE),
       }),
-      content: zodContent,
+      content: generateZod(resolver),
     },
   ];
 }
