@@ -35,7 +35,7 @@ interface ParseOptions {
   errorHandler?: {{errorHandler}}<never>;
 }
 
-function {{parse}}(schema: z.ZodSchema, data: unknown, { type, name, errorHandler }: ParseOptions = { type: "body" }) {
+function {{parse}}<T>(schema: z.ZodSchema<T>, data: unknown, { type, name, errorHandler }: ParseOptions = { type: "body" }) {
   try {
     return schema.parse(data);
   } catch (e) {
