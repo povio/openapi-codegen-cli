@@ -33,7 +33,7 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
     },
   },
   acl: true,
-  checkAcl: false,
+  checkAcl: true,
   standalone: false,
   baseUrl: "",
   abilityContextImportPath: TEMPLATE_IMPORTS.abilityContext.template,
@@ -48,7 +48,7 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   restClientImportPath: TEMPLATE_IMPORTS.appRestClient.template,
   errorHandlingImportPath: TEMPLATE_IMPORTS.errorHandling.template,
   removeOperationPrefixEndingWith: "Controller_",
-  parseRequestParams: false,
+  parseRequestParams: true,
   // Queries options
   queryTypesImportPath: TEMPLATE_IMPORTS.queryTypes.template,
   axiosRequestConfig: false,
