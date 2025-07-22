@@ -1,4 +1,4 @@
-import { ACL_APP_ABILITIES, ACL_CHECK_HOOK, CASL_ABILITY_BINDING, CASL_ABILITY_IMPORT } from "../const/acl.const";
+import { ACL_APP_ABILITIES, ACL_CHECK_HOOK } from "../const/acl.const";
 import { ABILITY_CONTEXT, ABILITY_CONTEXT_IMPORT, ERROR_HANDLERS, ERROR_HANDLING_IMPORT } from "../const/deps.const";
 import { SchemaResolver } from "../core/SchemaResolver.class";
 import { getAppAbilitiesImportPath } from "../utils/generate/generate.utils";
@@ -11,10 +11,6 @@ export function generateAclCheck(resolver: SchemaResolver) {
     abilityContextImport: {
       ...ABILITY_CONTEXT_IMPORT,
       from: resolver.options.abilityContextImportPath,
-    },
-    caslAbilityTupleImport: {
-      ...CASL_ABILITY_IMPORT,
-      bindings: [CASL_ABILITY_BINDING.abilityTuple],
     },
     appAbilitiesImport: {
       bindings: [ACL_APP_ABILITIES],
@@ -29,5 +25,6 @@ export function generateAclCheck(resolver: SchemaResolver) {
     errorHandler: ERROR_HANDLERS.ErrorHandler,
     sharedErrorHandler: ERROR_HANDLERS.SharedErrorHandler,
     aclCheckHook: ACL_CHECK_HOOK,
+    hasGenericAppAbilities: resolver.options.abilityContextGenericAppAbilities,
   });
 }

@@ -37,6 +37,7 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   standalone: false,
   baseUrl: "",
   abilityContextImportPath: TEMPLATE_IMPORTS.abilityContext.template,
+  abilityContextGenericAppAbilities: false,
   // Zod options
   schemaSuffix: SCHEMA_SUFFIX,
   enumSuffix: ENUM_SUFFIX,

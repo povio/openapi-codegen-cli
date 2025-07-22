@@ -49,6 +49,7 @@ interface BaseGenerateOptions {
   standalone: boolean;
   baseUrl: string;
   abilityContextImportPath: string;
+  abilityContextGenericAppAbilities: boolean;
 }
 
 export type GenerateOptions = BaseGenerateOptions &

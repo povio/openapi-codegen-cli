@@ -56,6 +56,7 @@ export async function generate({ input, excludeTags, monorepo, prettier, verbose
     errorHandlingImportPath: TEMPLATE_IMPORTS.errorHandling[template],
     queryTypesImportPath: TEMPLATE_IMPORTS.queryTypes[template],
     abilityContextImportPath: TEMPLATE_IMPORTS.abilityContext[template],
+    abilityContextGenericAppAbilities: monorepo,
     ...params,
   });
   if (verbose) {

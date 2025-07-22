@@ -5,18 +5,16 @@ import { useCallback } from "react";
 {{{genImport errorHandlingImport}}}
 {{! App abilities import }}
 {{{genImport appAbilitiesImport}}}
-{{! Casl ability tuple import }}
-{{{genImport caslAbilityTupleImport}}}
 
 interface UseAclCheckProps {
   errorHandler?: {{errorHandler}}<never>;
 }
 
 export function {{aclCheckHook}}({ errorHandler }: UseAclCheckProps = {}) {
-  const ability = {{abilityContext}}.useAbility();
+  const ability = {{abilityContext}}.useAbility{{#if hasGenericAppAbilities}}<{{appAbilities}}>{{/if}}();
 
   const checkAcl = useCallback((appAbility: {{appAbilities}}) => {
-    if (!ability.can(...(appAbility as AbilityTuple))) {
+    if (!ability.can(...appAbility)) {
       (errorHandler ?? {{sharedErrorHandler}}).rethrowError(new Error("ACL check failed"));
     }
   }, [ability, errorHandler]);
