@@ -1,15 +1,11 @@
-import { APP_REST_CLIENT_NAME, ZOD_EXTENDED } from "../const/deps.const";
+import { APP_REST_CLIENT_NAME, ZOD_UTILS } from "../const/deps.const";
 import { AXIOS_IMPORT, AXIOS_REQUEST_CONFIG_NAME, AXIOS_REQUEST_CONFIG_TYPE } from "../const/endpoints.const";
 import { ZOD_IMPORT } from "../const/zod.const";
 import { EndpointParameter } from "../types/endpoint";
 import { GenerateType, GenerateTypeParams, Import } from "../types/generate";
 import { getUniqueArray } from "../utils/array.utils";
 import { getModelsImports } from "../utils/generate/generate.imports.utils";
-import {
-  getAppRestClientImportPath,
-  getNamespaceName,
-  getZodExtendedImportPath,
-} from "../utils/generate/generate.utils";
+import { getAppRestClientImportPath, getNamespaceName, getZodUtilsImportPath } from "../utils/generate/generate.utils";
 import { getHbsTemplateDelegate } from "../utils/hbs/hbs-template.utils";
 import { isNamedZodSchema } from "../utils/zod-schema.utils";
 
@@ -42,10 +38,10 @@ export function generateEndpoints({ resolver, data, tag = "" }: GenerateTypePara
 
   const hasZodImport = zodSchemas.some((schema) => !isNamedZodSchema(schema));
 
-  const hasZodExtendedImport = resolver.options.parseRequestParams && endpointParamsParseSchemas.length > 0;
-  const zodExtendedImport: Import = {
-    bindings: [ZOD_EXTENDED.name],
-    from: getZodExtendedImportPath(resolver.options),
+  const hasZodUtilsImport = resolver.options.parseRequestParams && endpointParamsParseSchemas.length > 0;
+  const zodUtilsImport: Import = {
+    bindings: [ZOD_UTILS.namespace],
+    from: getZodUtilsImportPath(resolver.options),
   };
 
   const modelsImports = getModelsImports({
@@ -63,8 +59,8 @@ export function generateEndpoints({ resolver, data, tag = "" }: GenerateTypePara
     axiosImport,
     hasZodImport,
     zodImport: ZOD_IMPORT,
-    hasZodExtendedImport,
-    zodExtendedImport,
+    hasZodUtilsImport,
+    zodUtilsImport,
     modelsImports,
     includeNamespace: resolver.options.tsNamespaces,
     namespace: getNamespaceName({ type: GenerateType.Endpoints, tag, options: resolver.options }),

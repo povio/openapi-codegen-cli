@@ -16,7 +16,7 @@ export function getZodChain({
   const chains: string[] = [];
 
   match(schema.type)
-    .with("string", () => chains.push(getZodChainableStringValidations(schema, options)))
+    .with("string", () => chains.push(getZodChainableStringValidations(schema)))
     .with("number", "integer", () => chains.push(getZodChainableNumberValidations(schema)))
     .with("array", () => chains.push(getZodChainableArrayValidations(schema)))
     .otherwise(() => void 0);
@@ -75,7 +75,7 @@ function getZodChainableDefault(schema: OpenAPIV3.SchemaObject) {
   return "";
 }
 
-function getZodChainableStringValidations(schema: OpenAPIV3.SchemaObject, options: GenerateOptions) {
+function getZodChainableStringValidations(schema: OpenAPIV3.SchemaObject) {
   const validations: string[] = [];
 
   if (!schema.enum) {
@@ -97,7 +97,7 @@ function getZodChainableStringValidations(schema: OpenAPIV3.SchemaObject, option
       .with("email", () => "email()")
       .with("hostname", "uri", () => "url()")
       .with("uuid", () => "uuid()")
-      .with("date-time", () => `datetime({ offset: true })${options.branded ? ".brand('datetime')" : ""}`)
+      .with("date-time", () => "datetime({ offset: true })")
       .otherwise(() => "");
 
     if (chain) {
