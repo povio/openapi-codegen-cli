@@ -74,12 +74,13 @@ export const MUTATION_EFFECTS = {
 };
 export const MUTATION_EFFECTS_FILE: GenerateFile = { fileName: "useMutationEffects", extension: "ts" };
 
-// ZodExtended
-export const ZOD_EXTENDED = {
-  name: "zod",
-  properties: {
-    sortingString: "sortingString",
+// ZodUtils
+export const ZOD_UTILS = {
+  namespace: "ZodUtils",
+  exports: {
     parse: "parse",
+    sortExp: "sortExp",
+    brand: "brand",
   },
 };
-export const ZOD_EXTENDED_FILE: GenerateFile = { fileName: "zod", extension: "ts" };
+export const ZOD_UTILS_FILE: GenerateFile = { fileName: "zod.utils", extension: "ts" };

@@ -18,6 +18,7 @@ export interface GenerateZodSchemaData {
   isCiruclar: boolean;
   isEnum: boolean;
   schemaObj?: OpenAPIV3.SchemaObject;
+  hasBrand: boolean;
 }
 
 export enum GenerateType {

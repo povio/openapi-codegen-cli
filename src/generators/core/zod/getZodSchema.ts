@@ -1,6 +1,7 @@
 import { OpenAPIV3 } from "openapi-types";
 import { BLOB_SCHEMA, ENUM_SCHEMA, STRING_SCHEMA } from "src/generators/const/zod.const";
 import { GenerateType } from "src/generators/types/generate";
+import { getOtherBrands, getPrimitiveBrands, matchesBrand, wrapWithBrand } from "src/generators/utils/brand.utils";
 import { getNamespaceName } from "src/generators/utils/generate/generate.utils";
 import { match } from "ts-pattern";
 import {
@@ -110,13 +111,21 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag }: Get
           }
         }
 
-        const propZodSchema =
+        let propZodSchema =
           getZodSchema({ ...params, schema: propSchema, meta: propMetadata }).getCodeString(tag, resolver.options) +
           getZodChain({
             schema: propActualSchema as OpenAPIV3.SchemaObject,
             meta: propMetadata,
             options: resolver.options,
           });
+
+        if (isSchemaObject(propSchema)) {
+          getPrimitiveBrands().forEach((brand) => {
+            if (matchesBrand(propSchema, brand)) {
+              propZodSchema = wrapWithBrand(propZodSchema, brand, resolver.options);
+            }
+          });
+        }
 
         return [prop, propZodSchema];
       });
@@ -143,7 +152,15 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag }: Get
 
     const partial = isPartial ? ".partial()" : "";
     const strict = resolver.options.strictObjects ? ".strict()" : "";
-    return zodSchema.assign(`z.object(${properties})${partial}${strict}${additionalPropsSchema}${readonly}`);
+    let zodObject = `z.object(${properties})${partial}${strict}${additionalPropsSchema}${readonly}`;
+
+    getOtherBrands().forEach((brand) => {
+      if (matchesBrand(schema, brand)) {
+        zodObject = wrapWithBrand(zodObject, brand, resolver.options);
+      }
+    });
+
+    return zodSchema.assign(zodObject);
   }
 
   if ((schemaType as unknown) === "any") {
