@@ -51,7 +51,7 @@ export namespace {{zodUtilsNamespace}} {
   export class ZodBranded<T extends z.ZodTypeAny, B extends string | number | symbol> extends z.ZodType<
     T["_output"] | (T["_output"] & ZodBrand<B>),
     z.ZodTypeDef,
-    T["_input"]
+    T["_input"] | (T["_input"] & ZodBrand<B>)
   > {
     readonly _schema: T;
 
