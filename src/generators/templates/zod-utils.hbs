@@ -19,8 +19,6 @@ function is{{capitalize sortExp}}Valid(enumSchema: z.ZodEnum<[string, ...string[
   return new RegExp(`^${commaSeparatedOptions}$`).test(data);
 }
 
-const ZOD_UTILS_BRAND: unique symbol = Symbol("__zod_utils_brand");
-
 export namespace {{zodUtilsNamespace}} {
   export function {{parse}}<T>(schema: z.ZodSchema<T>, data: unknown, { type, name, errorHandler }: ParseOptions = { type: "body" }) {
     try {
@@ -43,10 +41,6 @@ export namespace {{zodUtilsNamespace}} {
         });
       }
     });
-
-  export interface ZodBrand<T extends string | number | symbol> {
-    readonly [ZOD_UTILS_BRAND]: T;
-  }
 
   export class ZodBranded<T extends z.ZodTypeAny, B extends string | number | symbol> extends z.ZodType<
     T["_output"],
@@ -71,8 +65,6 @@ export namespace {{zodUtilsNamespace}} {
       return this._schema;
     }
   }
-
-  export type ExtractZodBrand<T> = T extends ZodBrand<infer B> ? B : never;
 
   export function {{brand}}<T extends z.ZodTypeAny, B extends string | number | symbol>(
     schema: T,
