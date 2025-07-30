@@ -51,7 +51,7 @@ export function getZodSchemaDescription(data: GenerateZodSchemaData) {
   if (!data.schemaObj) {
     return;
   }
-  return [data.schemaObj.description, ...getSchemaDescriptions(data.schemaObj).join(". ")].filter(Boolean);
+  return [data.schemaObj.description, ...getSchemaDescriptions(data.schemaObj)].filter(Boolean).join(". ");
 }
 
 function getType(resolver: SchemaResolver, schemaObj: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject, tag: string) {
