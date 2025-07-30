@@ -41,6 +41,7 @@ export function mapEndpointParamsToFunctionParams(
     replacePageParam?: boolean;
     includeFileParam?: boolean;
     includeOnlyRequiredParams?: boolean;
+    pathParamsRequiredOnly?: boolean;
   },
 ) {
   const params = endpoint.parameters.map((param) => {
@@ -92,6 +93,7 @@ export function mapEndpointParamsToFunctionParams(
     .map((param) => ({
       ...param,
       name: options?.replacePageParam && param.name === INFINITE_QUERY_PARAMS.pageParamName ? "pageParam" : param.name,
+      required: param.required && (param.paramType === "Path" || !options?.pathParamsRequiredOnly),
     }));
 }
 

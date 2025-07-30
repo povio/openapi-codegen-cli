@@ -1,10 +1,10 @@
 export const keys = {
     all: [{{queriesModuleName}}] as const,
     {{#each queryEndpoints as | endpoint |}}
-    {{endpointName endpoint}}: ({{{genEndpointParams endpoint}}}) => [...keys.all, "{{endpoint.path}}", {{{endpointArgs endpoint}}}] as const,
+    {{endpointName endpoint}}: ({{{genEndpointParams endpoint pathParamsRequiredOnly=true}}}) => [...keys.all, "{{endpoint.path}}", {{{endpointArgs endpoint}}}] as const,
     {{#if ../generateInfiniteQueries}}
     {{#if (isInfiniteQuery endpoint)}}
-    {{endpointName endpoint}}Infinite: ({{{genEndpointParams endpoint excludePageParam=true}}}) => [...keys.all, "{{endpoint.path}}", "infinite", {{{endpointArgs endpoint excludePageParam=true}}}] as const,
+    {{endpointName endpoint}}Infinite: ({{{genEndpointParams endpoint excludePageParam=true pathParamsRequiredOnly=true}}}) => [...keys.all, "{{endpoint.path}}", "infinite", {{{endpointArgs endpoint excludePageParam=true}}}] as const,
     {{/if}}
     {{/if}}
     {{/each}}
