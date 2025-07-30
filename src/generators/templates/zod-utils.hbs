@@ -43,12 +43,12 @@ export namespace {{zodUtilsNamespace}} {
     });
 
   {{#if branded}}
-  export class ZodBranded<T extends z.ZodTypeAny> extends z.ZodType<T["_output"], z.ZodTypeDef, T["_input"]> {
+  export class ZodBranded<T extends z.ZodTypeAny, B extends string> extends z.ZodType<T["_output"], z.ZodTypeDef, T["_input"]> {
     readonly _schema: T;
 
-    readonly _brand: string;
+    readonly _brand: B;
 
-    constructor(_schema: T, _brand: string) {
+    constructor(_schema: T, _brand: B) {
       super(_schema._def);
       this._schema = _schema;
       this._brand = _brand;
@@ -63,7 +63,7 @@ export namespace {{zodUtilsNamespace}} {
     }
   }
 
-  export function {{brand}}<T extends z.ZodTypeAny>(schema: T, _brand: string): ZodBranded<T> {
+  export function {{brand}}<T extends z.ZodTypeAny, B extends string>(schema: T, _brand: B): ZodBranded<T, B> {
     return new ZodBranded(schema, _brand);
   }
   {{/if}}

@@ -12,6 +12,7 @@ export function generateZodUtils(resolver: SchemaResolver) {
     parse: ZOD_UTILS.exports.parse,
     sortExp: ZOD_UTILS.exports.sortExp,
     brand: ZOD_UTILS.exports.brand,
+    branded: resolver.options.branded,
     errorHandler: ERROR_HANDLERS.ErrorHandler,
     sharedErrorHandler: ERROR_HANDLERS.SharedErrorHandler,
     errorHandlingImport: {
