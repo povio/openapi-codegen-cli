@@ -12,12 +12,10 @@
     "build:clean": "rm -rf ./dist",
     "build:types": "tsc --project . --declaration --emitDeclarationOnly",
     "build": "yarn build:clean && yarn build:types && node ./esbuild.mjs && chmod +x ./dist/sh.js",
-    "build:check": "yarn tsc --project . --noEmit",
     "start:dist": "node ./dist/sh.js",
     "typecheck": "tsc --noEmit",
     "lint": "eslint ./src",
-    "format:check": "prettier --check .",
-    "format:fix": "prettier --write .",
+    "check": "yarn typecheck && yarn lint && yarn test",
     "push": "yarn exec ./scripts/publish.sh",
     "dev:generate": "rm -rf ./output && yarn start generate --input ./test/test.json",
     "dev:check": "yarn start check --input ./test/test.json"
