@@ -1,8 +1,8 @@
 import { DEFAULT_GENERATE_OPTIONS } from "src/generators/const/options.const";
 import yargs from "yargs";
-import { logBanner, logVariable } from "../helpers/cli.helper";
-import { getVersion } from "../helpers/version.helper";
-import { getBuilder, YargOption } from "../helpers/yargs.helper";
+import { logBanner, logVariable } from "src/helpers/cli.helper";
+import { getVersion } from "src/helpers/version.helper";
+import { getBuilder, YargOption } from "src/helpers/yargs.helper";
 import { check, CheckParams } from "./check";
 
 class CheckOptions implements CheckParams {

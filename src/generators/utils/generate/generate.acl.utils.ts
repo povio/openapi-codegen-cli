@@ -1,8 +1,8 @@
 import { ACL_ALL_ABILITIES } from "src/generators/const/acl.const";
 import { GenerateType } from "src/generators/types/generate";
 import { GenerateOptions } from "src/generators/types/options";
-import { Endpoint } from "../../types/endpoint";
-import { capitalize, snakeToCamel } from "../string.utils";
+import { Endpoint } from "src/generators/types/endpoint";
+import { capitalize, snakeToCamel } from "src/generators/utils/string.utils";
 import { getEndpointTag } from "./generate.endpoints.utils";
 import { getNamespaceName } from "./generate.utils";
 

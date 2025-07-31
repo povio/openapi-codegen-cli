@@ -1,7 +1,7 @@
-import { HTTP_STATUS_CODES, HttpStatusCode } from "../const/validation.const";
-import { Endpoint, EndpointParameter } from "../types/endpoint";
-import { OperationObject } from "../types/openapi";
-import { ValidationError, ValidationErrorType } from "../types/validation";
+import { HTTP_STATUS_CODES, HttpStatusCode } from "src/generators/const/validation.const";
+import { Endpoint, EndpointParameter } from "src/generators/types/endpoint";
+import { OperationObject } from "src/generators/types/openapi";
+import { ValidationError, ValidationErrorType } from "src/generators/types/validation";
 
 export function getInvalidSchemaError(message: string): ValidationError {
   return { type: "invalid-schema", message };

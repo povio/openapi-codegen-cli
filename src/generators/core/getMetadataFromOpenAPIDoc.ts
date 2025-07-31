@@ -1,15 +1,15 @@
 import { OpenAPIV3 } from "openapi-types";
-import { Endpoint, EndpointParameter } from "../types/endpoint";
-import { GenerateType } from "../types/generate";
-import { GenerateMetadata, ModelMetadata, QueryMetadata, TsMetaType } from "../types/metadata";
-import { GenerateOptions } from "../types/options";
-import { getQueryName } from "../utils/generate/generate.query.utils";
-import { getNamespaceName, getTagImportPath } from "../utils/generate/generate.utils";
-import { invalidVariableNameCharactersToCamel } from "../utils/js.utils";
-import { isMediaTypeAllowed, isParamMediaTypeAllowed } from "../utils/openapi.utils";
-import { isMutation, isQuery } from "../utils/query.utils";
-import { formatTag } from "../utils/tag.utils";
-import { getSchemaTsMetaType, getTsTypeBase } from "../utils/ts.utils";
+import { Endpoint, EndpointParameter } from "src/generators/types/endpoint";
+import { GenerateType } from "src/generators/types/generate";
+import { GenerateMetadata, ModelMetadata, QueryMetadata, TsMetaType } from "src/generators/types/metadata";
+import { GenerateOptions } from "src/generators/types/options";
+import { getQueryName } from "src/generators/utils/generate/generate.query.utils";
+import { getNamespaceName, getTagImportPath } from "src/generators/utils/generate/generate.utils";
+import { invalidVariableNameCharactersToCamel } from "src/generators/utils/js.utils";
+import { isMediaTypeAllowed, isParamMediaTypeAllowed } from "src/generators/utils/openapi.utils";
+import { isMutation, isQuery } from "src/generators/utils/query.utils";
+import { formatTag } from "src/generators/utils/tag.utils";
+import { getSchemaTsMetaType, getTsTypeBase } from "src/generators/utils/ts.utils";
 import { getDataFromOpenAPIDoc } from "./getDataFromOpenAPIDoc";
 import { SchemaResolver } from "./SchemaResolver.class";
 

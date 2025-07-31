@@ -1,11 +1,11 @@
-import { ZOD_UTILS } from "../const/deps.const";
+import { ZOD_UTILS } from "src/generators/const/deps.const";
 import {
   BODY_SCHEMA_SUFFIX,
   ENUM_SCHEMA,
   ERROR_RESPONSE_SCHEMA_SUFFIX,
   PARAM_SCHEMA_SUFFIX,
   RESPONSE_SCHEMA_SUFFIX,
-} from "../const/zod.const";
+} from "src/generators/const/zod.const";
 import { isErrorStatus, isMainResponseStatus, normalizeString } from "./openapi.utils";
 import { capitalize, snakeToCamel, suffixIfNeeded } from "./string.utils";
 

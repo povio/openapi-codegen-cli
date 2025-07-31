@@ -9,9 +9,9 @@ import {
   isArraySchemaObject,
   isReferenceObject,
   isSchemaObject,
-} from "../../utils/openapi-schema.utils";
-import { isPrimitiveType, wrapWithQuotesIfNeeded } from "../../utils/openapi.utils";
-import { SchemaResolver } from "../SchemaResolver.class";
+} from "src/generators/utils/openapi-schema.utils";
+import { isPrimitiveType, wrapWithQuotesIfNeeded } from "src/generators/utils/openapi.utils";
+import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
 import { ZodSchema, ZodSchemaMetaData } from "./ZodSchema.class";
 import { getZodChain } from "./getZodChain";
 

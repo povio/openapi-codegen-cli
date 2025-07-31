@@ -1,3 +1,4 @@
+/* eslint-disable no-console, @typescript-eslint/no-explicit-any */
 import type { Prompt as PromptSyncPrompt } from "prompt-sync";
 import { chk } from "./chalk.helper";
 
@@ -23,6 +24,10 @@ export function logVariable(name: string, value: any, defaultValue?: string | nu
   } else {
     console.log(`${`${name}:`.padEnd(20)}${value}`);
   }
+}
+
+export function log(message: string) {
+  console.log(message);
 }
 
 export function logInfo(message: string) {

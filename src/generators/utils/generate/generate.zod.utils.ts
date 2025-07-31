@@ -6,9 +6,9 @@ import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
 import { GenerateType, GenerateZodSchemaData } from "src/generators/types/generate";
 import { GenerateOptions } from "src/generators/types/options";
 import { isReferenceObject } from "src/generators/utils/openapi-schema.utils";
-import { isArraySchemaObject } from "../openapi-schema.utils";
-import { removeSuffix } from "../string.utils";
-import { isNamedZodSchema } from "../zod-schema.utils";
+import { isArraySchemaObject } from "src/generators/utils/openapi-schema.utils";
+import { removeSuffix } from "src/generators/utils/string.utils";
+import { isNamedZodSchema } from "src/generators/utils/zod-schema.utils";
 import { getSchemaDescriptions } from "./generate.openapi.utils";
 import { getNamespaceName } from "./generate.utils";
 

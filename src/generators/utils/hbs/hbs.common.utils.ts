@@ -1,5 +1,5 @@
 import Handlebars from "handlebars";
-import { capitalize } from "../string.utils";
+import { capitalize } from "src/generators/utils/string.utils";
 
 enum CommonHelpers {
   IsEqual = "isEqual",
@@ -18,7 +18,7 @@ export function registerCommonHbsHelpers() {
 }
 
 function registerIsEqualHelper() {
-  Handlebars.registerHelper(CommonHelpers.IsEqual, (a: any, b: any) => a === b);
+  Handlebars.registerHelper(CommonHelpers.IsEqual, (a: unknown, b: unknown) => a === b);
 }
 
 function registerCommaSeparatedListHelper() {
@@ -30,7 +30,7 @@ function registerAddAsteriskAfterNewLineHelper() {
 }
 
 function registerJsonStringifyHelper() {
-  Handlebars.registerHelper(CommonHelpers.JSONStringify, (obj: any) => JSON.stringify(obj, null, 2));
+  Handlebars.registerHelper(CommonHelpers.JSONStringify, (obj: unknown) => JSON.stringify(obj, null, 2));
 }
 
 function registerCapitalizeHelper() {

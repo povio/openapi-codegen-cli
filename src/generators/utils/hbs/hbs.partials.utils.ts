@@ -4,18 +4,18 @@ import { MUTATION_EFFECTS, ZOD_UTILS } from "src/generators/const/deps.const";
 import { AXIOS_REQUEST_CONFIG_NAME, AXIOS_REQUEST_CONFIG_TYPE } from "src/generators/const/endpoints.const";
 import { BLOB_SCHEMA } from "src/generators/const/zod.const";
 import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
-import { INFINITE_QUERY_RESPONSE_PARAMS, QUERIES_MODULE_NAME, QUERY_HOOKS } from "../../const/queries.const";
-import { Endpoint, EndpointParameter } from "../../types/endpoint";
-import { GenerateZodSchemaData, Import } from "../../types/generate";
-import { getAbilityConditionsTypes, hasAbilityConditions } from "../generate/generate.acl.utils";
+import { INFINITE_QUERY_RESPONSE_PARAMS, QUERIES_MODULE_NAME, QUERY_HOOKS } from "src/generators/const/queries.const";
+import { Endpoint, EndpointParameter } from "src/generators/types/endpoint";
+import { GenerateZodSchemaData, Import } from "src/generators/types/generate";
+import { getAbilityConditionsTypes, hasAbilityConditions } from "src/generators/utils/generate/generate.acl.utils";
 import {
   getEndpointConfig,
   getUpdateQueryEndpoints,
   mapEndpointParamsToFunctionParams,
-} from "../generate/generate.endpoints.utils";
-import { getHbsPartialTemplateDelegate } from "../hbs/hbs-template.utils";
-import { getDestructuredVariables, isInfiniteQuery, isMutation, isQuery } from "../query.utils";
-import { isNamedZodSchema } from "../zod-schema.utils";
+} from "src/generators/utils/generate/generate.endpoints.utils";
+import { getHbsPartialTemplateDelegate } from "src/generators/utils/hbs/hbs-template.utils";
+import { getDestructuredVariables, isInfiniteQuery, isMutation, isQuery } from "src/generators/utils/query.utils";
+import { isNamedZodSchema } from "src/generators/utils/zod-schema.utils";
 
 enum PartialsHelpers {
   ModelJsDocs = "genModelJsDocs",

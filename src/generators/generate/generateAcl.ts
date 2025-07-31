@@ -1,11 +1,16 @@
-import { ACL_ALL_ABILITIES, ACL_APP_ABILITIES, CASL_ABILITY_BINDING, CASL_ABILITY_IMPORT } from "../const/acl.const";
-import { SchemaResolver } from "../core/SchemaResolver.class";
-import { GenerateType, GenerateTypeParams, Import } from "../types/generate";
-import { getUniqueArray } from "../utils/array.utils";
-import { getTagAllAbilitiesName } from "../utils/generate/generate.acl.utils";
-import { getEntityImports, getModelsImports } from "../utils/generate/generate.imports.utils";
-import { getNamespaceName } from "../utils/generate/generate.utils";
-import { getHbsTemplateDelegate } from "../utils/hbs/hbs-template.utils";
+import {
+  ACL_ALL_ABILITIES,
+  ACL_APP_ABILITIES,
+  CASL_ABILITY_BINDING,
+  CASL_ABILITY_IMPORT,
+} from "src/generators/const/acl.const";
+import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
+import { GenerateType, GenerateTypeParams, Import } from "src/generators/types/generate";
+import { getUniqueArray } from "src/generators/utils/array.utils";
+import { getTagAllAbilitiesName } from "src/generators/utils/generate/generate.acl.utils";
+import { getEntityImports, getModelsImports } from "src/generators/utils/generate/generate.imports.utils";
+import { getNamespaceName } from "src/generators/utils/generate/generate.utils";
+import { getHbsTemplateDelegate } from "src/generators/utils/hbs/hbs-template.utils";
 
 export function generateAcl({ resolver, data, tag = "" }: GenerateTypeParams) {
   const endpoints = data.get(tag)?.endpoints.filter(({ acl }) => acl && acl.length > 0);

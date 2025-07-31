@@ -1,6 +1,6 @@
-import { INFINITE_QUERY_PARAMS } from "../const/queries.const";
-import { SchemaResolver } from "../core/SchemaResolver.class";
-import { Endpoint } from "../types/endpoint";
+import { INFINITE_QUERY_PARAMS } from "src/generators/const/queries.const";
+import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
+import { Endpoint } from "src/generators/types/endpoint";
 import { mapEndpointParamsToFunctionParams } from "./generate/generate.endpoints.utils";
 
 export const isQuery = (endpoint: Endpoint) => endpoint.method === "get";

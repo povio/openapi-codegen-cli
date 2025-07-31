@@ -1,5 +1,5 @@
-import { GenerateType } from "../types/generate";
-import { GenerateOptions } from "../types/options";
+import { GenerateType } from "src/generators/types/generate";
+import { GenerateOptions } from "src/generators/types/options";
 import { TEMPLATE_IMPORTS } from "./deps.const";
 import { ENUM_SUFFIX, SCHEMA_SUFFIX } from "./zod.const";
 

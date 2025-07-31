@@ -1,5 +1,5 @@
-import { OperationObject } from "../types/openapi";
-import { GenerateOptions } from "../types/options";
+import { OperationObject } from "src/generators/types/openapi";
+import { GenerateOptions } from "src/generators/types/options";
 import { nonWordCharactersToCamel } from "./string.utils";
 
 export function formatTag(tag: string) {

@@ -1,8 +1,8 @@
 import { OpenAPIV3 } from "openapi-types";
-import { RESERVED_WORDS } from "../const/js.const";
-import { ALLOWED_METHODS } from "../const/openapi.const";
-import { OperationObject } from "../types/openapi";
-import { GenerateOptions } from "../types/options";
+import { RESERVED_WORDS } from "src/generators/const/js.const";
+import { ALLOWED_METHODS } from "src/generators/const/openapi.const";
+import { OperationObject } from "src/generators/types/openapi";
+import { GenerateOptions } from "src/generators/types/options";
 import { invalidVariableNameCharactersToCamel } from "./js.utils";
 import { pick } from "./object.utils";
 import { isPathExcluded, pathToVariableName } from "./openapi.utils";

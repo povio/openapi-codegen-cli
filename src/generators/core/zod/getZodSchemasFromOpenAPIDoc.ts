@@ -1,5 +1,5 @@
-import { getZodSchemaName } from "../../utils/zod-schema.utils";
-import { EnumZodSchemaData, SchemaResolver } from "../SchemaResolver.class";
+import { getZodSchemaName } from "src/generators/utils/zod-schema.utils";
+import { EnumZodSchemaData, SchemaResolver } from "src/generators/core/SchemaResolver.class";
 import { getEnumZodSchemaCode, getZodSchema } from "./getZodSchema";
 
 export function getZodSchemasFromOpenAPIDoc(resolver: SchemaResolver) {

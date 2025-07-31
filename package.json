@@ -15,11 +15,12 @@
     "build:check": "yarn tsc --project . --noEmit",
     "start:dist": "node ./dist/sh.js",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint --fix",
+    "lint": "eslint ./src",
     "format:check": "prettier --check .",
     "format:fix": "prettier --write .",
     "push": "yarn exec ./scripts/publish.sh",
-    "dev:generate": "rm -rf ./output && yarn start generate --input ./test/test.json"
+    "dev:generate": "rm -rf ./output && yarn start generate --input ./test/test.json",
+    "dev:check": "yarn start check --input ./test/test.json"
   },
   "files": [
     "dist/*",
@@ -53,6 +54,7 @@
     "esbuild": "^0.21.3",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-no-relative-import-paths": "^1.6.1",
     "eslint-plugin-prettier": "^5.1.3",
     "handlebars": "^4.7.8",
     "openapi-types": "^12.1.3",

@@ -2,7 +2,7 @@ import { OpenAPIV3 } from "openapi-types";
 import { isReferenceObject } from "src/generators/utils/openapi-schema.utils";
 import { autocorrectRef } from "src/generators/utils/openapi.utils";
 import { getInvalidSchemaError } from "src/generators/utils/validation.utils";
-import { SchemaResolver } from "../SchemaResolver.class";
+import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
 import { iterateSchema, OnSchemaCallbackData } from "./iterateSchema";
 
 export function getSchemaRefObjs(

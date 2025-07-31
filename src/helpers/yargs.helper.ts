@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import "reflect-metadata";
 import type { Options } from "yargs";
 
@@ -43,8 +44,7 @@ export function getBuilder(options: any) {
 export function getYargsOptions<T>(target: any): Record<keyof T, Options> {
   return Object.entries(getYargsOption(target)).reduce(
     (a, [property, options]) => {
-      // @ts-ignore
-      a[property] = Object.fromEntries(
+      a[property as keyof T] = Object.fromEntries(
         Object.entries(options).filter(([optionName]) => !["envAlias", "default"].includes(optionName)),
       );
       return a;

@@ -1,6 +1,6 @@
-import { Endpoint } from "../../types/endpoint";
-import { isMutation, isQuery } from "../query.utils";
-import { capitalize, snakeToCamel } from "../string.utils";
+import { Endpoint } from "src/generators/types/endpoint";
+import { isMutation, isQuery } from "src/generators/utils/query.utils";
+import { capitalize, snakeToCamel } from "src/generators/utils/string.utils";
 
 export const getQueryName = (endpoint: Endpoint, mutation?: boolean) => {
   const addMutationSuffix = isQuery(endpoint) && isMutation(endpoint) && mutation;

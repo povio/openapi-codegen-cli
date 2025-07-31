@@ -1,4 +1,4 @@
-import { Import } from "../types/generate";
+import { Import } from "src/generators/types/generate";
 
 export const DEFAULT_HEADERS = {
   "Content-Type": "application/json",

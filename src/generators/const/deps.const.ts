@@ -1,4 +1,4 @@
-import { GenerateFile, Import } from "../types/generate";
+import { GenerateFile, Import } from "src/generators/types/generate";
 
 export const APP_REST_CLIENT_NAME = "AppRestClient";
 

@@ -1,7 +1,7 @@
 import { OpenAPIV3 } from "openapi-types";
 import { describe, expect, test } from "vitest";
-import { DEFAULT_GENERATE_OPTIONS } from "../const/options.const";
-import { GenerateOptions } from "../types/options";
+import { DEFAULT_GENERATE_OPTIONS } from "src/generators/const/options.const";
+import { GenerateOptions } from "src/generators/types/options";
 import { getOperationName, getOperationsByTag, getUniqueOperationName } from "./operation.utils";
 
 const path = "/auth/provider/local/login";
