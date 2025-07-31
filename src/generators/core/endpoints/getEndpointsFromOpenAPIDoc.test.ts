@@ -168,7 +168,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
       },
     ]);
     expect(resolver.getZodSchemas()).toStrictEqual({
-      Order: `z.object({ id: z.number().int(), petId: z.number().int(), quantity: z.number().int(), shipDate: z.string().datetime({ offset: true }).brand('datetime'), status: z.enum(["placed", "approved", "delivered"]), complete: z.boolean() }).partial()`,
+      Order: `z.object({ id: z.number().int(), petId: z.number().int(), quantity: z.number().int(), shipDate: ZodUtils.brand(z.string().datetime({ offset: true }), "datetime"), status: z.enum(["placed", "approved", "delivered"]), complete: z.boolean() }).partial()`,
     });
     expect(resolver["compositeZodSchemaData"]).toStrictEqual([]);
   });
@@ -1691,7 +1691,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
       FindPetsByTagsResponse: "z.array(Pet)",
       FindPetsByTagsTagsParam: "z.array(z.string()).optional()",
       GetInventoryResponse: "z.object({}).catchall(z.number().int())",
-      Order: `z.object({ id: z.number().int(), petId: z.number().int(), quantity: z.number().int(), shipDate: z.string().datetime({ offset: true }).brand('datetime'), status: z.enum(["placed", "approved", "delivered"]), complete: z.boolean() }).partial()`,
+      Order: `z.object({ id: z.number().int(), petId: z.number().int(), quantity: z.number().int(), shipDate: ZodUtils.brand(z.string().datetime({ offset: true }), "datetime"), status: z.enum(["placed", "approved", "delivered"]), complete: z.boolean() }).partial()`,
       Pet: `z.object({ id: z.number().int().optional(), name: z.string(), category: Category.optional(), photoUrls: z.array(z.string()), tags: z.array(Tag).optional(), status: z.enum(["available", "pending", "sold"]).optional() })`,
       Tag: "z.object({ id: z.number().int(), name: z.string() }).partial()",
       User: "z.object({ id: z.number().int(), username: z.string(), firstName: z.string(), lastName: z.string(), email: z.string(), password: z.string(), phone: z.string(), userStatus: z.number().int() }).partial()",
