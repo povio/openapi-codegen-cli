@@ -4,6 +4,7 @@ import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
 import { Endpoint } from "src/generators/types/endpoint";
 import { GenerateOptions } from "src/generators/types/options";
 import {
+  getEndpointBody,
   getEndpointName,
   getEndpointPath,
   getImportedEndpointName,
@@ -48,9 +49,7 @@ function registerEndpointPathHelper() {
 }
 
 function registerEndpointBodyHelper() {
-  Handlebars.registerHelper(EndpointsHelpers.EndpointBody, (endpoint: Endpoint) =>
-    endpoint.parameters.find((params) => params.type === "Body"),
-  );
+  Handlebars.registerHelper(EndpointsHelpers.EndpointBody, getEndpointBody);
 }
 
 function registerEndpointParamsHelper(resolver: SchemaResolver) {

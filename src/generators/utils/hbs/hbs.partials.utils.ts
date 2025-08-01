@@ -9,9 +9,12 @@ import { Endpoint, EndpointParameter } from "src/generators/types/endpoint";
 import { GenerateZodSchemaData, Import } from "src/generators/types/generate";
 import { getAbilityConditionsTypes, hasAbilityConditions } from "src/generators/utils/generate/generate.acl.utils";
 import {
+  getEndpointBody,
   getEndpointConfig,
   getUpdateQueryEndpoints,
+  hasEndpointConfig,
   mapEndpointParamsToFunctionParams,
+  requiresBody,
 } from "src/generators/utils/generate/generate.endpoints.utils";
 import { getHbsPartialTemplateDelegate } from "src/generators/utils/hbs/hbs-template.utils";
 import { getDestructuredVariables, isInfiniteQuery, isMutation, isQuery } from "src/generators/utils/query.utils";
@@ -21,6 +24,7 @@ enum PartialsHelpers {
   ModelJsDocs = "genModelJsDocs",
   Import = "genImport",
   EndpointParams = "genEndpointParams",
+  HasUndefinedEndpointBody = "hasUndefinedEndpointBody",
   EndpointConfig = "genEndpointConfig",
   EndpointParamParse = "genEndpointParamParse",
   QueryKeys = "genQueryKeys",
@@ -38,6 +42,7 @@ export function registerPartialsHbsHelpers(resolver: SchemaResolver) {
   registerGenerateModelJsDocsHelper();
   registerImportHelper();
   registerGenerateEndpointParamsHelper();
+  registerHasUndefinedEndpointBodyHelper(resolver);
   registerGenerateEndpointConfigHelper(resolver);
   registerGenerateEndpointParamParseHelper();
   registerGenerateQueryKeysHelper(resolver);
@@ -70,6 +75,14 @@ function registerGenerateEndpointParamsHelper() {
     PartialsHelpers.EndpointParams,
     (endpoint: Endpoint, options: { hash: Parameters<typeof mapEndpointParamsToFunctionParams>[2] }) =>
       getHbsPartialTemplateDelegate("endpoint-params")({ endpoint, options }),
+  );
+}
+
+function registerHasUndefinedEndpointBodyHelper(resolver: SchemaResolver) {
+  Handlebars.registerHelper(
+    PartialsHelpers.HasUndefinedEndpointBody,
+    (endpoint: Endpoint) =>
+      requiresBody(endpoint) && !getEndpointBody(endpoint) && hasEndpointConfig(endpoint, resolver),
   );
 }
 

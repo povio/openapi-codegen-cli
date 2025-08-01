@@ -32,8 +32,9 @@ export const {{endpointName endpoint}} = ({{{genEndpointParams endpoint}}}{{#if 
         {{#with (endpointBody endpoint) as | endpointBody |}}
         {{#if endpointBody}}{{#if ../../generateParse}}{{{genEndpointParamParse endpointBody endpointBody.name}}}{{else}}{{endpointBody.name}}{{/if}}, {{/if}}
         {{/with}}
+        {{#if (hasUndefinedEndpointBody endpoint)}} undefined, 
         {{! Config }}
-        {{{genEndpointConfig endpoint}}}
+        {{/if}}{{{genEndpointConfig endpoint}}}
     )
 };
 

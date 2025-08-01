@@ -25,6 +25,16 @@ export function getImportedEndpointName(endpoint: Endpoint, options: GenerateOpt
   return `${namespacePrefix}${getEndpointName(endpoint)}`;
 }
 
+export const requiresBody = (endpoint: Endpoint) => endpoint.method !== OpenAPIV3.HttpMethods.GET;
+
+export const getEndpointBody = (endpoint: Endpoint) => endpoint.parameters.find((param) => param.type === "Body");
+
+export const hasEndpointConfig = (endpoint: Endpoint, resolver: SchemaResolver) => {
+  const endpointConfig = getEndpointConfig(endpoint);
+  const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
+  return Object.keys(endpointConfig).length > 0 || hasAxiosRequestConfig;
+};
+
 export const getEndpointPath = (endpoint: Endpoint) => endpoint.path.replace(/:([a-zA-Z0-9_]+)/g, "${$1}");
 
 export function getEndpointTag(endpoint: Endpoint, options: GenerateOptions) {
