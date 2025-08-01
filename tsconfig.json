@@ -13,9 +13,8 @@
     "resolveJsonModule": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "declaration": true,
     "noImplicitAny": true
   },
-  "include": ["src/**/*.ts", "test/**/*.ts"],
+  "include": ["src/**/*.ts"],
   "exclude": ["src/**/*.test.ts", "src/assets/**"]
 }
