@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export type ObjectLiteral<T = any> = Record<string, T>;
 
 export type List<A = any> = ReadonlyArray<A>;

@@ -14,19 +14,19 @@ import {
   getMultipleSuccessStatusCodesError,
 } from "src/generators/utils/validation.utils";
 import { getResponseZodSchemaName } from "src/generators/utils/zod-schema.utils";
-import { Endpoint, EndpointParameter } from "../../types/endpoint";
-import { pick } from "../../utils/object.utils";
+import { Endpoint, EndpointParameter } from "src/generators/types/endpoint";
+import { pick } from "src/generators/utils/object.utils";
 import {
   isErrorStatus,
   isMainResponseStatus,
   isMediaTypeAllowed,
   isPathExcluded,
   replaceHyphenatedPath,
-} from "../../utils/openapi.utils";
-import { SchemaResolver } from "../SchemaResolver.class";
-import { getZodChain } from "../zod/getZodChain";
-import { getZodSchema } from "../zod/getZodSchema";
-import { resolveZodSchemaName } from "../zod/resolveZodSchemaName";
+} from "src/generators/utils/openapi.utils";
+import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
+import { getZodChain } from "src/generators/core/zod/getZodChain";
+import { getZodSchema } from "src/generators/core/zod/getZodSchema";
+import { resolveZodSchemaName } from "src/generators/core/zod/resolveZodSchemaName";
 import { getEndpointAcl } from "./getEndpointAcl";
 import { getEndpointBody } from "./getEndpointBody";
 import { getEndpointParameter } from "./getEndpointParameter";

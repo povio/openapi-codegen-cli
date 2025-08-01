@@ -1,5 +1,4 @@
 import { OpenAPIV3 } from "openapi-types";
-import { DEFAULT_GENERATE_OPTIONS } from "./const/options.const";
 import { getDataFromOpenAPIDoc } from "./core/getDataFromOpenAPIDoc";
 import { generateAcl } from "./generate/generateAcl";
 import { generateEndpoints } from "./generate/generateEndpoints";
@@ -16,11 +15,9 @@ import {
 } from "./utils/generate-files.utils";
 import { getTagFileName } from "./utils/generate/generate.utils";
 
-export function generateCodeFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, cliOptions: Partial<GenerateOptions>) {
-  const importPath = cliOptions.standalone && cliOptions.importPath === "ts" ? "relative" : cliOptions.importPath;
-  const options = { ...DEFAULT_GENERATE_OPTIONS, ...cliOptions, importPath } as GenerateOptions;
-
-  const { resolver, data } = getDataFromOpenAPIDoc(openApiDoc, options);
+export function generateCodeFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, options: GenerateOptions) {
+  const importPath = options.standalone && options.importPath === "ts" ? "relative" : options.importPath;
+  const { resolver, data } = getDataFromOpenAPIDoc(openApiDoc, { ...options, importPath });
 
   const generateFilesData: GenerateFileData[] = [];
   const appAclTags: string[] = [];

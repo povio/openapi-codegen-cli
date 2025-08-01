@@ -1,6 +1,6 @@
 import { OpenAPIV3 } from "openapi-types";
 
-export function isReferenceObject(obj: any): obj is OpenAPIV3.ReferenceObject {
+export function isReferenceObject(obj: unknown): obj is OpenAPIV3.ReferenceObject {
   return obj != null && Object.prototype.hasOwnProperty.call(obj, "$ref");
 }
 

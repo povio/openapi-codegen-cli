@@ -1,4 +1,4 @@
-import { SchemaResolver } from "../SchemaResolver.class";
+import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
 import { ZodSchema } from "./ZodSchema.class";
 
 export function getZodSchemaRefs(resolver: SchemaResolver, zodSchemaName: string) {

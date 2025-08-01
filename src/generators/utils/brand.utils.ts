@@ -1,7 +1,7 @@
 import { OpenAPIV3 } from "openapi-types";
-import { BrandEnum, BRANDS } from "../const/brands.const";
-import { ZOD_UTILS } from "../const/deps.const";
-import { GenerateOptions } from "../types/options";
+import { BrandEnum, BRANDS } from "src/generators/const/brands.const";
+import { ZOD_UTILS } from "src/generators/const/deps.const";
+import { GenerateOptions } from "src/generators/types/options";
 import { isPrimitiveType } from "./openapi.utils";
 
 export function getPrimitiveBrands() {

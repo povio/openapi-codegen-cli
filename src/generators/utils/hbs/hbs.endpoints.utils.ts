@@ -1,17 +1,17 @@
 import Handlebars from "handlebars";
 import { OpenAPIV3 } from "openapi-types";
 import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
-import { Endpoint } from "../../types/endpoint";
-import { GenerateOptions } from "../../types/options";
+import { Endpoint } from "src/generators/types/endpoint";
+import { GenerateOptions } from "src/generators/types/options";
 import {
   getEndpointName,
   getEndpointPath,
   getImportedEndpointName,
   mapEndpointParamsToFunctionParams,
-} from "../generate/generate.endpoints.utils";
-import { getSchemaDescriptions } from "../generate/generate.openapi.utils";
-import { isSchemaObject } from "../openapi-schema.utils";
-import { isParamMediaTypeAllowed } from "../openapi.utils";
+} from "src/generators/utils/generate/generate.endpoints.utils";
+import { getSchemaDescriptions } from "src/generators/utils/generate/generate.openapi.utils";
+import { isSchemaObject } from "src/generators/utils/openapi-schema.utils";
+import { isParamMediaTypeAllowed } from "src/generators/utils/openapi.utils";
 
 enum EndpointsHelpers {
   EndpointName = "endpointName",

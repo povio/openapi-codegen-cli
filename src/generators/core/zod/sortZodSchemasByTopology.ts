@@ -1,5 +1,5 @@
-import { sortObjKeysFromArray, topologicalSort } from "../../utils/sort.utils";
-import { SchemaResolver } from "../SchemaResolver.class";
+import { sortObjKeysFromArray, topologicalSort } from "src/generators/utils/sort.utils";
+import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
 
 export function sortZodSchemasByTopology(resolver: SchemaResolver, zodSchemas: Record<string, string>) {
   const zodSchemasOrderedByDependencies = topologicalSort(resolver.dependencyGraph.deepDependencyGraph).map((ref) =>

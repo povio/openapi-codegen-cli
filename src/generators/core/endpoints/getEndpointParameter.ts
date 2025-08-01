@@ -13,10 +13,10 @@ import {
   getZodSchemaOperationName,
 } from "src/generators/utils/zod-schema.utils";
 import { match } from "ts-pattern";
-import { SchemaResolver } from "../SchemaResolver.class";
-import { getZodChain } from "../zod/getZodChain";
-import { getEnumZodSchemaCodeFromEnumNames, getZodSchema } from "../zod/getZodSchema";
-import { resolveZodSchemaName } from "../zod/resolveZodSchemaName";
+import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
+import { getZodChain } from "src/generators/core/zod/getZodChain";
+import { getEnumZodSchemaCodeFromEnumNames, getZodSchema } from "src/generators/core/zod/getZodSchema";
+import { resolveZodSchemaName } from "src/generators/core/zod/resolveZodSchemaName";
 
 export function getEndpointParameter({
   resolver,

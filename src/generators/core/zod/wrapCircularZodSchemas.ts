@@ -1,6 +1,6 @@
 import { getNotAllowedCircularSchemaError } from "src/generators/utils/validation.utils";
-import { getZodSchemaName } from "../../utils/zod-schema.utils";
-import { SchemaResolver } from "../SchemaResolver.class";
+import { getZodSchemaName } from "src/generators/utils/zod-schema.utils";
+import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
 
 export function wrapCircularZodSchemas(resolver: SchemaResolver, zodSchemas: Record<string, string>) {
   const schemas = {} as Record<string, string>;

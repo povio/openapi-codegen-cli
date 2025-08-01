@@ -1,4 +1,4 @@
-import { Import } from "../types/generate";
+import { Import } from "src/generators/types/generate";
 
 export const SCHEMA_SUFFIX = "Schema";
 export const ENUM_SUFFIX = "Enum";

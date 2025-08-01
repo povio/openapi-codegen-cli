@@ -1,13 +1,21 @@
-import { APP_REST_CLIENT_NAME, ZOD_UTILS } from "../const/deps.const";
-import { AXIOS_IMPORT, AXIOS_REQUEST_CONFIG_NAME, AXIOS_REQUEST_CONFIG_TYPE } from "../const/endpoints.const";
-import { ZOD_IMPORT } from "../const/zod.const";
-import { EndpointParameter } from "../types/endpoint";
-import { GenerateType, GenerateTypeParams, Import } from "../types/generate";
-import { getUniqueArray } from "../utils/array.utils";
-import { getModelsImports } from "../utils/generate/generate.imports.utils";
-import { getAppRestClientImportPath, getNamespaceName, getZodUtilsImportPath } from "../utils/generate/generate.utils";
-import { getHbsTemplateDelegate } from "../utils/hbs/hbs-template.utils";
-import { isNamedZodSchema } from "../utils/zod-schema.utils";
+import { APP_REST_CLIENT_NAME, ZOD_UTILS } from "src/generators/const/deps.const";
+import {
+  AXIOS_IMPORT,
+  AXIOS_REQUEST_CONFIG_NAME,
+  AXIOS_REQUEST_CONFIG_TYPE,
+} from "src/generators/const/endpoints.const";
+import { ZOD_IMPORT } from "src/generators/const/zod.const";
+import { EndpointParameter } from "src/generators/types/endpoint";
+import { GenerateType, GenerateTypeParams, Import } from "src/generators/types/generate";
+import { getUniqueArray } from "src/generators/utils/array.utils";
+import { getModelsImports } from "src/generators/utils/generate/generate.imports.utils";
+import {
+  getAppRestClientImportPath,
+  getNamespaceName,
+  getZodUtilsImportPath,
+} from "src/generators/utils/generate/generate.utils";
+import { getHbsTemplateDelegate } from "src/generators/utils/hbs/hbs-template.utils";
+import { isNamedZodSchema } from "src/generators/utils/zod-schema.utils";
 
 export function generateEndpoints({ resolver, data, tag = "" }: GenerateTypeParams) {
   const endpoints = data.get(tag)?.endpoints;

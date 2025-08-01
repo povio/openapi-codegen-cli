@@ -1,11 +1,11 @@
 import { OpenAPIV3 } from "openapi-types";
-import { ALLOWED_METHODS } from "../const/openapi.const";
-import { OperationObject } from "../types/openapi";
-import { GenerateOptions } from "../types/options";
-import { ValidationError } from "../types/validation";
-import { getUniqueArray } from "../utils/array.utils";
-import { pick } from "../utils/object.utils";
-import { isReferenceObject } from "../utils/openapi-schema.utils";
+import { ALLOWED_METHODS } from "src/generators/const/openapi.const";
+import { OperationObject } from "src/generators/types/openapi";
+import { GenerateOptions } from "src/generators/types/options";
+import { ValidationError } from "src/generators/types/validation";
+import { getUniqueArray } from "src/generators/utils/array.utils";
+import { pick } from "src/generators/utils/object.utils";
+import { isReferenceObject } from "src/generators/utils/openapi-schema.utils";
 import {
   autocorrectRef,
   getSchemaNameByRef,
@@ -13,21 +13,21 @@ import {
   isMediaTypeAllowed,
   isParamMediaTypeAllowed,
   isPathExcluded,
-} from "../utils/openapi.utils";
+} from "src/generators/utils/openapi.utils";
 import {
   getOperationsByTag,
   getUniqueOperationName,
   getUniqueOperationNamesWithoutSplitByTags,
   isOperationExcluded,
-} from "../utils/operation.utils";
-import { snakeToCamel } from "../utils/string.utils";
-import { formatTag, getOperationTag } from "../utils/tag.utils";
+} from "src/generators/utils/operation.utils";
+import { snakeToCamel } from "src/generators/utils/string.utils";
+import { formatTag, getOperationTag } from "src/generators/utils/tag.utils";
 import {
   getBodyZodSchemaName,
   getResponseZodSchemaName,
   getZodSchemaName,
   getZodSchemaOperationName,
-} from "../utils/zod-schema.utils";
+} from "src/generators/utils/zod-schema.utils";
 import { DependencyGraph, getOpenAPISchemaDependencyGraph } from "./openapi/getOpenAPISchemaDependencyGraph";
 import { getDeepSchemaRefObjs, getSchemaRefObjs } from "./openapi/getSchemaRefObjs";
 import { ZodSchema } from "./zod/ZodSchema.class";

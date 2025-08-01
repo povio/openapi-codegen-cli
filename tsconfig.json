@@ -1,11 +1,10 @@
 {
   "compilerOptions": {
-    "target": "es2022",
-    "module": "es2022",
-    "sourceMap": true,
+    "target": "es6",
+    "module": "esnext",
     "outDir": "dist",
     "strict": true,
-    "lib": ["es2022", "dom"],
+    "lib": ["esnext", "dom"],
     "baseUrl": ".",
     "moduleResolution": "node",
     "forceConsistentCasingInFileNames": true,
@@ -14,8 +13,9 @@
     "resolveJsonModule": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
+    "declaration": true,
     "noImplicitAny": true
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "test/**/*.ts"],
   "exclude": ["src/**/*.test.ts", "src/assets/**"]
 }

@@ -1,15 +1,15 @@
-import { BrandEnum } from "../const/brands.const";
-import { ZOD_UTILS } from "../const/deps.const";
-import { ZOD_IMPORT } from "../const/zod.const";
-import { iterateSchema, OnSchemaCallbackData } from "../core/openapi/iterateSchema";
-import { getZodSchemaRefs } from "../core/zod/getZodSchemaRefs";
-import { GenerateType, GenerateTypeParams, GenerateZodSchemaData, Import } from "../types/generate";
-import { matchesBrand } from "../utils/brand.utils";
-import { getModelsImports } from "../utils/generate/generate.imports.utils";
-import { getNamespaceName, getZodUtilsImportPath } from "../utils/generate/generate.utils";
-import { getHbsTemplateDelegate } from "../utils/hbs/hbs-template.utils";
-import { isSchemaObject } from "../utils/openapi-schema.utils";
-import { isEnumZodSchema } from "../utils/zod-schema.utils";
+import { BrandEnum } from "src/generators/const/brands.const";
+import { ZOD_UTILS } from "src/generators/const/deps.const";
+import { ZOD_IMPORT } from "src/generators/const/zod.const";
+import { iterateSchema, OnSchemaCallbackData } from "src/generators/core/openapi/iterateSchema";
+import { getZodSchemaRefs } from "src/generators/core/zod/getZodSchemaRefs";
+import { GenerateType, GenerateTypeParams, GenerateZodSchemaData, Import } from "src/generators/types/generate";
+import { matchesBrand } from "src/generators/utils/brand.utils";
+import { getModelsImports } from "src/generators/utils/generate/generate.imports.utils";
+import { getNamespaceName, getZodUtilsImportPath } from "src/generators/utils/generate/generate.utils";
+import { getHbsTemplateDelegate } from "src/generators/utils/hbs/hbs-template.utils";
+import { isSchemaObject } from "src/generators/utils/openapi-schema.utils";
+import { isEnumZodSchema } from "src/generators/utils/zod-schema.utils";
 
 export function generateModels({ resolver, data, tag = "" }: GenerateTypeParams) {
   const zodSchemas = data.get(tag)?.zodSchemas;

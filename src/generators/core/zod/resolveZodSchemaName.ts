@@ -1,8 +1,8 @@
 import { OpenAPIV3 } from "openapi-types";
 import { COMPLEXITY_THRESHOLD } from "src/generators/const/openapi.const";
 import { getZodSchemaName, isNamedZodSchema } from "src/generators/utils/zod-schema.utils";
-import { getOpenAPISchemaComplexity } from "../openapi/getOpenAPISchemaComplexity";
-import { SchemaResolver } from "../SchemaResolver.class";
+import { getOpenAPISchemaComplexity } from "src/generators/core/openapi/getOpenAPISchemaComplexity";
+import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
 import { ZodSchema } from "./ZodSchema.class";
 
 export function resolveZodSchemaName({

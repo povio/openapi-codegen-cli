@@ -1,9 +1,9 @@
 import { TEMPLATE_DATA_FILE_PATH, TEMPLATE_DATA_TS_PATH } from "src/generators/const/deps.const";
 import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
-import { Endpoint } from "../../types/endpoint";
-import { GenerateType, Import } from "../../types/generate";
-import { GenerateOptions } from "../../types/options";
-import { getUniqueArray } from "../array.utils";
+import { Endpoint } from "src/generators/types/endpoint";
+import { GenerateType, Import } from "src/generators/types/generate";
+import { GenerateOptions } from "src/generators/types/options";
+import { getUniqueArray } from "src/generators/utils/array.utils";
 import { getAbilityFunctionName } from "./generate.acl.utils";
 import { getEndpointName, getEndpointTag } from "./generate.endpoints.utils";
 import { getNamespaceName, getTagImportPath } from "./generate.utils";

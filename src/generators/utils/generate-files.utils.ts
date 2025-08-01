@@ -1,4 +1,4 @@
-import { ACL_APP_ABILITY_FILE, ACL_CHECK_FILE } from "../const/acl.const";
+import { ACL_APP_ABILITY_FILE, ACL_CHECK_FILE } from "src/generators/const/acl.const";
 import {
   MUTATION_EFFECTS_FILE,
   QUERY_CONFIG_FILE,
@@ -6,14 +6,14 @@ import {
   STANDALONE_APP_REST_CLIENT_FILE,
   STANDALONE_ASSETS,
   ZOD_UTILS_FILE,
-} from "../const/deps.const";
-import { SchemaResolver } from "../core/SchemaResolver.class";
-import { generateAppAcl } from "../generate/generateAcl";
-import { generateAclCheck } from "../generate/generateAclCheck";
-import { generateAppRestClient } from "../generate/generateAppRestClient";
-import { generateQueryModules } from "../generate/generateQueryModules";
-import { generateZodUtils } from "../generate/generateZodUtils";
-import { GenerateData, GenerateFile, GenerateFileData } from "../types/generate";
+} from "src/generators/const/deps.const";
+import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
+import { generateAppAcl } from "src/generators/generate/generateAcl";
+import { generateAclCheck } from "src/generators/generate/generateAclCheck";
+import { generateAppRestClient } from "src/generators/generate/generateAppRestClient";
+import { generateQueryModules } from "src/generators/generate/generateQueryModules";
+import { generateZodUtils } from "src/generators/generate/generateZodUtils";
+import { GenerateData, GenerateFile, GenerateFileData } from "src/generators/types/generate";
 import { getOutputFileName, readAssetSync } from "./file.utils";
 import { getFileNameWithExtension } from "./generate/generate.utils";
 

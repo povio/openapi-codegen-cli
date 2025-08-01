@@ -12,7 +12,7 @@ import {
   getImportedAbilityFunctionName,
   getTagAllAbilitiesName,
   hasAbilityConditions,
-} from "../generate/generate.acl.utils";
+} from "src/generators/utils/generate/generate.acl.utils";
 
 enum AclHelpers {
   AbilityTypeName = "abilityTypeName",

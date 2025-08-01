@@ -1,7 +1,7 @@
 import Handlebars from "handlebars";
 import { Endpoint } from "src/generators/types/endpoint";
-import { getInfiniteQueryName, getQueryName } from "../generate/generate.query.utils";
-import { isInfiniteQuery, isMutation, isQuery } from "../query.utils";
+import { getInfiniteQueryName, getQueryName } from "src/generators/utils/generate/generate.query.utils";
+import { isInfiniteQuery, isMutation, isQuery } from "src/generators/utils/query.utils";
 
 enum QueryHelpers {
   QueryName = "queryName",

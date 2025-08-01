@@ -1,6 +1,7 @@
+/* eslint-disable no-control-regex, no-useless-escape */
 import { match, P } from "ts-pattern";
-import { ALLOWED_PARAM_MEDIA_TYPES, PRIMITIVE_TYPE_LIST } from "../const/openapi.const";
-import { ParameterObject, PrimitiveType, SingleType, SortingParameterObject } from "../types/openapi";
+import { ALLOWED_PARAM_MEDIA_TYPES, PRIMITIVE_TYPE_LIST } from "src/generators/const/openapi.const";
+import { ParameterObject, PrimitiveType, SingleType, SortingParameterObject } from "src/generators/types/openapi";
 import { isSchemaObject } from "./openapi-schema.utils";
 import { capitalize, kebabToCamel, snakeToCamel } from "./string.utils";
 
@@ -54,7 +55,7 @@ export function pathParamToVariableName(name: string) {
 }
 
 export const isPrimitiveType = (type: SingleType | undefined): type is PrimitiveType =>
-  PRIMITIVE_TYPE_LIST.includes(type as any);
+  PRIMITIVE_TYPE_LIST.includes(type as string);
 
 export function escapeControlCharacters(str: string): string {
   return str
@@ -81,7 +82,7 @@ export function isParamMediaTypeAllowed(
 ): mediaType is (typeof ALLOWED_PARAM_MEDIA_TYPES)[number] | `application/${string}json${string}` | `text/${string}` {
   return (
     (mediaType.includes("application/") && mediaType.includes("json")) ||
-    ALLOWED_PARAM_MEDIA_TYPES.includes(mediaType as any) ||
+    ALLOWED_PARAM_MEDIA_TYPES.includes(mediaType as string) ||
     mediaType.includes("text/")
   );
 }

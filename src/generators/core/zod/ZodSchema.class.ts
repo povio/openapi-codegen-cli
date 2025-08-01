@@ -4,8 +4,8 @@ import { GenerateType } from "src/generators/types/generate";
 import { GenerateOptions } from "src/generators/types/options";
 import { getNamespaceName } from "src/generators/utils/generate/generate.utils";
 import { isReferenceObject } from "src/generators/utils/openapi-schema.utils";
-import { SchemaResolver } from "../SchemaResolver.class";
-import { getOpenAPISchemaComplexity } from "../openapi/getOpenAPISchemaComplexity";
+import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
+import { getOpenAPISchemaComplexity } from "src/generators/core/openapi/getOpenAPISchemaComplexity";
 
 export interface ZodSchemaMetaData {
   isRequired?: boolean;

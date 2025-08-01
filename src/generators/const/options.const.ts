@@ -1,11 +1,11 @@
-import { GenerateType } from "../types/generate";
-import { GenerateOptions } from "../types/options";
+import { GenerateType } from "src/generators/types/generate";
+import { GenerateOptions } from "src/generators/types/options";
 import { TEMPLATE_IMPORTS } from "./deps.const";
 import { ENUM_SUFFIX, SCHEMA_SUFFIX } from "./zod.const";
 
 export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   // Base options
-  input: "",
+  input: "http://localhost:4000/docs-json/",
   output: "output",
   splitByTags: true,
   defaultTag: "Common",

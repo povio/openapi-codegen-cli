@@ -7,9 +7,9 @@ import {
   StandaloneAssetEnum,
   ZOD_UTILS_FILE,
 } from "src/generators/const/deps.const";
-import { GenerateFile, GenerateType } from "../../types/generate";
-import { GenerateOptions } from "../../types/options";
-import { capitalize, decapitalize } from "../string.utils";
+import { GenerateFile, GenerateType } from "src/generators/types/generate";
+import { GenerateOptions } from "src/generators/types/options";
+import { capitalize, decapitalize } from "src/generators/utils/string.utils";
 import { getImportPath } from "./generate.imports.utils";
 
 export function getFileNameWithExtension({ fileName, extension }: GenerateFile) {

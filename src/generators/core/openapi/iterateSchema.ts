@@ -17,7 +17,7 @@ export type OnSchemaCallbackData<TData> = { data?: TData } & (
     }
 );
 
-type OnSchemaCallbackType<TData> = (data: OnSchemaCallbackData<TData>) => any;
+type OnSchemaCallbackType<TData> = (data: OnSchemaCallbackData<TData>) => unknown;
 
 export function iterateSchema<TData>(
   schema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject | undefined,
