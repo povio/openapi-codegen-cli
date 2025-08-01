@@ -1,6 +1,6 @@
 {
   "name": "@povio/openapi-codegen-cli",
-  "version": "0.15.1",
+  "version": "0.15.2",
   "main": "./dist/index.js",
   "bin": {
     "openapi-codegen": "./dist/sh.js"
@@ -40,6 +40,9 @@
     "type": "git"
   },
   "license": "BSD-3-Clause",
+  "dependencies": {
+    "import-fresh": "^3.3.1"
+  },
   "devDependencies": {
     "@apidevtools/swagger-parser": "^10.1.0",
     "@types/node": "^20.12.12",

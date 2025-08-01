@@ -1,7 +1,8 @@
-import fs from "fs";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import fs, { existsSync, rmSync, writeFileSync } from "fs";
 import path from "path";
 import { OpenAPICodegenConfig } from "src/generators/types/config";
-import { logError, logInfo } from "./cli.helper";
+import { logError } from "./cli.helper";
 
 const CONFIG_FILE_NAMES = ["openapi-codegen.config.ts"];
 
@@ -14,7 +15,6 @@ export async function loadConfig(configPath?: string): Promise<OpenAPICodegenCon
     for (const fileName of CONFIG_FILE_NAMES) {
       const filePath = path.resolve(process.cwd(), fileName);
       if (fs.existsSync(filePath)) {
-        logInfo(`Found config file: ${fileName}`);
         return await loadConfigFromPath(filePath);
       }
     }
@@ -41,19 +41,61 @@ async function loadConfigFromPath(filePath: string): Promise<OpenAPICodegenConfi
   return loadTsConfig(absolutePath);
 }
 
-async function loadTsConfig(filePath: string): Promise<OpenAPICodegenConfig> {
-  try {
-    const configModule = await import(filePath);
-
-    let config = configModule.default || configModule;
-    if (typeof config === "function") {
-      config = await config();
-    }
-
-    return config;
-  } catch (error) {
-    throw new Error(
-      `Failed to load TypeScript config file ${filePath}: ${error instanceof Error ? error.message : error}`,
-    );
+let importFresh: typeof import("import-fresh");
+export const loadJsSync = function loadJsSync(filepath: string) {
+  if (importFresh === undefined) {
+    importFresh = require("import-fresh");
   }
+  return importFresh(filepath);
+};
+
+let typescript: typeof import("typescript");
+async function loadTsConfig(filePath: string): Promise<OpenAPICodegenConfig> {
+  if (typescript === undefined) {
+    typescript = require("typescript");
+  }
+
+  const transpiledFilepath = `${filePath.slice(0, -2)}cjs`;
+  try {
+    const tsConfig = resolveTsConfig(path.dirname(filePath)) ?? {};
+    tsConfig.compilerOptions = {
+      ...tsConfig.compilerOptions,
+      module: typescript.ModuleKind.NodeNext,
+      moduleResolution: typescript.ModuleResolutionKind.NodeNext,
+      target: typescript.ScriptTarget.ES2022,
+      noEmit: false,
+    };
+
+    const fileContent = fs.readFileSync(filePath, "utf-8");
+
+    const transpiledFileContent = typescript.transpileModule(fileContent, tsConfig).outputText;
+
+    writeFileSync(transpiledFilepath, transpiledFileContent);
+
+    return (loadJsSync(transpiledFilepath) as any).default;
+  } catch (error: any) {
+    error.message = `TypeScript Error in ${filePath}:\n${error.message}`;
+    throw error;
+  } finally {
+    if (existsSync(transpiledFilepath)) {
+      rmSync(transpiledFilepath);
+    }
+  }
+}
+
+function resolveTsConfig(directory: string) {
+  const filePath = typescript.findConfigFile(directory, (fileName) => {
+    return typescript.sys.fileExists(fileName);
+  });
+
+  if (filePath === undefined) {
+    return;
+  }
+
+  const { config, error } = typescript.readConfigFile(filePath, (path) => typescript.sys.readFile(path));
+  if (error) {
+    throw new Error(`Error in ${filePath}: ${error.messageText.toString()}`);
+  }
+
+  return config;
 }
