@@ -74,10 +74,10 @@ class GenerateOptions implements GenerateParams {
   @YargOption({ envAlias: "monorepo", type: "boolean" })
   monorepo?: boolean;
 
-  @YargOption({ envAlias: "prettier", type: "boolean" })
+  @YargOption({ envAlias: "prettier", default: true, type: "boolean" })
   prettier?: boolean;
 
-  @YargOption({ envAlias: "verbose", type: "boolean" })
+  @YargOption({ envAlias: "verbose", default: false, type: "boolean" })
   verbose?: boolean;
 }
 
