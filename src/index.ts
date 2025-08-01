@@ -24,3 +24,4 @@ export async function getGenerateFilesData({ input, options: genOptions }: Gener
 
 export { GenerateFileData } from "./generators/types/generate";
 export * from "./generators/types/metadata";
+export * from "./generators/types/config";

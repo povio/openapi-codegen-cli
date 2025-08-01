@@ -1,35 +1,33 @@
-import { DEFAULT_GENERATE_OPTIONS } from "src/generators/const/options.const";
 import yargs from "yargs";
-import { logBanner, logVariable } from "src/helpers/cli.helper";
+import { logBanner } from "src/helpers/cli.helper";
 import { getVersion } from "src/helpers/version.helper";
 import { getBuilder, YargOption } from "src/helpers/yargs.helper";
 import { check, CheckParams } from "./check";
 
 class CheckOptions implements CheckParams {
-  @YargOption({ envAlias: "input", demandOption: true })
-  input!: string;
+  @YargOption({ envAlias: "config" })
+  config?: string;
 
-  @YargOption({ envAlias: "splitByTags", default: DEFAULT_GENERATE_OPTIONS.splitByTags, type: "boolean" })
-  splitByTags!: boolean;
+  @YargOption({ envAlias: "input" })
+  input?: string;
 
-  @YargOption({ envAlias: "defaultTag", default: DEFAULT_GENERATE_OPTIONS.defaultTag })
-  defaultTag!: string;
+  @YargOption({ envAlias: "splitByTags", type: "boolean" })
+  splitByTags?: boolean;
 
-  @YargOption({ envAlias: "excludeTags", default: DEFAULT_GENERATE_OPTIONS.excludeTags.join(",") })
-  excludeTags!: string;
+  @YargOption({ envAlias: "defaultTag" })
+  defaultTag?: string;
 
-  @YargOption({ envAlias: "excludePathRegex", default: DEFAULT_GENERATE_OPTIONS.excludePathRegex })
-  excludePathRegex!: string;
+  @YargOption({ envAlias: "excludeTags" })
+  excludeTags?: string;
 
-  @YargOption({
-    envAlias: "excludeRedundantZodSchemas",
-    default: DEFAULT_GENERATE_OPTIONS.excludeRedundantZodSchemas,
-    type: "boolean",
-  })
-  excludeRedundantZodSchemas!: boolean;
+  @YargOption({ envAlias: "excludePathRegex" })
+  excludePathRegex?: string;
 
-  @YargOption({ envAlias: "verbose", default: false, type: "boolean" })
-  verbose!: boolean;
+  @YargOption({ envAlias: "excludeRedundantZodSchemas", type: "boolean" })
+  excludeRedundantZodSchemas?: boolean;
+
+  @YargOption({ envAlias: "verbose", type: "boolean" })
+  verbose?: boolean;
 }
 
 export const command: yargs.CommandModule = {
@@ -40,7 +38,6 @@ export const command: yargs.CommandModule = {
     const argv = (await _argv) as unknown as CheckOptions;
     if (argv.verbose) {
       logBanner(`OpenAPI CodeGen ${getVersion()}`);
-      logVariable("input", argv.input);
     }
     return check(argv);
   },

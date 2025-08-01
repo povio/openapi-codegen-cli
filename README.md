@@ -24,6 +24,45 @@ yarn openapi-codegen generate --input http://localhost:3001/docs-json
 yarn openapi-codegen generate --input http://localhost:3001/docs-json --standalone
 ```
 
+## Configuration Files
+
+The CLI supports TypeScript configuration files to simplify command execution and provide consistent settings with full type safety. Configuration files are automatically discovered in your project root.
+
+**Note:** Command-line arguments always take precedence over configuration file values, allowing you to override specific settings when needed.
+
+### Quick Start
+
+Create an `openapi-codegen.config.ts` file:
+
+```typescript
+import { OpenAPICodegenConfig } from "@povio/openapi-codegen-cli";
+
+const config: OpenAPICodegenConfig = {
+  input: "http://localhost:4000/docs-json/",
+  output: "src/data",
+};
+
+export default config;
+```
+
+Then run without arguments:
+
+```bash
+yarn openapi-codegen generate
+```
+
+### Configuration File Discovery
+
+The CLI automatically searches for the TypeScript configuration file:
+
+- `openapi-codegen.config.ts`
+
+You can also specify a custom configuration file:
+
+```bash
+yarn openapi-codegen generate --config my-config.ts
+```
+
 ## Options
 
 #### Generate command (generates Zod schemas, API definitions and React queries)

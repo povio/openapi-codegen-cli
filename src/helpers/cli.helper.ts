@@ -34,12 +34,6 @@ export function logInfo(message: string) {
   console.log(`[INFO] ${message}`);
 }
 
-export function logVerbose(message: string) {
-  if (process.env.VERBOSE) {
-    console.log(`[VERBOSE] ${message}`);
-  }
-}
-
 export function logNotice(message: string) {
   console.log(chk.magenta(`[NOTICE] ${message}`));
 }
@@ -55,9 +49,6 @@ export function logWarning(message: string) {
 export function logError(error: Error | string, message?: string) {
   if (error instanceof Error) {
     console.log(chk.red(`[ERROR] ${message || error.message}`));
-    if (process.env.VERBOSE) {
-      console.error(error); // print stack trace
-    }
   } else {
     console.log(chk.red(`[ERROR] ${error}`));
   }

@@ -1,6 +1,5 @@
 import { OpenAPIV3 } from "openapi-types";
 import { chk } from "src/helpers/chalk.helper";
-import { DEFAULT_GENERATE_OPTIONS } from "./const/options.const";
 import { VALIDATION_ERROR_TYPE_TITLE } from "./const/validation.const";
 import { getDataFromOpenAPIDoc } from "./core/getDataFromOpenAPIDoc";
 import { GenerateType } from "./types/generate";
@@ -11,9 +10,7 @@ import { getTagFileName } from "./utils/generate/generate.utils";
 import { groupByType } from "./utils/validation.utils";
 import { log } from "src/helpers/cli.helper";
 
-export function checkOpenAPIDoc(openApiDoc: OpenAPIV3.Document, cliOptions?: Partial<GenerateOptions>) {
-  const options = { ...DEFAULT_GENERATE_OPTIONS, ...cliOptions } as GenerateOptions;
-
+export function checkOpenAPIDoc(openApiDoc: OpenAPIV3.Document, options: GenerateOptions) {
   const { resolver, data } = getDataFromOpenAPIDoc(openApiDoc, options);
 
   if (resolver.validationErrors.length > 0) {

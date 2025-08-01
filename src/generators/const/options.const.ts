@@ -5,7 +5,7 @@ import { ENUM_SUFFIX, SCHEMA_SUFFIX } from "./zod.const";
 
 export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   // Base options
-  input: "",
+  input: "http://localhost:4000/docs-json/",
   output: "output",
   splitByTags: true,
   defaultTag: "Common",

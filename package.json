@@ -1,6 +1,6 @@
 {
   "name": "@povio/openapi-codegen-cli",
-  "version": "0.14.9",
+  "version": "0.15.0",
   "main": "./dist/index.js",
   "bin": {
     "openapi-codegen": "./dist/sh.js"
@@ -17,8 +17,8 @@
     "lint": "eslint ./src",
     "check": "yarn typecheck && yarn lint && yarn test",
     "push": "yarn exec ./scripts/publish.sh",
-    "dev:generate": "rm -rf ./output && yarn start generate --input ./test/test.json",
-    "dev:check": "yarn start check --input ./test/test.json"
+    "dev:generate": "rm -rf ./output && yarn start generate --config ./test/config.ts",
+    "dev:check": "yarn start check --config ./test/config.ts"
   },
   "files": [
     "dist/*",

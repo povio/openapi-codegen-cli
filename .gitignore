@@ -17,4 +17,5 @@ node_modules
 
 # Test specs
 test/*
-!config/petstore.yaml
+!test/petstore.yaml
+!test/config.ts
