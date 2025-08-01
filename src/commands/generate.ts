@@ -77,7 +77,7 @@ export async function generate({ monorepo, prettier, verbose, ...params }: Gener
   }
 
   if (prettier) {
-    execPrettier({ output: params.output, verbose });
+    execPrettier({ output: config.output, verbose });
   }
 }
 
