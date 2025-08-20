@@ -23,7 +23,7 @@ export const TEMPLATE_IMPORTS: Record<string, { template: string; monorepoTempla
   },
   errorHandling: {
     template: "@/util/vendor/error-handling",
-    monorepoTemplate: "@povio/utils/utils/vendor/error-handling",
+    monorepoTemplate: "@povio/utils/vendor/error-handling",
   },
   abilityContext: {
     template: "@/data/acl/ability.context",
