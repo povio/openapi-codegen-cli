@@ -1,4 +1,4 @@
-import { OpenAPICodegenConfig } from "src/generators/types/config";
+import { OpenAPICodegenConfig } from "../src/generators/types/config";
 
 export const config: OpenAPICodegenConfig = {
   input: "./test/test.json",

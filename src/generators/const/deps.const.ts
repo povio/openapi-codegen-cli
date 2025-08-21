@@ -12,23 +12,11 @@ export const QUERY_OPTIONS_TYPES = {
 export const TEMPLATE_DATA_FILE_PATH = "src/data";
 export const TEMPLATE_DATA_TS_PATH = "@/data";
 
-export const TEMPLATE_IMPORTS: Record<string, { template: string; monorepoTemplate: string }> = {
-  appRestClient: {
-    template: "@/util/rest/clients/app-rest-client",
-    monorepoTemplate: "@/clients/app-rest-client",
-  },
-  queryTypes: {
-    template: "@/types/react-query",
-    monorepoTemplate: "@povio/utils/types/react-query",
-  },
-  errorHandling: {
-    template: "@/util/vendor/error-handling",
-    monorepoTemplate: "@povio/utils/vendor/error-handling",
-  },
-  abilityContext: {
-    template: "@/data/acl/ability.context",
-    monorepoTemplate: "@povio/auth/acl/ability.context",
-  },
+export const TEMPLATE_IMPORTS = {
+  appRestClient: "@/util/rest/clients/app-rest-client",
+  queryTypes: "@/types/react-query",
+  errorHandling: "@/util/vendor/error-handling",
+  abilityContext: "@/data/acl/ability.context",
 };
 
 export const ERROR_HANDLERS = {
@@ -37,12 +25,12 @@ export const ERROR_HANDLERS = {
 };
 export const ERROR_HANDLING_IMPORT: Import = {
   bindings: [ERROR_HANDLERS.ErrorHandler, ERROR_HANDLERS.SharedErrorHandler],
-  from: TEMPLATE_IMPORTS.errorHandling.template,
+  from: TEMPLATE_IMPORTS.errorHandling,
 };
 export const ABILITY_CONTEXT = "AbilityContext";
 export const ABILITY_CONTEXT_IMPORT: Import = {
   bindings: [ABILITY_CONTEXT],
-  from: TEMPLATE_IMPORTS.abilityContext.template,
+  from: TEMPLATE_IMPORTS.abilityContext,
 };
 
 // Standalone

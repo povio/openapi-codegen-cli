@@ -36,7 +36,7 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   checkAcl: true,
   standalone: false,
   baseUrl: "",
-  abilityContextImportPath: TEMPLATE_IMPORTS.abilityContext.template,
+  abilityContextImportPath: TEMPLATE_IMPORTS.abilityContext,
   abilityContextGenericAppAbilities: false,
   // Zod options
   schemaSuffix: SCHEMA_SUFFIX,
@@ -46,12 +46,12 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   branded: true,
   replaceOptionalWithNullish: false,
   // Endpoints options
-  restClientImportPath: TEMPLATE_IMPORTS.appRestClient.template,
-  errorHandlingImportPath: TEMPLATE_IMPORTS.errorHandling.template,
+  restClientImportPath: TEMPLATE_IMPORTS.appRestClient,
+  errorHandlingImportPath: TEMPLATE_IMPORTS.errorHandling,
   removeOperationPrefixEndingWith: "Controller_",
   parseRequestParams: true,
   // Queries options
-  queryTypesImportPath: TEMPLATE_IMPORTS.queryTypes.template,
+  queryTypesImportPath: TEMPLATE_IMPORTS.queryTypes,
   axiosRequestConfig: false,
   infiniteQueries: false,
   mutationEffects: true,

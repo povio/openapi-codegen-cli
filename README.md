@@ -97,9 +97,6 @@ yarn openapi-codegen generate --config my-config.ts
 
   --standalone                        Generate any missing supporting classes/types, e.g., REST client class, React Query type extensions, etc. (default: false)
   --baseUrl                           (Requires `--standalone`) Base URL for the REST client; falls back to the OpenAPI spec if not provided
-
-  # Command args designed specifically for use within our organization
-  --monorepo                         Configure output structure and imports adjusted for monorepo architecture
 ```
 
 #### Check command (checks if OpenAPI spec is compliant)
