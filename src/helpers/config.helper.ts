@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-require-imports */
 import fs, { existsSync, rmSync, writeFileSync } from "fs";
 import path from "path";
 import { OpenAPICodegenConfig } from "src/generators/types/config";

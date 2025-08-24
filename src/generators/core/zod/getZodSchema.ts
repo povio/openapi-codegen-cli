@@ -286,7 +286,9 @@ function getAllOfZodSchema({ schema, zodSchema, resolver, meta, tag }: GetPartia
   const { patchRequiredSchemaInLoop, noRequiredOnlyAllof, composedRequiredSchema } = inferRequiredSchema(schema);
   const types = noRequiredOnlyAllof.map((schema) => {
     const type = getZodSchema({ schema, resolver, meta, tag });
-    resolver && patchRequiredSchemaInLoop(schema, resolver.getSchemaByRef.bind(resolver));
+    if (resolver) {
+      patchRequiredSchemaInLoop(schema, resolver.getSchemaByRef.bind(resolver));
+    }
     return type;
   });
   if (composedRequiredSchema.required.length) {
