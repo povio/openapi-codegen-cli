@@ -1,9 +1,8 @@
 import { OpenAPIV3 } from "openapi-types";
 import { BLOB_SCHEMA, ENUM_SCHEMA, STRING_SCHEMA } from "src/generators/const/zod.const";
+import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
 import { GenerateType } from "src/generators/types/generate";
-import { getOtherBrands, getPrimitiveBrands, matchesBrand, wrapWithBrand } from "src/generators/utils/brand.utils";
 import { getNamespaceName } from "src/generators/utils/generate/generate.utils";
-import { match } from "ts-pattern";
 import {
   inferRequiredSchema,
   isArraySchemaObject,
@@ -11,7 +10,7 @@ import {
   isSchemaObject,
 } from "src/generators/utils/openapi-schema.utils";
 import { isPrimitiveType, wrapWithQuotesIfNeeded } from "src/generators/utils/openapi.utils";
-import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
+import { match } from "ts-pattern";
 import { ZodSchema, ZodSchemaMetaData } from "./ZodSchema.class";
 import { getZodChain } from "./getZodChain";
 
@@ -111,21 +110,13 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag }: Get
           }
         }
 
-        let propZodSchema =
+        const propZodSchema =
           getZodSchema({ ...params, schema: propSchema, meta: propMetadata }).getCodeString(tag, resolver.options) +
           getZodChain({
             schema: propActualSchema as OpenAPIV3.SchemaObject,
             meta: propMetadata,
             options: resolver.options,
           });
-
-        if (isSchemaObject(propSchema)) {
-          getPrimitiveBrands().forEach((brand) => {
-            if (matchesBrand(propSchema, brand)) {
-              propZodSchema = wrapWithBrand(propZodSchema, brand, resolver.options);
-            }
-          });
-        }
 
         return [prop, propZodSchema];
       });
@@ -152,13 +143,7 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag }: Get
 
     const partial = isPartial ? ".partial()" : "";
     const strict = resolver.options.strictObjects ? ".strict()" : "";
-    let zodObject = `z.object(${properties})${partial}${strict}${additionalPropsSchema}${readonly}`;
-
-    getOtherBrands().forEach((brand) => {
-      if (matchesBrand(schema, brand)) {
-        zodObject = wrapWithBrand(zodObject, brand, resolver.options);
-      }
-    });
+    const zodObject = `z.object(${properties})${partial}${strict}${additionalPropsSchema}${readonly}`;
 
     return zodSchema.assign(zodObject);
   }

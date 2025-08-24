@@ -1,9 +1,5 @@
 {{! Zod import}}
 {{{genImport zodImport}}}
-{{! Zod utils import }}
-{{#if hasZodExtendedImport}}
-{{{genImport zodExtendedImport}}}
-{{/if}}
 {{! Models import }}
 {{#each modelsImports as | modelsImport |}}
 {{{genImport modelsImport}}}

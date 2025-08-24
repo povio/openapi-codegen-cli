@@ -9,7 +9,6 @@ interface ZodGenerateOptions {
   allReadonly?: boolean;
   strictObjects?: boolean;
   extractEnums?: boolean;
-  branded?: boolean;
   replaceOptionalWithNullish?: boolean;
 }
 

@@ -1,9 +1,9 @@
 import { OpenAPIV3 } from "openapi-types";
-import { describe, expect, test } from "vitest";
 import { DEFAULT_GENERATE_OPTIONS } from "src/generators/const/options.const";
+import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
 import { GenerateOptions } from "src/generators/types/options";
 import { getSchemaRef } from "src/generators/utils/openapi.utils";
-import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
+import { describe, expect, test } from "vitest";
 import { ZodSchemaMetaData } from "./ZodSchema.class";
 import { getZodSchema } from "./getZodSchema";
 
@@ -58,7 +58,7 @@ describe("getZodSchema", () => {
 
     expect(
       getZodSchemaString({ type: "object", properties: { dt: { type: "string", format: "date-time" } } }),
-    ).toStrictEqual('z.object({ dt: ZodExtended.brand(z.string().datetime({ offset: true }), "datetime") }).partial()');
+    ).toStrictEqual("z.object({ dt: z.string().datetime({ offset: true }) }).partial()");
 
     expect(
       getZodSchemaString({

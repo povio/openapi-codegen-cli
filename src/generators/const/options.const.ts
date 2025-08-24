@@ -43,7 +43,6 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   enumSuffix: ENUM_SUFFIX,
   withDefaultValues: true,
   extractEnums: true,
-  branded: true,
   replaceOptionalWithNullish: false,
   // Endpoints options
   restClientImportPath: TEMPLATE_IMPORTS.appRestClient,

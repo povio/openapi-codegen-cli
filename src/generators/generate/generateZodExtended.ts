@@ -11,8 +11,6 @@ export function generateZodExtended(resolver: SchemaResolver) {
     zodExtendedNamespace: ZOD_EXTENDED.namespace,
     parse: ZOD_EXTENDED.exports.parse,
     sortExp: ZOD_EXTENDED.exports.sortExp,
-    brand: ZOD_EXTENDED.exports.brand,
-    branded: resolver.options.branded,
     errorHandler: ERROR_HANDLERS.ErrorHandler,
     sharedErrorHandler: ERROR_HANDLERS.SharedErrorHandler,
     errorHandlingImport: {

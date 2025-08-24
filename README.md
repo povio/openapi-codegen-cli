@@ -84,7 +84,6 @@ yarn openapi-codegen generate --config my-config.ts
   --importPath                        Module import style for generated files (default: 'ts'; options: 'ts' | 'relative' | 'absolute')
   --removeOperationPrefixEndingWith   Remove operation name prefixes that end with the specified string (Default: 'Controller_')
   --extractEnums                      Extract enums into separate Zod schemas (default: true)
-  --branded                           Apply branded types to ambiguous Zod schemas (default: true)
   --replaceOptionalWithNullish        Replace `.optional()` chains with `.nullish()` in generated Zod schemas (default: false)
 
   --axiosRequestConfig                Include Axios request config parameters in query hooks (default: false)

@@ -28,7 +28,6 @@ export type GenerateParams = {
     | "checkAcl"
     | "standalone"
     | "baseUrl"
-    | "branded"
     | "replaceOptionalWithNullish"
     | "infiniteQueries"
     | "axiosRequestConfig"

@@ -68,7 +68,6 @@ export const ZOD_EXTENDED = {
   exports: {
     parse: "parse",
     sortExp: "sortExp",
-    brand: "brand",
   },
 };
 export const ZOD_EXTENDED_FILE: GenerateFile = { fileName: "zod.extended", extension: "ts" };
