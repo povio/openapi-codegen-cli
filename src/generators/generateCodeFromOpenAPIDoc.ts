@@ -21,7 +21,12 @@ export function generateCodeFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, optio
 
   const generateFilesData: GenerateFileData[] = [];
   const appAclTags: string[] = [];
-  const generateTypes = [GenerateType.Models, GenerateType.Endpoints, GenerateType.Queries, GenerateType.Acl];
+  const generateTypes = [
+    GenerateType.Models,
+    GenerateType.Endpoints,
+    GenerateType.Queries,
+    ...(resolver.options.acl ? [GenerateType.Acl] : []),
+  ];
   const generateFunctions: Record<GenerateType, (params: GenerateTypeParams) => string | undefined> = {
     [GenerateType.Models]: generateModels,
     [GenerateType.Endpoints]: generateEndpoints,
