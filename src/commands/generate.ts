@@ -1,11 +1,10 @@
 import SwaggerParser from "@apidevtools/swagger-parser";
 import { exec } from "child_process";
 import { OpenAPIV3 } from "openapi-types";
-import { DEFAULT_GENERATE_OPTIONS } from "src/generators/const/options.const";
+import { resolveConfig } from "src/generators/core/resolveConfig";
 import { generateCodeFromOpenAPIDoc } from "src/generators/generateCodeFromOpenAPIDoc";
 import { GenerateOptions } from "src/generators/types/options";
 import { writeGenerateFileData } from "src/generators/utils/file.utils";
-import { deepMerge } from "src/generators/utils/object.utils";
 import { logError, logInfo, logSuccess } from "src/helpers/cli.helper";
 import { loadConfig } from "src/helpers/config.helper";
 
@@ -38,17 +37,14 @@ export type GenerateParams = {
   >
 >;
 
-export async function generate({ prettier, verbose, ...params }: GenerateParams) {
+export async function generate({ prettier, verbose, config: configParam, ...params }: GenerateParams) {
   const start = Date.now();
 
   if (verbose) {
     logInfo("Resolving config...");
   }
-  const fileConfig = await loadConfig(params.config);
-  const config = deepMerge(DEFAULT_GENERATE_OPTIONS, fileConfig ?? {}, {
-    ...params,
-    excludeTags: params.excludeTags?.split(","),
-  });
+  const fileConfig = await loadConfig(configParam);
+  const config = resolveConfig({ fileConfig, params });
 
   if (verbose) {
     logInfo("Parsing OpenAPI spec...");
