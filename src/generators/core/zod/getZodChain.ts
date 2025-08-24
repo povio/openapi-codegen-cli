@@ -1,7 +1,7 @@
 import { OpenAPIV3 } from "openapi-types";
-import { match } from "ts-pattern";
 import { GenerateOptions } from "src/generators/types/options";
-import { escapeControlCharacters, unwrapQuotesIfNeeded } from "src/generators/utils/openapi.utils";
+import { unwrapQuotesIfNeeded } from "src/generators/utils/openapi.utils";
+import { match } from "ts-pattern";
 import { ZodSchemaMetaData } from "./ZodSchema.class";
 
 export function getZodChain({
@@ -88,34 +88,7 @@ function getZodChainableStringValidations(schema: OpenAPIV3.SchemaObject) {
     }
   }
 
-  if (schema.pattern) {
-    validations.push(`regex(${formatPatternIfNeeded(schema.pattern)})`);
-  }
-
-  if (schema.format) {
-    const chain = match(schema.format)
-      .with("email", () => "email()")
-      .with("hostname", "uri", () => "url()")
-      .with("uuid", () => "uuid()")
-      .with("date-time", () => "datetime({ offset: true })")
-      .otherwise(() => "");
-
-    if (chain) {
-      validations.push(chain);
-    }
-  }
-
   return validations.join(".");
-}
-
-function formatPatternIfNeeded(pattern: string) {
-  if (pattern.startsWith("/") && pattern.endsWith("/")) {
-    pattern = pattern.slice(1, -1);
-  }
-
-  pattern = escapeControlCharacters(pattern);
-
-  return `/${pattern}/`;
 }
 
 function getZodChainableNumberValidations(schema: OpenAPIV3.SchemaObject) {
@@ -124,10 +97,6 @@ function getZodChainableNumberValidations(schema: OpenAPIV3.SchemaObject) {
   // none of the chains are valid for enums
   if (schema.enum) {
     return "";
-  }
-
-  if (schema.type === "integer") {
-    validations.push("int()");
   }
 
   if (schema.minimum !== undefined) {

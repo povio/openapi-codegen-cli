@@ -1,5 +1,15 @@
 import { OpenAPIV3 } from "openapi-types";
-import { BLOB_SCHEMA, ENUM_SCHEMA, STRING_SCHEMA } from "src/generators/const/zod.const";
+import {
+  BLOB_SCHEMA,
+  DATETIME_SCHEMA,
+  EMAIL_SCHEMA,
+  ENUM_SCHEMA,
+  INT_SCHEMA,
+  NUMBER_SCHEMA,
+  STRING_SCHEMA,
+  URL_SCHEMA,
+  UUID_SCHEMA,
+} from "src/generators/const/zod.const";
 import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
 import { GenerateType } from "src/generators/types/generate";
 import { getNamespaceName } from "src/generators/utils/generate/generate.utils";
@@ -9,7 +19,7 @@ import {
   isReferenceObject,
   isSchemaObject,
 } from "src/generators/utils/openapi-schema.utils";
-import { isPrimitiveType, wrapWithQuotesIfNeeded } from "src/generators/utils/openapi.utils";
+import { escapeControlCharacters, isPrimitiveType, wrapWithQuotesIfNeeded } from "src/generators/utils/openapi.utils";
 import { match } from "ts-pattern";
 import { ZodSchema, ZodSchemaMetaData } from "./ZodSchema.class";
 import { getZodChain } from "./getZodChain";
@@ -142,8 +152,7 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag }: Get
     }
 
     const partial = isPartial ? ".partial()" : "";
-    const strict = resolver.options.strictObjects ? ".strict()" : "";
-    const zodObject = `z.object(${properties})${partial}${strict}${additionalPropsSchema}${readonly}`;
+    const zodObject = `z.object(${properties})${partial}${additionalPropsSchema}${readonly}`;
 
     return zodSchema.assign(zodObject);
   }
@@ -316,15 +325,36 @@ function getPrimitiveZodSchema({ schema, zodSchema, resolver, meta, tag }: GetPa
 
     return zodSchema.assign(
       match(schemaType)
-        .with("integer", () => "z.number()")
-        .with("string", () =>
-          match(schema.format)
-            .with("binary", () => BLOB_SCHEMA)
-            .otherwise(() => STRING_SCHEMA),
+        .with("integer", () =>
+          match(schema.type)
+            .with("integer", () => INT_SCHEMA)
+            .otherwise(() => NUMBER_SCHEMA),
         )
+        .with("string", () => {
+          if (schema.pattern) {
+            return `z.regex(${formatPatternIfNeeded(schema.pattern)})`;
+          }
+          return match(schema.format)
+            .with("binary", () => BLOB_SCHEMA)
+            .with("email", () => EMAIL_SCHEMA)
+            .with("hostname", "uri", () => URL_SCHEMA)
+            .with("uuid", () => UUID_SCHEMA)
+            .with("date-time", () => DATETIME_SCHEMA)
+            .otherwise(() => STRING_SCHEMA);
+        })
         .otherwise((type) => `z.${type}()`),
     );
   }
+}
+
+function formatPatternIfNeeded(pattern: string) {
+  if (pattern.startsWith("/") && pattern.endsWith("/")) {
+    pattern = pattern.slice(1, -1);
+  }
+
+  pattern = escapeControlCharacters(pattern);
+
+  return `/${pattern}/`;
 }
 
 function getEnumZodSchema({ resolver, schema, zodSchema, meta, tag }: GetPartialZodSchemaParams) {

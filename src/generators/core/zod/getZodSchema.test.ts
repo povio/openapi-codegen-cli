@@ -28,7 +28,7 @@ describe("getZodSchema", () => {
     expect(getZodSchemaString({ type: "boolean" })).toStrictEqual("z.boolean()");
     expect(getZodSchemaString({ type: "string" })).toStrictEqual("z.string()");
     expect(getZodSchemaString({ type: "number" })).toStrictEqual("z.number()");
-    expect(getZodSchemaString({ type: "integer" })).toStrictEqual("z.number()");
+    expect(getZodSchemaString({ type: "integer" })).toStrictEqual("z.int()");
 
     expect(getZodSchemaString({ type: "array", items: { type: "string" } })).toStrictEqual("z.array(z.string())");
     expect(getZodSchemaString({ type: "object" })).toStrictEqual("z.object({})");
@@ -41,7 +41,7 @@ describe("getZodSchema", () => {
     );
 
     expect(getZodSchemaString({ type: "object", properties: { nb: { type: "integer" } } })).toStrictEqual(
-      "z.object({ nb: z.number().int() }).partial()",
+      "z.object({ nb: z.int() }).partial()",
     );
 
     expect(getZodSchemaString({ type: "object", properties: { pa: { type: "number", minimum: 0 } } })).toStrictEqual(
@@ -58,7 +58,7 @@ describe("getZodSchema", () => {
 
     expect(
       getZodSchemaString({ type: "object", properties: { dt: { type: "string", format: "date-time" } } }),
-    ).toStrictEqual("z.object({ dt: z.string().datetime({ offset: true }) }).partial()");
+    ).toStrictEqual("z.object({ dt: z.iso.datetime({ offset: true }) }).partial()");
 
     expect(
       getZodSchemaString({
