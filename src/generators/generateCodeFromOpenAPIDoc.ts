@@ -11,7 +11,7 @@ import {
   getAclFiles,
   getMutationEffectsFiles,
   getStandaloneFiles,
-  getZodUtilsFiles,
+  getZodExtendedFiles,
 } from "./utils/generate-files.utils";
 import { getTagFileName } from "./utils/generate/generate.utils";
 
@@ -53,7 +53,7 @@ export function generateCodeFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, optio
   generateFilesData.push(
     ...getAclFiles(appAclTags, resolver),
     ...getMutationEffectsFiles(data, resolver),
-    ...getZodUtilsFiles(data, resolver),
+    ...getZodExtendedFiles(data, resolver),
     ...getStandaloneFiles(resolver),
   );
 

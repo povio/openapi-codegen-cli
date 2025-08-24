@@ -1,7 +1,7 @@
 import { OpenAPIV3 } from "openapi-types";
 import { BrandEnum, BRANDS } from "src/generators/const/brands.const";
-import { ZOD_UTILS } from "src/generators/const/deps.const";
 import { GenerateOptions } from "src/generators/types/options";
+import { ZOD_EXTENDED } from "../const/deps.const";
 import { isPrimitiveType } from "./openapi.utils";
 
 export function getPrimitiveBrands() {
@@ -34,5 +34,5 @@ export function matchesBrand(schema: OpenAPIV3.SchemaObject, brand: BrandEnum) {
 }
 
 export function wrapWithBrand(schema: string, brand: BrandEnum, options: GenerateOptions) {
-  return options.branded ? `${ZOD_UTILS.namespace}.${ZOD_UTILS.exports.brand}(${schema}, "${brand}")` : schema;
+  return options.branded ? `${ZOD_EXTENDED.namespace}.${ZOD_EXTENDED.exports.brand}(${schema}, "${brand}")` : schema;
 }

@@ -1,6 +1,6 @@
 import Handlebars from "handlebars";
 import { ACL_CHECK_HOOK, CASL_ABILITY_BINDING } from "src/generators/const/acl.const";
-import { MUTATION_EFFECTS, ZOD_UTILS } from "src/generators/const/deps.const";
+import { MUTATION_EFFECTS, ZOD_EXTENDED } from "src/generators/const/deps.const";
 import { AXIOS_REQUEST_CONFIG_NAME, AXIOS_REQUEST_CONFIG_TYPE } from "src/generators/const/endpoints.const";
 import { BLOB_SCHEMA } from "src/generators/const/zod.const";
 import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
@@ -111,9 +111,9 @@ function registerGenerateEndpointParamParseHelper() {
       param,
       paramName,
       isQuery: param.type === "Query",
-      zodUtilsNamespace: ZOD_UTILS.namespace,
-      parse: ZOD_UTILS.exports.parse,
-      sortExp: ZOD_UTILS.exports.sortExp,
+      zodExtendedNamespace: ZOD_EXTENDED.namespace,
+      parse: ZOD_EXTENDED.exports.parse,
+      sortExp: ZOD_EXTENDED.exports.sortExp,
       addOptional:
         !(param.parameterObject ?? param.bodyObject)?.required &&
         (param.parameterSortingEnumSchemaName || isNamedZodSchema(param.zodSchema)),

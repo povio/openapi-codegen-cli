@@ -2,13 +2,15 @@ import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, CreateAxiosDef
 import { z } from "zod";
 import { RestInterceptor } from "./rest-interceptor";
 
-interface RequestInfo<ZResDto extends z.ZodRawShape, ResDto, Res> {
-  resSchema: z.ZodEffects<z.ZodObject<ZResDto, "strip", z.ZodTypeAny, ResDto>, Res> | z.ZodSchema<Res>;
+interface RequestInfo<ZOutput> {
+  resSchema: z.ZodType<ZOutput>;
 }
 
-interface RequestConfig<RawRes extends boolean = false> {
-  rawResponse?: RawRes;
+interface RequestConfig<IsRawRes extends boolean = false> {
+  rawResponse?: IsRawRes;
 }
+
+type Response<ZOutput, IsRawRes extends boolean = false> = IsRawRes extends true ? AxiosResponse<ZOutput> : ZOutput;
 
 export class RestClient {
   private client: AxiosInstance;
@@ -38,60 +40,60 @@ export class RestClient {
     interceptor.removeInterceptor(this.client);
   }
 
-  public async get<ZResDto extends z.ZodRawShape, ResDto, Res, RawRes extends boolean = false>(
-    requestInfo: RequestInfo<ZResDto, ResDto, Res>,
+  public async get<ZOutput, IsRawRes extends boolean = false>(
+    requestInfo: RequestInfo<ZOutput>,
     url: string,
-    requestConfig?: AxiosRequestConfig & RequestConfig<RawRes>,
-  ): Promise<RawRes extends true ? AxiosResponse<Res> : Res> {
+    requestConfig?: AxiosRequestConfig & RequestConfig<IsRawRes>,
+  ): Promise<Response<ZOutput, IsRawRes>> {
     return this.makeRequest(requestInfo, { ...requestConfig, method: "get", url });
   }
 
-  public async post<ZResDto extends z.ZodRawShape, ResDto, Res, RawRes extends boolean = false>(
-    requestInfo: RequestInfo<ZResDto, ResDto, Res>,
+  public async post<ZOutput, IsRawRes extends boolean = false>(
+    requestInfo: RequestInfo<ZOutput>,
     url: string,
     data?: any,
-    requestConfig?: AxiosRequestConfig & RequestConfig<RawRes>,
-  ): Promise<RawRes extends true ? AxiosResponse<Res> : Res> {
+    requestConfig?: AxiosRequestConfig & RequestConfig<IsRawRes>,
+  ): Promise<Response<ZOutput, IsRawRes>> {
     return this.makeRequest(requestInfo, { ...requestConfig, method: "post", url, data });
   }
 
-  public async patch<ZResDto extends z.ZodRawShape, ResDto, Res, RawRes extends boolean = false>(
-    requestInfo: RequestInfo<ZResDto, ResDto, Res>,
+  public async patch<ZOutput, IsRawRes extends boolean = false>(
+    requestInfo: RequestInfo<ZOutput>,
     url: string,
     data?: any,
-    requestConfig?: AxiosRequestConfig & RequestConfig<RawRes>,
-  ): Promise<RawRes extends true ? AxiosResponse<Res> : Res> {
+    requestConfig?: AxiosRequestConfig & RequestConfig<IsRawRes>,
+  ): Promise<Response<ZOutput, IsRawRes>> {
     return this.makeRequest(requestInfo, { ...requestConfig, method: "patch", url, data });
   }
 
-  public async put<ZResDto extends z.ZodRawShape, ResDto, Res, RawRes extends boolean = false>(
-    requestInfo: RequestInfo<ZResDto, ResDto, Res>,
+  public async put<ZOutput, IsRawRes extends boolean = false>(
+    requestInfo: RequestInfo<ZOutput>,
     url: string,
     data?: any,
-    requestConfig?: AxiosRequestConfig & RequestConfig<RawRes>,
-  ): Promise<RawRes extends true ? AxiosResponse<Res> : Res> {
+    requestConfig?: AxiosRequestConfig & RequestConfig<IsRawRes>,
+  ): Promise<Response<ZOutput, IsRawRes>> {
     return this.makeRequest(requestInfo, { ...requestConfig, method: "put", url, data });
   }
 
-  public async delete<ZResDto extends z.ZodRawShape, ResDto, Res, RawRes extends boolean = false>(
-    requestInfo: RequestInfo<ZResDto, ResDto, Res>,
+  public async delete<ZOutput, IsRawRes extends boolean = false>(
+    requestInfo: RequestInfo<ZOutput>,
     url: string,
     data?: any,
-    requestConfig?: AxiosRequestConfig & RequestConfig<RawRes>,
-  ): Promise<RawRes extends true ? AxiosResponse<Res> : Res> {
+    requestConfig?: AxiosRequestConfig & RequestConfig<IsRawRes>,
+  ): Promise<Response<ZOutput, IsRawRes>> {
     return this.makeRequest(requestInfo, { ...requestConfig, method: "delete", url, data });
   }
 
-  private async makeRequest<ZResDto extends z.ZodRawShape, ResDto, Res, RawRes extends boolean = false>(
-    requestInfo: RequestInfo<ZResDto, ResDto, Res>,
-    requestConfig: AxiosRequestConfig & RequestConfig<RawRes>,
-  ): Promise<RawRes extends true ? AxiosResponse<Res> : Res> {
+  private async makeRequest<ZOutput, IsRawRes extends boolean = false>(
+    requestInfo: RequestInfo<ZOutput>,
+    requestConfig: AxiosRequestConfig & RequestConfig<IsRawRes>,
+  ): Promise<Response<ZOutput, IsRawRes>> {
     const { rawResponse, ...config } = requestConfig;
 
     const res = await this.client(config);
 
     const resData = requestInfo.resSchema.parse(res.data);
 
-    return (rawResponse ? { ...res, data: resData } : resData) as RawRes extends true ? AxiosResponse<Res> : Res;
+    return (rawResponse ? { ...res, data: resData } : resData) as Response<ZOutput, IsRawRes>;
   }
 }
