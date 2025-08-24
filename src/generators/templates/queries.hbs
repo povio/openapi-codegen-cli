@@ -15,6 +15,9 @@
 {{! Acl check import }}
 {{#if hasAclCheck}}
 {{{genImport aclCheckImport}}}
+{{#each aclImports as | aclImport |}}
+{{{genImport aclImport}}}
+{{/each}}
 {{/if}}
 {{! React query types import }}
 {{{genImport queryTypesImport}}}
@@ -25,10 +28,6 @@
 {{! Endpoints import }}
 {{#each endpointsImports as | endpointsImport |}}
 {{{genImport endpointsImport}}}
-{{/each}}
-{{! Acl import }}
-{{#each aclImports as | aclImport |}}
-{{{genImport aclImport}}}
 {{/each}}
 
 {{#if includeNamespace}}

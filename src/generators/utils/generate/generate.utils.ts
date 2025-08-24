@@ -5,7 +5,7 @@ import {
   STANDALONE_APP_REST_CLIENT_FILE,
   STANDALONE_ASSETS,
   StandaloneAssetEnum,
-  ZOD_UTILS_FILE,
+  ZOD_EXTENDED_FILE,
 } from "src/generators/const/deps.const";
 import { GenerateFile, GenerateType } from "src/generators/types/generate";
 import { GenerateOptions } from "src/generators/types/options";
@@ -78,8 +78,8 @@ export function getAclCheckImportPath(options: GenerateOptions) {
   return `${getImportPath(options)}${ACL_CHECK_FILE.fileName}`;
 }
 
-export function getZodUtilsImportPath(options: GenerateOptions) {
-  return `${getImportPath(options)}${ZOD_UTILS_FILE.fileName}`;
+export function getZodExtendedImportPath(options: GenerateOptions) {
+  return `${getImportPath(options)}${ZOD_EXTENDED_FILE.fileName}`;
 }
 
 export function getAppAbilitiesImportPath(options: GenerateOptions) {

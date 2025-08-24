@@ -1,6 +1,6 @@
 {
   "name": "@povio/openapi-codegen-cli",
-  "version": "0.16.1",
+  "version": "1.0.0",
   "main": "./dist/index.js",
   "bin": {
     "openapi-codegen": "./dist/sh.js"
@@ -49,8 +49,8 @@
     "@types/prettier": "^3.0.0",
     "@types/prompt-sync": "^4.2.3",
     "@types/yargs": "^17.0.32",
-    "@typescript-eslint/eslint-plugin": "^6.21.0",
-    "@typescript-eslint/parser": "^6.21.0",
+    "@typescript-eslint/eslint-plugin": "^8.40.0",
+    "@typescript-eslint/parser": "^8.40.0",
     "chalk": "^5.3.0",
     "esbuild": "^0.21.3",
     "eslint": "^8.57.0",

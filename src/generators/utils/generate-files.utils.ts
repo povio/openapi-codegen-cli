@@ -5,14 +5,14 @@ import {
   QUERY_MODULES_FILE,
   STANDALONE_APP_REST_CLIENT_FILE,
   STANDALONE_ASSETS,
-  ZOD_UTILS_FILE,
+  ZOD_EXTENDED_FILE,
 } from "src/generators/const/deps.const";
 import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
 import { generateAppAcl } from "src/generators/generate/generateAcl";
 import { generateAclCheck } from "src/generators/generate/generateAclCheck";
 import { generateAppRestClient } from "src/generators/generate/generateAppRestClient";
 import { generateQueryModules } from "src/generators/generate/generateQueryModules";
-import { generateZodUtils } from "src/generators/generate/generateZodUtils";
+import { generateZodExtended } from "src/generators/generate/generateZodExtended";
 import { GenerateData, GenerateFile, GenerateFileData } from "src/generators/types/generate";
 import { getOutputFileName, readAssetSync } from "./file.utils";
 import { getFileNameWithExtension } from "./generate/generate.utils";
@@ -78,7 +78,7 @@ export function getStandaloneFiles(resolver: SchemaResolver): GenerateFileData[]
   ];
 }
 
-export function getZodUtilsFiles(data: GenerateData, resolver: SchemaResolver): GenerateFileData[] {
+export function getZodExtendedFiles(data: GenerateData, resolver: SchemaResolver): GenerateFileData[] {
   if (!resolver.options.parseRequestParams) {
     return [];
   }
@@ -87,9 +87,9 @@ export function getZodUtilsFiles(data: GenerateData, resolver: SchemaResolver): 
     {
       fileName: getOutputFileName({
         output: resolver.options.output,
-        fileName: getFileNameWithExtension(ZOD_UTILS_FILE),
+        fileName: getFileNameWithExtension(ZOD_EXTENDED_FILE),
       }),
-      content: generateZodUtils(resolver),
+      content: generateZodExtended(resolver),
     },
   ];
 }

@@ -1,4 +1,4 @@
-import { APP_REST_CLIENT_NAME, ZOD_UTILS } from "src/generators/const/deps.const";
+import { APP_REST_CLIENT_NAME, ZOD_EXTENDED } from "src/generators/const/deps.const";
 import {
   AXIOS_IMPORT,
   AXIOS_REQUEST_CONFIG_NAME,
@@ -12,7 +12,7 @@ import { getModelsImports } from "src/generators/utils/generate/generate.imports
 import {
   getAppRestClientImportPath,
   getNamespaceName,
-  getZodUtilsImportPath,
+  getZodExtendedImportPath,
 } from "src/generators/utils/generate/generate.utils";
 import { getHbsTemplateDelegate } from "src/generators/utils/hbs/hbs-template.utils";
 import { isNamedZodSchema } from "src/generators/utils/zod-schema.utils";
@@ -46,10 +46,10 @@ export function generateEndpoints({ resolver, data, tag = "" }: GenerateTypePara
 
   const hasZodImport = zodSchemas.some((schema) => !isNamedZodSchema(schema));
 
-  const hasZodUtilsImport = resolver.options.parseRequestParams && endpointParamsParseSchemas.length > 0;
-  const zodUtilsImport: Import = {
-    bindings: [ZOD_UTILS.namespace],
-    from: getZodUtilsImportPath(resolver.options),
+  const hasZodExtendedImport = resolver.options.parseRequestParams && endpointParamsParseSchemas.length > 0;
+  const zodExtendedImport: Import = {
+    bindings: [ZOD_EXTENDED.namespace],
+    from: getZodExtendedImportPath(resolver.options),
   };
 
   const modelsImports = getModelsImports({
@@ -67,8 +67,8 @@ export function generateEndpoints({ resolver, data, tag = "" }: GenerateTypePara
     axiosImport,
     hasZodImport,
     zodImport: ZOD_IMPORT,
-    hasZodUtilsImport,
-    zodUtilsImport,
+    hasZodExtendedImport,
+    zodExtendedImport,
     modelsImports,
     includeNamespace: resolver.options.tsNamespaces,
     namespace: getNamespaceName({ type: GenerateType.Endpoints, tag, options: resolver.options }),

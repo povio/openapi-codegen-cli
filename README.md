@@ -2,6 +2,8 @@
 
 **NOTE:** This CLI tool is primarily designed for use within our organization. The generated code output aligns with our internal template. If you are using this tool without our internal template, make sure to use it in **standalone** mode.
 
+**NOTE:** Version 1+ requires zod v4 and is not compatible with zod v3.
+
 Use this tool to generate code (Zod schemas, TypeScript types, API definitions, and React queries) from an OpenAPI v3 specification. API definitions are generated to use a REST client wrapper that utilizes Axios. React queries are generated in alignment with our code standards, without the need for explicit types.
 
 The tool partially leverages code from [openapi-zod-client](https://github.com/astahmer/openapi-zod-client) repository.
@@ -84,7 +86,6 @@ yarn openapi-codegen generate --config my-config.ts
   --importPath                        Module import style for generated files (default: 'ts'; options: 'ts' | 'relative' | 'absolute')
   --removeOperationPrefixEndingWith   Remove operation name prefixes that end with the specified string (Default: 'Controller_')
   --extractEnums                      Extract enums into separate Zod schemas (default: true)
-  --branded                           Apply branded types to ambiguous Zod schemas (default: true)
   --replaceOptionalWithNullish        Replace `.optional()` chains with `.nullish()` in generated Zod schemas (default: false)
 
   --axiosRequestConfig                Include Axios request config parameters in query hooks (default: false)

@@ -1,4 +1,4 @@
-import { ZOD_UTILS } from "src/generators/const/deps.const";
+import { ZOD_EXTENDED } from "src/generators/const/deps.const";
 import {
   BODY_SCHEMA_SUFFIX,
   ENUM_SCHEMA,
@@ -16,7 +16,7 @@ export const getEnumZodSchemaName = (name: string, enumSuffix: string, schemaSuf
   suffixIfNeeded(capitalize(normalizeString(name)), `${enumSuffix}${schemaSuffix}`);
 
 export const isNamedZodSchema = (schema: string) =>
-  ["z.", `${ZOD_UTILS.namespace}.`].every((searchString) => !schema.startsWith(searchString));
+  ["z.", `${ZOD_EXTENDED.namespace}.`].every((searchString) => !schema.startsWith(searchString));
 
 export const isEnumZodSchema = (schema: string) => schema.startsWith(ENUM_SCHEMA);
 

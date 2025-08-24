@@ -1,7 +1,7 @@
-import yargs from "yargs";
 import { logBanner } from "src/helpers/cli.helper";
 import { getVersion } from "src/helpers/version.helper";
 import { getBuilder, YargOption } from "src/helpers/yargs.helper";
+import yargs from "yargs";
 import { generate, GenerateParams } from "./generate";
 
 class GenerateOptions implements GenerateParams {
@@ -52,9 +52,6 @@ class GenerateOptions implements GenerateParams {
 
   @YargOption({ envAlias: "baseUrl" })
   baseUrl?: string;
-
-  @YargOption({ envAlias: "branded", type: "boolean" })
-  branded?: boolean;
 
   @YargOption({ envAlias: "replaceOptionalWithNullish", type: "boolean" })
   replaceOptionalWithNullish?: boolean;
