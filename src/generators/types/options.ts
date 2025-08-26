@@ -24,7 +24,13 @@ interface QueriesGenerateOptions {
   axiosRequestConfig?: boolean;
   infiniteQueries?: boolean;
   mutationEffects?: boolean;
+}
+
+interface ACLOptions {
+  acl: boolean;
   checkAcl?: boolean;
+  abilityContextImportPath: string;
+  abilityContextGenericAppAbilities: boolean;
 }
 
 interface GenerateConfig {
@@ -41,16 +47,15 @@ interface BaseGenerateOptions {
   excludePathRegex: string;
   excludeRedundantZodSchemas: boolean;
   tsNamespaces: boolean;
+  tsPath: string;
   importPath: "ts" | "relative" | "absolute";
   configs: Record<GenerateType, GenerateConfig>;
-  acl: boolean;
   standalone: boolean;
   baseUrl: string;
-  abilityContextImportPath: string;
-  abilityContextGenericAppAbilities: boolean;
 }
 
 export type GenerateOptions = BaseGenerateOptions &
   ZodGenerateOptions &
   EndpointsGenerateOptions &
-  QueriesGenerateOptions;
+  QueriesGenerateOptions &
+  ACLOptions;

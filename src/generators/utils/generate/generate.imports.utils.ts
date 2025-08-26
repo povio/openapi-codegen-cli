@@ -1,4 +1,4 @@
-import { TEMPLATE_DATA_FILE_PATH, TEMPLATE_DATA_TS_PATH } from "src/generators/const/deps.const";
+import { TEMPLATE_DATA_FILE_PATH } from "src/generators/const/deps.const";
 import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
 import { Endpoint } from "src/generators/types/endpoint";
 import { GenerateType, Import } from "src/generators/types/generate";
@@ -110,14 +110,14 @@ export function getEntityImports({
   return Array.from(imports.values());
 }
 
-export function getImportPath(options: Pick<GenerateOptions, "output" | "importPath">) {
-  let importPath = TEMPLATE_DATA_TS_PATH;
+export function getImportPath(options: Pick<GenerateOptions, "output" | "importPath" | "tsPath">) {
+  let importPath = options.tsPath;
   if (options.importPath === "relative") {
     importPath = "../";
   } else if (options.importPath === "absolute") {
     importPath = options.output;
   } else if (new RegExp(`${TEMPLATE_DATA_FILE_PATH}`, "g").test(options.output)) {
-    importPath = options.output.replace(new RegExp(`.*${TEMPLATE_DATA_FILE_PATH}`, "g"), TEMPLATE_DATA_TS_PATH);
+    importPath = options.output.replace(new RegExp(`.*${TEMPLATE_DATA_FILE_PATH}`, "g"), options.tsPath);
   }
   return `${importPath}/`.replace(/\/\//g, "/");
 }

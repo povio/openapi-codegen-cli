@@ -1,6 +1,6 @@
 import { GenerateType } from "src/generators/types/generate";
 import { GenerateOptions } from "src/generators/types/options";
-import { TEMPLATE_IMPORTS } from "./deps.const";
+import { TEMPLATE_DATA_TS_PATH, TEMPLATE_IMPORTS } from "./deps.const";
 import { ENUM_SUFFIX, SCHEMA_SUFFIX } from "./zod.const";
 
 export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
@@ -13,6 +13,7 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   excludePathRegex: "",
   excludeRedundantZodSchemas: true,
   tsNamespaces: true,
+  tsPath: TEMPLATE_DATA_TS_PATH,
   importPath: "ts",
   configs: {
     [GenerateType.Models]: {
@@ -32,12 +33,8 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
       namespaceSuffix: "Acl",
     },
   },
-  acl: true,
-  checkAcl: true,
   standalone: false,
   baseUrl: "",
-  abilityContextImportPath: TEMPLATE_IMPORTS.abilityContext,
-  abilityContextGenericAppAbilities: false,
   // Zod options
   schemaSuffix: SCHEMA_SUFFIX,
   enumSuffix: ENUM_SUFFIX,
@@ -54,4 +51,9 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   axiosRequestConfig: false,
   infiniteQueries: false,
   mutationEffects: true,
+  // ACL options
+  acl: true,
+  checkAcl: true,
+  abilityContextImportPath: TEMPLATE_IMPORTS.abilityContext,
+  abilityContextGenericAppAbilities: false,
 };

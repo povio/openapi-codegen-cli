@@ -19,6 +19,7 @@ export type GenerateParams = {
     | "input"
     | "output"
     | "tsNamespaces"
+    | "tsPath"
     | "splitByTags"
     | "defaultTag"
     | "removeOperationPrefixEndingWith"
