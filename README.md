@@ -84,7 +84,8 @@ yarn openapi-codegen generate --config my-config.ts
 
   --tsNamespaces                      Wrap generated files in TypeScript namespaces (default: true)
   --importPath                        Module import style for generated files (default: 'ts'; options: 'ts' | 'relative' | 'absolute')
-  --removeOperationPrefixEndingWith   Remove operation name prefixes that end with the specified string (Default: 'Controller_')
+  --tsPath                            (Requires `--importPath` to be 'ts') Typescript import path (default: '@/data')
+  --removeOperationPrefixEndingWith   Remove operation name prefixes that end with the specified string (default: 'Controller_')
   --extractEnums                      Extract enums into separate Zod schemas (default: true)
   --replaceOptionalWithNullish        Replace `.optional()` chains with `.nullish()` in generated Zod schemas (default: false)
 
