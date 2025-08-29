@@ -1,26 +1,17 @@
-import {
-  ACL_ALL_ABILITIES,
-  ACL_APP_ABILITIES,
-  CASL_ABILITY_BINDING,
-  CASL_ABILITY_IMPORT,
-} from "src/generators/const/acl.const";
-import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
+import { ACL_APP_ABILITIES, CASL_ABILITY_BINDING, CASL_ABILITY_IMPORT } from "src/generators/const/acl.const";
 import { GenerateType, GenerateTypeParams, Import } from "src/generators/types/generate";
-import { getUniqueArray } from "src/generators/utils/array.utils";
-import { getTagAllAbilitiesName } from "src/generators/utils/generate/generate.acl.utils";
-import { getEntityImports, getModelsImports } from "src/generators/utils/generate/generate.imports.utils";
+import { getAclData, getAppAbilitiesType } from "src/generators/utils/generate/generate.acl.utils";
 import { getNamespaceName } from "src/generators/utils/generate/generate.utils";
 import { getHbsTemplateDelegate } from "src/generators/utils/hbs/hbs-template.utils";
 
 export function generateAcl({ resolver, data, tag = "" }: GenerateTypeParams) {
-  const endpoints = data.get(tag)?.endpoints.filter(({ acl }) => acl && acl.length > 0);
-  if (!endpoints || endpoints.length === 0) {
+  const aclData = getAclData({ resolver, data, tag });
+  if (!aclData) {
     return;
   }
 
-  const hasAdditionalAbilityImports = endpoints.some(
-    ({ acl }) => acl?.[0].conditions && Object.keys(acl[0].conditions).length > 0,
-  );
+  const { hasAdditionalAbilityImports, modelsImports, endpoints } = aclData;
+
   const caslAbilityTupleImport: Import = {
     bindings: [
       CASL_ABILITY_BINDING.abilityTuple,
@@ -28,20 +19,6 @@ export function generateAcl({ resolver, data, tag = "" }: GenerateTypeParams) {
     ],
     from: CASL_ABILITY_IMPORT.from,
   };
-
-  const aclZodSchemas = endpoints.reduce((acc, endpoint) => {
-    const zodSchemas = endpoint.acl?.[0].conditionsTypes?.reduce(
-      (acc, propertyType) => [...acc, ...(propertyType?.zodSchemaName ? [propertyType.zodSchemaName] : [])],
-      [] as string[],
-    );
-    return [...acc, ...(zodSchemas ?? [])];
-  }, [] as string[]);
-
-  const modelsImports = getModelsImports({
-    resolver,
-    tag,
-    zodSchemasAsTypes: getUniqueArray(aclZodSchemas),
-  });
 
   const hbsTemplate = getHbsTemplateDelegate(resolver, "acl");
 
@@ -54,35 +31,25 @@ export function generateAcl({ resolver, data, tag = "" }: GenerateTypeParams) {
   });
 }
 
-export function generateAppAcl(resolver: SchemaResolver, tags: string[]) {
+export function generateAppAcl({ resolver, data }: Omit<GenerateTypeParams, "tag">) {
+  const { appAbilitiesType, hasAdditionalAbilityImports, modelsImports } = getAppAbilitiesType({ resolver, data });
+
   const caslAbilityTupleImport: Import = {
     bindings: [
       CASL_ABILITY_BINDING.pureAbility,
-      ...(tags.length === 0 ? [CASL_ABILITY_BINDING.subjectType, CASL_ABILITY_BINDING.abilityTuple] : []),
+      CASL_ABILITY_BINDING.abilityTuple,
+      ...(hasAdditionalAbilityImports ? [CASL_ABILITY_BINDING.forcedSubject] : []),
     ],
     from: CASL_ABILITY_IMPORT.from,
   };
-
-  const imports = getEntityImports({
-    tags,
-    entityName: ACL_ALL_ABILITIES,
-    getAliasEntityName: getTagAllAbilitiesName,
-    type: GenerateType.Acl,
-    options: resolver.options,
-  });
-
-  const namespaces = tags.map((tag) => getNamespaceName({ type: GenerateType.Acl, tag, options: resolver.options }));
 
   const hbsTemplate = getHbsTemplateDelegate(resolver, "app-acl");
 
   return hbsTemplate({
     caslAbilityTupleImport,
-    imports,
-    allAbilities: ACL_ALL_ABILITIES,
+    modelsImports,
+    appAbilitiesType,
     appAbilities: ACL_APP_ABILITIES,
-    includeNamespace: resolver.options.tsNamespaces,
-    tags,
-    namespaces,
     abilityTuple: CASL_ABILITY_BINDING.abilityTuple,
     subjectType: CASL_ABILITY_BINDING.subjectType,
   });

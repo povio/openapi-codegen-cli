@@ -1,13 +1,12 @@
-import { ACL_ALL_ABILITIES } from "src/generators/const/acl.const";
-import { GenerateType } from "src/generators/types/generate";
-import { GenerateOptions } from "src/generators/types/options";
 import { Endpoint } from "src/generators/types/endpoint";
+import { GenerateType, GenerateTypeParams, Import } from "src/generators/types/generate";
+import { GenerateOptions } from "src/generators/types/options";
 import { capitalize, snakeToCamel } from "src/generators/utils/string.utils";
-import { getEndpointTag } from "./generate.endpoints.utils";
-import { getNamespaceName } from "./generate.utils";
 
-export const getAbilityTypeName = (endpoint: Endpoint) =>
-  `Use${capitalize(snakeToCamel(endpoint.operationName))}Ability`;
+import { getUniqueArray } from "src/generators/utils/array.utils";
+import { getEndpointTag } from "./generate.endpoints.utils";
+import { getModelsImports, mergeImports } from "./generate.imports.utils";
+import { getNamespaceName } from "./generate.utils";
 
 export const getAbilityFunctionName = (endpoint: Endpoint) =>
   `canUse${capitalize(snakeToCamel(endpoint.operationName))}`;
@@ -25,8 +24,91 @@ export const getAbilitySubject = (endpoint: Endpoint) => endpoint.acl?.[0].subje
 
 export const hasAbilityConditions = (endpoint: Endpoint) => !!getAbilityConditionsTypes(endpoint)?.length;
 
-export const getAbilityConditionsTypes = (endpoint: Endpoint) => endpoint.acl?.[0].conditionsTypes;
+export const getAbilityConditionsTypes = (endpoint: Endpoint) =>
+  endpoint.acl?.[0].conditionsTypes?.sort((a, b) => a.name.localeCompare(b.name));
 
 export const getAbilityDescription = (endpoint: Endpoint) => endpoint.acl?.[0].description;
 
-export const getTagAllAbilitiesName = (tag: string) => `${capitalize(tag)}${ACL_ALL_ABILITIES}`;
+export const getAbilitySubjectTypes = (endpoint: Endpoint) => {
+  const abilitySubject = getAbilitySubject(endpoint);
+  const types: string[] = [`"${abilitySubject ?? ""}"`];
+
+  if (hasAbilityConditions(endpoint)) {
+    types.push(
+      `ForcedSubject<"${abilitySubject}"> & { ${getAbilityConditionsTypes(endpoint)
+        ?.map(
+          (conditionType) =>
+            `${conditionType.name}${conditionType.required ? "" : "?"}: ${conditionType.type ?? ""}${conditionType.zodSchemaName ?? ""},`,
+        )
+        .join(" ")} }`,
+    );
+  }
+
+  return types;
+};
+
+export function getAclData({ resolver, data, tag = "" }: GenerateTypeParams) {
+  const endpoints = data.get(tag)?.endpoints.filter(({ acl }) => acl && acl.length > 0);
+  if (!endpoints || endpoints.length === 0) {
+    return;
+  }
+
+  const hasAdditionalAbilityImports = endpoints.some(
+    ({ acl }) => acl?.[0].conditions && Object.keys(acl[0].conditions).length > 0,
+  );
+
+  const aclZodSchemas = endpoints.reduce((acc, endpoint) => {
+    const zodSchemas = endpoint.acl?.[0].conditionsTypes?.reduce(
+      (acc, propertyType) => [...acc, ...(propertyType?.zodSchemaName ? [propertyType.zodSchemaName] : [])],
+      [] as string[],
+    );
+    return [...acc, ...(zodSchemas ?? [])];
+  }, [] as string[]);
+
+  const modelsImports = getModelsImports({
+    resolver,
+    tag,
+    zodSchemasAsTypes: getUniqueArray(aclZodSchemas),
+  });
+
+  return { endpoints, hasAdditionalAbilityImports, modelsImports };
+}
+
+export const getAppAbilitiesType = ({ resolver, data }: Omit<GenerateTypeParams, "tag">) => {
+  const appAbilitiesTypeMap: Map<string, Set<string>> = new Map();
+  const modelsImportsArr: Import[][] = [];
+  let hasAdditionalAbilityImports = false;
+
+  data.forEach((_, tag) => {
+    const aclData = getAclData({ resolver, data, tag });
+    if (!aclData) {
+      return;
+    }
+
+    const {
+      modelsImports: tagModelsImports,
+      hasAdditionalAbilityImports: tagHasAdditionalAbilityImports,
+      endpoints,
+    } = aclData;
+
+    modelsImportsArr.push(tagModelsImports);
+    hasAdditionalAbilityImports = hasAdditionalAbilityImports || tagHasAdditionalAbilityImports;
+
+    endpoints.forEach((endpoint) => {
+      const abilityAction = getAbilityAction(endpoint);
+      if (abilityAction) {
+        appAbilitiesTypeMap.set(
+          abilityAction,
+          new Set([...(appAbilitiesTypeMap.get(abilityAction) ?? []), ...getAbilitySubjectTypes(endpoint)]),
+        );
+      }
+    });
+  });
+
+  const modelsImports = mergeImports(resolver.options, ...modelsImportsArr);
+  const appAbilitiesType = Object.fromEntries(
+    Array.from(appAbilitiesTypeMap.entries()).map(([key, valueSet]) => [key, Array.from(valueSet)]),
+  );
+
+  return { appAbilitiesType, modelsImports, hasAdditionalAbilityImports };
+};

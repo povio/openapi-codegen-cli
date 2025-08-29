@@ -8,14 +8,12 @@ import {
   getAbilityDescription,
   getAbilityFunctionName,
   getAbilitySubject,
-  getAbilityTypeName,
+  getAbilitySubjectTypes,
   getImportedAbilityFunctionName,
-  getTagAllAbilitiesName,
   hasAbilityConditions,
 } from "src/generators/utils/generate/generate.acl.utils";
 
 enum AclHelpers {
-  AbilityTypeName = "abilityTypeName",
   AbilityFunctionName = "abilityFunctionName",
   ImportedAbilityFunctionName = "importedAbilityFunctionName",
   AbilityAction = "ablityAction",
@@ -23,11 +21,10 @@ enum AclHelpers {
   HasAbilityConditions = "hasAbilityConditions",
   AbilityConditionsTypes = "abilityConditionsTypes",
   AbilityDescription = "abilityDescription",
-  TagAllAbilitiesName = "tagAllAbilitiesName",
+  AbilitySubjectTypes = "abilitySubjectTypes",
 }
 
 export function registerAclHbsHelpers(resolver: SchemaResolver) {
-  registerAbilityTypeNameHelper();
   registerAbilityFunctionNameHelper();
   registerImportedAbilityFunctionNameHelper(resolver.options);
   registerAbilityActionHelper();
@@ -35,11 +32,7 @@ export function registerAclHbsHelpers(resolver: SchemaResolver) {
   registerHasAbilityConditionsHelper();
   registerAbilityConditionsTypesHelper();
   registerAbilityDescriptionHelper();
-  registerTagAllAbilitiesNameHelper();
-}
-
-function registerAbilityTypeNameHelper() {
-  Handlebars.registerHelper(AclHelpers.AbilityTypeName, getAbilityTypeName);
+  registerAbilitySubjectTypesHelper();
 }
 
 function registerAbilityFunctionNameHelper() {
@@ -72,6 +65,6 @@ function registerAbilityDescriptionHelper() {
   Handlebars.registerHelper(AclHelpers.AbilityDescription, getAbilityDescription);
 }
 
-function registerTagAllAbilitiesNameHelper() {
-  Handlebars.registerHelper(AclHelpers.TagAllAbilitiesName, getTagAllAbilitiesName);
+function registerAbilitySubjectTypesHelper() {
+  Handlebars.registerHelper(AclHelpers.AbilitySubjectTypes, getAbilitySubjectTypes);
 }

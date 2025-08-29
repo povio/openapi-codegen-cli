@@ -1,15 +1,15 @@
 {{! Casl AbilityTuple import}}
 {{{genImport caslAbilityTupleImport}}}
-{{! Acl imports }}
-{{#each imports as | import |}}
-{{{genImport import}}}
+{{! Models import }}
+{{#each modelsImports as | modelsImport |}}
+{{{genImport modelsImport}}}
 {{/each}}
 
 {{! AppAbilities union type }}
-export type {{appAbilities}} = 
-{{#if tags}}
-{{#if includeNamespace}}{{#each namespaces as | namespace |}} | {{namespace}}.{{../allAbilities}}{{/each}}
-{{else}}{{#each tags as | tag |}} | {{tagAllAbilitiesName tag}}{{/each}}{{/if}}
+export type {{appAbilities}} = {{#if appAbilitiesType}} 
+{{#each appAbilitiesType as | appAbilityType |}}
+| {{../abilityTuple}}<"{{@key}}", {{{union appAbilityType}}}>
+{{/each}}
 {{else}}
 {{abilityTuple}}<string, {{subjectType}}>;
 {{/if}}

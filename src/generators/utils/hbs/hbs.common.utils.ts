@@ -4,6 +4,7 @@ import { capitalize } from "src/generators/utils/string.utils";
 enum CommonHelpers {
   IsEqual = "isEqual",
   CommaSeparated = "commaSeparated",
+  Union = "union",
   AddAsteriskAfterNewLine = "addAsteriskAfterNewLine",
   JSONStringify = "jsonStringify",
   Capitalize = "capitalize",
@@ -12,6 +13,7 @@ enum CommonHelpers {
 export function registerCommonHbsHelpers() {
   registerIsEqualHelper();
   registerCommaSeparatedListHelper();
+  registerUnionHelper();
   registerAddAsteriskAfterNewLineHelper();
   registerJsonStringifyHelper();
   registerCapitalizeHelper();
@@ -23,6 +25,10 @@ function registerIsEqualHelper() {
 
 function registerCommaSeparatedListHelper() {
   Handlebars.registerHelper(CommonHelpers.CommaSeparated, (list: string[]) => list.join(", "));
+}
+
+function registerUnionHelper() {
+  Handlebars.registerHelper(CommonHelpers.Union, (list: string[]) => list.join(" | "));
 }
 
 function registerAddAsteriskAfterNewLineHelper() {

@@ -24,7 +24,6 @@ export function generateModels({ resolver, data, tag = "" }: GenerateTypeParams)
 
   const zodSchemasData: Record<string, GenerateZodSchemaData> = Object.entries(zodSchemas).reduce(
     (acc, [key, code]) => {
-      const ref = resolver.getRefByZodSchemaName(key);
       const schemaObj = resolver.getZodSchemaObj(key);
 
       const value = {

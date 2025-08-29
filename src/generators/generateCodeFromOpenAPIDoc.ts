@@ -51,7 +51,7 @@ export function generateCodeFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, optio
   });
 
   generateFilesData.push(
-    ...getAclFiles(appAclTags, resolver),
+    ...getAclFiles(data, resolver),
     ...getMutationEffectsFiles(data, resolver),
     ...getZodExtendedFiles(data, resolver),
     ...getStandaloneFiles(resolver),

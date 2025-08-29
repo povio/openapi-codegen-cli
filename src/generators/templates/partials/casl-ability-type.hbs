@@ -1,5 +1,1 @@
-type {{abilityTypeName endpoint}} = {{abilityTupleType}}<
-  "{{ablityAction endpoint}}", 
-  "{{ablitySubject endpoint}}" 
-  {{#if (hasAbilityConditions endpoint)}}| (ForcedSubject<"{{ablitySubject endpoint}}"> & { {{#each (abilityConditionsTypes endpoint) as | propertyType |}}{{propertyType.name}}{{#unless propertyType.required}}?{{/unless}}: {{propertyType.type}}{{propertyType.zodSchemaName}}, {{/each}} }){{/if}}
->;
+{{abilityTuple}}<"{{ablityAction endpoint}}", {{{union (abilitySubjectTypes endpoint)}}}>

@@ -2,9 +2,9 @@ import Handlebars from "handlebars";
 import { ACL_CHECK_HOOK, CASL_ABILITY_BINDING } from "src/generators/const/acl.const";
 import { MUTATION_EFFECTS, ZOD_EXTENDED } from "src/generators/const/deps.const";
 import { AXIOS_REQUEST_CONFIG_NAME, AXIOS_REQUEST_CONFIG_TYPE } from "src/generators/const/endpoints.const";
+import { INFINITE_QUERY_RESPONSE_PARAMS, QUERIES_MODULE_NAME, QUERY_HOOKS } from "src/generators/const/queries.const";
 import { BLOB_SCHEMA } from "src/generators/const/zod.const";
 import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
-import { INFINITE_QUERY_RESPONSE_PARAMS, QUERIES_MODULE_NAME, QUERY_HOOKS } from "src/generators/const/queries.const";
 import { Endpoint, EndpointParameter } from "src/generators/types/endpoint";
 import { GenerateZodSchemaData, Import } from "src/generators/types/generate";
 import { getAbilityConditionsTypes, hasAbilityConditions } from "src/generators/utils/generate/generate.acl.utils";
@@ -230,7 +230,7 @@ function registerGenerateCaslAbilityTypeHelper() {
   Handlebars.registerHelper(PartialsHelpers.CaslAbilityType, (endpoint: Endpoint) =>
     getHbsPartialTemplateDelegate("casl-ability-type")({
       endpoint,
-      abilityTupleType: CASL_ABILITY_BINDING.abilityTuple,
+      abilityTuple: CASL_ABILITY_BINDING.abilityTuple,
     }),
   );
 }
