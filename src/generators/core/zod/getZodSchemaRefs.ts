@@ -1,4 +1,5 @@
 import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
+import { isSchemaObject } from "src/generators/utils/openapi-schema.utils";
 import { ZodSchema } from "./ZodSchema.class";
 
 export function getZodSchemaRefs(resolver: SchemaResolver, zodSchemaName: string) {
@@ -21,13 +22,19 @@ export function getZodSchemaRefs(resolver: SchemaResolver, zodSchemaName: string
   return [];
 }
 
-function getSchemaRefs(zodSchema: ZodSchema): Set<string> {
+export function getSchemaRefs(
+  zodSchema: ZodSchema,
+  { skipObjectSchema = false }: { skipObjectSchema?: boolean } = {},
+): Set<string> {
   const refsSet = zodSchema.children.reduce((acc, child) => {
     const ref = child.ref ?? child.enumRef;
     if (ref) {
       acc.add(ref);
     }
-    if (child.children.length > 0) {
+    if (
+      child.children.length > 0 &&
+      (!skipObjectSchema || !isSchemaObject(child.schema) || child.schema.type !== "object")
+    ) {
       getSchemaRefs(child).forEach((ref) => acc.add(ref));
     }
     return acc;

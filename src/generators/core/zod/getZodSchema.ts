@@ -21,8 +21,9 @@ import {
 } from "src/generators/utils/openapi-schema.utils";
 import { escapeControlCharacters, isPrimitiveType, wrapWithQuotesIfNeeded } from "src/generators/utils/openapi.utils";
 import { match } from "ts-pattern";
-import { ZodSchema, ZodSchemaMetaData } from "./ZodSchema.class";
+import { getParentRef, ZodSchema, ZodSchemaMetaData } from "./ZodSchema.class";
 import { getZodChain } from "./getZodChain";
+import { getSchemaRefs } from "./getZodSchemaRefs";
 
 type GetZodSchemaParams = {
   schema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject;
@@ -99,7 +100,7 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag }: Get
     let properties = "{}";
 
     if (schema.properties) {
-      const propsMap = Object.entries(schema.properties).map(([prop, propSchema]) => {
+      const propsMap: [string, string, boolean][] = Object.entries(schema.properties).map(([prop, propSchema]) => {
         const propMetadata = {
           ...meta,
           isRequired: isPartial
@@ -120,21 +121,35 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag }: Get
           }
         }
 
+        const zodSchema = getZodSchema({ ...params, schema: propSchema, meta: propMetadata });
         const propZodSchema =
-          getZodSchema({ ...params, schema: propSchema, meta: propMetadata }).getCodeString(tag, resolver.options) +
+          zodSchema.getCodeString(tag, resolver.options) +
           getZodChain({
             schema: propActualSchema as OpenAPIV3.SchemaObject,
             meta: propMetadata,
             options: resolver.options,
           });
 
-        return [prop, propZodSchema];
+        let isCircular = false;
+        const parentRef = getParentRef(inheritedMeta);
+        if (parentRef) {
+          const refs = [
+            ...(isReferenceObject(propSchema) ? [propSchema.$ref] : []),
+            ...getSchemaRefs(zodSchema, { skipObjectSchema: true }),
+          ];
+          isCircular = refs.some((ref) => resolver.dependencyGraph.deepDependencyGraph[ref]?.has(parentRef));
+        }
+
+        return [prop, propZodSchema, isCircular];
       });
 
-      properties =
-        "{ " +
-        propsMap.map(([prop, propSchema]) => `${wrapWithQuotesIfNeeded(prop!)}: ${propSchema}`).join(", ") +
-        " }";
+      properties = `{ ${propsMap
+        .map(([prop, propSchema, isCircular]) =>
+          isCircular
+            ? `get ${wrapWithQuotesIfNeeded(prop!)}() { return ${propSchema} }`
+            : `${wrapWithQuotesIfNeeded(prop!)}: ${propSchema}`,
+        )
+        .join(", ")} }`;
     }
 
     let additionalPropsSchema = "";

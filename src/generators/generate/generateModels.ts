@@ -29,7 +29,6 @@ export function generateModels({ resolver, data, tag = "" }: GenerateTypeParams)
 
       const value = {
         code,
-        isCircular: !!ref && resolver.isSchemaCircular(ref),
         isEnum: isEnumZodSchema(code),
         schemaObj,
       };

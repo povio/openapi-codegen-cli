@@ -12,8 +12,7 @@ export namespace {{namespace}} {
 {{! Js docs }}
 {{{genModelJsDocs @key zodSchema ../tag}}}
 {{! Zod schema export }}
-export const {{@key}}{{#if zodSchema.isCircular}}: z.ZodType<unknown> // TODO: Fix type inference {{/if}}
-    = {{{zodSchema.code}}};
+export const {{@key}} = {{{zodSchema.code}}};
 {{! Zod schema infered type export }}
 export type {{zodInferedType @key}} = z.infer<typeof {{@key}}>;
 {{#if zodSchema.isEnum}}export const {{zodInferedType @key}} = {{@key}}.enum;{{/if}}

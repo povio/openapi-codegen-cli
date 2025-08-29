@@ -1,11 +1,11 @@
 import { OpenAPIV3 } from "openapi-types";
+import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
+import { getOpenAPISchemaComplexity } from "src/generators/core/openapi/getOpenAPISchemaComplexity";
 import { WithRequired } from "src/generators/types/common";
 import { GenerateType } from "src/generators/types/generate";
 import { GenerateOptions } from "src/generators/types/options";
 import { getNamespaceName } from "src/generators/utils/generate/generate.utils";
 import { isReferenceObject } from "src/generators/utils/openapi-schema.utils";
-import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
-import { getOpenAPISchemaComplexity } from "src/generators/core/openapi/getOpenAPISchemaComplexity";
 
 export interface ZodSchemaMetaData {
   isRequired?: boolean;
@@ -81,4 +81,16 @@ export class ZodSchema {
     }
     return this;
   }
+}
+
+export function getParentRef(meta: ZodSchemaMetaData | undefined): string | undefined {
+  if (!meta) {
+    return undefined;
+  }
+
+  if (meta.parent?.ref) {
+    return meta.parent.ref;
+  }
+
+  return getParentRef(meta.parent?.meta);
 }

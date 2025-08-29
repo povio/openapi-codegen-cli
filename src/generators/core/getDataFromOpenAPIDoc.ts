@@ -7,7 +7,6 @@ import { getEndpointsFromOpenAPIDoc } from "./endpoints/getEndpointsFromOpenAPID
 import { SchemaResolver } from "./SchemaResolver.class";
 import { getZodSchemasFromOpenAPIDoc } from "./zod/getZodSchemasFromOpenAPIDoc";
 import { sortZodSchemasByTopology } from "./zod/sortZodSchemasByTopology";
-import { wrapCircularZodSchemas } from "./zod/wrapCircularZodSchemas";
 
 export function getDataFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, options: GenerateOptions) {
   const resolver = new SchemaResolver(openApiDoc, options);
@@ -20,7 +19,6 @@ export function getDataFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, options: G
     ...resolver.getZodSchemas(),
     ...zodSchemasFromDocSchemas.enumZodSchemas,
   };
-  zodSchemas = wrapCircularZodSchemas(resolver, zodSchemas);
   zodSchemas = sortZodSchemasByTopology(resolver, zodSchemas);
   zodSchemas = { ...resolver.getExtractedEnumZodSchemas(), ...zodSchemas };
 
