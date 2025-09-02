@@ -1,6 +1,6 @@
 import { OpenAPIV3 } from "openapi-types";
 import { GenerateOptions } from "src/generators/types/options";
-import { unwrapQuotesIfNeeded } from "src/generators/utils/openapi.utils";
+import { escapeControlCharacters, unwrapQuotesIfNeeded } from "src/generators/utils/openapi.utils";
 import { match } from "ts-pattern";
 import { ZodSchemaMetaData } from "./ZodSchema.class";
 
@@ -88,7 +88,21 @@ function getZodChainableStringValidations(schema: OpenAPIV3.SchemaObject) {
     }
   }
 
+  if (schema.pattern) {
+    validations.push(`regex(${formatPatternIfNeeded(schema.pattern)})`);
+  }
+
   return validations.join(".");
+}
+
+function formatPatternIfNeeded(pattern: string) {
+  if (pattern.startsWith("/") && pattern.endsWith("/")) {
+    pattern = pattern.slice(1, -1);
+  }
+
+  pattern = escapeControlCharacters(pattern);
+
+  return `/${pattern}/`;
 }
 
 function getZodChainableNumberValidations(schema: OpenAPIV3.SchemaObject) {

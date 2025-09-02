@@ -19,7 +19,7 @@ import {
   isReferenceObject,
   isSchemaObject,
 } from "src/generators/utils/openapi-schema.utils";
-import { escapeControlCharacters, isPrimitiveType, wrapWithQuotesIfNeeded } from "src/generators/utils/openapi.utils";
+import { isPrimitiveType, wrapWithQuotesIfNeeded } from "src/generators/utils/openapi.utils";
 import { match } from "ts-pattern";
 import { getParentRef, ZodSchema, ZodSchemaMetaData } from "./ZodSchema.class";
 import { getZodChain } from "./getZodChain";
@@ -345,31 +345,18 @@ function getPrimitiveZodSchema({ schema, zodSchema, resolver, meta, tag }: GetPa
             .with("integer", () => INT_SCHEMA)
             .otherwise(() => NUMBER_SCHEMA),
         )
-        .with("string", () => {
-          if (schema.pattern) {
-            return `z.regex(${formatPatternIfNeeded(schema.pattern)})`;
-          }
-          return match(schema.format)
+        .with("string", () =>
+          match(schema.format)
             .with("binary", () => BLOB_SCHEMA)
             .with("email", () => EMAIL_SCHEMA)
             .with("hostname", "uri", () => URL_SCHEMA)
             .with("uuid", () => UUID_SCHEMA)
             .with("date-time", () => DATETIME_SCHEMA)
-            .otherwise(() => STRING_SCHEMA);
-        })
+            .otherwise(() => STRING_SCHEMA),
+        )
         .otherwise((type) => `z.${type}()`),
     );
   }
-}
-
-function formatPatternIfNeeded(pattern: string) {
-  if (pattern.startsWith("/") && pattern.endsWith("/")) {
-    pattern = pattern.slice(1, -1);
-  }
-
-  pattern = escapeControlCharacters(pattern);
-
-  return `/${pattern}/`;
 }
 
 function getEnumZodSchema({ resolver, schema, zodSchema, meta, tag }: GetPartialZodSchemaParams) {
