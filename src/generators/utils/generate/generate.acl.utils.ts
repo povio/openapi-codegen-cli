@@ -106,9 +106,12 @@ export const getAppAbilitiesType = ({ resolver, data }: Omit<GenerateTypeParams,
   });
 
   const modelsImports = mergeImports(resolver.options, ...modelsImportsArr);
-  const appAbilitiesType = Object.fromEntries(
-    Array.from(appAbilitiesTypeMap.entries()).map(([key, valueSet]) => [key, Array.from(valueSet)]),
-  );
+  const appAbilitiesType =
+    appAbilitiesTypeMap.size > 0
+      ? Object.fromEntries(
+          Array.from(appAbilitiesTypeMap.entries()).map(([key, valueSet]) => [key, Array.from(valueSet)]),
+        )
+      : undefined;
 
   return { appAbilitiesType, modelsImports, hasAdditionalAbilityImports };
 };

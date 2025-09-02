@@ -38,6 +38,7 @@ export function generateAppAcl({ resolver, data }: Omit<GenerateTypeParams, "tag
     bindings: [
       CASL_ABILITY_BINDING.pureAbility,
       CASL_ABILITY_BINDING.abilityTuple,
+      ...(!appAbilitiesType ? [CASL_ABILITY_BINDING.subjectType] : []),
       ...(hasAdditionalAbilityImports ? [CASL_ABILITY_BINDING.forcedSubject] : []),
     ],
     from: CASL_ABILITY_IMPORT.from,
