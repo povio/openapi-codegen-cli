@@ -12,7 +12,7 @@ import {
 } from "src/generators/const/zod.const";
 import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
 import { GenerateType } from "src/generators/types/generate";
-import { getNamespaceName } from "src/generators/utils/generate/generate.utils";
+import { getNamespaceName } from "src/generators/utils/namespace.utils";
 import {
   inferRequiredSchema,
   isArraySchemaObject,

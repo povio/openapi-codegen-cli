@@ -1,12 +1,11 @@
 import { Endpoint } from "src/generators/types/endpoint";
 import { GenerateType, GenerateTypeParams, Import } from "src/generators/types/generate";
 import { GenerateOptions } from "src/generators/types/options";
-import { capitalize, snakeToCamel } from "src/generators/utils/string.utils";
-
 import { getUniqueArray } from "src/generators/utils/array.utils";
+import { getNamespaceName } from "src/generators/utils/namespace.utils";
+import { capitalize, snakeToCamel } from "src/generators/utils/string.utils";
 import { getEndpointTag } from "src/generators/utils/tag.utils";
 import { getModelsImports, mergeImports } from "./generate.imports.utils";
-import { getNamespaceName } from "./generate.utils";
 
 export const getAbilityFunctionName = (endpoint: Endpoint) =>
   `canUse${capitalize(snakeToCamel(endpoint.operationName))}`;

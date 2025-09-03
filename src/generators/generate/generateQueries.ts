@@ -17,11 +17,11 @@ import {
 import {
   getAclCheckImportPath,
   getMutationEffectsImportPath,
-  getNamespaceName,
   getQueryModulesImportPath,
   getQueryTypesImportPath,
 } from "src/generators/utils/generate/generate.utils";
 import { getHbsTemplateDelegate } from "src/generators/utils/hbs/hbs-template.utils";
+import { getNamespaceName } from "src/generators/utils/namespace.utils";
 import { isInfiniteQuery, isMutation, isQuery } from "src/generators/utils/query.utils";
 import { isNamedZodSchema } from "src/generators/utils/zod-schema.utils";
 

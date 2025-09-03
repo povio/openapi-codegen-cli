@@ -2,8 +2,8 @@ import { ZOD_IMPORT } from "src/generators/const/zod.const";
 import { getZodSchemaRefs } from "src/generators/core/zod/getZodSchemaRefs";
 import { GenerateType, GenerateTypeParams, GenerateZodSchemaData } from "src/generators/types/generate";
 import { getModelsImports } from "src/generators/utils/generate/generate.imports.utils";
-import { getNamespaceName } from "src/generators/utils/generate/generate.utils";
 import { getHbsTemplateDelegate } from "src/generators/utils/hbs/hbs-template.utils";
+import { getNamespaceName } from "src/generators/utils/namespace.utils";
 import { isEnumZodSchema } from "src/generators/utils/zod-schema.utils";
 
 export function generateModels({ resolver, data, tag = "" }: GenerateTypeParams) {

@@ -9,7 +9,7 @@ import {
 } from "src/generators/const/deps.const";
 import { GenerateFile, GenerateType } from "src/generators/types/generate";
 import { GenerateOptions } from "src/generators/types/options";
-import { capitalize, decapitalize } from "src/generators/utils/string.utils";
+import { decapitalize } from "src/generators/utils/string.utils";
 import { getImportPath } from "./generate.imports.utils";
 
 export function getFileNameWithExtension({ fileName, extension }: GenerateFile) {
@@ -41,16 +41,6 @@ export function getTagImportPath(...args: Parameters<typeof getTagFileNameWithou
 export function getTagFileName(...args: Parameters<typeof getTagFileNameWithoutExtension>) {
   return `${getTagFileNameWithoutExtension(...args)}.ts`;
 }
-
-export const getNamespaceName = ({
-  type,
-  tag,
-  options,
-}: {
-  type: GenerateType;
-  tag: string;
-  options: GenerateOptions;
-}) => `${capitalize(tag)}${options.configs[type].namespaceSuffix}`;
 
 export function getAppRestClientImportPath(options: GenerateOptions) {
   if (!options.standalone) {

@@ -5,12 +5,11 @@ import { iterateSchema, OnSchemaCallbackData } from "src/generators/core/openapi
 import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
 import { GenerateType, GenerateZodSchemaData } from "src/generators/types/generate";
 import { GenerateOptions } from "src/generators/types/options";
-import { isReferenceObject } from "src/generators/utils/openapi-schema.utils";
-import { isArraySchemaObject } from "src/generators/utils/openapi-schema.utils";
+import { getNamespaceName } from "src/generators/utils/namespace.utils";
+import { isArraySchemaObject, isReferenceObject } from "src/generators/utils/openapi-schema.utils";
 import { removeSuffix } from "src/generators/utils/string.utils";
 import { isNamedZodSchema } from "src/generators/utils/zod-schema.utils";
 import { getSchemaDescriptions } from "./generate.openapi.utils";
-import { getNamespaceName } from "./generate.utils";
 
 export const getZodSchemaInferedTypeName = (zodSchemaName: string, options: GenerateOptions) =>
   removeSuffix(zodSchemaName, options.schemaSuffix);

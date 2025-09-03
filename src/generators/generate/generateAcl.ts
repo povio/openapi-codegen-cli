@@ -1,8 +1,8 @@
 import { ACL_APP_ABILITIES, CASL_ABILITY_BINDING, CASL_ABILITY_IMPORT } from "src/generators/const/acl.const";
 import { GenerateType, GenerateTypeParams, Import } from "src/generators/types/generate";
 import { getAclData, getAppAbilitiesType } from "src/generators/utils/generate/generate.acl.utils";
-import { getNamespaceName } from "src/generators/utils/generate/generate.utils";
 import { getHbsTemplateDelegate } from "src/generators/utils/hbs/hbs-template.utils";
+import { getNamespaceName } from "src/generators/utils/namespace.utils";
 
 export function generateAcl({ resolver, data, tag = "" }: GenerateTypeParams) {
   const aclData = getAclData({ resolver, data, tag });

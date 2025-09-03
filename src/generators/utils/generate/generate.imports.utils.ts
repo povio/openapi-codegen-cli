@@ -4,10 +4,11 @@ import { Endpoint } from "src/generators/types/endpoint";
 import { GenerateType, Import } from "src/generators/types/generate";
 import { GenerateOptions } from "src/generators/types/options";
 import { getUniqueArray } from "src/generators/utils/array.utils";
+import { getNamespaceName } from "src/generators/utils/namespace.utils";
 import { getEndpointTag } from "src/generators/utils/tag.utils";
 import { getAbilityFunctionName } from "./generate.acl.utils";
 import { getEndpointName } from "./generate.endpoints.utils";
-import { getNamespaceName, getTagImportPath } from "./generate.utils";
+import { getTagImportPath } from "./generate.utils";
 import { getZodSchemaInferedTypeName } from "./generate.zod.utils";
 
 export function getModelsImports({

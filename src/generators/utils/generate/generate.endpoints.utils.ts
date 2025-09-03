@@ -6,6 +6,7 @@ import { Endpoint } from "src/generators/types/endpoint";
 import { GenerateType } from "src/generators/types/generate";
 import { GenerateOptions } from "src/generators/types/options";
 import { invalidVariableNameCharactersToCamel, isValidPropertyName } from "src/generators/utils/js.utils";
+import { getNamespaceName } from "src/generators/utils/namespace.utils";
 import { isSchemaObject } from "src/generators/utils/openapi-schema.utils";
 import { isPrimitiveType } from "src/generators/utils/openapi.utils";
 import { isQuery } from "src/generators/utils/query.utils";
@@ -13,7 +14,6 @@ import { decapitalize, snakeToCamel } from "src/generators/utils/string.utils";
 import { getEndpointTag } from "src/generators/utils/tag.utils";
 import { primitiveTypeToTsType } from "src/generators/utils/ts.utils";
 import { isNamedZodSchema } from "src/generators/utils/zod-schema.utils";
-import { getNamespaceName } from "./generate.utils";
 import { getImportedZodSchemaInferedTypeName } from "./generate.zod.utils";
 
 export const getEndpointName = (endpoint: Endpoint) => decapitalize(snakeToCamel(endpoint.operationName));
