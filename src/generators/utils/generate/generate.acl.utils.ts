@@ -4,7 +4,7 @@ import { GenerateOptions } from "src/generators/types/options";
 import { capitalize, snakeToCamel } from "src/generators/utils/string.utils";
 
 import { getUniqueArray } from "src/generators/utils/array.utils";
-import { getEndpointTag } from "./generate.endpoints.utils";
+import { getEndpointTag } from "src/generators/utils/tag.utils";
 import { getModelsImports, mergeImports } from "./generate.imports.utils";
 import { getNamespaceName } from "./generate.utils";
 
