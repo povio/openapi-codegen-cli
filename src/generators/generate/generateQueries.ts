@@ -25,7 +25,7 @@ import { getNamespaceName } from "src/generators/utils/namespace.utils";
 import { isInfiniteQuery, isMutation, isQuery } from "src/generators/utils/query.utils";
 import { isNamedZodSchema } from "src/generators/utils/zod-schema.utils";
 
-export function generateQueries({ resolver, data, tag = "" }: GenerateTypeParams) {
+export function generateQueries({ resolver, data, tag }: GenerateTypeParams) {
   const endpoints = data.get(tag)?.endpoints;
   if (!endpoints || endpoints.length === 0) {
     return;
@@ -41,7 +41,7 @@ export function generateQueries({ resolver, data, tag = "" }: GenerateTypeParams
   };
 
   const queryEndpoints = endpoints.filter(isQuery);
-  const infiniteQueryEndpoints = queryEndpoints.filter((endpoint) => isInfiniteQuery(endpoint));
+  const infiniteQueryEndpoints = queryEndpoints.filter((endpoint) => isInfiniteQuery(endpoint, resolver.options));
   const mutationEndpoints = endpoints.filter(isMutation);
 
   const queryImport: Import = {

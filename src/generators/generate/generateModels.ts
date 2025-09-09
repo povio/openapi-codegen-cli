@@ -6,7 +6,7 @@ import { getHbsTemplateDelegate } from "src/generators/utils/hbs/hbs-template.ut
 import { getNamespaceName } from "src/generators/utils/namespace.utils";
 import { isEnumZodSchema } from "src/generators/utils/zod-schema.utils";
 
-export function generateModels({ resolver, data, tag = "" }: GenerateTypeParams) {
+export function generateModels({ resolver, data, tag }: GenerateTypeParams) {
   const zodSchemas = data.get(tag)?.zodSchemas;
   if (!zodSchemas || Object.keys(zodSchemas).length === 0) {
     return;

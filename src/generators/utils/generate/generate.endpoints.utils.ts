@@ -1,6 +1,5 @@
 import { OpenAPIV3 } from "openapi-types";
 import { BODY_PARAMETER_NAME, DEFAULT_HEADERS } from "src/generators/const/endpoints.const";
-import { INFINITE_QUERY_PARAMS } from "src/generators/const/queries.const";
 import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
 import { Endpoint } from "src/generators/types/endpoint";
 import { GenerateType } from "src/generators/types/generate";
@@ -92,12 +91,15 @@ export function mapEndpointParamsToFunctionParams(
     .filter(
       (param) =>
         (!options?.excludeBodyParam || param.name !== BODY_PARAMETER_NAME) &&
-        (!options?.excludePageParam || param.name !== INFINITE_QUERY_PARAMS.pageParamName) &&
+        (!options?.excludePageParam || param.name !== resolver.options.infiniteQueryParamNames.page) &&
         (!options?.includeOnlyRequiredParams || param.required),
     )
     .map((param) => ({
       ...param,
-      name: options?.replacePageParam && param.name === INFINITE_QUERY_PARAMS.pageParamName ? "pageParam" : param.name,
+      name:
+        options?.replacePageParam && param.name === resolver.options.infiniteQueryParamNames.page
+          ? "pageParam"
+          : param.name,
       required: param.required && (param.paramType === "Path" || !options?.pathParamsRequiredOnly),
     }));
 }

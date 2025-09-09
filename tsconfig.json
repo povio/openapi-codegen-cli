@@ -13,8 +13,10 @@
     "resolveJsonModule": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "noImplicitAny": true
+    "noImplicitAny": true,
+    "skipLibCheck": true,
+    "incremental": true
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["src/**/*.test.ts", "src/assets/**"]
+  "exclude": ["node_modules", "src/assets/**"]
 }

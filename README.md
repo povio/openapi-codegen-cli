@@ -70,6 +70,7 @@ yarn openapi-codegen generate --config my-config.ts
 #### Generate command (generates Zod schemas, API definitions and React queries)
 
 ```sh
+  --config                            Path to TS config file (default: 'openapi-codegen.config.ts')
   --input                             Path/URL to OpenAPI JSON/YAML document
   --output                            Output directory path (default: 'output')
   --prettier                          Format the generated code using Prettier (default: true)
@@ -97,6 +98,8 @@ yarn openapi-codegen generate --config my-config.ts
   --acl                               Generate ACL related files (default: true)
   --checkAcl                          Add ACL check to queries (default: true)
 
+  --builderConfigs                    Generate configs for builders (default: false)
+
   --standalone                        Generate any missing supporting classes/types, e.g., REST client class, React Query type extensions, etc. (default: false)
   --baseUrl                           (Requires `--standalone`) Base URL for the REST client; falls back to the OpenAPI spec if not provided
 ```
@@ -104,6 +107,7 @@ yarn openapi-codegen generate --config my-config.ts
 #### Check command (checks if OpenAPI spec is compliant)
 
 ```sh
+  --config                            Path to TS config file (default: 'openapi-codegen.config.ts')
   --input                             Path/URL to OpenAPI/Swagger document as JSON/YAML
   --verbose                           Show log messages during execution
 

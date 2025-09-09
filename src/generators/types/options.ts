@@ -22,15 +22,34 @@ interface EndpointsGenerateOptions {
 interface QueriesGenerateOptions {
   queryTypesImportPath: string;
   axiosRequestConfig?: boolean;
-  infiniteQueries?: boolean;
   mutationEffects?: boolean;
 }
 
-interface ACLOptions {
+interface InfiniteQueriesGenerateOptions {
+  infiniteQueries?: boolean;
+  infiniteQueryParamNames: {
+    page: string;
+  };
+  infiniteQueryResponseParamNames: {
+    page: string;
+    totalItems: string;
+    limit: string;
+  };
+}
+
+interface ACLGenerateOptions {
   acl: boolean;
   checkAcl?: boolean;
   abilityContextImportPath: string;
   abilityContextGenericAppAbilities: boolean;
+}
+
+interface BuilderConfigsGenerateOptions {
+  builderConfigs?: boolean;
+  filterParamName: string;
+  dataResponseParamNames: string[];
+  dynamicInputsImportPath: string;
+  dynamicColumnsImportPath: string;
 }
 
 interface GenerateConfig {
@@ -54,8 +73,11 @@ interface BaseGenerateOptions {
   baseUrl: string;
 }
 
-export type GenerateOptions = BaseGenerateOptions &
-  ZodGenerateOptions &
-  EndpointsGenerateOptions &
-  QueriesGenerateOptions &
-  ACLOptions;
+export interface GenerateOptions
+  extends BaseGenerateOptions,
+    ZodGenerateOptions,
+    EndpointsGenerateOptions,
+    QueriesGenerateOptions,
+    InfiniteQueriesGenerateOptions,
+    ACLGenerateOptions,
+    BuilderConfigsGenerateOptions {}

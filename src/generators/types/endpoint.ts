@@ -49,3 +49,7 @@ export interface Endpoint {
   mediaUpload?: boolean;
   mediaDownload?: boolean;
 }
+
+export interface ExtendedEndpoint extends Endpoint {
+  pathSegments: string[];
+}

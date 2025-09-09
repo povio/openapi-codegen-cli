@@ -2,9 +2,10 @@ import Handlebars from "handlebars";
 import { ACL_CHECK_HOOK, CASL_ABILITY_BINDING } from "src/generators/const/acl.const";
 import { MUTATION_EFFECTS, ZOD_EXTENDED } from "src/generators/const/deps.const";
 import { AXIOS_REQUEST_CONFIG_NAME, AXIOS_REQUEST_CONFIG_TYPE } from "src/generators/const/endpoints.const";
-import { INFINITE_QUERY_RESPONSE_PARAMS, QUERIES_MODULE_NAME, QUERY_HOOKS } from "src/generators/const/queries.const";
+import { QUERIES_MODULE_NAME, QUERY_HOOKS } from "src/generators/const/queries.const";
 import { BLOB_SCHEMA } from "src/generators/const/zod.const";
 import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
+import { DynamicColumnsConfig, DynamicInputsConfig } from "src/generators/types/builder-config";
 import { Endpoint, EndpointParameter } from "src/generators/types/endpoint";
 import { GenerateZodSchemaData, Import } from "src/generators/types/generate";
 import { getAbilityConditionsTypes, hasAbilityConditions } from "src/generators/utils/generate/generate.acl.utils";
@@ -36,6 +37,8 @@ enum PartialsHelpers {
   CaslAbilityFunction = "genCaslAbilityFunction",
   CaslAbilityQuery = "genCaslAbilityQuery",
   AclCheckCall = "genAclCheckCall",
+  InputsConfig = "genInputsConfig",
+  ColumnsConfig = "genColumnsConfig",
 }
 
 export function registerPartialsHbsHelpers(resolver: SchemaResolver) {
@@ -54,6 +57,8 @@ export function registerPartialsHbsHelpers(resolver: SchemaResolver) {
   registerGenerateCaslAbilityFunctionHelper();
   registerGenerateCaslAbilityQueryHelper();
   registerGenerateAclCheckCallHelper();
+  registerGenerateInputsConfigHelper();
+  registerGenerateColumnsConfigHelper();
 }
 
 function registerGenerateModelJsDocsHelper() {
@@ -189,7 +194,7 @@ function registerGenerateMutationHelper(resolver: SchemaResolver) {
 
 function registerGenerateInfiniteQueryHelper(resolver: SchemaResolver) {
   Handlebars.registerHelper(PartialsHelpers.InfiniteQuery, (endpoint: Endpoint) => {
-    if (!resolver.options.infiniteQueries || !isInfiniteQuery(endpoint)) {
+    if (!resolver.options.infiniteQueries || !isInfiniteQuery(endpoint, resolver.options)) {
       return;
     }
 
@@ -199,9 +204,9 @@ function registerGenerateInfiniteQueryHelper(resolver: SchemaResolver) {
       endpoint,
       infiniteQueryHook: QUERY_HOOKS.infiniteQuery,
       hasQueryFnBody: hasAclCheck,
-      pageParamName: INFINITE_QUERY_RESPONSE_PARAMS.pageParamName,
-      totalItemsName: INFINITE_QUERY_RESPONSE_PARAMS.totalItemsName,
-      limitParamName: INFINITE_QUERY_RESPONSE_PARAMS.limitParamName,
+      pageParamName: resolver.options.infiniteQueryResponseParamNames.page,
+      totalItemsName: resolver.options.infiniteQueryResponseParamNames.totalItems,
+      limitParamName: resolver.options.infiniteQueryResponseParamNames.limit,
       hasAxiosRequestConfig: resolver.options.axiosRequestConfig,
       axiosRequestConfigName: AXIOS_REQUEST_CONFIG_NAME,
       axiosRequestConfigType: AXIOS_REQUEST_CONFIG_TYPE,
@@ -258,4 +263,16 @@ function registerGenerateAclCheckCallHelper() {
       generateAclCheckParams: hasAbilityConditions(endpoint) && hasAllCheckParams,
     });
   });
+}
+
+function registerGenerateInputsConfigHelper() {
+  Handlebars.registerHelper(PartialsHelpers.InputsConfig, (inputsConfig: DynamicInputsConfig) =>
+    getHbsPartialTemplateDelegate("inputs-config")({ inputsConfig }),
+  );
+}
+
+function registerGenerateColumnsConfigHelper() {
+  Handlebars.registerHelper(PartialsHelpers.ColumnsConfig, (columnsConfig: DynamicColumnsConfig) =>
+    getHbsPartialTemplateDelegate("columns-config")({ columnsConfig }),
+  );
 }

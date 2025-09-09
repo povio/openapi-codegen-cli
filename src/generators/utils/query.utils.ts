@@ -1,17 +1,15 @@
-import { INFINITE_QUERY_PARAMS } from "src/generators/const/queries.const";
 import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
 import { Endpoint } from "src/generators/types/endpoint";
+import { GenerateOptions } from "src/generators/types/options";
+import { isGetEndpoint, isPaginatedGetEndpoint } from "./endpoint.utils";
 import { mapEndpointParamsToFunctionParams } from "./generate/generate.endpoints.utils";
 
-export const isQuery = (endpoint: Endpoint) => endpoint.method === "get";
+export const isQuery = (endpoint: Endpoint) => isGetEndpoint(endpoint);
 
-export const isMutation = (endpoint: Endpoint) => endpoint.method !== "get" || !!endpoint.mediaDownload;
+export const isMutation = (endpoint: Endpoint) => !isGetEndpoint(endpoint) || !!endpoint.mediaDownload;
 
-export const isInfiniteQuery = (endpoint: Endpoint, infiniteQueryParams?: string[]) =>
-  isQuery(endpoint) &&
-  (infiniteQueryParams ?? Object.values(INFINITE_QUERY_PARAMS)).every((infiniteQueryParam) =>
-    endpoint.parameters.some((param) => param.name === infiniteQueryParam && param.type === "Query"),
-  );
+export const isInfiniteQuery = (endpoint: Endpoint, options: GenerateOptions) =>
+  isPaginatedGetEndpoint(endpoint, options);
 
 export const getDestructuredVariables = (
   resolver: SchemaResolver,

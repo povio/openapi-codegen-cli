@@ -10,27 +10,20 @@ export const QUERY_OPTIONS_TYPES = {
 
 // Template
 export const TEMPLATE_DATA_FILE_PATH = "src/data";
-export const TEMPLATE_DATA_TS_PATH = "@/data";
-
-export const TEMPLATE_IMPORTS = {
-  appRestClient: "@/util/rest/clients/app-rest-client",
-  queryTypes: "@/types/react-query",
-  errorHandling: "@/util/vendor/error-handling",
-  abilityContext: "@/data/acl/ability.context",
-};
-
 export const ERROR_HANDLERS = {
   ErrorHandler: "ErrorHandler",
   SharedErrorHandler: "SharedErrorHandler",
 };
-export const ERROR_HANDLING_IMPORT: Import = {
+export const ERROR_HANDLING_IMPORT: Omit<Import, "from"> = {
   bindings: [ERROR_HANDLERS.ErrorHandler, ERROR_HANDLERS.SharedErrorHandler],
-  from: TEMPLATE_IMPORTS.errorHandling,
 };
 export const ABILITY_CONTEXT = "AbilityContext";
-export const ABILITY_CONTEXT_IMPORT: Import = {
+export const ABILITY_CONTEXT_IMPORT: Omit<Import, "from"> = {
   bindings: [ABILITY_CONTEXT],
-  from: TEMPLATE_IMPORTS.abilityContext,
+};
+export const BUILDERS_UTILS = {
+  dynamicInputs: "dynamicInputs",
+  dynamicColumns: "dynamicColumns",
 };
 
 // Standalone

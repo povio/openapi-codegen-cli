@@ -4,7 +4,7 @@ import { getAclData, getAppAbilitiesType } from "src/generators/utils/generate/g
 import { getHbsTemplateDelegate } from "src/generators/utils/hbs/hbs-template.utils";
 import { getNamespaceName } from "src/generators/utils/namespace.utils";
 
-export function generateAcl({ resolver, data, tag = "" }: GenerateTypeParams) {
+export function generateAcl({ resolver, data, tag }: GenerateTypeParams) {
   const aclData = getAclData({ resolver, data, tag });
   if (!aclData) {
     return;

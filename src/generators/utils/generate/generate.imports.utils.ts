@@ -8,6 +8,7 @@ import { getNamespaceName } from "src/generators/utils/namespace.utils";
 import { getEndpointTag } from "src/generators/utils/tag.utils";
 import { getAbilityFunctionName } from "./generate.acl.utils";
 import { getEndpointName } from "./generate.endpoints.utils";
+import { getInfiniteQueryName, getQueryName } from "./generate.query.utils";
 import { getTagImportPath } from "./generate.utils";
 import { getZodSchemaInferedTypeName } from "./generate.zod.utils";
 
@@ -61,6 +62,44 @@ export function getEndpointsImports({
     entities: endpoints,
     getTag: (endpoint) => getEndpointTag(endpoint, options),
     getEntityName: getEndpointName,
+    options,
+  });
+}
+
+export function getQueriesImports({
+  tag,
+  endpoints,
+  options,
+}: {
+  tag: string;
+  endpoints: Endpoint[];
+  options: GenerateOptions;
+}) {
+  return getImports({
+    type: GenerateType.Queries,
+    tag,
+    entities: endpoints,
+    getTag: (endpoint) => getEndpointTag(endpoint, options),
+    getEntityName: getQueryName,
+    options,
+  });
+}
+
+export function getInfiniteQueriesImports({
+  tag,
+  endpoints,
+  options,
+}: {
+  tag: string;
+  endpoints: Endpoint[];
+  options: GenerateOptions;
+}) {
+  return getImports({
+    type: GenerateType.Queries,
+    tag,
+    entities: endpoints,
+    getTag: (endpoint) => getEndpointTag(endpoint, options),
+    getEntityName: getInfiniteQueryName,
     options,
   });
 }

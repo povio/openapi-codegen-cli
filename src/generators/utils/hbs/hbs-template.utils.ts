@@ -16,7 +16,7 @@ export function getHbsTemplateDelegate(resolver: SchemaResolver, templateName: s
   registerImportsHbsHelpers();
   registerZodHbsHelpers(resolver);
   registerEndpointsHbsHelpers(resolver);
-  registerQueryHbsHelpers();
+  registerQueryHbsHelpers(resolver);
   registerAclHbsHelpers(resolver);
   registerPartialsHbsHelpers(resolver);
 

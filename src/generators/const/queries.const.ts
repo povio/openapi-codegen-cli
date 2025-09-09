@@ -10,13 +10,4 @@ export const QUERY_IMPORT: Import = {
   from: "@tanstack/react-query",
 };
 
-export const INFINITE_QUERY_PARAMS = {
-  pageParamName: "page",
-};
-export const INFINITE_QUERY_RESPONSE_PARAMS = {
-  pageParamName: "page",
-  totalItemsName: "totalItems",
-  limitParamName: "limit",
-};
-
 export const QUERIES_MODULE_NAME = "moduleName";

@@ -1,6 +1,5 @@
 import { GenerateType } from "src/generators/types/generate";
 import { GenerateOptions } from "src/generators/types/options";
-import { TEMPLATE_DATA_TS_PATH, TEMPLATE_IMPORTS } from "./deps.const";
 import { ENUM_SUFFIX, SCHEMA_SUFFIX } from "./zod.const";
 
 export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
@@ -13,7 +12,7 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   excludePathRegex: "",
   excludeRedundantZodSchemas: true,
   tsNamespaces: true,
-  tsPath: TEMPLATE_DATA_TS_PATH,
+  tsPath: "@/data",
   importPath: "ts",
   configs: {
     [GenerateType.Models]: {
@@ -32,6 +31,10 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
       outputFileNameSuffix: "acl",
       namespaceSuffix: "Acl",
     },
+    [GenerateType.Configs]: {
+      outputFileNameSuffix: "configs",
+      namespaceSuffix: "Configs",
+    },
   },
   standalone: false,
   baseUrl: "",
@@ -42,18 +45,33 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   extractEnums: true,
   replaceOptionalWithNullish: false,
   // Endpoints options
-  restClientImportPath: TEMPLATE_IMPORTS.appRestClient,
-  errorHandlingImportPath: TEMPLATE_IMPORTS.errorHandling,
+  restClientImportPath: "@/util/rest/clients/app-rest-client",
+  errorHandlingImportPath: "@/util/vendor/error-handling",
   removeOperationPrefixEndingWith: "Controller_",
   parseRequestParams: true,
   // Queries options
-  queryTypesImportPath: TEMPLATE_IMPORTS.queryTypes,
+  queryTypesImportPath: "@/types/react-query",
   axiosRequestConfig: false,
-  infiniteQueries: false,
   mutationEffects: true,
+  // Infinite queries options
+  infiniteQueries: false,
+  infiniteQueryParamNames: {
+    page: "page",
+  },
+  infiniteQueryResponseParamNames: {
+    page: "page",
+    totalItems: "totalItems",
+    limit: "limit",
+  },
   // ACL options
   acl: true,
   checkAcl: true,
-  abilityContextImportPath: TEMPLATE_IMPORTS.abilityContext,
+  abilityContextImportPath: "@/data/acl/ability.context",
   abilityContextGenericAppAbilities: false,
+  // Builder Configs options
+  builderConfigs: false,
+  filterParamName: "filter",
+  dataResponseParamNames: ["data", "items"],
+  dynamicInputsImportPath: "@povio/ui",
+  dynamicColumnsImportPath: "@povio/ui",
 };

@@ -1,8 +1,9 @@
 import { Import } from "src/generators/types/generate";
 
+export const JSON_APPLICATION_FORMAT = "application/json";
 export const DEFAULT_HEADERS = {
-  "Content-Type": "application/json",
-  Accept: "application/json",
+  "Content-Type": JSON_APPLICATION_FORMAT,
+  Accept: JSON_APPLICATION_FORMAT,
 };
 
 export const BODY_PARAMETER_NAME = "data";

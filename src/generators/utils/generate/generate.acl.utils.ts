@@ -46,7 +46,7 @@ export const getAbilitySubjectTypes = (endpoint: Endpoint) => {
   return types;
 };
 
-export function getAclData({ resolver, data, tag = "" }: GenerateTypeParams) {
+export function getAclData({ resolver, data, tag }: GenerateTypeParams) {
   const endpoints = data.get(tag)?.endpoints.filter(({ acl }) => acl && acl.length > 0);
   if (!endpoints || endpoints.length === 0) {
     return;

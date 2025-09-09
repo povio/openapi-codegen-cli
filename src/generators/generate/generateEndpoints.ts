@@ -14,7 +14,7 @@ import { getHbsTemplateDelegate } from "src/generators/utils/hbs/hbs-template.ut
 import { getNamespaceName } from "src/generators/utils/namespace.utils";
 import { isNamedZodSchema } from "src/generators/utils/zod-schema.utils";
 
-export function generateEndpoints({ resolver, data, tag = "" }: GenerateTypeParams) {
+export function generateEndpoints({ resolver, data, tag }: GenerateTypeParams) {
   const endpoints = data.get(tag)?.endpoints;
   if (!endpoints || endpoints.length === 0) {
     return;
