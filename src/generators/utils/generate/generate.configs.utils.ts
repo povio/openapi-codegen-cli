@@ -189,7 +189,7 @@ export function getBuilderConfigs({ data, tag, resolver }: GenerateTypeParams) {
   });
 
   return {
-    configs: configs.filter(Boolean),
+    configs: configs.filter(Boolean) as BuilderConfig[],
     hasZodImport,
     modelsImports,
     queriesImports: mergeImports(resolver.options, queriesImports, infiniteQueriesImports),
