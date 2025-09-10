@@ -71,6 +71,9 @@ class GenerateOptions implements GenerateParams {
   @YargOption({ envAlias: "axiosRequestConfig", type: "boolean" })
   axiosRequestConfig?: boolean;
 
+  @YargOption({ envAlias: "builderConfigs", type: "boolean" })
+  builderConfigs?: boolean;
+
   @YargOption({ envAlias: "prettier", default: true, type: "boolean" })
   prettier?: boolean;
 

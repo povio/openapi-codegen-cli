@@ -34,6 +34,7 @@ export type GenerateParams = {
     | "axiosRequestConfig"
     | "mutationEffects"
     | "parseRequestParams"
+    | "builderConfigs"
   >
 >;
 

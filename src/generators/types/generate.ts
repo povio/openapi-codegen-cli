@@ -25,6 +25,7 @@ export enum GenerateType {
   Endpoints = "endpoints",
   Queries = "queries",
   Acl = "acl",
+  Configs = "configs",
 }
 
 export type GenerateData = Map<
@@ -38,7 +39,7 @@ export type GenerateData = Map<
 export interface GenerateTypeParams {
   resolver: SchemaResolver;
   data: GenerateData;
-  tag?: string;
+  tag: string;
 }
 
 export interface GenerateFileData {

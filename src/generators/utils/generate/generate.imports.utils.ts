@@ -4,9 +4,12 @@ import { Endpoint } from "src/generators/types/endpoint";
 import { GenerateType, Import } from "src/generators/types/generate";
 import { GenerateOptions } from "src/generators/types/options";
 import { getUniqueArray } from "src/generators/utils/array.utils";
+import { getNamespaceName } from "src/generators/utils/namespace.utils";
+import { getEndpointTag } from "src/generators/utils/tag.utils";
 import { getAbilityFunctionName } from "./generate.acl.utils";
-import { getEndpointName, getEndpointTag } from "./generate.endpoints.utils";
-import { getNamespaceName, getTagImportPath } from "./generate.utils";
+import { getEndpointName } from "./generate.endpoints.utils";
+import { getInfiniteQueryName, getQueryName } from "./generate.query.utils";
+import { getTagImportPath } from "./generate.utils";
 import { getZodSchemaInferedTypeName } from "./generate.zod.utils";
 
 export function getModelsImports({
@@ -59,6 +62,44 @@ export function getEndpointsImports({
     entities: endpoints,
     getTag: (endpoint) => getEndpointTag(endpoint, options),
     getEntityName: getEndpointName,
+    options,
+  });
+}
+
+export function getQueriesImports({
+  tag,
+  endpoints,
+  options,
+}: {
+  tag: string;
+  endpoints: Endpoint[];
+  options: GenerateOptions;
+}) {
+  return getImports({
+    type: GenerateType.Queries,
+    tag,
+    entities: endpoints,
+    getTag: (endpoint) => getEndpointTag(endpoint, options),
+    getEntityName: getQueryName,
+    options,
+  });
+}
+
+export function getInfiniteQueriesImports({
+  tag,
+  endpoints,
+  options,
+}: {
+  tag: string;
+  endpoints: Endpoint[];
+  options: GenerateOptions;
+}) {
+  return getImports({
+    type: GenerateType.Queries,
+    tag,
+    entities: endpoints,
+    getTag: (endpoint) => getEndpointTag(endpoint, options),
+    getEntityName: getInfiniteQueryName,
     options,
   });
 }

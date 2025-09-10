@@ -1,19 +1,18 @@
 import { OpenAPIV3 } from "openapi-types";
-import { INFINITE_QUERY_PARAMS } from "src/generators/const/queries.const";
+import { BODY_PARAMETER_NAME, DEFAULT_HEADERS } from "src/generators/const/endpoints.const";
 import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
+import { Endpoint } from "src/generators/types/endpoint";
 import { GenerateType } from "src/generators/types/generate";
 import { GenerateOptions } from "src/generators/types/options";
-import { BODY_PARAMETER_NAME, DEFAULT_HEADERS } from "src/generators/const/endpoints.const";
-import { Endpoint } from "src/generators/types/endpoint";
 import { invalidVariableNameCharactersToCamel, isValidPropertyName } from "src/generators/utils/js.utils";
+import { getNamespaceName } from "src/generators/utils/namespace.utils";
 import { isSchemaObject } from "src/generators/utils/openapi-schema.utils";
 import { isPrimitiveType } from "src/generators/utils/openapi.utils";
 import { isQuery } from "src/generators/utils/query.utils";
 import { decapitalize, snakeToCamel } from "src/generators/utils/string.utils";
-import { formatTag } from "src/generators/utils/tag.utils";
+import { getEndpointTag } from "src/generators/utils/tag.utils";
 import { primitiveTypeToTsType } from "src/generators/utils/ts.utils";
 import { isNamedZodSchema } from "src/generators/utils/zod-schema.utils";
-import { getNamespaceName } from "./generate.utils";
 import { getImportedZodSchemaInferedTypeName } from "./generate.zod.utils";
 
 export const getEndpointName = (endpoint: Endpoint) => decapitalize(snakeToCamel(endpoint.operationName));
@@ -36,11 +35,6 @@ export const hasEndpointConfig = (endpoint: Endpoint, resolver: SchemaResolver) 
 };
 
 export const getEndpointPath = (endpoint: Endpoint) => endpoint.path.replace(/:([a-zA-Z0-9_]+)/g, "${$1}");
-
-export function getEndpointTag(endpoint: Endpoint, options: GenerateOptions) {
-  const tag = options.splitByTags ? endpoint.tags?.[0] : options.defaultTag;
-  return formatTag(tag ?? options.defaultTag);
-}
 
 export function mapEndpointParamsToFunctionParams(
   resolver: SchemaResolver,
@@ -97,12 +91,15 @@ export function mapEndpointParamsToFunctionParams(
     .filter(
       (param) =>
         (!options?.excludeBodyParam || param.name !== BODY_PARAMETER_NAME) &&
-        (!options?.excludePageParam || param.name !== INFINITE_QUERY_PARAMS.pageParamName) &&
+        (!options?.excludePageParam || param.name !== resolver.options.infiniteQueryParamNames.page) &&
         (!options?.includeOnlyRequiredParams || param.required),
     )
     .map((param) => ({
       ...param,
-      name: options?.replacePageParam && param.name === INFINITE_QUERY_PARAMS.pageParamName ? "pageParam" : param.name,
+      name:
+        options?.replacePageParam && param.name === resolver.options.infiniteQueryParamNames.page
+          ? "pageParam"
+          : param.name,
       required: param.required && (param.paramType === "Path" || !options?.pathParamsRequiredOnly),
     }));
 }

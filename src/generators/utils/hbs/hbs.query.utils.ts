@@ -1,4 +1,5 @@
 import Handlebars from "handlebars";
+import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
 import { Endpoint } from "src/generators/types/endpoint";
 import { getInfiniteQueryName, getQueryName } from "src/generators/utils/generate/generate.query.utils";
 import { isInfiniteQuery, isMutation, isQuery } from "src/generators/utils/query.utils";
@@ -11,12 +12,12 @@ enum QueryHelpers {
   IsInfiniteQuery = "isInfiniteQuery",
 }
 
-export function registerQueryHbsHelpers() {
+export function registerQueryHbsHelpers(resolver: SchemaResolver) {
   registerQueryNameHelper();
   registerIsQueryHelper();
   registerIsMutationHelper();
   registerInfiniteQueryNameHelper();
-  registerIsInfiniteQueryHelper();
+  registerIsInfiniteQueryHelper(resolver);
 }
 
 function registerQueryNameHelper() {
@@ -37,6 +38,8 @@ function registerIsMutationHelper() {
   Handlebars.registerHelper(QueryHelpers.IsMutation, isMutation);
 }
 
-function registerIsInfiniteQueryHelper() {
-  Handlebars.registerHelper(QueryHelpers.IsInfiniteQuery, (endpoint: Endpoint) => isInfiniteQuery(endpoint));
+function registerIsInfiniteQueryHelper(resolver: SchemaResolver) {
+  Handlebars.registerHelper(QueryHelpers.IsInfiniteQuery, (endpoint: Endpoint) =>
+    isInfiniteQuery(endpoint, resolver.options),
+  );
 }

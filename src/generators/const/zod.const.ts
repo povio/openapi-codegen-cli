@@ -8,6 +8,7 @@ export const RESPONSE_SCHEMA_SUFFIX = "Response";
 export const ERROR_RESPONSE_SCHEMA_SUFFIX = "ErrorResponse";
 
 export const VOID_SCHEMA = "z.void()";
+export const ANY_SCHEMA = "z.any()";
 export const BLOB_SCHEMA = "z.instanceof(Blob)";
 export const ENUM_SCHEMA = "z.enum";
 export const INT_SCHEMA = "z.int()";

@@ -1,5 +1,6 @@
 import SwaggerParser from "@apidevtools/swagger-parser";
 import { OpenAPIV3 } from "openapi-types";
+import { JSON_APPLICATION_FORMAT } from "src/generators/const/endpoints.const";
 import { DEFAULT_GENERATE_OPTIONS } from "src/generators/const/options.const";
 import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
 import { GenerateOptions } from "src/generators/types/options";
@@ -104,7 +105,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
             operationId: "placeOrder",
             requestBody: {
               content: {
-                "application/json": { schema: { $ref: "#/components/schemas/Order" } },
+                [JSON_APPLICATION_FORMAT]: { schema: { $ref: "#/components/schemas/Order" } },
                 "application/xml": { schema: { $ref: "#/components/schemas/Order" } },
                 "application/x-www-form-urlencoded": { schema: { $ref: "#/components/schemas/Order" } },
               },
@@ -112,7 +113,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
             responses: {
               "200": {
                 description: "Successful operation",
-                content: { "application/json": { schema: { $ref: "#/components/schemas/Order" } } },
+                content: { [JSON_APPLICATION_FORMAT]: { schema: { $ref: "#/components/schemas/Order" } } },
               },
               "405": { description: "Invalid input" },
             },
@@ -145,7 +146,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
             type: "Body",
             bodyObject: {
               content: {
-                "application/json": { schema: { $ref: "#/components/schemas/Order" } },
+                [JSON_APPLICATION_FORMAT]: { schema: { $ref: "#/components/schemas/Order" } },
                 "application/xml": { schema: { $ref: "#/components/schemas/Order" } },
                 "application/x-www-form-urlencoded": { schema: { $ref: "#/components/schemas/Order" } },
               },
@@ -153,12 +154,12 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         ],
         path: "/store/order",
-        requestFormat: "application/json",
+        requestFormat: JSON_APPLICATION_FORMAT,
         response: "Order",
         responseDescription: "Successful operation",
-        responseFormat: "application/json",
+        responseFormat: JSON_APPLICATION_FORMAT,
         responseObject: {
-          content: { "application/json": { schema: { $ref: "#/components/schemas/Order" } } },
+          content: { [JSON_APPLICATION_FORMAT]: { schema: { $ref: "#/components/schemas/Order" } } },
           description: "Successful operation",
         },
         tags: ["store"],
@@ -187,7 +188,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
             requestBody: {
               description: "Update an existent pet in the store",
               content: {
-                "application/json": { schema: { $ref: "#/components/schemas/Pet" } },
+                [JSON_APPLICATION_FORMAT]: { schema: { $ref: "#/components/schemas/Pet" } },
                 "application/xml": { schema: { $ref: "#/components/schemas/Pet" } },
                 "application/x-www-form-urlencoded": { schema: { $ref: "#/components/schemas/Pet" } },
               },
@@ -197,7 +198,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
               "200": {
                 description: "Successful operation",
                 content: {
-                  "application/json": { schema: { $ref: "#/components/schemas/Pet" } },
+                  [JSON_APPLICATION_FORMAT]: { schema: { $ref: "#/components/schemas/Pet" } },
                   "application/xml": { schema: { $ref: "#/components/schemas/Pet" } },
                 },
               },
@@ -215,7 +216,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
             requestBody: {
               description: "Create a new pet in the store",
               content: {
-                "application/json": { schema: { $ref: "#/components/schemas/Pet" } },
+                [JSON_APPLICATION_FORMAT]: { schema: { $ref: "#/components/schemas/Pet" } },
                 "application/xml": { schema: { $ref: "#/components/schemas/Pet" } },
                 "application/x-www-form-urlencoded": { schema: { $ref: "#/components/schemas/Pet" } },
               },
@@ -225,7 +226,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
               "200": {
                 description: "Successful operation",
                 content: {
-                  "application/json": { schema: { $ref: "#/components/schemas/Pet" } },
+                  [JSON_APPLICATION_FORMAT]: { schema: { $ref: "#/components/schemas/Pet" } },
                   "application/xml": { schema: { $ref: "#/components/schemas/Pet" } },
                 },
               },
@@ -271,7 +272,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
             type: "Body",
             bodyObject: {
               content: {
-                "application/json": { schema: { $ref: "#/components/schemas/Pet" } },
+                [JSON_APPLICATION_FORMAT]: { schema: { $ref: "#/components/schemas/Pet" } },
                 "application/xml": { schema: { $ref: "#/components/schemas/Pet" } },
                 "application/x-www-form-urlencoded": { schema: { $ref: "#/components/schemas/Pet" } },
               },
@@ -281,13 +282,13 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         ],
         path: "/pet",
-        requestFormat: "application/json",
+        requestFormat: JSON_APPLICATION_FORMAT,
         response: "Pet",
         responseDescription: "Successful operation",
-        responseFormat: "application/json",
+        responseFormat: JSON_APPLICATION_FORMAT,
         responseObject: {
           content: {
-            "application/json": { schema: { $ref: "#/components/schemas/Pet" } },
+            [JSON_APPLICATION_FORMAT]: { schema: { $ref: "#/components/schemas/Pet" } },
             "application/xml": { schema: { $ref: "#/components/schemas/Pet" } },
           },
 
@@ -318,7 +319,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
             type: "Body",
             bodyObject: {
               content: {
-                "application/json": { schema: { $ref: "#/components/schemas/Pet" } },
+                [JSON_APPLICATION_FORMAT]: { schema: { $ref: "#/components/schemas/Pet" } },
                 "application/xml": { schema: { $ref: "#/components/schemas/Pet" } },
                 "application/x-www-form-urlencoded": { schema: { $ref: "#/components/schemas/Pet" } },
               },
@@ -328,13 +329,13 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         ],
         path: "/pet",
-        requestFormat: "application/json",
+        requestFormat: JSON_APPLICATION_FORMAT,
         response: "Pet",
         responseDescription: "Successful operation",
-        responseFormat: "application/json",
+        responseFormat: JSON_APPLICATION_FORMAT,
         responseObject: {
           content: {
-            "application/json": { schema: { $ref: "#/components/schemas/Pet" } },
+            [JSON_APPLICATION_FORMAT]: { schema: { $ref: "#/components/schemas/Pet" } },
             "application/xml": { schema: { $ref: "#/components/schemas/Pet" } },
           },
           description: "Successful operation",
@@ -375,7 +376,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
             requestBody: {
               description: "Update an existent pet in the store",
               content: {
-                "application/json": {
+                [JSON_APPLICATION_FORMAT]: {
                   schema: {
                     allOf: [{ $ref: "#/components/schemas/Pet" }, { $ref: "#/components/schemas/Reason" }],
                   },
@@ -392,7 +393,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
               "200": {
                 description: "Successful operation",
                 content: {
-                  "application/json": { schema: { $ref: "#/components/schemas/Pet" } },
+                  [JSON_APPLICATION_FORMAT]: { schema: { $ref: "#/components/schemas/Pet" } },
                   "application/xml": { schema: { $ref: "#/components/schemas/Pet" } },
                 },
               },
@@ -439,7 +440,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
             type: "Body",
             bodyObject: {
               content: {
-                "application/json": {
+                [JSON_APPLICATION_FORMAT]: {
                   schema: { allOf: [{ $ref: "#/components/schemas/Pet" }, { $ref: "#/components/schemas/Reason" }] },
                 },
                 "application/xml": {
@@ -452,13 +453,13 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         ],
         path: "/pet",
-        requestFormat: "application/json",
+        requestFormat: JSON_APPLICATION_FORMAT,
         response: "Pet",
         responseDescription: "Successful operation",
-        responseFormat: "application/json",
+        responseFormat: JSON_APPLICATION_FORMAT,
         responseObject: {
           content: {
-            "application/json": { schema: { $ref: "#/components/schemas/Pet" } },
+            [JSON_APPLICATION_FORMAT]: { schema: { $ref: "#/components/schemas/Pet" } },
             "application/xml": { schema: { $ref: "#/components/schemas/Pet" } },
           },
           description: "Successful operation",
@@ -520,7 +521,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
               "200": {
                 description: "Successful operation",
                 content: {
-                  "application/json": {
+                  [JSON_APPLICATION_FORMAT]: {
                     schema: {
                       type: "array",
                       items: {
@@ -575,7 +576,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
               "200": {
                 description: "Successful operation",
                 content: {
-                  "application/json": {
+                  [JSON_APPLICATION_FORMAT]: {
                     schema: {
                       type: "array",
                       items: {
@@ -642,13 +643,13 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         ],
         path: "/pet/findByStatus",
-        requestFormat: "application/json",
+        requestFormat: JSON_APPLICATION_FORMAT,
         response: "FindPetsByStatusResponse",
         responseDescription: "Successful operation",
-        responseFormat: "application/json",
+        responseFormat: JSON_APPLICATION_FORMAT,
         responseObject: {
           content: {
-            "application/json": { schema: { type: "array", items: { $ref: "#/components/schemas/Pet" } } },
+            [JSON_APPLICATION_FORMAT]: { schema: { type: "array", items: { $ref: "#/components/schemas/Pet" } } },
             "application/xml": { schema: { type: "array", items: { $ref: "#/components/schemas/Pet" } } },
           },
           description: "Successful operation",
@@ -691,13 +692,13 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         ],
         path: "/pet/findByTags",
-        requestFormat: "application/json",
+        requestFormat: JSON_APPLICATION_FORMAT,
         response: "FindPetsByTagsResponse",
         responseDescription: "Successful operation",
-        responseFormat: "application/json",
+        responseFormat: JSON_APPLICATION_FORMAT,
         responseObject: {
           content: {
-            "application/json": { schema: { type: "array", items: { $ref: "#/components/schemas/Pet" } } },
+            [JSON_APPLICATION_FORMAT]: { schema: { type: "array", items: { $ref: "#/components/schemas/Pet" } } },
             "application/xml": { schema: { type: "array", items: { $ref: "#/components/schemas/Pet" } } },
           },
           description: "Successful operation",
@@ -798,7 +799,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
             type: "Body",
             bodyObject: {
               content: {
-                "application/json": { schema: { $ref: "#/components/schemas/Pet" } },
+                [JSON_APPLICATION_FORMAT]: { schema: { $ref: "#/components/schemas/Pet" } },
                 "application/xml": { schema: { $ref: "#/components/schemas/Pet" } },
                 "application/x-www-form-urlencoded": { schema: { $ref: "#/components/schemas/Pet" } },
               },
@@ -808,13 +809,13 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         ],
         path: "/pet",
-        requestFormat: "application/json",
+        requestFormat: JSON_APPLICATION_FORMAT,
         response: "Pet",
         responseDescription: "Successful operation",
-        responseFormat: "application/json",
+        responseFormat: JSON_APPLICATION_FORMAT,
         responseObject: {
           content: {
-            "application/json": { schema: { $ref: "#/components/schemas/Pet" } },
+            [JSON_APPLICATION_FORMAT]: { schema: { $ref: "#/components/schemas/Pet" } },
             "application/xml": { schema: { $ref: "#/components/schemas/Pet" } },
           },
           description: "Successful operation",
@@ -844,7 +845,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
             type: "Body",
             bodyObject: {
               content: {
-                "application/json": { schema: { $ref: "#/components/schemas/Pet" } },
+                [JSON_APPLICATION_FORMAT]: { schema: { $ref: "#/components/schemas/Pet" } },
                 "application/xml": { schema: { $ref: "#/components/schemas/Pet" } },
                 "application/x-www-form-urlencoded": { schema: { $ref: "#/components/schemas/Pet" } },
               },
@@ -854,13 +855,13 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         ],
         path: "/pet",
-        requestFormat: "application/json",
+        requestFormat: JSON_APPLICATION_FORMAT,
         response: "Pet",
         responseDescription: "Successful operation",
-        responseFormat: "application/json",
+        responseFormat: JSON_APPLICATION_FORMAT,
         responseObject: {
           content: {
-            "application/json": { schema: { $ref: "#/components/schemas/Pet" } },
+            [JSON_APPLICATION_FORMAT]: { schema: { $ref: "#/components/schemas/Pet" } },
             "application/xml": { schema: { $ref: "#/components/schemas/Pet" } },
           },
           description: "Successful operation",
@@ -902,13 +903,13 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         ],
         path: "/pet/findByStatus",
-        requestFormat: "application/json",
+        requestFormat: JSON_APPLICATION_FORMAT,
         response: "FindPetsByStatusResponse",
         responseDescription: "Successful operation",
-        responseFormat: "application/json",
+        responseFormat: JSON_APPLICATION_FORMAT,
         responseObject: {
           content: {
-            "application/json": {
+            [JSON_APPLICATION_FORMAT]: {
               schema: {
                 type: "array",
                 items: {
@@ -965,13 +966,13 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         ],
         path: "/pet/findByTags",
-        requestFormat: "application/json",
+        requestFormat: JSON_APPLICATION_FORMAT,
         response: "FindPetsByTagsResponse",
         responseDescription: "Successful operation",
-        responseFormat: "application/json",
+        responseFormat: JSON_APPLICATION_FORMAT,
         responseObject: {
           content: {
-            "application/json": { schema: { type: "array", items: { $ref: "#/components/schemas/Pet" } } },
+            [JSON_APPLICATION_FORMAT]: { schema: { type: "array", items: { $ref: "#/components/schemas/Pet" } } },
             "application/xml": { schema: { type: "array", items: { $ref: "#/components/schemas/Pet" } } },
           },
           description: "Successful operation",
@@ -1016,13 +1017,13 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         ],
         path: "/pet/:petId",
-        requestFormat: "application/json",
+        requestFormat: JSON_APPLICATION_FORMAT,
         response: "Pet",
         responseDescription: "Successful operation",
-        responseFormat: "application/json",
+        responseFormat: JSON_APPLICATION_FORMAT,
         responseObject: {
           content: {
-            "application/json": { schema: { $ref: "#/components/schemas/Pet" } },
+            [JSON_APPLICATION_FORMAT]: { schema: { $ref: "#/components/schemas/Pet" } },
             "application/xml": { schema: { $ref: "#/components/schemas/Pet" } },
           },
           description: "Successful operation",
@@ -1088,7 +1089,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         ],
         path: "/pet/:petId",
-        requestFormat: "application/json",
+        requestFormat: JSON_APPLICATION_FORMAT,
         response: "z.void()",
         tags: ["pet"],
         responseStatusCodes: ["405"],
@@ -1139,7 +1140,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         ],
         path: "/pet/:petId",
-        requestFormat: "application/json",
+        requestFormat: JSON_APPLICATION_FORMAT,
         response: "z.void()",
         tags: ["pet"],
         responseStatusCodes: ["400"],
@@ -1198,9 +1199,9 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         requestFormat: "application/octet-stream",
         response: "ApiResponse",
         responseDescription: "Successful operation",
-        responseFormat: "application/json",
+        responseFormat: JSON_APPLICATION_FORMAT,
         responseObject: {
-          content: { "application/json": { schema: { $ref: "#/components/schemas/ApiResponse" } } },
+          content: { [JSON_APPLICATION_FORMAT]: { schema: { $ref: "#/components/schemas/ApiResponse" } } },
           description: "Successful operation",
         },
         tags: ["pet"],
@@ -1216,13 +1217,13 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         operationName: "getInventory",
         parameters: [],
         path: "/store/inventory",
-        requestFormat: "application/json",
+        requestFormat: JSON_APPLICATION_FORMAT,
         response: "GetInventoryResponse",
         responseDescription: "Successful operation",
-        responseFormat: "application/json",
+        responseFormat: JSON_APPLICATION_FORMAT,
         responseObject: {
           content: {
-            "application/json": {
+            [JSON_APPLICATION_FORMAT]: {
               schema: {
                 type: "object",
                 additionalProperties: {
@@ -1259,7 +1260,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
             type: "Body",
             bodyObject: {
               content: {
-                "application/json": { schema: { $ref: "#/components/schemas/Order" } },
+                [JSON_APPLICATION_FORMAT]: { schema: { $ref: "#/components/schemas/Order" } },
                 "application/xml": { schema: { $ref: "#/components/schemas/Order" } },
                 "application/x-www-form-urlencoded": { schema: { $ref: "#/components/schemas/Order" } },
               },
@@ -1267,13 +1268,13 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         ],
         path: "/store/order",
-        requestFormat: "application/json",
+        requestFormat: JSON_APPLICATION_FORMAT,
         response: "Order",
         responseDescription: "Successful operation",
-        responseFormat: "application/json",
+        responseFormat: JSON_APPLICATION_FORMAT,
         responseObject: {
           content: {
-            "application/json": { schema: { $ref: "#/components/schemas/Order" } },
+            [JSON_APPLICATION_FORMAT]: { schema: { $ref: "#/components/schemas/Order" } },
           },
           description: "Successful operation",
         },
@@ -1318,13 +1319,13 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         ],
         path: "/store/order/:orderId",
-        requestFormat: "application/json",
+        requestFormat: JSON_APPLICATION_FORMAT,
         response: "Order",
         responseDescription: "Successful operation",
-        responseFormat: "application/json",
+        responseFormat: JSON_APPLICATION_FORMAT,
         responseObject: {
           content: {
-            "application/json": { schema: { $ref: "#/components/schemas/Order" } },
+            [JSON_APPLICATION_FORMAT]: { schema: { $ref: "#/components/schemas/Order" } },
             "application/xml": { schema: { $ref: "#/components/schemas/Order" } },
           },
           description: "Successful operation",
@@ -1370,7 +1371,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         ],
         path: "/store/order/:orderId",
-        requestFormat: "application/json",
+        requestFormat: JSON_APPLICATION_FORMAT,
         response: "z.void()",
         tags: ["store"],
         responseStatusCodes: ["400", "404"],
@@ -1391,7 +1392,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
             type: "Body",
             bodyObject: {
               content: {
-                "application/json": { schema: { $ref: "#/components/schemas/User" } },
+                [JSON_APPLICATION_FORMAT]: { schema: { $ref: "#/components/schemas/User" } },
                 "application/xml": { schema: { $ref: "#/components/schemas/User" } },
                 "application/x-www-form-urlencoded": { schema: { $ref: "#/components/schemas/User" } },
               },
@@ -1400,9 +1401,9 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         ],
         path: "/user",
-        requestFormat: "application/json",
+        requestFormat: JSON_APPLICATION_FORMAT,
         response: "z.void()",
-        responseFormat: "application/json",
+        responseFormat: JSON_APPLICATION_FORMAT,
         tags: ["user"],
         responseStatusCodes: ["default"],
         mediaUpload: false,
@@ -1422,19 +1423,19 @@ describe("getEndpointsFromOpenAPIDoc", () => {
             type: "Body",
             bodyObject: {
               content: {
-                "application/json": { schema: { items: { $ref: "#/components/schemas/User" }, type: "array" } },
+                [JSON_APPLICATION_FORMAT]: { schema: { items: { $ref: "#/components/schemas/User" }, type: "array" } },
               },
             },
           },
         ],
         path: "/user/createWithList",
-        requestFormat: "application/json",
+        requestFormat: JSON_APPLICATION_FORMAT,
         response: "User",
         responseDescription: "Successful operation",
-        responseFormat: "application/json",
+        responseFormat: JSON_APPLICATION_FORMAT,
         responseObject: {
           content: {
-            "application/json": { schema: { $ref: "#/components/schemas/User" } },
+            [JSON_APPLICATION_FORMAT]: { schema: { $ref: "#/components/schemas/User" } },
             "application/xml": { schema: { $ref: "#/components/schemas/User" } },
           },
           description: "Successful operation",
@@ -1487,13 +1488,13 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         ],
         path: "/user/login",
-        requestFormat: "application/json",
+        requestFormat: JSON_APPLICATION_FORMAT,
         response: "z.string()",
         responseDescription: "Successful operation",
         responseFormat: "application/xml",
         responseObject: {
           content: {
-            "application/json": { schema: { type: "string" } },
+            [JSON_APPLICATION_FORMAT]: { schema: { type: "string" } },
             "application/xml": { schema: { type: "string" } },
           },
           description: "Successful operation",
@@ -1527,7 +1528,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         operationName: "logoutUser",
         parameters: [],
         path: "/user/logout",
-        requestFormat: "application/json",
+        requestFormat: JSON_APPLICATION_FORMAT,
         response: "z.void()",
         tags: ["user"],
         responseStatusCodes: ["default"],
@@ -1568,13 +1569,13 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         ],
         path: "/user/:username",
-        requestFormat: "application/json",
+        requestFormat: JSON_APPLICATION_FORMAT,
         response: "User",
         responseDescription: "Successful operation",
-        responseFormat: "application/json",
+        responseFormat: JSON_APPLICATION_FORMAT,
         responseObject: {
           content: {
-            "application/json": { schema: { $ref: "#/components/schemas/User" } },
+            [JSON_APPLICATION_FORMAT]: { schema: { $ref: "#/components/schemas/User" } },
             "application/xml": { schema: { $ref: "#/components/schemas/User" } },
           },
           description: "Successful operation",
@@ -1598,7 +1599,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
             type: "Body",
             bodyObject: {
               content: {
-                "application/json": {
+                [JSON_APPLICATION_FORMAT]: {
                   schema: {
                     $ref: "#/components/schemas/User",
                   },
@@ -1633,7 +1634,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         ],
         path: "/user/:username",
-        requestFormat: "application/json",
+        requestFormat: JSON_APPLICATION_FORMAT,
         response: "z.void()",
         tags: ["user"],
         responseStatusCodes: ["default"],
@@ -1674,7 +1675,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           },
         ],
         path: "/user/:username",
-        requestFormat: "application/json",
+        requestFormat: JSON_APPLICATION_FORMAT,
         response: "z.void()",
         tags: ["user"],
         responseStatusCodes: ["400", "404"],
@@ -1750,7 +1751,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
               "200": {
                 description: "Successful operation",
                 content: {
-                  "application/json": {
+                  [JSON_APPLICATION_FORMAT]: {
                     schema: {
                       type: "array",
                       items: {
@@ -1763,7 +1764,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
               "400": {
                 description: "Invalid status value",
                 content: {
-                  "application/json": {
+                  [JSON_APPLICATION_FORMAT]: {
                     schema: {
                       type: "string",
                     },
@@ -1787,7 +1788,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
               "200": {
                 description: "Successful operation",
                 content: {
-                  "application/json": {
+                  [JSON_APPLICATION_FORMAT]: {
                     schema: {
                       type: "array",
                       items: {
@@ -1827,13 +1828,13 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         operationName: "findPetsByStatus",
         parameters: [],
         path: "/pet/findByStatus",
-        requestFormat: "application/json",
+        requestFormat: JSON_APPLICATION_FORMAT,
         response: "FindPetsByStatusResponse",
         responseDescription: "Successful operation",
-        responseFormat: "application/json",
+        responseFormat: JSON_APPLICATION_FORMAT,
         responseObject: {
           content: {
-            "application/json": { schema: { type: "array", items: { $ref: "#/components/schemas/Pet" } } },
+            [JSON_APPLICATION_FORMAT]: { schema: { type: "array", items: { $ref: "#/components/schemas/Pet" } } },
           },
           description: "Successful operation",
         },
@@ -1856,14 +1857,14 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         operationName: "findPetsByTags",
         parameters: [],
         path: "/pet/findByTags",
-        requestFormat: "application/json",
+        requestFormat: JSON_APPLICATION_FORMAT,
         response: "FindPetsByTagsResponse",
         responseDescription: "Successful operation",
-        responseFormat: "application/json",
+        responseFormat: JSON_APPLICATION_FORMAT,
         tags: ["pet"],
         responseObject: {
           content: {
-            "application/json": { schema: { items: { $ref: "#/components/schemas/Pet" }, type: "array" } },
+            [JSON_APPLICATION_FORMAT]: { schema: { items: { $ref: "#/components/schemas/Pet" }, type: "array" } },
           },
           description: "Successful operation",
         },

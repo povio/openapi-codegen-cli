@@ -4,7 +4,7 @@ import { getOpenAPISchemaComplexity } from "src/generators/core/openapi/getOpenA
 import { WithRequired } from "src/generators/types/common";
 import { GenerateType } from "src/generators/types/generate";
 import { GenerateOptions } from "src/generators/types/options";
-import { getNamespaceName } from "src/generators/utils/generate/generate.utils";
+import { getNamespaceName } from "src/generators/utils/namespace.utils";
 import { isReferenceObject } from "src/generators/utils/openapi-schema.utils";
 
 export interface ZodSchemaMetaData {

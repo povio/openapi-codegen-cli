@@ -1,5 +1,6 @@
 import { OpenAPIV3 } from "openapi-types";
 import {
+  ANY_SCHEMA,
   BLOB_SCHEMA,
   DATETIME_SCHEMA,
   EMAIL_SCHEMA,
@@ -12,7 +13,7 @@ import {
 } from "src/generators/const/zod.const";
 import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
 import { GenerateType } from "src/generators/types/generate";
-import { getNamespaceName } from "src/generators/utils/generate/generate.utils";
+import { getNamespaceName } from "src/generators/utils/namespace.utils";
 import {
   inferRequiredSchema,
   isArraySchemaObject,
@@ -88,7 +89,7 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag }: Get
       );
     }
 
-    return zodSchema.assign(`z.array(z.any())${readonly}`);
+    return zodSchema.assign(`z.array(${ANY_SCHEMA})${readonly}`);
   }
 
   const schemaType = schema.type ? (schema.type.toLowerCase() as NonNullable<typeof schema.type>) : undefined;
@@ -162,7 +163,7 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag }: Get
               meta: { ...meta, isRequired: true },
               options: resolver.options,
             })
-          : "z.any()";
+          : ANY_SCHEMA;
       additionalPropsSchema = `.catchall(${additionalPropsZodSchema})`;
     }
 
@@ -173,7 +174,7 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag }: Get
   }
 
   if ((schemaType as unknown) === "any") {
-    return zodSchema.assign("z.any()");
+    return zodSchema.assign(ANY_SCHEMA);
   }
 
   if (!schemaType) {

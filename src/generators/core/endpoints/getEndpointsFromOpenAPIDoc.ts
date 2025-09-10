@@ -1,9 +1,24 @@
 import { OpenAPIV3 } from "openapi-types";
+import { JSON_APPLICATION_FORMAT } from "src/generators/const/endpoints.const";
 import { ALLOWED_METHODS } from "src/generators/const/openapi.const";
+import { HttpStatusCode } from "src/generators/const/validation.const";
 import { STRING_SCHEMA, VOID_SCHEMA } from "src/generators/const/zod.const";
+import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
+import { getZodChain } from "src/generators/core/zod/getZodChain";
+import { getZodSchema } from "src/generators/core/zod/getZodSchema";
+import { resolveZodSchemaName } from "src/generators/core/zod/resolveZodSchemaName";
+import { Endpoint, EndpointParameter } from "src/generators/types/endpoint";
 import { OperationObject } from "src/generators/types/openapi";
 import { invalidVariableNameCharactersToCamel } from "src/generators/utils/js.utils";
+import { pick } from "src/generators/utils/object.utils";
 import { isReferenceObject } from "src/generators/utils/openapi-schema.utils";
+import {
+  isErrorStatus,
+  isMainResponseStatus,
+  isMediaTypeAllowed,
+  isPathExcluded,
+  replaceHyphenatedPath,
+} from "src/generators/utils/openapi.utils";
 import { getUniqueOperationName, isOperationExcluded } from "src/generators/utils/operation.utils";
 import { formatTag, getOperationTag } from "src/generators/utils/tag.utils";
 import {
@@ -14,23 +29,9 @@ import {
   getMultipleSuccessStatusCodesError,
 } from "src/generators/utils/validation.utils";
 import { getResponseZodSchemaName } from "src/generators/utils/zod-schema.utils";
-import { Endpoint, EndpointParameter } from "src/generators/types/endpoint";
-import { pick } from "src/generators/utils/object.utils";
-import {
-  isErrorStatus,
-  isMainResponseStatus,
-  isMediaTypeAllowed,
-  isPathExcluded,
-  replaceHyphenatedPath,
-} from "src/generators/utils/openapi.utils";
-import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
-import { getZodChain } from "src/generators/core/zod/getZodChain";
-import { getZodSchema } from "src/generators/core/zod/getZodSchema";
-import { resolveZodSchemaName } from "src/generators/core/zod/resolveZodSchemaName";
 import { getEndpointAcl } from "./getEndpointAcl";
 import { getEndpointBody } from "./getEndpointBody";
 import { getEndpointParameter } from "./getEndpointParameter";
-import { HttpStatusCode } from "src/generators/const/validation.const";
 
 export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver) {
   const endpoints = [];
@@ -76,7 +77,7 @@ export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver) {
         description: operation.description,
         summary: operation.summary,
         tags: operation.tags?.map(formatTag),
-        requestFormat: "application/json",
+        requestFormat: JSON_APPLICATION_FORMAT,
         parameters: [],
         response: "",
         errors: [],

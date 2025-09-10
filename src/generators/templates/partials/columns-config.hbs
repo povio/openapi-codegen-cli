@@ -1,0 +1,11 @@
+{ 
+    schema: {{columnsConfig.schema}},
+    options: {
+        columns: {
+            {{#each columnsConfig.options.columns}}
+                {{@key}}: true,
+            {{/each}}
+        }, {{#if columnsConfig.options.sortable}}
+        sortable: {{columnsConfig.options.sortable}}, {{/if}}
+    }
+}

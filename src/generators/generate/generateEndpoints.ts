@@ -9,15 +9,12 @@ import { EndpointParameter } from "src/generators/types/endpoint";
 import { GenerateType, GenerateTypeParams, Import } from "src/generators/types/generate";
 import { getUniqueArray } from "src/generators/utils/array.utils";
 import { getModelsImports } from "src/generators/utils/generate/generate.imports.utils";
-import {
-  getAppRestClientImportPath,
-  getNamespaceName,
-  getZodExtendedImportPath,
-} from "src/generators/utils/generate/generate.utils";
+import { getAppRestClientImportPath, getZodExtendedImportPath } from "src/generators/utils/generate/generate.utils";
 import { getHbsTemplateDelegate } from "src/generators/utils/hbs/hbs-template.utils";
+import { getNamespaceName } from "src/generators/utils/namespace.utils";
 import { isNamedZodSchema } from "src/generators/utils/zod-schema.utils";
 
-export function generateEndpoints({ resolver, data, tag = "" }: GenerateTypeParams) {
+export function generateEndpoints({ resolver, data, tag }: GenerateTypeParams) {
   const endpoints = data.get(tag)?.endpoints;
   if (!endpoints || endpoints.length === 0) {
     return;
