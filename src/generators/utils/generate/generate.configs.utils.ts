@@ -53,15 +53,23 @@ export function getBuilderConfigs({ data, tag, resolver }: GenerateTypeParams) {
 
   const configs = Object.entries(namedReadAllEndpoints).map(([name, readAllEndpoint]) => {
     // Read all config
+    const columnsConfig = getColumnsConfig(resolver, readAllEndpoint);
+    if (!columnsConfig) {
+      return;
+    }
+
     importedEndpoints.push(readAllEndpoint);
     importedInfiniteEndpoints.push(readAllEndpoint);
 
-    let responseSchema = readAllEndpoint.response;
-    if (isNamedZodSchema(responseSchema)) {
-      importedZodSchemas.push(responseSchema);
-      responseSchema = getImportedZodSchemaName(resolver, responseSchema);
-    } else {
-      hasZodImport = true;
+    if (columnsConfig.zodSchema) {
+      if (isNamedZodSchema(columnsConfig.zodSchema)) {
+        importedZodSchemas.push(columnsConfig.zodSchema);
+      } else {
+        hasZodImport = true;
+      }
+    }
+    if (columnsConfig.sortableEnumSchemaName) {
+      importedZodSchemas.push(columnsConfig.sortableEnumSchemaName);
     }
 
     const filter = readAllEndpoint.parameters.find((param) => param.name === resolver.options.filterParamName);
@@ -69,28 +77,16 @@ export function getBuilderConfigs({ data, tag, resolver }: GenerateTypeParams) {
       importedZodSchemas.push(filter.zodSchema);
     }
 
-    const columnsConfig = getColumnsConfig(resolver, readAllEndpoint);
-    if (columnsConfig?.zodSchema) {
-      if (isNamedZodSchema(columnsConfig.zodSchema)) {
-        importedZodSchemas.push(columnsConfig.zodSchema);
-      } else {
-        hasZodImport = true;
-      }
-    }
-    if (columnsConfig?.sortableEnumSchemaName) {
-      importedZodSchemas.push(columnsConfig.sortableEnumSchemaName);
-    }
-
     const config: BuilderConfig = {
       name,
       title: capitalize(camelToSpaceSeparated(name.replace(/config$/i, ""))),
       readAll: {
         acl: getAclConfig(readAllEndpoint, resolver.options),
-        schema: responseSchema,
+        schema: columnsConfig.columns.schema,
         paginated: getImportedQueryName(readAllEndpoint, resolver.options),
         infinite: getImportedInfiniteQueryName(readAllEndpoint, resolver.options),
         filters: getInputsConfig(resolver, filter),
-        columns: columnsConfig?.columns,
+        columns: columnsConfig.columns,
       },
     };
 
@@ -193,7 +189,7 @@ export function getBuilderConfigs({ data, tag, resolver }: GenerateTypeParams) {
   });
 
   return {
-    configs,
+    configs: configs.filter(Boolean),
     hasZodImport,
     modelsImports,
     queriesImports: mergeImports(resolver.options, queriesImports, infiniteQueriesImports),
