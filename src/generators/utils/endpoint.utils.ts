@@ -22,7 +22,8 @@ export const isCreateEndpoint = (endpoint: ExtendedEndpoint, readAllEndpoint: Ex
   endpoint.method === OpenAPIV3.HttpMethods.POST && hasMatchingPathWithoutTrailingParam(endpoint, readAllEndpoint);
 
 export const isUpdateEndpoint = (endpoint: ExtendedEndpoint, readAllEndpoint: ExtendedEndpoint) =>
-  endpoint.method === OpenAPIV3.HttpMethods.PATCH && hasMatchingPathWithTrailingParam(endpoint, readAllEndpoint);
+  [OpenAPIV3.HttpMethods.PUT, OpenAPIV3.HttpMethods.PATCH].includes(endpoint.method) &&
+  hasMatchingPathWithTrailingParam(endpoint, readAllEndpoint);
 
 export const isDeleteEndpoint = (endpoint: ExtendedEndpoint, readAllEndpoint: ExtendedEndpoint) =>
   endpoint.method === OpenAPIV3.HttpMethods.DELETE && hasMatchingPathWithTrailingParam(endpoint, readAllEndpoint);
