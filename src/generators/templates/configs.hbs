@@ -35,9 +35,9 @@ export const {{config.name}} = {
     readAll: { 
         {{#if config.readAll.acl}} acl: {{{config.readAll.acl}}}, 
         {{/if}} schema: {{{config.readAll.columns.schema}}},
-        paginated: {{{config.readAll.paginated}}},
+        paginated: {{{config.readAll.paginated}}}, {{#if config.readAll.infinite}}
         infinite: {{{config.readAll.infinite}}}, 
-        {{#if config.readAll.filters}} filters: {
+        {{/if}} {{#if config.readAll.filters}} filters: {
             schema: {{{config.readAll.filters.schema}}},
             filterDefs: {{../dynamicInputs}}({{{genInputsConfig config.readAll.filters}}})
         },

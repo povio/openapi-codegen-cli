@@ -19,7 +19,7 @@ export interface BuilderConfig {
   readAll: {
     acl?: string;
     paginated: string;
-    infinite: string;
+    infinite?: string;
     filters?: DynamicInputsConfig;
     columns: DynamicColumnsConfig;
   };

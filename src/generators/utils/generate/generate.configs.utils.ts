@@ -83,7 +83,9 @@ export function getBuilderConfigs({ data, tag, resolver }: GenerateTypeParams) {
       readAll: {
         acl: getAclConfig(readAllEndpoint, resolver.options),
         paginated: getImportedQueryName(readAllEndpoint, resolver.options),
-        infinite: getImportedInfiniteQueryName(readAllEndpoint, resolver.options),
+        infinite: resolver.options.infiniteQueries
+          ? getImportedInfiniteQueryName(readAllEndpoint, resolver.options)
+          : undefined,
         filters: getInputsConfig(resolver, filter),
         columns: columnsConfig.columns,
       },
@@ -176,11 +178,13 @@ export function getBuilderConfigs({ data, tag, resolver }: GenerateTypeParams) {
 
   const modelsImports = getModelsImports({ resolver, tag, zodSchemas: importedZodSchemas });
   const queriesImports = getQueriesImports({ tag, endpoints: importedEndpoints, options: resolver.options });
-  const infiniteQueriesImports = getInfiniteQueriesImports({
-    tag,
-    endpoints: importedInfiniteEndpoints,
-    options: resolver.options,
-  });
+  const infiniteQueriesImports = resolver.options.infiniteQueries
+    ? getInfiniteQueriesImports({
+        tag,
+        endpoints: importedInfiniteEndpoints,
+        options: resolver.options,
+      })
+    : [];
   const aclImports = getAclImports({
     tag,
     endpoints: importedEndpoints.filter((endpoint) => endpoint.acl),
