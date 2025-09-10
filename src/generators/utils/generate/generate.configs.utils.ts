@@ -82,7 +82,6 @@ export function getBuilderConfigs({ data, tag, resolver }: GenerateTypeParams) {
       title: capitalize(camelToSpaceSeparated(name.replace(/config$/i, ""))),
       readAll: {
         acl: getAclConfig(readAllEndpoint, resolver.options),
-        schema: columnsConfig.columns.schema,
         paginated: getImportedQueryName(readAllEndpoint, resolver.options),
         infinite: getImportedInfiniteQueryName(readAllEndpoint, resolver.options),
         filters: getInputsConfig(resolver, filter),

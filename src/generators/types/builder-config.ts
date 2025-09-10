@@ -18,11 +18,10 @@ export interface BuilderConfig {
   title: string;
   readAll: {
     acl?: string;
-    schema: string;
     paginated: string;
     infinite: string;
     filters?: DynamicInputsConfig;
-    columns?: DynamicColumnsConfig;
+    columns: DynamicColumnsConfig;
   };
   read?: {
     acl?: string;
