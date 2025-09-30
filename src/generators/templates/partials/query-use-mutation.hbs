@@ -1,14 +1,14 @@
 {{! Js docs }}
 {{{genQueryJsDocs endpoint mutation=true}}}
 {{! Mutation definition}}
-export const {{queryName endpoint mutation=true}} = (options?: AppMutationOptions<typeof {{importedEndpointName endpoint}}, { {{{genEndpointParams endpoint includeFileParam=true}}} }>{{#if hasMutationEffects}} & {{mutationEffectsType}}{{/if}}{{#if hasAxiosRequestConfig}}, {{axiosRequestConfigName}}?: {{axiosRequestConfigType}}{{/if}}) => {
+export const {{queryName endpoint mutation=true}} = (options?: AppMutationOptions<typeof {{importedEndpointName endpoint}}, { {{{genEndpointParams endpoint includeFileParam=true}}}{{#if endpoint.mediaUpload}}; abortController?: AbortController; onUploadProgress?: (progress: { loaded: number; total: number }) => void{{/if}} }>{{#if hasMutationEffects}} & {{mutationEffectsType}}{{/if}}{{#if hasAxiosRequestConfig}}, {{axiosRequestConfigName}}?: {{axiosRequestConfigType}}{{/if}}) => {
   {{! Use acl check }}
   {{#if hasAclCheck}}const { checkAcl } = {{aclCheckHook}}();{{/if}}
   {{! Use mutation effects }}
   {{#if hasMutationEffects}}const { runMutationEffects } = useMutationEffects({ currentModule: {{queriesModuleName}} });{{/if}}
 
   return {{queryHook}}({
-    mutationFn: {{#if endpoint.mediaUpload}}async {{/if}}({{#if (endpointParams endpoint includeFileParam=true)}} { {{{endpointArgs endpoint includeFileParam=true}}} } {{/if}}) => {{#if hasMutationFnBody}} { {{/if}}
+    mutationFn: {{#if endpoint.mediaUpload}}async {{/if}}({{#if (endpointParams endpoint includeFileParam=true)}} { {{{endpointArgs endpoint includeFileParam=true}}}{{#if endpoint.mediaUpload}}, abortController, onUploadProgress{{/if}} } {{/if}}) => {{#if hasMutationFnBody}} { {{/if}}
       {{#if hasAclCheck}}{{{genAclCheckCall endpoint}}}{{/if}}
       {{#if endpoint.mediaUpload}}const uploadInstructions = await {{importedEndpointName endpoint}}({{{endpointArgs endpoint}}}{{#if hasAxiosRequestConfig}}{{#if (endpointArgs endpoint)}}, {{/if}}{{axiosRequestConfigName}}{{/if}}); 
       
@@ -17,6 +17,10 @@ export const {{queryName endpoint mutation=true}} = (options?: AppMutationOption
           headers: {
             "Content-Type": file.type,
           },
+          signal: abortController?.signal,
+          onUploadProgress: onUploadProgress
+          ? (progressEvent) => onUploadProgress({ loaded: progressEvent.loaded, total: progressEvent.total ?? 0 })
+          : undefined,
         });
       }
       
