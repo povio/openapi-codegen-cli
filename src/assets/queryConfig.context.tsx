@@ -9,7 +9,7 @@ export namespace OpenApiQueryConfig {
 
   type ProviderProps = Type;
 
-  export const Provider = ({ preferUpdate, children }: React.PropsWithChildren<ProviderProps>) => {
+  export const Provider = ({ preferUpdate = true, children }: React.PropsWithChildren<ProviderProps>) => {
     const value = useMemo(() => ({ preferUpdate }), [preferUpdate]);
 
     return <Context.Provider value={value}>{children}</Context.Provider>;
