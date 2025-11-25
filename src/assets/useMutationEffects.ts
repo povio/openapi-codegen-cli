@@ -21,7 +21,7 @@ export function useMutationEffects({ currentModule }: UseMutationEffectsProps) {
 
   const runMutationEffects = useCallback(
     async <TData>(data: TData, options: MutationEffectsOptions = {}, updateKeys?: QueryKey[]) => {
-      const { invalidateCurrentModule, invalidateModules, invalidateKeys, preferUpdate } = options;
+      const { invalidateCurrentModule = true, invalidateModules, invalidateKeys, preferUpdate } = options;
       const shouldUpdate = preferUpdate || (preferUpdate === undefined && config.preferUpdate);
 
       const isQueryKeyEqual = (keyA: QueryKey, keyB: QueryKey) =>
