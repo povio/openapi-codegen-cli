@@ -1,7 +1,7 @@
 {{! Js docs }}
 {{{genQueryJsDocs endpoint mutation=true}}}
 {{! Mutation definition}}
-export const {{queryName endpoint mutation=true}} = (options?: AppMutationOptions<typeof {{importedEndpointName endpoint}}, { {{{genEndpointParams endpoint includeFileParam=true}}}{{#if endpoint.mediaUpload}}; abortController?: AbortController; onUploadProgress?: (progress: { loaded: number; total: number }) => void{{/if}} }>{{#if hasMutationEffects}} & {{mutationEffectsType}}{{/if}}{{#if hasAxiosRequestConfig}}, {{axiosRequestConfigName}}?: {{axiosRequestConfigType}}{{/if}}) => {
+export const {{queryName endpoint mutation=true}} = (options?: AppMutationOptions<typeof {{importedEndpointName endpoint}}, { {{{genEndpointParams endpoint includeFileParam=true}}}{{#if endpoint.mediaUpload}} abortController?: AbortController, onUploadProgress?: (progress: { loaded: number; total: number }) => void{{/if}} }>{{#if hasMutationEffects}} & {{mutationEffectsType}}{{/if}}{{#if hasAxiosRequestConfig}}, {{axiosRequestConfigName}}?: {{axiosRequestConfigType}}{{/if}}) => {
   {{! Use acl check }}
   {{#if hasAclCheck}}const { checkAcl } = {{aclCheckHook}}();{{/if}}
   {{! Use mutation effects }}
