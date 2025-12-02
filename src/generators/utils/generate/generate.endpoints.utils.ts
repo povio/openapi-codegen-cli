@@ -74,7 +74,7 @@ export function mapEndpointParamsToFunctionParams(
       name: "file",
       type: "File",
       paramType: "Body",
-      required: true,
+      required: false,
       parameterObject: undefined,
       bodyObject: undefined,
     });
