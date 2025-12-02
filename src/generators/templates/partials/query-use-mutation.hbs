@@ -14,6 +14,16 @@ export const {{queryName endpoint mutation=true}} = (options?: AppMutationOption
       
       if (file && uploadInstructions.url) {
         const method = (data?.method?.toLowerCase() ?? "put") as 'put' | 'post';
+        let dataToSend: File | FormData = file;
+        if (method === "post") {
+          dataToSend = new FormData();
+          dataToSend.append('file', file);
+          if (uploadInstructions.fields) {
+            for (const [key, value] of uploadInstructions.fields) {
+              dataToSend.append(key, value);
+            }
+          }
+        }
         await axios[method](uploadInstructions.url, file, {
           headers: {
             "Content-Type": file.type,
