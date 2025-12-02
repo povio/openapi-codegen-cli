@@ -24,7 +24,7 @@ export const {{queryName endpoint mutation=true}} = (options?: AppMutationOption
             }
           }
         }
-        await axios[method](uploadInstructions.url, file, {
+        await axios[method](uploadInstructions.url, dataToSend, {
           headers: {
             "Content-Type": file.type,
           },
