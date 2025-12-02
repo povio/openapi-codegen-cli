@@ -13,7 +13,8 @@ export const {{queryName endpoint mutation=true}} = (options?: AppMutationOption
       {{#if endpoint.mediaUpload}}const uploadInstructions = await {{importedEndpointName endpoint}}({{{endpointArgs endpoint}}}{{#if hasAxiosRequestConfig}}{{#if (endpointArgs endpoint)}}, {{/if}}{{axiosRequestConfigName}}{{/if}}); 
       
       if (file && uploadInstructions.url) {
-        await axios.put(uploadInstructions.url, file, {
+        const method = (data?.method?.toLowerCase() ?? "put") as 'put' | 'post';
+        await axios[method](uploadInstructions.url, file, {
           headers: {
             "Content-Type": file.type,
           },
