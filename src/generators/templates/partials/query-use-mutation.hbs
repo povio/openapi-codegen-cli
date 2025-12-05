@@ -17,12 +17,12 @@ export const {{queryName endpoint mutation=true}} = (options?: AppMutationOption
         let dataToSend: File | FormData = file;
         if (method === "post") {
           dataToSend = new FormData();
-          dataToSend.append('file', file);
           if (uploadInstructions.fields) {
             for (const [key, value] of uploadInstructions.fields) {
               dataToSend.append(key, value);
             }
           }
+          dataToSend.append('file', file);
         }
         await axios[method](uploadInstructions.url, dataToSend, {
           headers: {
