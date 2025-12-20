@@ -1,8 +1,9 @@
-import { OpenAPIV3 } from "openapi-types";
-import { Endpoint } from "src/generators/types/endpoint";
-import { GenerateData } from "src/generators/types/generate";
-import { GenerateOptions } from "src/generators/types/options";
-import { getEndpointTag } from "src/generators/utils/tag.utils";
+import type { OpenAPIV3 } from "openapi-types";
+
+import type { Endpoint } from "../types/endpoint";
+import type { GenerateData } from "../types/generate";
+import type { GenerateOptions } from "../types/options";
+import { getEndpointTag } from "../utils/tag.utils";
 import { getEndpointsFromOpenAPIDoc } from "./endpoints/getEndpointsFromOpenAPIDoc";
 import { SchemaResolver } from "./SchemaResolver.class";
 import { getZodSchemasFromOpenAPIDoc } from "./zod/getZodSchemasFromOpenAPIDoc";

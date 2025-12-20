@@ -1,6 +1,7 @@
-import { OpenAPIV3 } from "openapi-types";
-import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
-import { Endpoint } from "./endpoint";
+import type { OpenAPIV3 } from "openapi-types";
+
+import type { SchemaResolver } from "../core/SchemaResolver.class";
+import type { Endpoint } from "./endpoint";
 
 export interface Import {
   defaultImport?: string;

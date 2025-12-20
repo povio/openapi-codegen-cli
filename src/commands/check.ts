@@ -1,10 +1,12 @@
 import SwaggerParser from "@apidevtools/swagger-parser";
-import { OpenAPIV3 } from "openapi-types";
-import { checkOpenAPIDoc } from "src/generators/checkOpenAPIDoc";
-import { resolveConfig } from "src/generators/core/resolveConfig";
-import { GenerateOptions } from "src/generators/types/options";
-import { logInfo, logSuccess } from "src/helpers/cli.helper";
-import { loadConfig } from "src/helpers/config.helper";
+import type { OpenAPIV3 } from "openapi-types";
+import path from "node:path";
+
+import { checkOpenAPIDoc } from "../generators/checkOpenAPIDoc";
+import { resolveConfig } from "../generators/core/resolveConfig";
+import type { GenerateOptions } from "../generators/types/options";
+import { loadConfig } from "../helpers/config.helper";
+import { Logger } from "../helpers/logger";
 
 export type CheckParams = {
   config?: string;
@@ -12,27 +14,37 @@ export type CheckParams = {
   verbose?: boolean;
 } & Partial<Pick<GenerateOptions, "input" | "splitByTags" | "defaultTag">>;
 
-export async function check({ verbose, config: configParam, excludeTags: excludeTagsParam, ...params }: CheckParams) {
+export async function check(
+  { verbose, config: configParam, excludeTags: excludeTagsParam, ...params }: CheckParams,
+  cwd: string,
+  logger: Logger = new Logger(false),
+) {
   const start = Date.now();
 
   if (verbose) {
-    logInfo("Resolving config...");
+    logger.info("Resolving config...");
   }
-  const fileConfig = await loadConfig(configParam);
+  const fileConfig = await loadConfig(configParam, cwd);
   const config = resolveConfig({ fileConfig, params });
 
   if (verbose) {
-    logInfo("Parsing OpenAPI spec...");
+    logger.info("Parsing OpenAPI spec...");
   }
-  const openApiDoc = (await SwaggerParser.bundle(config.input)) as OpenAPIV3.Document;
+
+  let input = config.input;
+  if (input.startsWith(".")) {
+    input = path.resolve(cwd, input);
+  }
+
+  const openApiDoc = (await SwaggerParser.bundle(input)) as OpenAPIV3.Document;
 
   if (verbose) {
-    logInfo("Running check...");
+    logger.info("Running check...");
   }
   const errorMessages = checkOpenAPIDoc(openApiDoc, config);
 
   if (errorMessages.length === 0) {
-    logSuccess(`Time: ${Date.now() - start}ms`);
+    logger.info(`Time: ${Date.now() - start}ms`);
   } else {
     throw new Error(`Found ${errorMessages.length} issues. Time: ${Date.now() - start}ms`);
   }

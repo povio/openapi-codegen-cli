@@ -1,10 +1,10 @@
-import { Endpoint } from "src/generators/types/endpoint";
-import { GenerateType, GenerateTypeParams, Import } from "src/generators/types/generate";
-import { GenerateOptions } from "src/generators/types/options";
-import { getUniqueArray } from "src/generators/utils/array.utils";
-import { getNamespaceName } from "src/generators/utils/namespace.utils";
-import { capitalize, snakeToCamel } from "src/generators/utils/string.utils";
-import { getEndpointTag } from "src/generators/utils/tag.utils";
+import type { Endpoint } from "../../types/endpoint";
+import { GenerateType, type GenerateTypeParams, type Import } from "../../types/generate";
+import type { GenerateOptions } from "../../types/options";
+import { getUniqueArray } from "../array.utils";
+import { getNamespaceName } from "../namespace.utils";
+import { capitalize, snakeToCamel } from "../string.utils";
+import { getEndpointTag } from "../tag.utils";
 import { getModelsImports, mergeImports } from "./generate.imports.utils";
 
 export const getAbilityFunctionName = (endpoint: Endpoint) =>

@@ -1,5 +1,7 @@
-import { OpenAPIV3 } from "openapi-types";
-import { iterateSchema, OnSchemaCallbackData } from "./iterateSchema";
+import type { OpenAPIV3 } from "openapi-types";
+
+import type { OnSchemaCallbackData } from "./iterateSchema";
+import { iterateSchema } from "./iterateSchema";
 
 export interface DependencyGraph {
   refsDependencyGraph: Record<string, Set<string>>;

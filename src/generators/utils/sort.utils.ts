@@ -1,4 +1,4 @@
-import { ObjectLiteral } from "src/generators/types/common";
+import type { ObjectLiteral } from "../types/common";
 
 /** @see https://gist.github.com/RubyTuesdayDONO/5006455 */
 export function topologicalSort(graph: Record<string, Set<string>>) {

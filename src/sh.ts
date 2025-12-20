@@ -1,25 +1,43 @@
 #!/usr/bin/env node
 
-import yargs from "yargs";
-import { hideBin } from "yargs/helpers";
-import { command as checkCommand } from "./commands/check.command";
-import { command as generateCommand } from "./commands/generate.command";
-import { logError, logInfo } from "./helpers/cli.helper";
-import { getVersion } from "./helpers/version.helper";
+import { checkCommand } from "./commands/check.command";
+import { generateCommand } from "./commands/generate.command";
 
-yargs(hideBin(process.argv))
-  .version(getVersion() || "unknown")
-  .scriptName("openapi-codegen")
-  .command(generateCommand)
-  .command(checkCommand)
-  .help()
-  .demandCommand(1)
-  .strictCommands(true)
-  .showHelpOnFail(true)
-  .fail((msg, err) => {
-    if (msg) logError(msg);
-    if (err) logError(err);
-    logInfo("Use '--help' for more info");
+const [command, ...args] = process.argv.slice(2);
+
+if (!command) {
+  console.log(`
+NAME:
+  openapi-codegen - OpenAPI CodeGen
+
+USAGE:
+  OpenAPI CodeGen
+
+  Documentation is available at https://github.com/povio/openapi-codegen-cli
+  
+VERSION:
+  ${process.env.OPENAPI_CODEGEN_VERSION} 
+
+COMMANDS
+  check - Check OpenAPI spec
+  generate - Generate code from OpenAPI spec
+  
+COPYRIGHT:
+  (c) 2026 Povio inc., All rights reserved.
+`);
+  process.exit(1);
+}
+
+switch (command) {
+  case "check":
+    checkCommand(args);
+    break;
+
+  case "generate":
+    generateCommand(args);
+    break;
+
+  default:
+    console.error(`Unknown command: ${command}`);
     process.exit(1);
-  })
-  .parse();
+}

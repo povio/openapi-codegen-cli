@@ -1,5 +1,6 @@
-import { OpenAPIV3 } from "openapi-types";
-import { OperationAclInfo, ParameterObject } from "./openapi";
+import type { OpenAPIV3 } from "openapi-types";
+
+import type { OperationAclInfo, ParameterObject } from "./openapi";
 
 export interface EndpointParameter {
   name: string;

@@ -1,5 +1,6 @@
-import { OpenAPIV3 } from "openapi-types";
-import { GenerateOptions } from "./options";
+import type { OpenAPIV3 } from "openapi-types";
+
+import type { GenerateOptions } from "./options";
 
 export interface GenerateParams {
   input: string;

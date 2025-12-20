@@ -1,9 +1,9 @@
-import { BUILDERS_UTILS } from "src/generators/const/deps.const";
-import { ZOD_IMPORT } from "src/generators/const/zod.const";
-import { GenerateType, GenerateTypeParams, Import } from "src/generators/types/generate";
-import { getBuilderConfigs } from "src/generators/utils/generate/generate.configs.utils";
-import { getHbsTemplateDelegate } from "src/generators/utils/hbs/hbs-template.utils";
-import { getNamespaceName } from "src/generators/utils/namespace.utils";
+import { BUILDERS_UTILS } from "../const/deps.const";
+import { ZOD_IMPORT } from "../const/zod.const";
+import { GenerateType, type GenerateTypeParams, type Import } from "../types/generate";
+import { getBuilderConfigs } from "../utils/generate/generate.configs.utils";
+import { getHbsTemplateDelegate } from "../utils/hbs/hbs-template.utils";
+import { getNamespaceName } from "../utils/namespace.utils";
 
 export function generateConfigs(generateTypeParams: GenerateTypeParams) {
   const { configs, hasZodImport, modelsImports, queriesImports, aclImports } = getBuilderConfigs(generateTypeParams);

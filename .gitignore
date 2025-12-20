@@ -8,12 +8,14 @@
 
 /output
 /dist
+/.tmp
 
 node_modules
 
 # IDEs and editors
 .idea
 .DS_Store
+
 
 # Test specs
 test/*

@@ -1,95 +1,46 @@
-import { logBanner } from "src/helpers/cli.helper";
-import { getVersion } from "src/helpers/version.helper";
-import { getBuilder, YargOption } from "src/helpers/yargs.helper";
-import yargs from "yargs";
-import { generate, GenerateParams } from "./generate";
+import { z } from "zod";
 
-class GenerateOptions implements GenerateParams {
-  @YargOption({ envAlias: "config" })
-  config?: string;
+import { getArgs } from "../helpers/args";
+import { Logger } from "../helpers/logger";
+import { generate } from "./generate";
 
-  @YargOption({ envAlias: "input" })
-  input?: string;
+const commandSchema = z.object({
+  config: z.string().optional(),
+  input: z.string().optional(),
+  output: z.string().optional(),
+  tsNamespaces: z.boolean().optional(),
+  tsPath: z.string().optional(),
+  splitByTags: z.boolean().optional(),
+  defaultTag: z.string().optional(),
+  excludeTags: z.string().optional(),
+  excludePathRegex: z.string().optional(),
+  excludeRedundantZodSchemas: z.boolean().optional(),
+  importPath: z.enum(["ts", "relative", "absolute"]).optional(),
+  extractEnums: z.boolean().optional(),
+  removeOperationPrefixEndingWith: z.string().optional(),
+  acl: z.boolean().optional(),
+  checkAcl: z.boolean().optional(),
+  standalone: z.boolean().optional(),
+  baseUrl: z.string().optional(),
+  replaceOptionalWithNullish: z.boolean().optional(),
+  infiniteQueries: z.boolean().optional(),
+  mutationEffects: z.boolean().optional(),
+  parseRequestParams: z.boolean().optional(),
+  axiosRequestConfig: z.boolean().optional(),
+  builderConfigs: z.boolean().optional(),
+  prettier: z.boolean().optional(),
+  verbose: z.boolean().optional(),
+  cwd: z.string().optional(),
+});
 
-  @YargOption({ envAlias: "output" })
-  output?: string;
-
-  @YargOption({ envAlias: "tsNamespaces", type: "boolean" })
-  tsNamespaces?: boolean;
-
-  @YargOption({ envAlias: "tsPath" })
-  tsPath?: string;
-
-  @YargOption({ envAlias: "splitByTags", type: "boolean" })
-  splitByTags?: boolean;
-
-  @YargOption({ envAlias: "defaultTag" })
-  defaultTag?: string;
-
-  @YargOption({ envAlias: "excludeTags" })
-  excludeTags?: string;
-
-  @YargOption({ envAlias: "excludePathRegex" })
-  excludePathRegex?: string;
-
-  @YargOption({ envAlias: "excludeRedundantZodSchemas", type: "boolean" })
-  excludeRedundantZodSchemas?: boolean;
-
-  @YargOption({ envAlias: "importPath" })
-  importPath?: "ts" | "relative" | "absolute";
-
-  @YargOption({ envAlias: "extractEnums", type: "boolean" })
-  extractEnums?: boolean;
-
-  @YargOption({ envAlias: "removeOperationPrefixEndingWith" })
-  removeOperationPrefixEndingWith?: string;
-
-  @YargOption({ envAlias: "acl", type: "boolean" })
-  acl?: boolean;
-
-  @YargOption({ envAlias: "checkAcl", type: "boolean" })
-  checkAcl?: boolean;
-
-  @YargOption({ envAlias: "standalone", type: "boolean" })
-  standalone?: boolean;
-
-  @YargOption({ envAlias: "baseUrl" })
-  baseUrl?: string;
-
-  @YargOption({ envAlias: "replaceOptionalWithNullish", type: "boolean" })
-  replaceOptionalWithNullish?: boolean;
-
-  @YargOption({ envAlias: "infiniteQueries", type: "boolean" })
-  infiniteQueries?: boolean;
-
-  @YargOption({ envAlias: "mutationEffects", type: "boolean" })
-  mutationEffects?: boolean;
-
-  @YargOption({ envAlias: "parseRequestParams", type: "boolean" })
-  parseRequestParams?: boolean;
-
-  @YargOption({ envAlias: "axiosRequestConfig", type: "boolean" })
-  axiosRequestConfig?: boolean;
-
-  @YargOption({ envAlias: "builderConfigs", type: "boolean" })
-  builderConfigs?: boolean;
-
-  @YargOption({ envAlias: "prettier", default: true, type: "boolean" })
-  prettier?: boolean;
-
-  @YargOption({ envAlias: "verbose", default: false, type: "boolean" })
-  verbose?: boolean;
+export async function generateCommand(argv: string[]) {
+  const args = getArgs(argv, {
+    config: commandSchema,
+    envs: {
+      verbose: "VERBOSE",
+    },
+  });
+  const cwd = args.cwd ?? process.cwd();
+  const logger = new Logger(args.verbose ?? false);
+  await generate(args, cwd, logger);
 }
-
-export const command: yargs.CommandModule = {
-  command: "generate",
-  describe: "Generate code from OpenAPI spec",
-  builder: getBuilder(GenerateOptions),
-  handler: async (_argv) => {
-    const argv = (await _argv) as unknown as GenerateOptions;
-    if (argv.verbose) {
-      logBanner(`OpenAPI CodeGen ${getVersion()}`);
-    }
-    return generate(argv);
-  },
-};

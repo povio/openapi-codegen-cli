@@ -1,14 +1,15 @@
-import { OpenAPIV3 } from "openapi-types";
-import { isReferenceObject } from "src/generators/utils/openapi-schema.utils";
+import type { OpenAPIV3 } from "openapi-types";
 import { match } from "ts-pattern";
-import { COMPOSITE_KEYWORDS } from "src/generators/const/openapi.const";
-import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
-import { GenerateType } from "src/generators/types/generate";
-import { TsMetaType, TsObjectMetaType, TsProperty, TsType, TsTypeBase } from "src/generators/types/metadata";
-import { PrimitiveType } from "src/generators/types/openapi";
+
+import { COMPOSITE_KEYWORDS } from "../const/openapi.const";
+import type { SchemaResolver } from "../core/SchemaResolver.class";
+import { GenerateType } from "../types/generate";
+import type { TsMetaType, TsObjectMetaType, TsProperty, TsType, TsTypeBase } from "../types/metadata";
+import type { PrimitiveType } from "../types/openapi";
 import { getTagImportPath } from "./generate/generate.utils";
 import { getImportedZodSchemaInferedTypeName } from "./generate/generate.zod.utils";
 import { isPrimitiveType } from "./openapi.utils";
+import { isReferenceObject } from "./openapi-schema.utils";
 import { isNamedZodSchema } from "./zod-schema.utils";
 
 export function primitiveTypeToTsType(type: PrimitiveType): string {

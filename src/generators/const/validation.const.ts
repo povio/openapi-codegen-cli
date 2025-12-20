@@ -1,4 +1,4 @@
-import { ValidationErrorType } from "src/generators/types/validation";
+import type { ValidationErrorType } from "../types/validation";
 
 export const HTTP_STATUS_CODES = {
   "100": "Continue",

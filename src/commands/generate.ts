@@ -1,12 +1,14 @@
-import SwaggerParser from "@apidevtools/swagger-parser";
 import { exec } from "child_process";
-import { OpenAPIV3 } from "openapi-types";
-import { resolveConfig } from "src/generators/core/resolveConfig";
-import { generateCodeFromOpenAPIDoc } from "src/generators/generateCodeFromOpenAPIDoc";
-import { GenerateOptions } from "src/generators/types/options";
-import { writeGenerateFileData } from "src/generators/utils/file.utils";
-import { logError, logInfo, logSuccess } from "src/helpers/cli.helper";
-import { loadConfig } from "src/helpers/config.helper";
+import SwaggerParser from "@apidevtools/swagger-parser";
+import type { OpenAPIV3 } from "openapi-types";
+
+import { resolveConfig } from "../generators/core/resolveConfig";
+import { generateCodeFromOpenAPIDoc } from "../generators/generateCodeFromOpenAPIDoc";
+import type { GenerateOptions } from "../generators/types/options";
+import { writeGenerateFileData } from "../generators/utils/file.utils";
+import { loadConfig } from "../helpers/config.helper";
+import { Logger } from "../helpers/logger";
+import path from "path";
 
 export type GenerateParams = {
   config?: string;
@@ -38,49 +40,57 @@ export type GenerateParams = {
   >
 >;
 
-export async function generate({ prettier, verbose, config: configParam, ...params }: GenerateParams) {
+export async function generate(
+  { prettier, verbose, config: configParam, ...params }: GenerateParams,
+  cwd: string,
+  logger: Logger = new Logger(false),
+) {
   const start = Date.now();
 
   if (verbose) {
-    logInfo("Resolving config...");
+    logger.info("Resolving config...");
   }
-  const fileConfig = await loadConfig(configParam);
+  const fileConfig = await loadConfig(configParam, cwd, logger);
   const config = resolveConfig({ fileConfig, params });
 
   if (verbose) {
-    logInfo("Parsing OpenAPI spec...");
+    logger.info("Parsing OpenAPI spec...");
   }
+
   const openApiDoc = (await SwaggerParser.bundle(config.input)) as OpenAPIV3.Document;
 
   if (verbose) {
-    logInfo("Generating code...");
+    logger.info("Generating code...");
   }
   const filesData = generateCodeFromOpenAPIDoc(openApiDoc, config);
 
   if (verbose) {
-    logInfo("Writing files...");
+    logger.info("Writing files...");
   }
   writeGenerateFileData(filesData);
   if (verbose) {
-    logSuccess(`Time: ${Date.now() - start}ms`);
+    logger.info(`Time: ${Date.now() - start}ms`);
   }
 
   if (prettier) {
-    execPrettier({ output: config.output, verbose });
+    execPrettier({ output: config.output, verbose }, logger);
   }
 }
 
-function execPrettier({ output, verbose }: Pick<GenerateParams, "output" | "verbose">) {
+function execPrettier(
+  { output, verbose }: Pick<GenerateParams, "output" | "verbose">,
+  logger: Logger = new Logger(false),
+) {
   if (verbose) {
-    logInfo("Running Prettier...");
+    logger.info("Running Prettier...");
   }
   const ignorePathArg = process.env.NODE_ENV === "production" ? "" : "--ignore-path .prettierignore";
   exec(`prettier --write ${output} ${ignorePathArg}`, (error) => {
     if (verbose) {
       if (error) {
-        logError(error, "Prettier error");
+        logger.error("Prettier error", error);
       } else {
-        logSuccess("Prettier finished.");
+        logger.info("Prettier finished.");
       }
     }
   });

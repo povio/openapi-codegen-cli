@@ -1,8 +1,9 @@
 import SwaggerParser from "@apidevtools/swagger-parser";
-import { OpenAPIV3 } from "openapi-types";
+import type { OpenAPIV3 } from "openapi-types";
 import { describe, expect, test } from "vitest";
-import { DEFAULT_GENERATE_OPTIONS } from "src/generators/const/options.const";
-import { ModelMetadata, QueryMetadata, TsType } from "src/generators/types/metadata";
+
+import { DEFAULT_GENERATE_OPTIONS } from "../const/options.const";
+import type { ModelMetadata, QueryMetadata, TsType } from "../types/metadata";
 import { getMetadataFromOpenAPIDoc } from "./getMetadataFromOpenAPIDoc";
 
 describe("getMetadataFromOpenAPIDoc", async () => {

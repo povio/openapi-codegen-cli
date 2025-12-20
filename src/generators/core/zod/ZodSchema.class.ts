@@ -1,11 +1,12 @@
-import { OpenAPIV3 } from "openapi-types";
-import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
-import { getOpenAPISchemaComplexity } from "src/generators/core/openapi/getOpenAPISchemaComplexity";
-import { WithRequired } from "src/generators/types/common";
-import { GenerateType } from "src/generators/types/generate";
-import { GenerateOptions } from "src/generators/types/options";
-import { getNamespaceName } from "src/generators/utils/namespace.utils";
-import { isReferenceObject } from "src/generators/utils/openapi-schema.utils";
+import type { OpenAPIV3 } from "openapi-types";
+
+import type { WithRequired } from "../../types/common";
+import { GenerateType } from "../../types/generate";
+import type { GenerateOptions } from "../../types/options";
+import { getNamespaceName } from "../../utils/namespace.utils";
+import { isReferenceObject } from "../../utils/openapi-schema.utils";
+import { getOpenAPISchemaComplexity } from "../openapi/getOpenAPISchemaComplexity";
+import type { SchemaResolver } from "../SchemaResolver.class";
 
 export interface ZodSchemaMetaData {
   isRequired?: boolean;

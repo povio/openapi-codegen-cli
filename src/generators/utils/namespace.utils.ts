@@ -1,5 +1,5 @@
-import { GenerateType } from "src/generators/types/generate";
-import { GenerateOptions } from "src/generators/types/options";
+import type { GenerateType } from "../types/generate";
+import type { GenerateOptions } from "../types/options";
 import { capitalize } from "./string.utils";
 
 export const getNamespaceName = ({

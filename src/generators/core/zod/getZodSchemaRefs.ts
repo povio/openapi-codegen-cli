@@ -1,6 +1,6 @@
-import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
-import { isSchemaObject } from "src/generators/utils/openapi-schema.utils";
-import { ZodSchema } from "./ZodSchema.class";
+import { isSchemaObject } from "../../utils/openapi-schema.utils";
+import type { SchemaResolver } from "../SchemaResolver.class";
+import type { ZodSchema } from "./ZodSchema.class";
 
 export function getZodSchemaRefs(resolver: SchemaResolver, zodSchemaName: string) {
   const schemaRef = resolver.getRefByZodSchemaName(zodSchemaName);

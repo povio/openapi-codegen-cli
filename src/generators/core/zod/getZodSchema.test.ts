@@ -1,11 +1,12 @@
-import { OpenAPIV3 } from "openapi-types";
-import { DEFAULT_GENERATE_OPTIONS } from "src/generators/const/options.const";
-import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
-import { GenerateOptions } from "src/generators/types/options";
-import { getSchemaRef } from "src/generators/utils/openapi.utils";
+import type { OpenAPIV3 } from "openapi-types";
 import { describe, expect, test } from "vitest";
-import { ZodSchemaMetaData } from "./ZodSchema.class";
+
+import { DEFAULT_GENERATE_OPTIONS } from "../../const/options.const";
+import type { GenerateOptions } from "../../types/options";
+import { getSchemaRef } from "../../utils/openapi.utils";
+import { SchemaResolver } from "../SchemaResolver.class";
 import { getZodSchema } from "./getZodSchema";
+import type { ZodSchemaMetaData } from "./ZodSchema.class";
 
 const generateOptions = {
   ...DEFAULT_GENERATE_OPTIONS,

@@ -1,8 +1,9 @@
 import Handlebars from "handlebars";
-import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
-import { Endpoint } from "src/generators/types/endpoint";
-import { getInfiniteQueryName, getQueryName } from "src/generators/utils/generate/generate.query.utils";
-import { isInfiniteQuery, isMutation, isQuery } from "src/generators/utils/query.utils";
+
+import type { SchemaResolver } from "../../core/SchemaResolver.class";
+import type { Endpoint } from "../../types/endpoint";
+import { getInfiniteQueryName, getQueryName } from "../generate/generate.query.utils";
+import { isInfiniteQuery, isMutation, isQuery } from "../query.utils";
 
 enum QueryHelpers {
   QueryName = "queryName",

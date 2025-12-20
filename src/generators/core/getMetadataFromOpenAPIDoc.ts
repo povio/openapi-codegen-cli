@@ -1,18 +1,19 @@
-import { OpenAPIV3 } from "openapi-types";
-import { Endpoint, EndpointParameter } from "src/generators/types/endpoint";
-import { GenerateType } from "src/generators/types/generate";
-import { GenerateMetadata, ModelMetadata, QueryMetadata, TsMetaType } from "src/generators/types/metadata";
-import { GenerateOptions } from "src/generators/types/options";
-import { getQueryName } from "src/generators/utils/generate/generate.query.utils";
-import { getTagImportPath } from "src/generators/utils/generate/generate.utils";
-import { invalidVariableNameCharactersToCamel } from "src/generators/utils/js.utils";
-import { getNamespaceName } from "src/generators/utils/namespace.utils";
-import { isMediaTypeAllowed, isParamMediaTypeAllowed } from "src/generators/utils/openapi.utils";
-import { isMutation, isQuery } from "src/generators/utils/query.utils";
-import { formatTag } from "src/generators/utils/tag.utils";
-import { getSchemaTsMetaType, getTsTypeBase } from "src/generators/utils/ts.utils";
+import type { OpenAPIV3 } from "openapi-types";
+
+import type { Endpoint, EndpointParameter } from "../types/endpoint";
+import { GenerateType } from "../types/generate";
+import type { GenerateMetadata, ModelMetadata, QueryMetadata, TsMetaType } from "../types/metadata";
+import type { GenerateOptions } from "../types/options";
+import { getQueryName } from "../utils/generate/generate.query.utils";
+import { getTagImportPath } from "../utils/generate/generate.utils";
+import { invalidVariableNameCharactersToCamel } from "../utils/js.utils";
+import { getNamespaceName } from "../utils/namespace.utils";
+import { isMediaTypeAllowed, isParamMediaTypeAllowed } from "../utils/openapi.utils";
+import { isMutation, isQuery } from "../utils/query.utils";
+import { formatTag } from "../utils/tag.utils";
+import { getSchemaTsMetaType, getTsTypeBase } from "../utils/ts.utils";
 import { getDataFromOpenAPIDoc } from "./getDataFromOpenAPIDoc";
-import { SchemaResolver } from "./SchemaResolver.class";
+import type { SchemaResolver } from "./SchemaResolver.class";
 
 export async function getMetadataFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, options: GenerateOptions) {
   const { resolver, data } = await getDataFromOpenAPIDoc(openApiDoc, options);

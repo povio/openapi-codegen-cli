@@ -1,33 +1,37 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-require-imports */
-import fs, { existsSync, rmSync, writeFileSync } from "fs";
-import path from "path";
-import { OpenAPICodegenConfig } from "src/generators/types/config";
-import { logError } from "./cli.helper";
+import fs, { existsSync, rmSync, writeFileSync } from "node:fs";
+import path from "node:path";
+
+import type { OpenAPICodegenConfig } from "../generators/types/config";
+import { Logger } from "./logger";
 
 const CONFIG_FILE_NAMES = ["openapi-codegen.config.ts"];
 
-export async function loadConfig(configPath?: string): Promise<OpenAPICodegenConfig | null> {
+export async function loadConfig(
+  configPath?: string,
+  cwd: string = process.cwd(),
+  logger: Logger = new Logger(false),
+): Promise<OpenAPICodegenConfig | null> {
   try {
     if (configPath) {
-      return await loadConfigFromPath(configPath);
+      return await loadConfigFromPath(configPath, cwd);
     }
 
     for (const fileName of CONFIG_FILE_NAMES) {
-      const filePath = path.resolve(process.cwd(), fileName);
+      const filePath = path.resolve(cwd, fileName);
       if (fs.existsSync(filePath)) {
-        return await loadConfigFromPath(filePath);
+        return await loadConfigFromPath(filePath, cwd);
       }
     }
 
     return null;
   } catch (error) {
-    logError(`Failed to load configuration: ${error instanceof Error ? error.message : error}`);
+    logger.error(`Failed to load configuration: ${error instanceof Error ? error.message : error}`);
     return null;
   }
 }
 
-async function loadConfigFromPath(filePath: string): Promise<OpenAPICodegenConfig> {
-  const absolutePath = path.resolve(process.cwd(), filePath);
+async function loadConfigFromPath(filePath: string, cwd: string): Promise<OpenAPICodegenConfig> {
+  const absolutePath = path.resolve(cwd, filePath);
 
   if (!fs.existsSync(absolutePath)) {
     throw new Error(`Configuration file not found: ${filePath}`);

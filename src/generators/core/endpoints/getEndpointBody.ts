@@ -1,12 +1,12 @@
-import { BODY_PARAMETER_NAME } from "src/generators/const/endpoints.const";
-import { EndpointParameter } from "src/generators/types/endpoint";
-import { OperationObject } from "src/generators/types/openapi";
-import { isParamMediaTypeAllowed } from "src/generators/utils/openapi.utils";
-import { getBodyZodSchemaName, getZodSchemaOperationName } from "src/generators/utils/zod-schema.utils";
-import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
-import { getZodChain } from "src/generators/core/zod/getZodChain";
-import { getZodSchema } from "src/generators/core/zod/getZodSchema";
-import { resolveZodSchemaName } from "src/generators/core/zod/resolveZodSchemaName";
+import { BODY_PARAMETER_NAME } from "../../const/endpoints.const";
+import type { EndpointParameter } from "../../types/endpoint";
+import type { OperationObject } from "../../types/openapi";
+import { isParamMediaTypeAllowed } from "../../utils/openapi.utils";
+import { getBodyZodSchemaName, getZodSchemaOperationName } from "../../utils/zod-schema.utils";
+import type { SchemaResolver } from "../SchemaResolver.class";
+import { getZodChain } from "../zod/getZodChain";
+import { getZodSchema } from "../zod/getZodSchema";
+import { resolveZodSchemaName } from "../zod/resolveZodSchemaName";
 
 export function getEndpointBody({
   resolver,

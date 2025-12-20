@@ -1,12 +1,13 @@
-import { OpenAPIV3 } from "openapi-types";
-import { BUILD_CONFIG_SUFFIX } from "src/generators/const/buildConfigs.const";
-import { JSON_APPLICATION_FORMAT } from "src/generators/const/endpoints.const";
-import { ANY_SCHEMA } from "src/generators/const/zod.const";
-import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
-import { BuilderConfig } from "src/generators/types/builder-config";
-import { Endpoint, EndpointParameter, ExtendedEndpoint } from "src/generators/types/endpoint";
-import { GenerateTypeParams } from "src/generators/types/generate";
-import { GenerateOptions } from "src/generators/types/options";
+import type { OpenAPIV3 } from "openapi-types";
+
+import { BUILD_CONFIG_SUFFIX } from "../../const/buildConfigs.const";
+import { JSON_APPLICATION_FORMAT } from "../../const/endpoints.const";
+import { ANY_SCHEMA } from "../../const/zod.const";
+import type { SchemaResolver } from "../../core/SchemaResolver.class";
+import type { BuilderConfig } from "../../types/builder-config";
+import type { Endpoint, EndpointParameter, ExtendedEndpoint } from "../../types/endpoint";
+import type { GenerateTypeParams } from "../../types/generate";
+import type { GenerateOptions } from "../../types/options";
 import {
   getPathSegments,
   isBulkDeleteEndpoint,
@@ -16,11 +17,11 @@ import {
   isReadAllEndpoint,
   isReadEndpoint,
   isUpdateEndpoint,
-} from "src/generators/utils/endpoint.utils";
-import { isReferenceObject } from "src/generators/utils/openapi-schema.utils";
-import { isSortingParameterObject } from "src/generators/utils/openapi.utils";
-import { camelToSpaceSeparated, capitalize, kebabToCamel } from "src/generators/utils/string.utils";
-import { isNamedZodSchema } from "src/generators/utils/zod-schema.utils";
+} from "../endpoint.utils";
+import { isSortingParameterObject } from "../openapi.utils";
+import { isReferenceObject } from "../openapi-schema.utils";
+import { camelToSpaceSeparated, capitalize, kebabToCamel } from "../string.utils";
+import { isNamedZodSchema } from "../zod-schema.utils";
 import { getImportedAbilityFunctionName } from "./generate.acl.utils";
 import { getEndpointBody } from "./generate.endpoints.utils";
 import {

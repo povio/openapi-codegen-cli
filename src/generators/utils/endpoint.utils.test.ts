@@ -1,7 +1,8 @@
 import { OpenAPIV3 } from "openapi-types";
-import { DEFAULT_GENERATE_OPTIONS } from "src/generators/const/options.const";
-import { ExtendedEndpoint } from "src/generators/types/endpoint";
 import { describe, expect, test } from "vitest";
+
+import { DEFAULT_GENERATE_OPTIONS } from "../const/options.const";
+import type { ExtendedEndpoint } from "../types/endpoint";
 import {
   getPathSegments,
   isBulkDeleteEndpoint,

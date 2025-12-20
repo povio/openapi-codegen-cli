@@ -1,4 +1,4 @@
-import { GenerateType } from "./generate";
+import type { GenerateType } from "./generate";
 
 interface ZodGenerateOptions {
   schemaSuffix: string;

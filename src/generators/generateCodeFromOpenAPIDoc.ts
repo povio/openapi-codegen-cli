@@ -1,20 +1,21 @@
-import { OpenAPIV3 } from "openapi-types";
+import type { OpenAPIV3 } from "openapi-types";
+
 import { getDataFromOpenAPIDoc } from "./core/getDataFromOpenAPIDoc";
 import { generateAcl } from "./generate/generateAcl";
 import { generateConfigs } from "./generate/generateConfigs";
 import { generateEndpoints } from "./generate/generateEndpoints";
 import { generateModels } from "./generate/generateModels";
 import { generateQueries } from "./generate/generateQueries";
-import { GenerateFileData, GenerateType, GenerateTypeParams } from "./types/generate";
-import { GenerateOptions } from "./types/options";
+import { type GenerateFileData, GenerateType, type GenerateTypeParams } from "./types/generate";
+import type { GenerateOptions } from "./types/options";
 import { getOutputFileName } from "./utils/file.utils";
+import { getTagFileName } from "./utils/generate/generate.utils";
 import {
   getAclFiles,
   getMutationEffectsFiles,
   getStandaloneFiles,
   getZodExtendedFiles,
 } from "./utils/generate-files.utils";
-import { getTagFileName } from "./utils/generate/generate.utils";
 
 export function generateCodeFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, options: GenerateOptions) {
   const importPath = options.standalone && options.importPath === "ts" ? "relative" : options.importPath;

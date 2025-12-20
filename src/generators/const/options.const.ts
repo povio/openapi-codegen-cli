@@ -1,5 +1,5 @@
-import { GenerateType } from "src/generators/types/generate";
-import { GenerateOptions } from "src/generators/types/options";
+import { GenerateType } from "../types/generate";
+import type { GenerateOptions } from "../types/options";
 import { ENUM_SUFFIX, SCHEMA_SUFFIX } from "./zod.const";
 
 export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {

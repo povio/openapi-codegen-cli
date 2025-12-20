@@ -1,11 +1,11 @@
-import { OpenAPIV3 } from "openapi-types";
-import { ALLOWED_METHODS } from "src/generators/const/openapi.const";
-import { OperationObject } from "src/generators/types/openapi";
-import { GenerateOptions } from "src/generators/types/options";
-import { ValidationError } from "src/generators/types/validation";
-import { getUniqueArray } from "src/generators/utils/array.utils";
-import { pick } from "src/generators/utils/object.utils";
-import { isReferenceObject } from "src/generators/utils/openapi-schema.utils";
+import type { OpenAPIV3 } from "openapi-types";
+
+import { ALLOWED_METHODS } from "../const/openapi.const";
+import type { OperationObject } from "../types/openapi";
+import type { GenerateOptions } from "../types/options";
+import type { ValidationError } from "../types/validation";
+import { getUniqueArray } from "../utils/array.utils";
+import { pick } from "../utils/object.utils";
 import {
   autocorrectRef,
   getSchemaNameByRef,
@@ -13,28 +13,29 @@ import {
   isMediaTypeAllowed,
   isParamMediaTypeAllowed,
   isPathExcluded,
-} from "src/generators/utils/openapi.utils";
+} from "../utils/openapi.utils";
+import { isReferenceObject } from "../utils/openapi-schema.utils";
 import {
   getOperationsByTag,
   getUniqueOperationName,
   getUniqueOperationNamesWithoutSplitByTags,
   isOperationExcluded,
-} from "src/generators/utils/operation.utils";
-import { snakeToCamel } from "src/generators/utils/string.utils";
-import { formatTag, getOperationTag } from "src/generators/utils/tag.utils";
+} from "../utils/operation.utils";
+import { snakeToCamel } from "../utils/string.utils";
+import { formatTag, getOperationTag } from "../utils/tag.utils";
 import {
   getBodyZodSchemaName,
   getResponseZodSchemaName,
   getZodSchemaName,
   getZodSchemaOperationName,
-} from "src/generators/utils/zod-schema.utils";
-import { DependencyGraph, getOpenAPISchemaDependencyGraph } from "./openapi/getOpenAPISchemaDependencyGraph";
+} from "../utils/zod-schema.utils";
+import { type DependencyGraph, getOpenAPISchemaDependencyGraph } from "./openapi/getOpenAPISchemaDependencyGraph";
 import { getDeepSchemaRefObjs, getSchemaRefObjs } from "./openapi/getSchemaRefObjs";
-import { ZodSchema } from "./zod/ZodSchema.class";
 import { resolveExtractedEnumZodSchemaNames } from "./zod/enumExtraction/resolveExtractedEnumZodSchemaNames";
 import { resolveExtractedEnumZodSchemaTags } from "./zod/enumExtraction/resolveExtractedEnumZodSchemaTags";
 import { updateExtractedEnumZodSchemaData } from "./zod/enumExtraction/updateExtractedEnumZodSchemaData";
 import { getEnumZodSchemasFromOpenAPIDoc } from "./zod/getZodSchemasFromOpenAPIDoc";
+import type { ZodSchema } from "./zod/ZodSchema.class";
 
 interface SchemaData {
   ref: string;
@@ -143,7 +144,7 @@ export class SchemaResolver {
     }
 
     const schemaRef = this.getRefByZodSchemaName(zodSchemaName);
-    const schemaTags = schemaRef ? this.getSchemaDataByRef(schemaRef)?.tags ?? [] : [];
+    const schemaTags = schemaRef ? (this.getSchemaDataByRef(schemaRef)?.tags ?? []) : [];
     const zodSchemaTags = this.zodSchemaData.find((data) => data.zodSchemaName === zodSchemaName)?.tags ?? [];
     const tags = getUniqueArray(schemaTags, zodSchemaTags);
     const tag = tags.length === 1 ? tags[0] : this.options.defaultTag;

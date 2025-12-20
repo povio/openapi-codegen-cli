@@ -1,23 +1,27 @@
-import { OpenAPIV3 } from "openapi-types";
-import { chk } from "src/helpers/chalk.helper";
+import type { OpenAPIV3 } from "openapi-types";
+
+import { Logger } from "../helpers/logger";
 import { VALIDATION_ERROR_TYPE_TITLE } from "./const/validation.const";
 import { getDataFromOpenAPIDoc } from "./core/getDataFromOpenAPIDoc";
 import { GenerateType } from "./types/generate";
-import { GenerateOptions } from "./types/options";
-import { ValidationErrorType } from "./types/validation";
+import type { GenerateOptions } from "./types/options";
+import type { ValidationErrorType } from "./types/validation";
 import { getOutputFileName } from "./utils/file.utils";
 import { getTagFileName } from "./utils/generate/generate.utils";
 import { groupByType } from "./utils/validation.utils";
-import { log } from "src/helpers/cli.helper";
 
-export function checkOpenAPIDoc(openApiDoc: OpenAPIV3.Document, options: GenerateOptions) {
+export function checkOpenAPIDoc(
+  openApiDoc: OpenAPIV3.Document,
+  options: GenerateOptions,
+  logger: Logger = new Logger(false),
+) {
   const { resolver, data } = getDataFromOpenAPIDoc(openApiDoc, options);
 
   if (resolver.validationErrors.length > 0) {
     const groupedErrors = groupByType(resolver.validationErrors);
     Object.entries(groupedErrors).forEach(([type, errorMessages]) => {
-      log(
-        `${chk.red(`${VALIDATION_ERROR_TYPE_TITLE[type as ValidationErrorType]}:`)}\n${errorMessages.map((message) => `- ${message}`).join("\n")}\n`,
+      logger.error(
+        `${`${VALIDATION_ERROR_TYPE_TITLE[type as ValidationErrorType]}:`}\n${errorMessages.map((message) => `- ${message}`).join("\n")}\n`,
       );
     });
   } else {
@@ -25,7 +29,7 @@ export function checkOpenAPIDoc(openApiDoc: OpenAPIV3.Document, options: Generat
       (acc, tag) => [...acc, ...getOutputFileNames(tag, options)],
       [] as string[],
     );
-    log(`${chk.green("Outputs:")}\n${outputs.map((output) => `- ${output}`).join("\n")}\n`);
+    logger.info(`${"Outputs:"}\n${outputs.map((output) => `- ${output}`).join("\n")}\n`);
   }
 
   return resolver.validationErrors;

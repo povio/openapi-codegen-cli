@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
-import { GenerateFileData } from "src/generators/types/generate";
+
+import type { GenerateFileData } from "../types/generate";
 
 function readFileSync(filePath: string) {
   if (process.env.NODE_ENV === "production") {
@@ -11,12 +12,12 @@ function readFileSync(filePath: string) {
 }
 
 export function readHbsTemplateSync(fileName: string) {
-  const templatePath = `src/generators/templates/${fileName}.hbs`;
+  const templatePath = `resources/templates/${fileName}.hbs`;
   return readFileSync(templatePath);
 }
 
 export function readAssetSync(fileName: string) {
-  const assetPath = `src/assets/${fileName}`;
+  const assetPath = `resources/assets/${fileName}`;
   return readFileSync(assetPath);
 }
 

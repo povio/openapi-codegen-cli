@@ -1,6 +1,7 @@
 import { OpenAPIV3 } from "openapi-types";
-import { Endpoint, ExtendedEndpoint } from "src/generators/types/endpoint";
-import { GenerateOptions } from "src/generators/types/options";
+
+import type { Endpoint, ExtendedEndpoint } from "../types/endpoint";
+import type { GenerateOptions } from "../types/options";
 
 export const isGetEndpoint = (endpoint: Endpoint) => endpoint.method === OpenAPIV3.HttpMethods.GET;
 

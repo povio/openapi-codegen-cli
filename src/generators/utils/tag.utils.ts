@@ -1,6 +1,6 @@
-import { Endpoint } from "src/generators/types/endpoint";
-import { OperationObject } from "src/generators/types/openapi";
-import { GenerateOptions } from "src/generators/types/options";
+import type { Endpoint } from "../types/endpoint";
+import type { OperationObject } from "../types/openapi";
+import type { GenerateOptions } from "../types/options";
 import { nonWordCharactersToCamel } from "./string.utils";
 
 export function formatTag(tag: string) {

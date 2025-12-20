@@ -1,22 +1,15 @@
-import { OpenAPIV3 } from "openapi-types";
-import { ALLOWED_PATH_IN } from "src/generators/const/openapi.const";
-import { EndpointParameter } from "src/generators/types/endpoint";
-import { ParameterObject } from "src/generators/types/openapi";
-import {
-  isParamMediaTypeAllowed,
-  isSortingParameterObject,
-  pathParamToVariableName,
-} from "src/generators/utils/openapi.utils";
-import {
-  getEnumZodSchemaName,
-  getParamZodSchemaName,
-  getZodSchemaOperationName,
-} from "src/generators/utils/zod-schema.utils";
+import type { OpenAPIV3 } from "openapi-types";
 import { match } from "ts-pattern";
-import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
-import { getZodChain } from "src/generators/core/zod/getZodChain";
-import { getEnumZodSchemaCodeFromEnumNames, getZodSchema } from "src/generators/core/zod/getZodSchema";
-import { resolveZodSchemaName } from "src/generators/core/zod/resolveZodSchemaName";
+
+import { ALLOWED_PATH_IN } from "../../const/openapi.const";
+import type { EndpointParameter } from "../../types/endpoint";
+import type { ParameterObject } from "../../types/openapi";
+import { isParamMediaTypeAllowed, isSortingParameterObject, pathParamToVariableName } from "../../utils/openapi.utils";
+import { getEnumZodSchemaName, getParamZodSchemaName, getZodSchemaOperationName } from "../../utils/zod-schema.utils";
+import type { SchemaResolver } from "../SchemaResolver.class";
+import { getZodChain } from "../zod/getZodChain";
+import { getEnumZodSchemaCodeFromEnumNames, getZodSchema } from "../zod/getZodSchema";
+import { resolveZodSchemaName } from "../zod/resolveZodSchemaName";
 
 export function getEndpointParameter({
   resolver,
@@ -82,7 +75,7 @@ export function getEndpointParameter({
   const zodSchema = getZodSchema({
     schema,
     resolver,
-    meta: { isRequired: paramObj.in === "path" ? true : paramObj.required ?? false },
+    meta: { isRequired: paramObj.in === "path" ? true : (paramObj.required ?? false) },
     tag,
   });
 

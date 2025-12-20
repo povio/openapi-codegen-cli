@@ -1,4 +1,4 @@
-import { ACL_APP_ABILITY_FILE, ACL_CHECK_FILE } from "src/generators/const/acl.const";
+import { ACL_APP_ABILITY_FILE, ACL_CHECK_FILE } from "../../const/acl.const";
 import {
   MUTATION_EFFECTS_FILE,
   QUERY_MODULES_FILE,
@@ -6,10 +6,10 @@ import {
   STANDALONE_ASSETS,
   StandaloneAssetEnum,
   ZOD_EXTENDED_FILE,
-} from "src/generators/const/deps.const";
-import { GenerateFile, GenerateType } from "src/generators/types/generate";
-import { GenerateOptions } from "src/generators/types/options";
-import { decapitalize } from "src/generators/utils/string.utils";
+} from "../../const/deps.const";
+import type { GenerateType } from "../../types/generate";
+import type { GenerateOptions } from "../../types/options";
+import { decapitalize } from "../string.utils";
 import { getImportPath } from "./generate.imports.utils";
 
 export function getFileNameWithExtension({ fileName, extension }: GenerateFile) {

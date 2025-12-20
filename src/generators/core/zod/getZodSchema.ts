@@ -1,4 +1,6 @@
-import { OpenAPIV3 } from "openapi-types";
+import type { OpenAPIV3 } from "openapi-types";
+import { match } from "ts-pattern";
+
 import {
   ANY_SCHEMA,
   BLOB_SCHEMA,
@@ -10,21 +12,20 @@ import {
   STRING_SCHEMA,
   URL_SCHEMA,
   UUID_SCHEMA,
-} from "src/generators/const/zod.const";
-import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
-import { GenerateType } from "src/generators/types/generate";
-import { getNamespaceName } from "src/generators/utils/namespace.utils";
+} from "../../const/zod.const";
+import { GenerateType } from "../../types/generate";
+import { getNamespaceName } from "../../utils/namespace.utils";
+import { isPrimitiveType, wrapWithQuotesIfNeeded } from "../../utils/openapi.utils";
 import {
   inferRequiredSchema,
   isArraySchemaObject,
   isReferenceObject,
   isSchemaObject,
-} from "src/generators/utils/openapi-schema.utils";
-import { isPrimitiveType, wrapWithQuotesIfNeeded } from "src/generators/utils/openapi.utils";
-import { match } from "ts-pattern";
-import { getParentRef, ZodSchema, ZodSchemaMetaData } from "./ZodSchema.class";
+} from "../../utils/openapi-schema.utils";
+import type { SchemaResolver } from "../SchemaResolver.class";
 import { getZodChain } from "./getZodChain";
 import { getSchemaRefs } from "./getZodSchemaRefs";
+import { ZodSchema, type ZodSchemaMetaData, getParentRef } from "./ZodSchema.class";
 
 type GetZodSchemaParams = {
   schema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject;
@@ -193,7 +194,7 @@ function getReferenceZodSchema({ schema, zodSchema, resolver, meta, tag }: GetPa
 
   const refsPath = zodSchema.meta.referencedBy
     .slice(0, -1)
-    .map((prev) => (prev.ref ? resolver.getZodSchemaNameByRef(prev.ref) ?? prev.ref : undefined))
+    .map((prev) => (prev.ref ? (resolver.getZodSchemaNameByRef(prev.ref) ?? prev.ref) : undefined))
     .filter(Boolean);
   const zodSchemaName = resolver.getZodSchemaNameByRef(schema.$ref);
   if (refsPath.length > 1 && refsPath.includes(zodSchemaName)) {

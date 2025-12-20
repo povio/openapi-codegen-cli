@@ -1,6 +1,6 @@
-import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
-import { Endpoint } from "src/generators/types/endpoint";
-import { GenerateOptions } from "src/generators/types/options";
+import type { SchemaResolver } from "../core/SchemaResolver.class";
+import type { Endpoint } from "../types/endpoint";
+import type { GenerateOptions } from "../types/options";
 import { isGetEndpoint, isPaginatedGetEndpoint } from "./endpoint.utils";
 import { mapEndpointParamsToFunctionParams } from "./generate/generate.endpoints.utils";
 

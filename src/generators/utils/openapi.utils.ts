@@ -1,7 +1,7 @@
-/* eslint-disable no-control-regex, no-useless-escape */
-import { match, P } from "ts-pattern";
-import { ALLOWED_PARAM_MEDIA_TYPES, PRIMITIVE_TYPE_LIST } from "src/generators/const/openapi.const";
-import { ParameterObject, PrimitiveType, SingleType, SortingParameterObject } from "src/generators/types/openapi";
+import { P, match } from "ts-pattern";
+
+import { ALLOWED_PARAM_MEDIA_TYPES, PRIMITIVE_TYPE_LIST } from "../const/openapi.const";
+import type { ParameterObject, PrimitiveType, SingleType, SortingParameterObject } from "../types/openapi";
 import { isSchemaObject } from "./openapi-schema.utils";
 import { capitalize, kebabToCamel, snakeToCamel } from "./string.utils";
 

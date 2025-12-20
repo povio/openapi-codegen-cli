@@ -1,12 +1,13 @@
-import { OpenAPIV3 } from "openapi-types";
-import { AclConditionsPropertyType, Endpoint, EndpointAclInfo } from "src/generators/types/endpoint";
-import { OperationAclInfo, OperationObject } from "src/generators/types/openapi";
-import { isReferenceObject } from "src/generators/utils/openapi-schema.utils";
-import { isParamMediaTypeAllowed } from "src/generators/utils/openapi.utils";
-import { isQuery } from "src/generators/utils/query.utils";
-import { decapitalize } from "src/generators/utils/string.utils";
-import { getMissingAclConditionPropertyError } from "src/generators/utils/validation.utils";
-import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
+import type { OpenAPIV3 } from "openapi-types";
+
+import type { AclConditionsPropertyType, Endpoint, EndpointAclInfo } from "../../types/endpoint";
+import type { OperationAclInfo, OperationObject } from "../../types/openapi";
+import { isParamMediaTypeAllowed } from "../../utils/openapi.utils";
+import { isReferenceObject } from "../../utils/openapi-schema.utils";
+import { isQuery } from "../../utils/query.utils";
+import { decapitalize } from "../../utils/string.utils";
+import { getMissingAclConditionPropertyError } from "../../utils/validation.utils";
+import type { SchemaResolver } from "../SchemaResolver.class";
 
 export function getEndpointAcl({
   resolver,

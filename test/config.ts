@@ -1,12 +1,17 @@
-import { OpenAPICodegenConfig } from "../src/generators/types/config";
+import type { OpenAPICodegenConfig } from "../src/generators/types/config";
 
-export const config: OpenAPICodegenConfig = {
-  input: "http://127.0.0.1:4000/docs-json",
-  output: "./output",
-  excludeTags: ["auth"],
+const config: OpenAPICodegenConfig = {
+  input: "./test/petstore.yaml",
+  output: ".tmp/output",
   replaceOptionalWithNullish: true,
-  builderConfigs: true,
+  tsPath: "@/openapi",
+  errorHandlingImportPath: "@povio/ui",
+  abilityContextImportPath: "@povio/ui/auth",
+  queryTypesImportPath: "@povio/ui",
+  restClientImportPath: "@/clients/app-rest-client",
+  abilityContextGenericAppAbilities: true,
   infiniteQueries: true,
+  builderConfigs: true,
 };
 
 export default config;

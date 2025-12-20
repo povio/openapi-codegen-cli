@@ -1,4 +1,5 @@
 import { describe, expect, test } from "vitest";
+
 import { deepMerge } from "./object.utils";
 
 describe("Utils: object", () => {

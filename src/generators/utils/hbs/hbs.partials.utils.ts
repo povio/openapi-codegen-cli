@@ -1,14 +1,15 @@
 import Handlebars from "handlebars";
-import { ACL_CHECK_HOOK, CASL_ABILITY_BINDING } from "src/generators/const/acl.const";
-import { MUTATION_EFFECTS, ZOD_EXTENDED } from "src/generators/const/deps.const";
-import { AXIOS_REQUEST_CONFIG_NAME, AXIOS_REQUEST_CONFIG_TYPE } from "src/generators/const/endpoints.const";
-import { QUERIES_MODULE_NAME, QUERY_HOOKS } from "src/generators/const/queries.const";
-import { BLOB_SCHEMA } from "src/generators/const/zod.const";
-import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
-import { DynamicColumnsConfig, DynamicInputsConfig } from "src/generators/types/builder-config";
-import { Endpoint, EndpointParameter } from "src/generators/types/endpoint";
-import { GenerateZodSchemaData, Import } from "src/generators/types/generate";
-import { getAbilityConditionsTypes, hasAbilityConditions } from "src/generators/utils/generate/generate.acl.utils";
+
+import { ACL_CHECK_HOOK, CASL_ABILITY_BINDING } from "../../const/acl.const";
+import { MUTATION_EFFECTS, ZOD_EXTENDED } from "../../const/deps.const";
+import { AXIOS_REQUEST_CONFIG_NAME, AXIOS_REQUEST_CONFIG_TYPE } from "../../const/endpoints.const";
+import { QUERIES_MODULE_NAME, QUERY_HOOKS } from "../../const/queries.const";
+import { BLOB_SCHEMA } from "../../const/zod.const";
+import type { SchemaResolver } from "../../core/SchemaResolver.class";
+import type { DynamicColumnsConfig, DynamicInputsConfig } from "../../types/builder-config";
+import type { Endpoint, EndpointParameter } from "../../types/endpoint";
+import type { GenerateZodSchemaData, Import } from "../../types/generate";
+import { getAbilityConditionsTypes, hasAbilityConditions } from "../generate/generate.acl.utils";
 import {
   getEndpointBody,
   getEndpointConfig,
@@ -16,10 +17,10 @@ import {
   hasEndpointConfig,
   mapEndpointParamsToFunctionParams,
   requiresBody,
-} from "src/generators/utils/generate/generate.endpoints.utils";
-import { getHbsPartialTemplateDelegate } from "src/generators/utils/hbs/hbs-template.utils";
-import { getDestructuredVariables, isInfiniteQuery, isMutation, isQuery } from "src/generators/utils/query.utils";
-import { isNamedZodSchema } from "src/generators/utils/zod-schema.utils";
+} from "../generate/generate.endpoints.utils";
+import { getDestructuredVariables, isInfiniteQuery, isMutation, isQuery } from "../query.utils";
+import { isNamedZodSchema } from "../zod-schema.utils";
+import { getHbsPartialTemplateDelegate } from "./hbs-template.utils";
 
 enum PartialsHelpers {
   ModelJsDocs = "genModelJsDocs",

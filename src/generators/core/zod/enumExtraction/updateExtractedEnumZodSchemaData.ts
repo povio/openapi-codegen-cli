@@ -1,10 +1,12 @@
-import { OpenAPIV3 } from "openapi-types";
-import { isReferenceObject } from "src/generators/utils/openapi-schema.utils";
-import { getSchemaNameByRef } from "src/generators/utils/openapi.utils";
-import { getNotAllowedInlineEnumError } from "src/generators/utils/validation.utils";
-import { iterateSchema, OnSchemaCallbackData } from "src/generators/core/openapi/iterateSchema";
-import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
-import { getEnumZodSchemaCode } from "src/generators/core/zod/getZodSchema";
+import type { OpenAPIV3 } from "openapi-types";
+
+import { getSchemaNameByRef } from "../../../utils/openapi.utils";
+import { isReferenceObject } from "../../../utils/openapi-schema.utils";
+import { getNotAllowedInlineEnumError } from "../../../utils/validation.utils";
+import type { OnSchemaCallbackData } from "../../openapi/iterateSchema";
+import { iterateSchema } from "../../openapi/iterateSchema";
+import { SchemaResolver } from "../../SchemaResolver.class";
+import { getEnumZodSchemaCode } from "../getZodSchema";
 
 type SchemaInfo = { schemaRef: string; schemaInfo?: string } | { schemaRef?: string; schemaInfo: string };
 
@@ -78,7 +80,7 @@ function handleExtractedEnumZodSchemaDataUpdate({
     getNotAllowedInlineEnumError(
       schemaRef
         ? `${getSchemaNameByRef(schemaRef)}.${nameSegments[nameSegments.length - 1]}`
-        : schemaInfo ?? nameSegments.join("."),
+        : (schemaInfo ?? nameSegments.join(".")),
     ),
   );
 }
