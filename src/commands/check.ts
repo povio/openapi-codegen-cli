@@ -31,12 +31,7 @@ export async function check(
     logger.info("Parsing OpenAPI spec...");
   }
 
-  let input = config.input;
-  if (input.startsWith(".")) {
-    input = path.resolve(cwd, input);
-  }
-
-  const openApiDoc = (await SwaggerParser.bundle(input)) as OpenAPIV3.Document;
+  const openApiDoc = (await SwaggerParser.bundle(config.input)) as OpenAPIV3.Document;
 
   if (verbose) {
     logger.info("Running check...");

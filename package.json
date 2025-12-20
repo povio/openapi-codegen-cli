@@ -17,7 +17,7 @@
     "check": "yarn typecheck && yarn lint && yarn test",
     "push": "yarn exec ./scripts/publish.sh",
     "dev:generate": "rimraf ./tmp/output && yarn start generate --cwd test --config ./config.ts",
-    "dev:check": "yarn start check --config ./test/config.ts"
+    "dev:check": "yarn start check --cwd test --config ./config.ts"
   },
   "files": [
     "dist/*",

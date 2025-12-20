@@ -13,6 +13,7 @@ const commandSchema = z.object({
   excludePathRegex: z.string().optional(),
   excludeRedundantZodSchemas: z.boolean().optional(),
   verbose: z.boolean().optional(),
+  cwd: z.string().optional(),
 });
 
 export async function checkCommand(argv: string[]) {
@@ -23,5 +24,5 @@ export async function checkCommand(argv: string[]) {
     },
   });
   const logger = new Logger(args.verbose ?? false);
-  await check(args, logger);
+  await check(args, args.cwd ?? process.cwd(), logger);
 }
