@@ -217,3 +217,27 @@ export class ParentDto {
   nestedList: NestedDto[];
 }
 ```
+
+---
+
+### JSON
+
+When using JSON or Objects types, ensure you explicitly specify additional properties types as any otherwise FE ZOD will strip out everything: `@ApiProperty({ additionalProperties: { type: 'any' } })`:
+
+```ts
+export class JSONDto {
+  @ApiProperty()
+  @Expose()
+  @IsObject()
+  nested: NestedDto;
+}
+```
+
+```ts
+export class JSONDto {
+  @ApiProperty({ additionalProperties: { type: 'any' } })
+  @Expose()
+  @IsObject()
+  nested: NestedDto;
+}
+```
