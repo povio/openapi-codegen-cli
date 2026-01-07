@@ -7,6 +7,7 @@ import {
   StandaloneAssetEnum,
   ZOD_EXTENDED_FILE,
 } from "src/generators/const/deps.const";
+import { DEFAULT_GENERATE_OPTIONS } from "src/generators/const/options.const";
 import { GenerateFile, GenerateType } from "src/generators/types/generate";
 import { GenerateOptions } from "src/generators/types/options";
 import { decapitalize } from "src/generators/utils/string.utils";
@@ -43,24 +44,24 @@ export function getTagFileName(...args: Parameters<typeof getTagFileNameWithoutE
 }
 
 export function getAppRestClientImportPath(options: GenerateOptions) {
-  if (!options.standalone) {
-    return options.restClientImportPath;
+  if (options.standalone && options.restClientImportPath === DEFAULT_GENERATE_OPTIONS.restClientImportPath) {
+    return `${getImportPath(options)}${STANDALONE_APP_REST_CLIENT_FILE.fileName}`;
   }
-  return `${getImportPath(options)}${STANDALONE_APP_REST_CLIENT_FILE.fileName}`;
+  return options.restClientImportPath;
 }
 
 export function getErrorHandlingImportPath(options: GenerateOptions, fromRoot = false) {
-  if (!options.standalone) {
-    return options.errorHandlingImportPath;
+  if (options.standalone && options.errorHandlingImportPath === DEFAULT_GENERATE_OPTIONS.errorHandlingImportPath) {
+    return `${getImportPath(options, fromRoot)}${STANDALONE_ASSETS[StandaloneAssetEnum.ErrorHandling].fileName}`;
   }
-  return `${getImportPath(options, fromRoot)}${STANDALONE_ASSETS[StandaloneAssetEnum.ErrorHandling].fileName}`;
+  return DEFAULT_GENERATE_OPTIONS.errorHandlingImportPath;
 }
 
 export function getQueryTypesImportPath(options: GenerateOptions) {
-  if (!options.standalone) {
-    return options.queryTypesImportPath;
+  if (options.standalone && options.queryTypesImportPath === DEFAULT_GENERATE_OPTIONS.queryTypesImportPath) {
+    return `${getImportPath(options)}${STANDALONE_ASSETS[StandaloneAssetEnum.ReactQueryTypes].fileName}`;
   }
-  return `${getImportPath(options)}${STANDALONE_ASSETS[StandaloneAssetEnum.ReactQueryTypes].fileName}`;
+  return DEFAULT_GENERATE_OPTIONS.queryTypesImportPath;
 }
 
 export function getQueryModulesImportPath(options: GenerateOptions) {
