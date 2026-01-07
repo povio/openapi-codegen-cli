@@ -32,7 +32,6 @@ export type AppInfiniteQueryOptions<
     Awaited<ReturnType<TFunction>>,
     Error,
     IsUnknown<TData, InfiniteData<Awaited<ReturnType<TFunction>>>>,
-    Awaited<ReturnType<TFunction>>,
     TQueryKey,
     TPageParam
   >,
