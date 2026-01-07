@@ -49,6 +49,13 @@ export function getAppRestClientImportPath(options: GenerateOptions) {
   return `${getImportPath(options)}${STANDALONE_APP_REST_CLIENT_FILE.fileName}`;
 }
 
+export function getErrorHandlingImportPath(options: GenerateOptions, fromRoot = false) {
+  if (!options.standalone) {
+    return options.errorHandlingImportPath;
+  }
+  return `${getImportPath(options, fromRoot)}${STANDALONE_ASSETS[StandaloneAssetEnum.ErrorHandling].fileName}`;
+}
+
 export function getQueryTypesImportPath(options: GenerateOptions) {
   if (!options.standalone) {
     return options.queryTypesImportPath;

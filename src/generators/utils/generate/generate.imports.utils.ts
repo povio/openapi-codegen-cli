@@ -151,10 +151,10 @@ export function getEntityImports({
   return Array.from(imports.values());
 }
 
-export function getImportPath(options: Pick<GenerateOptions, "output" | "importPath" | "tsPath">) {
+export function getImportPath(options: Pick<GenerateOptions, "output" | "importPath" | "tsPath">, fromRoot = false) {
   let importPath = options.tsPath;
   if (options.importPath === "relative") {
-    importPath = "../";
+    importPath = fromRoot ? "./" : "../";
   } else if (options.importPath === "absolute") {
     importPath = options.output;
   } else if (new RegExp(`${TEMPLATE_DATA_FILE_PATH}`, "g").test(options.output)) {

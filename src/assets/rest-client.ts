@@ -1,19 +1,12 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, CreateAxiosDefaults } from "axios";
+import axios, { AxiosInstance, AxiosRequestConfig, CreateAxiosDefaults } from "axios";
 import { z } from "zod";
+
+import { GeneralErrorCodes, SharedErrorHandler } from "./error-handling";
 import { RestInterceptor } from "./rest-interceptor";
+import { RestClient as IRestClient, RequestConfig, RequestInfo, Response } from "./rest-client.types";
 
-interface RequestInfo<ZOutput> {
-  resSchema: z.ZodType<ZOutput>;
-}
-
-interface RequestConfig<IsRawRes extends boolean = false> {
-  rawResponse?: IsRawRes;
-}
-
-type Response<ZOutput, IsRawRes extends boolean = false> = IsRawRes extends true ? AxiosResponse<ZOutput> : ZOutput;
-
-export class RestClient {
-  private client: AxiosInstance;
+export class RestClient implements IRestClient {
+  private readonly client: AxiosInstance;
 
   constructor({
     config,
@@ -40,16 +33,16 @@ export class RestClient {
     interceptor.removeInterceptor(this.client);
   }
 
-  public async get<ZOutput, IsRawRes extends boolean = false>(
-    requestInfo: RequestInfo<ZOutput>,
+  public async get<ZOutput, ECodes extends string = GeneralErrorCodes, IsRawRes extends boolean = false>(
+    requestInfo: RequestInfo<ZOutput, ECodes>,
     url: string,
     requestConfig?: AxiosRequestConfig & RequestConfig<IsRawRes>,
   ): Promise<Response<ZOutput, IsRawRes>> {
     return this.makeRequest(requestInfo, { ...requestConfig, method: "get", url });
   }
 
-  public async post<ZOutput, IsRawRes extends boolean = false>(
-    requestInfo: RequestInfo<ZOutput>,
+  public async post<ZOutput, ECodes extends string = GeneralErrorCodes, IsRawRes extends boolean = false>(
+    requestInfo: RequestInfo<ZOutput, ECodes>,
     url: string,
     data?: any,
     requestConfig?: AxiosRequestConfig & RequestConfig<IsRawRes>,
@@ -57,8 +50,8 @@ export class RestClient {
     return this.makeRequest(requestInfo, { ...requestConfig, method: "post", url, data });
   }
 
-  public async patch<ZOutput, IsRawRes extends boolean = false>(
-    requestInfo: RequestInfo<ZOutput>,
+  public async patch<ZOutput, ECodes extends string = GeneralErrorCodes, IsRawRes extends boolean = false>(
+    requestInfo: RequestInfo<ZOutput, ECodes>,
     url: string,
     data?: any,
     requestConfig?: AxiosRequestConfig & RequestConfig<IsRawRes>,
@@ -66,8 +59,8 @@ export class RestClient {
     return this.makeRequest(requestInfo, { ...requestConfig, method: "patch", url, data });
   }
 
-  public async put<ZOutput, IsRawRes extends boolean = false>(
-    requestInfo: RequestInfo<ZOutput>,
+  public async put<ZOutput, ECodes extends string = GeneralErrorCodes, IsRawRes extends boolean = false>(
+    requestInfo: RequestInfo<ZOutput, ECodes>,
     url: string,
     data?: any,
     requestConfig?: AxiosRequestConfig & RequestConfig<IsRawRes>,
@@ -75,8 +68,8 @@ export class RestClient {
     return this.makeRequest(requestInfo, { ...requestConfig, method: "put", url, data });
   }
 
-  public async delete<ZOutput, IsRawRes extends boolean = false>(
-    requestInfo: RequestInfo<ZOutput>,
+  public async delete<ZOutput, ECodes extends string = GeneralErrorCodes, IsRawRes extends boolean = false>(
+    requestInfo: RequestInfo<ZOutput, ECodes>,
     url: string,
     data?: any,
     requestConfig?: AxiosRequestConfig & RequestConfig<IsRawRes>,
@@ -84,16 +77,28 @@ export class RestClient {
     return this.makeRequest(requestInfo, { ...requestConfig, method: "delete", url, data });
   }
 
-  private async makeRequest<ZOutput, IsRawRes extends boolean = false>(
-    requestInfo: RequestInfo<ZOutput>,
+  private async makeRequest<ZOutput, ECodes extends string = GeneralErrorCodes, IsRawRes extends boolean = false>(
+    requestInfo: RequestInfo<ZOutput, ECodes>,
     requestConfig: AxiosRequestConfig & RequestConfig<IsRawRes>,
   ): Promise<Response<ZOutput, IsRawRes>> {
-    const { rawResponse, ...config } = requestConfig;
+    const errorStack = new Error().stack;
 
-    const res = await this.client(config);
+    try {
+      const { rawResponse, ...config } = requestConfig;
 
-    const resData = requestInfo.resSchema.parse(res.data);
+      const res = await this.client(config);
 
-    return (rawResponse ? { ...res, data: resData } : resData) as Response<ZOutput, IsRawRes>;
+      const resData = requestInfo.resSchema.parse(res.data);
+
+      return (rawResponse ? { ...res, data: resData } : resData) as Response<ZOutput, IsRawRes>;
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        error.name = "BE Response schema mismatch - ZodError";
+        error.stack = [error.stack, ...(errorStack?.split("\n").slice(2) ?? [])].join("\n");
+      }
+      const errorHandler = requestInfo.errorHandler ?? SharedErrorHandler;
+      errorHandler.rethrowError(error);
+      throw error;
+    }
   }
 }

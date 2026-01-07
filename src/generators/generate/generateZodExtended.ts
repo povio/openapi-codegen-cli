@@ -2,6 +2,7 @@ import { ERROR_HANDLERS, ERROR_HANDLING_IMPORT, ZOD_EXTENDED } from "src/generat
 import { ZOD_IMPORT } from "src/generators/const/zod.const";
 import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
 import { getHbsTemplateDelegate } from "src/generators/utils/hbs/hbs-template.utils";
+import { getErrorHandlingImportPath } from "src/generators/utils/generate/generate.utils";
 
 export function generateZodExtended(resolver: SchemaResolver) {
   const hbsTemplate = getHbsTemplateDelegate(resolver, "zod-extended");
@@ -15,7 +16,7 @@ export function generateZodExtended(resolver: SchemaResolver) {
     sharedErrorHandler: ERROR_HANDLERS.SharedErrorHandler,
     errorHandlingImport: {
       ...ERROR_HANDLING_IMPORT,
-      from: resolver.options.errorHandlingImportPath,
+      from: getErrorHandlingImportPath(resolver.options, true),
     },
   });
 }
