@@ -24,7 +24,7 @@ export class ApplicationException<CodeT> extends Error {
   }
 }
 
-interface ErrorEntry<CodeT> {
+export interface ErrorEntry<CodeT> {
   code: CodeT;
   condition: (error: unknown) => boolean;
   getMessage: (error: unknown) => string;

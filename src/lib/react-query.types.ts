@@ -6,8 +6,9 @@ import {
   UseQueryOptions,
 } from "@tanstack/react-query";
 
-import { ApplicationException, GeneralErrorCodes } from "./error-handling";
+import { ApplicationException, GeneralErrorCodes } from "./rest/error-handling";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Function = (...args: any) => any;
 type IfAny<T, Y, N> = 0 extends 1 & T ? Y : N;
 type IsAny<T> = IfAny<T, true, never>;

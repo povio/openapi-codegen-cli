@@ -1,12 +1,11 @@
 import { ACL_APP_ABILITY_FILE, ACL_CHECK_FILE } from "src/generators/const/acl.const";
 import {
+  APP_REST_CLIENT_FILE,
   MUTATION_EFFECTS_FILE,
-  QUERY_CONFIG_FILE,
   QUERY_MODULES_FILE,
-  STANDALONE_APP_REST_CLIENT_FILE,
-  STANDALONE_ASSETS,
   ZOD_EXTENDED_FILE,
 } from "src/generators/const/deps.const";
+import { DEFAULT_GENERATE_OPTIONS } from "src/generators/const/options.const";
 import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
 import { generateAppAcl } from "src/generators/generate/generateAcl";
 import { generateAclCheck } from "src/generators/generate/generateAclCheck";
@@ -50,30 +49,13 @@ export function getMutationEffectsFiles(data: GenerateData, resolver: SchemaReso
   }
 
   return [
-    ...getAssetFiles([QUERY_CONFIG_FILE, MUTATION_EFFECTS_FILE], resolver),
+    ...getAssetFiles([MUTATION_EFFECTS_FILE], resolver),
     {
       fileName: getOutputFileName({
         output: resolver.options.output,
         fileName: getFileNameWithExtension(QUERY_MODULES_FILE),
       }),
       content: generateQueryModules({ resolver, data }),
-    },
-  ];
-}
-
-export function getStandaloneFiles(resolver: SchemaResolver): GenerateFileData[] {
-  if (!resolver.options.standalone) {
-    return [];
-  }
-
-  return [
-    ...getAssetFiles(Object.values(STANDALONE_ASSETS), resolver),
-    {
-      fileName: getOutputFileName({
-        output: resolver.options.output,
-        fileName: getFileNameWithExtension(STANDALONE_APP_REST_CLIENT_FILE),
-      }),
-      content: generateAppRestClient(resolver),
     },
   ];
 }
@@ -90,6 +72,23 @@ export function getZodExtendedFiles(data: GenerateData, resolver: SchemaResolver
         fileName: getFileNameWithExtension(ZOD_EXTENDED_FILE),
       }),
       content: generateZodExtended(resolver),
+    },
+  ];
+}
+
+export function getAppRestClientFiles(resolver: SchemaResolver): GenerateFileData[] {
+  const hasCustomImportPath = resolver.options.restClientImportPath !== DEFAULT_GENERATE_OPTIONS.restClientImportPath;
+  if (hasCustomImportPath) {
+    return [];
+  }
+
+  return [
+    {
+      fileName: getOutputFileName({
+        output: resolver.options.output,
+        fileName: getFileNameWithExtension(APP_REST_CLIENT_FILE),
+      }),
+      content: generateAppRestClient(resolver),
     },
   ];
 }

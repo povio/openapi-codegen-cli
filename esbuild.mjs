@@ -3,6 +3,11 @@ import fs from "fs";
 
 const packageJson = JSON.parse(fs.readFileSync("package.json", "utf-8"));
 
+const external = [
+  ...Object.keys(packageJson.dependencies || {}),
+  ...Object.keys(packageJson.peerDependencies || {}),
+];
+
 const buildOptions = {
   bundle: true,
   sourcemap: false,
@@ -10,7 +15,7 @@ const buildOptions = {
   minify: true,
   metafile: false,
   keepNames: true,
-  external: packageJson.dependencies ? Object.keys(packageJson.dependencies) : [],
+  external,
   target: "node14",
   logLevel: "info",
   define: {

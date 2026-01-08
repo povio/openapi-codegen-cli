@@ -69,7 +69,6 @@ interface BaseGenerateOptions {
   tsPath: string;
   importPath: "ts" | "relative" | "absolute";
   configs: Record<GenerateType, GenerateConfig>;
-  standalone: boolean;
   baseUrl: string;
 }
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import axios, { AxiosInstance, AxiosRequestConfig, CreateAxiosDefaults } from "axios";
 import { z } from "zod";
 

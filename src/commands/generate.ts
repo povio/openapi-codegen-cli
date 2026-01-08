@@ -27,7 +27,6 @@ export type GenerateParams = {
     | "extractEnums"
     | "acl"
     | "checkAcl"
-    | "standalone"
     | "baseUrl"
     | "replaceOptionalWithNullish"
     | "infiniteQueries"

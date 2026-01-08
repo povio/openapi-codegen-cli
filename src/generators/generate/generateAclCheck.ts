@@ -6,7 +6,7 @@ import {
   ERROR_HANDLING_IMPORT,
 } from "src/generators/const/deps.const";
 import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
-import { getAppAbilitiesImportPath, getErrorHandlingImportPath } from "src/generators/utils/generate/generate.utils";
+import { getAppAbilitiesImportPath } from "src/generators/utils/generate/generate.utils";
 import { getHbsTemplateDelegate } from "src/generators/utils/hbs/hbs-template.utils";
 
 export function generateAclCheck(resolver: SchemaResolver) {
@@ -23,7 +23,7 @@ export function generateAclCheck(resolver: SchemaResolver) {
     },
     errorHandlingImport: {
       ...ERROR_HANDLING_IMPORT,
-      from: getErrorHandlingImportPath(resolver.options),
+      from: resolver.options.errorHandlingImportPath,
     },
     abilityContext: ABILITY_CONTEXT,
     appAbilities: ACL_APP_ABILITIES,
