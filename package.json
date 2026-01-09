@@ -3,6 +3,18 @@
   "version": "2.0.0-rc.0",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    },
+    "./generator": {
+      "types": "./dist/generator.d.ts",
+      "import": "./dist/generator.js",
+      "require": "./dist/generator.js"
+    }
+  },
   "bin": {
     "openapi-codegen": "./dist/sh.js"
   },
