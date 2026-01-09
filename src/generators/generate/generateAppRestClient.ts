@@ -9,6 +9,6 @@ export function generateAppRestClient(resolver: SchemaResolver) {
   return hbsTemplate({
     appRestClientName: APP_REST_CLIENT_NAME,
     baseUrl: resolver.getBaseUrl(),
-    packageImportPath: PACKAGE_IMPORT_PATH,
+    restClientImportPath: PACKAGE_IMPORT_PATH,
   });
 }
