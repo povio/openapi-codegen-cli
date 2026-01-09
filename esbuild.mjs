@@ -30,6 +30,7 @@ const clientBuildOptions = {
   bundle: true,
   sourcemap: false,
   platform: "browser",
+  format: "esm",
   minify: true,
   metafile: false,
   keepNames: true,
