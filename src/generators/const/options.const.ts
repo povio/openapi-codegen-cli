@@ -46,7 +46,6 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   replaceOptionalWithNullish: false,
   // Endpoints options
   restClientImportPath: "",
-  errorHandlingImportPath: PACKAGE_IMPORT_PATH,
   removeOperationPrefixEndingWith: "Controller_",
   parseRequestParams: true,
   // Queries options

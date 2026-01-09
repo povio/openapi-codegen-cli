@@ -21,10 +21,7 @@ export function generateAclCheck(resolver: SchemaResolver) {
       bindings: [ACL_APP_ABILITIES],
       from: getAppAbilitiesImportPath(resolver.options),
     },
-    errorHandlingImport: {
-      ...ERROR_HANDLING_IMPORT,
-      from: resolver.options.errorHandlingImportPath,
-    },
+    errorHandlingImport: ERROR_HANDLING_IMPORT,
     abilityContext: ABILITY_CONTEXT,
     appAbilities: ACL_APP_ABILITIES,
     errorHandler: ERROR_HANDLERS.ErrorHandler,

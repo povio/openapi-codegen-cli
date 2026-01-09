@@ -184,7 +184,6 @@ describe("Utils: object", () => {
         extractEnums: true,
         replaceOptionalWithNullish: false,
         restClientImportPath: "@/util/rest/clients/app-rest-client",
-        errorHandlingImportPath: "@/util/vendor/error-handling",
         removeOperationPrefixEndingWith: "Controller_",
         parseRequestParams: true,
         queryTypesImportPath: "@/types/react-query",
