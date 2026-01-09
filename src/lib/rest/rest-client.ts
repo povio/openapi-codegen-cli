@@ -2,21 +2,25 @@
 import axios, { AxiosInstance, AxiosRequestConfig, CreateAxiosDefaults } from "axios";
 import { z } from "zod";
 
-import { GeneralErrorCodes, SharedErrorHandler } from "./error-handling";
+import { ErrorHandler, GeneralErrorCodes, SharedErrorHandler } from "./error-handling";
 import { RestInterceptor } from "./rest-interceptor";
 import { RestClient as IRestClient, RequestConfig, RequestInfo, Response } from "./rest-client.types";
 
 export class RestClient implements IRestClient {
   private readonly client: AxiosInstance;
+  private readonly errorHandler: ErrorHandler<any>;
 
   constructor({
     config,
     interceptors,
+    errorHandler,
   }: {
     config?: CreateAxiosDefaults;
     interceptors?: RestInterceptor<any[]>[];
+    errorHandler?: ErrorHandler<any>;
   } = {}) {
     this.client = axios.create(config);
+    this.errorHandler = errorHandler ?? (SharedErrorHandler as unknown as ErrorHandler<any>);
     this.attachInterceptors(interceptors);
   }
 
@@ -97,7 +101,7 @@ export class RestClient implements IRestClient {
         error.name = "BE Response schema mismatch - ZodError";
         error.stack = [error.stack, ...(errorStack?.split("\n").slice(2) ?? [])].join("\n");
       }
-      const errorHandler = requestInfo.errorHandler ?? SharedErrorHandler;
+      const errorHandler = requestInfo.errorHandler ?? this.errorHandler;
       errorHandler.rethrowError(error);
       throw error;
     }

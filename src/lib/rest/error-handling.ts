@@ -30,10 +30,17 @@ export interface ErrorEntry<CodeT> {
   getMessage: (error: unknown) => string;
 }
 
+export interface ErrorHandlerOptions<CodeT extends string> {
+  entries: ErrorEntry<CodeT>[];
+  onRethrowError?: (error: unknown, exception: ApplicationException<CodeT | GeneralErrorCodes>) => void;
+}
+
 export class ErrorHandler<CodeT extends string> {
   entries: ErrorEntry<CodeT | GeneralErrorCodes>[] = [];
+  private onRethrowError?: (error: unknown, exception: ApplicationException<CodeT | GeneralErrorCodes>) => void;
 
-  constructor(entries: ErrorEntry<CodeT>[]) {
+  constructor({ entries, onRethrowError }: ErrorHandlerOptions<CodeT>) {
+    this.onRethrowError = onRethrowError;
     type ICodeT = CodeT | GeneralErrorCodes;
 
     // implement checking for each of the general errors
@@ -101,7 +108,11 @@ export class ErrorHandler<CodeT extends string> {
     const errorEntry = this.entries.find((entry) => entry.condition(error ?? {}))!;
 
     const serverMessage = RestUtils.extractServerErrorMessage(error);
-    throw new ApplicationException(errorEntry.getMessage(error), errorEntry.code, serverMessage);
+    const exception = new ApplicationException(errorEntry.getMessage(error), errorEntry.code, serverMessage);
+
+    this.onRethrowError?.(error, exception);
+
+    throw exception;
   }
 
   public getError(error: unknown): ApplicationException<CodeT | GeneralErrorCodes> | null {
@@ -142,4 +153,4 @@ export class ErrorHandler<CodeT extends string> {
 }
 
 // can be used for endpoints that only need general error handling
-export const SharedErrorHandler = new ErrorHandler<never>([]);
+export const SharedErrorHandler = new ErrorHandler<never>({ entries: [] });
