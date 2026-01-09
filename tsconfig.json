@@ -15,8 +15,9 @@
     "emitDecoratorMetadata": true,
     "noImplicitAny": true,
     "skipLibCheck": true,
-    "incremental": true
+    "incremental": true,
+    "jsx": "react-jsx"
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "src/lib/**/*.tsx"],
   "exclude": ["node_modules", "src/assets/**"]
 }

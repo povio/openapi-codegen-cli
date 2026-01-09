@@ -18,7 +18,6 @@ import {
   getAclCheckImportPath,
   getMutationEffectsImportPath,
   getQueryModulesImportPath,
-  getQueryTypesImportPath,
 } from "src/generators/utils/generate/generate.utils";
 import { getHbsTemplateDelegate } from "src/generators/utils/hbs/hbs-template.utils";
 import { getNamespaceName } from "src/generators/utils/namespace.utils";
@@ -80,7 +79,7 @@ export function generateQueries({ resolver, data, tag }: GenerateTypeParams) {
         : []),
       ...(mutationEndpoints.length > 0 ? [QUERY_OPTIONS_TYPES.mutation] : []),
     ],
-    from: getQueryTypesImportPath(resolver.options),
+    from: resolver.options.queryTypesImportPath,
   };
 
   const endpointParams = endpoints.reduce((prev, curr) => [...prev, ...curr.parameters], [] as EndpointParameter[]);

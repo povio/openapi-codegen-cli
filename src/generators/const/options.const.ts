@@ -1,6 +1,7 @@
 import { GenerateType } from "src/generators/types/generate";
 import { GenerateOptions } from "src/generators/types/options";
 import { ENUM_SUFFIX, SCHEMA_SUFFIX } from "./zod.const";
+import { PACKAGE_IMPORT_PATH } from "./package.const";
 
 export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   // Base options
@@ -36,7 +37,6 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
       namespaceSuffix: "Configs",
     },
   },
-  standalone: false,
   baseUrl: "",
   // Zod options
   schemaSuffix: SCHEMA_SUFFIX,
@@ -45,12 +45,11 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   extractEnums: true,
   replaceOptionalWithNullish: false,
   // Endpoints options
-  restClientImportPath: "@/util/rest/clients/app-rest-client",
-  errorHandlingImportPath: "@/util/vendor/error-handling",
+  restClientImportPath: "",
   removeOperationPrefixEndingWith: "Controller_",
   parseRequestParams: true,
   // Queries options
-  queryTypesImportPath: "@/types/react-query",
+  queryTypesImportPath: PACKAGE_IMPORT_PATH,
   axiosRequestConfig: false,
   mutationEffects: true,
   // Infinite queries options
@@ -66,7 +65,6 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   // ACL options
   acl: true,
   checkAcl: true,
-  abilityContextImportPath: "@/data/acl/ability.context",
   abilityContextGenericAppAbilities: false,
   // Builder Configs options
   builderConfigs: false,

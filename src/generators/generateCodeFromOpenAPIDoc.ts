@@ -10,15 +10,14 @@ import { GenerateOptions } from "./types/options";
 import { getOutputFileName } from "./utils/file.utils";
 import {
   getAclFiles,
+  getAppRestClientFiles,
   getMutationEffectsFiles,
-  getStandaloneFiles,
   getZodExtendedFiles,
 } from "./utils/generate-files.utils";
 import { getTagFileName } from "./utils/generate/generate.utils";
 
 export function generateCodeFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, options: GenerateOptions) {
-  const importPath = options.standalone && options.importPath === "ts" ? "relative" : options.importPath;
-  const { resolver, data } = getDataFromOpenAPIDoc(openApiDoc, { ...options, importPath });
+  const { resolver, data } = getDataFromOpenAPIDoc(openApiDoc, options);
 
   const generateFilesData: GenerateFileData[] = [];
   const appAclTags: string[] = [];
@@ -57,7 +56,7 @@ export function generateCodeFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, optio
     ...getAclFiles(data, resolver),
     ...getMutationEffectsFiles(data, resolver),
     ...getZodExtendedFiles(data, resolver),
-    ...getStandaloneFiles(resolver),
+    ...getAppRestClientFiles(resolver),
   );
 
   return generateFilesData;

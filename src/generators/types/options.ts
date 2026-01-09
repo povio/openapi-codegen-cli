@@ -13,7 +13,6 @@ interface ZodGenerateOptions {
 
 interface EndpointsGenerateOptions {
   restClientImportPath: string;
-  errorHandlingImportPath: string;
   withDeprecatedEndpoints?: boolean;
   removeOperationPrefixEndingWith?: string;
   parseRequestParams?: boolean;
@@ -40,7 +39,6 @@ interface InfiniteQueriesGenerateOptions {
 interface ACLGenerateOptions {
   acl: boolean;
   checkAcl?: boolean;
-  abilityContextImportPath: string;
   abilityContextGenericAppAbilities: boolean;
 }
 
@@ -69,7 +67,6 @@ interface BaseGenerateOptions {
   tsPath: string;
   importPath: "ts" | "relative" | "absolute";
   configs: Record<GenerateType, GenerateConfig>;
-  standalone: boolean;
   baseUrl: string;
 }
 

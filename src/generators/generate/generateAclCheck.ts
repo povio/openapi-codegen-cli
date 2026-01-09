@@ -13,18 +13,12 @@ export function generateAclCheck(resolver: SchemaResolver) {
   const hbsTemplate = getHbsTemplateDelegate(resolver, "acl-check");
 
   return hbsTemplate({
-    abilityContextImport: {
-      ...ABILITY_CONTEXT_IMPORT,
-      from: resolver.options.abilityContextImportPath,
-    },
+    abilityContextImport: ABILITY_CONTEXT_IMPORT,
     appAbilitiesImport: {
       bindings: [ACL_APP_ABILITIES],
       from: getAppAbilitiesImportPath(resolver.options),
     },
-    errorHandlingImport: {
-      ...ERROR_HANDLING_IMPORT,
-      from: resolver.options.errorHandlingImportPath,
-    },
+    errorHandlingImport: ERROR_HANDLING_IMPORT,
     abilityContext: ABILITY_CONTEXT,
     appAbilities: ACL_APP_ABILITIES,
     errorHandler: ERROR_HANDLERS.ErrorHandler,

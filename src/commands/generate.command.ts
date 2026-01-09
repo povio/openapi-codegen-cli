@@ -50,9 +50,6 @@ class GenerateOptions implements GenerateParams {
   @YargOption({ envAlias: "checkAcl", type: "boolean" })
   checkAcl?: boolean;
 
-  @YargOption({ envAlias: "standalone", type: "boolean" })
-  standalone?: boolean;
-
   @YargOption({ envAlias: "baseUrl" })
   baseUrl?: string;
 

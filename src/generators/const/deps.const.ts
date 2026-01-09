@@ -1,6 +1,8 @@
 import { GenerateFile, Import } from "src/generators/types/generate";
+import { PACKAGE_IMPORT_PATH } from "./package.const";
 
 export const APP_REST_CLIENT_NAME = "AppRestClient";
+export const APP_REST_CLIENT_FILE: GenerateFile = { fileName: "app-rest-client", extension: "ts" };
 
 export const QUERY_OPTIONS_TYPES = {
   query: "AppQueryOptions",
@@ -14,31 +16,19 @@ export const ERROR_HANDLERS = {
   ErrorHandler: "ErrorHandler",
   SharedErrorHandler: "SharedErrorHandler",
 };
-export const ERROR_HANDLING_IMPORT: Omit<Import, "from"> = {
+export const ERROR_HANDLING_IMPORT: Import = {
   bindings: [ERROR_HANDLERS.ErrorHandler, ERROR_HANDLERS.SharedErrorHandler],
+  from: PACKAGE_IMPORT_PATH,
 };
 export const ABILITY_CONTEXT = "AbilityContext";
-export const ABILITY_CONTEXT_IMPORT: Omit<Import, "from"> = {
+export const ABILITY_CONTEXT_IMPORT: Import = {
   bindings: [ABILITY_CONTEXT],
+  from: PACKAGE_IMPORT_PATH,
 };
 export const BUILDERS_UTILS = {
   dynamicInputs: "dynamicInputs",
   dynamicColumns: "dynamicColumns",
 };
-
-// Standalone
-export enum StandaloneAssetEnum {
-  ReactQueryTypes = "reactQueryTypes",
-  RestClient = "restClient",
-  RestInterceptor = "restInterceptor",
-}
-export const STANDALONE_ASSETS: Record<StandaloneAssetEnum, GenerateFile> = {
-  [StandaloneAssetEnum.ReactQueryTypes]: { fileName: "react-query.types", extension: "ts" },
-  [StandaloneAssetEnum.RestClient]: { fileName: "rest-client", extension: "ts" },
-  [StandaloneAssetEnum.RestInterceptor]: { fileName: "rest-interceptor", extension: "ts" },
-};
-
-export const STANDALONE_APP_REST_CLIENT_FILE: GenerateFile = { fileName: "app-rest-client", extension: "ts" };
 
 // QueryModules
 export const QUERY_MODULE_ENUM = "QueryModule";
