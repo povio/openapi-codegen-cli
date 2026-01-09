@@ -21,8 +21,9 @@ export const ERROR_HANDLING_IMPORT: Import = {
   from: PACKAGE_IMPORT_PATH,
 };
 export const ABILITY_CONTEXT = "AbilityContext";
-export const ABILITY_CONTEXT_IMPORT: Omit<Import, "from"> = {
+export const ABILITY_CONTEXT_IMPORT: Import = {
   bindings: [ABILITY_CONTEXT],
+  from: PACKAGE_IMPORT_PATH,
 };
 export const BUILDERS_UTILS = {
   dynamicInputs: "dynamicInputs",

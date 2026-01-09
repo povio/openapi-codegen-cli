@@ -176,7 +176,6 @@ describe("Utils: object", () => {
         checkAcl: true,
         standalone: false,
         baseUrl: "",
-        abilityContextImportPath: "@/data/acl/ability.context",
         abilityContextGenericAppAbilities: false,
         schemaSuffix: "Schema",
         enumSuffix: "Enum",

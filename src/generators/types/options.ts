@@ -39,7 +39,6 @@ interface InfiniteQueriesGenerateOptions {
 interface ACLGenerateOptions {
   acl: boolean;
   checkAcl?: boolean;
-  abilityContextImportPath: string;
   abilityContextGenericAppAbilities: boolean;
 }
 

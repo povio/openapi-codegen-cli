@@ -65,7 +65,6 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   // ACL options
   acl: true,
   checkAcl: true,
-  abilityContextImportPath: PACKAGE_IMPORT_PATH,
   abilityContextGenericAppAbilities: false,
   // Builder Configs options
   builderConfigs: false,
