@@ -13,9 +13,6 @@ export function generateZodExtended(resolver: SchemaResolver) {
     sortExp: ZOD_EXTENDED.exports.sortExp,
     errorHandler: ERROR_HANDLERS.ErrorHandler,
     sharedErrorHandler: ERROR_HANDLERS.SharedErrorHandler,
-    errorHandlingImport: {
-      ...ERROR_HANDLING_IMPORT,
-      from: resolver.options.errorHandlingImportPath,
-    },
+    errorHandlingImport: ERROR_HANDLING_IMPORT,
   });
 }

@@ -1,8 +1,10 @@
 # OpenAPI code generation CLI
 
-**NOTE:** This CLI tool is primarily designed for use within our organization. The generated code output aligns with our internal template. If you are using this tool without our internal template, make sure to use it in **standalone** mode.
+**NOTE:** This CLI tool is primarily designed for use within our organization. The generated code output aligns with our internal template.
 
 **NOTE:** Version 1+ requires zod v4 and is not compatible with zod v3.
+
+**NOTE:** Version 2+ includes supporting classes/types/components for the generated code as well as auth, therefore it has peerDependencies for @casl/ability, @casl/react, @tanstack/react-query, axios, react and zod.
 
 Use this tool to generate code (Zod schemas, TypeScript types, API definitions, and React queries) from an OpenAPI v3 specification. API definitions are generated to use a REST client wrapper that utilizes Axios. React queries are generated in alignment with our code standards, without the need for explicit types.
 
@@ -18,12 +20,6 @@ yarn add @povio/openapi-codegen-cli
 
 ```bash
 yarn openapi-codegen generate --input http://localhost:3001/docs-json
-```
-
-#### Standalone mode
-
-```bash
-yarn openapi-codegen generate --input http://localhost:3001/docs-json --standalone
 ```
 
 ## Configuration Files
@@ -100,8 +96,7 @@ yarn openapi-codegen generate --config my-config.ts
 
   --builderConfigs                    Generate configs for builders (default: false)
 
-  --standalone                        Generate any missing supporting classes/types, e.g., REST client class, React Query type extensions, etc. (default: false)
-  --baseUrl                           (Requires `--standalone`) Base URL for the REST client; falls back to the OpenAPI spec if not provided
+  --baseUrl                           (Requires `--restClientImportPath` to NOT be set) Base URL for the generated REST client; falls back to the OpenAPI spec if not provided
 ```
 
 #### Check command (checks if OpenAPI spec is compliant)
@@ -144,6 +139,52 @@ yarn start:dist generate --input ./test/petstore.yaml --verbose
 ```
 
 ## Common Issues
+
+### App REST Client Interceptors
+
+In order to add interceptors to the used REST client, you must create your own instance of a RestClient and pass your implemented interceptors into the constructor. Make sure to set `restClientImportPath` in your openapi generation configuration too.
+
+```ts
+import { RestInterceptor } from "@povio/openapi-codegen-cli";
+
+import { ACCESS_TOKEN_KEY } from "@/config/jwt.config";
+
+export const AuthorizationHeaderInterceptor = new RestInterceptor((client) => {
+  return client.interceptors.request.use(async (config) => {
+    const accessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
+    if (accessToken != null) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
+    }
+
+    return config;
+  });
+});
+```
+
+```ts
+import { RestClient } from "@povio/openapi-codegen-cli";
+
+import { AuthorizationHeaderInterceptor } from "@/clients/rest/interceptors/authorization-header.interceptor";
+import { AppConfig } from "@/config/app.config";
+
+export const AppRestClient = new RestClient({
+  config: {
+    baseURL: AppConfig.api.url,
+  },
+  interceptors: [AuthorizationHeaderInterceptor],
+});
+```
+
+```ts
+import type { OpenAPICodegenConfig } from "@povio/openapi-codegen-cli";
+
+const config: OpenAPICodegenConfig = {
+  restClientImportPath: "@/clients/app-rest-client",
+  // ...
+};
+
+export default config;
+```
 
 ### Enums
 

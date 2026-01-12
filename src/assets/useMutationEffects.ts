@@ -1,7 +1,7 @@
 import { QueryKey, useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 
-import { OpenApiQueryConfig } from "./queryConfig.context";
+import { OpenApiQueryConfig } from "@povio/openapi-codegen-cli";
 import { QueryModule } from "./queryModules";
 
 export interface MutationEffectsOptions {

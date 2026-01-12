@@ -1,12 +1,11 @@
 import { ACL_APP_ABILITY_FILE, ACL_CHECK_FILE } from "src/generators/const/acl.const";
 import {
+  APP_REST_CLIENT_FILE,
   MUTATION_EFFECTS_FILE,
   QUERY_MODULES_FILE,
-  STANDALONE_APP_REST_CLIENT_FILE,
-  STANDALONE_ASSETS,
-  StandaloneAssetEnum,
   ZOD_EXTENDED_FILE,
 } from "src/generators/const/deps.const";
+import { DEFAULT_GENERATE_OPTIONS } from "src/generators/const/options.const";
 import { GenerateFile, GenerateType } from "src/generators/types/generate";
 import { GenerateOptions } from "src/generators/types/options";
 import { decapitalize } from "src/generators/utils/string.utils";
@@ -43,17 +42,10 @@ export function getTagFileName(...args: Parameters<typeof getTagFileNameWithoutE
 }
 
 export function getAppRestClientImportPath(options: GenerateOptions) {
-  if (!options.standalone) {
-    return options.restClientImportPath;
+  if (options.restClientImportPath === DEFAULT_GENERATE_OPTIONS.restClientImportPath) {
+    return `${getImportPath(options)}${APP_REST_CLIENT_FILE.fileName}`;
   }
-  return `${getImportPath(options)}${STANDALONE_APP_REST_CLIENT_FILE.fileName}`;
-}
-
-export function getQueryTypesImportPath(options: GenerateOptions) {
-  if (!options.standalone) {
-    return options.queryTypesImportPath;
-  }
-  return `${getImportPath(options)}${STANDALONE_ASSETS[StandaloneAssetEnum.ReactQueryTypes].fileName}`;
+  return options.restClientImportPath;
 }
 
 export function getQueryModulesImportPath(options: GenerateOptions) {
