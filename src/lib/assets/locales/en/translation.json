@@ -5,7 +5,8 @@
       "internalError": "An internal error occurred. This is most likely a bug on our end. Please try again later.",
       "networkError": "A network error occurred. Are you connected to the internet?",
       "canceledError": "The request was canceled.",
-      "unknownError": "An unknown error occurred. Please try again later."
+      "unknownError": "An unknown error occurred. Please try again later.",
+      "unknownErrorWithCode": "An unknown error occurred. Error code: \"{{code}}\""
     }
   }
 }

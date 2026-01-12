@@ -5,7 +5,8 @@
       "internalError": "Prišlo je do notranje napake.",
       "networkError": "Prišlo je do napake v omrežju.",
       "canceledError": "Zahteva je bila preklicana.",
-      "unknownError": "Prišlo je do neznane napake."
+      "unknownError": "Prišlo je do neznane napake.",
+      "unknownErrorWithCode": "Prišlo je do neznane napake. Koda napake: \"{{code}}\""
     }
   }
 }
