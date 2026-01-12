@@ -4,7 +4,7 @@
 
 **NOTE:** Version 1+ requires zod v4 and is not compatible with zod v3.
 
-**NOTE:** Version 2+ includes supporting classes/types/components for the generated code as well as auth, therefore it has peerDependencies for @casl/ability, @casl/react, @tanstack/react-query, axios, react and zod.
+**NOTE:** Version 2+ includes supporting classes/types/components for the generated code as well as auth, therefore it has peerDependencies for @tanstack/react-query, axios, react and zod. @casl/ability and @casl/react are also required if you are generating ACL checks and/or using imports from "@povio/openapi-codegen-cli/acl"!
 
 Use this tool to generate code (Zod schemas, TypeScript types, API definitions, and React queries) from an OpenAPI v3 specification. API definitions are generated to use a REST client wrapper that utilizes Axios. React queries are generated in alignment with our code standards, without the need for explicit types.
 

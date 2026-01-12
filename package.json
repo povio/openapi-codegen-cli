@@ -1,6 +1,6 @@
 {
   "name": "@povio/openapi-codegen-cli",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -13,6 +13,11 @@
       "types": "./dist/generator.d.ts",
       "import": "./dist/generator.js",
       "require": "./dist/generator.js"
+    },
+    "./acl": {
+      "types": "./dist/acl.d.ts",
+      "import": "./dist/acl.js",
+      "require": "./dist/acl.js"
     }
   },
   "bin": {
@@ -63,6 +68,14 @@
     "axios": "^1.13.1",
     "react": "^19.1.0",
     "zod": "^4.1.12"
+  },
+  "peerDependenciesMeta": {
+    "@casl/ability": {
+      "optional": true
+    },
+    "@casl/react": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@apidevtools/swagger-parser": "^10.1.0",

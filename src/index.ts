@@ -24,9 +24,3 @@ export { OpenApiQueryConfig } from "./lib/config/queryConfig.context";
 export { AuthContext } from "./lib/auth/auth.context";
 export { AuthGuard } from "./lib/auth/AuthGuard";
 export type { AuthGuardProps } from "./lib/auth/AuthGuard";
-
-// ACL
-export { AbilityContext } from "./lib/acl/ability.context";
-export { createAclGuard } from "./lib/acl/AclGuard";
-export { Can } from "./lib/acl/Can";
-export type { AppAbilities, AppAbility } from "./lib/acl/appAbility.types";
