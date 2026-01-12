@@ -672,6 +672,11 @@ __metadata:
     axios: ^1.13.1
     react: ^19.1.0
     zod: ^4.1.12
+  peerDependenciesMeta:
+    "@casl/ability":
+      optional: true
+    "@casl/react":
+      optional: true
   bin:
     openapi-codegen: ./dist/sh.js
   languageName: unknown
