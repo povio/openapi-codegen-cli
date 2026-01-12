@@ -1,19 +1,20 @@
 import { type PropsWithChildren, createContext, use, useMemo } from "react";
 
-interface RouterProviderProps {
-  replace: (url: string) => void;
+export interface RouterContextValue<TUrl = string> {
+  replace: (url: TUrl) => void;
 }
 
 export namespace OpenApiRouter {
-  const Context = createContext<RouterProviderProps | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const Context = createContext<RouterContextValue<any> | null>(null);
 
-  export const Provider = ({ children, replace }: PropsWithChildren<RouterProviderProps>) => {
+  export const Provider = <TUrl = string,>({ children, replace }: PropsWithChildren<RouterContextValue<TUrl>>) => {
     const value = useMemo(() => ({ replace }), [replace]);
 
     return <Context value={value}>{children}</Context>;
   };
 
-  export const useRouter = () => {
+  export function useRouter<TUrl = string>(): RouterContextValue<TUrl> {
     const context = use(Context);
 
     if (!context) {
@@ -21,5 +22,5 @@ export namespace OpenApiRouter {
     }
 
     return context;
-  };
+  }
 }

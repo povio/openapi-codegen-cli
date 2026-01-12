@@ -18,6 +18,7 @@ export type { AppQueryOptions, AppMutationOptions, AppInfiniteQueryOptions } fro
 
 // Config
 export { OpenApiRouter } from "./lib/config/router.context";
+export type { RouterContextValue } from "./lib/config/router.context";
 export { OpenApiQueryConfig } from "./lib/config/queryConfig.context";
 
 // Auth
