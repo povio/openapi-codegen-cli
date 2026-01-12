@@ -98,7 +98,7 @@ export class ErrorHandler<CodeT extends string> {
     const unknownError: ErrorEntry<ICodeT> = {
       code: "UNKNOWN_ERROR",
       condition: () => true,
-      getMessage: (e) => {
+      getMessage: (_, e) => {
         if (axios.isAxiosError(e) && e.response?.data?.code) {
           return this.t("openapi.sharedErrors.unknownErrorWithCode", {
             code: e.response.data.code,
@@ -126,6 +126,9 @@ export class ErrorHandler<CodeT extends string> {
   public rethrowError(error: unknown): ApplicationException<CodeT | GeneralErrorCodes> {
     const code = RestUtils.extractServerResponseCode(error);
     const errorEntry = this.entries.find((entry) => this.matchesEntry(error, entry, code))!;
+
+    // eslint-disable-next-line no-console
+    console.log("[ErrorHandler] this.t:", this.t, "typeof:", typeof this.t);
 
     const serverMessage = RestUtils.extractServerErrorMessage(error);
     const exception = new ApplicationException(errorEntry.getMessage(this.t, error), errorEntry.code, serverMessage);
