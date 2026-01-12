@@ -1,9 +1,10 @@
 import axios from "axios";
+import { type TFunction } from "i18next";
 import { z } from "zod";
 
+import { defaultT } from "src/lib/config/i18n";
 import { RestUtils } from "./rest.utils";
 
-// codes that we want to handle in every scenario
 export type GeneralErrorCodes =
   | "DATA_VALIDATION_ERROR"
   | "NETWORK_ERROR"
@@ -26,31 +27,32 @@ export class ApplicationException<CodeT> extends Error {
 
 export interface ErrorEntry<CodeT> {
   code: CodeT;
-  condition: (error: unknown) => boolean;
-  getMessage: (error: unknown) => string;
+  condition?: (error: unknown) => boolean;
+  getMessage: (error: unknown, t: TFunction) => string;
 }
 
 export interface ErrorHandlerOptions<CodeT extends string> {
   entries: ErrorEntry<CodeT>[];
+  t?: TFunction;
   onRethrowError?: (error: unknown, exception: ApplicationException<CodeT | GeneralErrorCodes>) => void;
 }
 
 export class ErrorHandler<CodeT extends string> {
   entries: ErrorEntry<CodeT | GeneralErrorCodes>[] = [];
+  private t: TFunction;
   private onRethrowError?: (error: unknown, exception: ApplicationException<CodeT | GeneralErrorCodes>) => void;
 
-  constructor({ entries, onRethrowError }: ErrorHandlerOptions<CodeT>) {
+  constructor({ entries, t = defaultT, onRethrowError }: ErrorHandlerOptions<CodeT>) {
+    this.t = t;
     this.onRethrowError = onRethrowError;
     type ICodeT = CodeT | GeneralErrorCodes;
-
-    // implement checking for each of the general errors
 
     const dataValidationError: ErrorEntry<ICodeT> = {
       code: "DATA_VALIDATION_ERROR",
       condition: (e) => {
         return e instanceof z.ZodError;
       },
-      getMessage: () => "An error occurred while validating the data",
+      getMessage: () => this.t("openapi.sharedErrors.dataValidation"),
     };
 
     const internalError: ErrorEntry<ICodeT> = {
@@ -62,7 +64,7 @@ export class ErrorHandler<CodeT extends string> {
 
         return false;
       },
-      getMessage: () => "An internal error occurred. This is most likely a bug on our end. Please try again later.",
+      getMessage: () => this.t("openapi.sharedErrors.internalError"),
     };
 
     const networkError: ErrorEntry<ICodeT> = {
@@ -74,7 +76,7 @@ export class ErrorHandler<CodeT extends string> {
 
         return false;
       },
-      getMessage: () => "A network error occurred. Are you connected to the internet?",
+      getMessage: () => this.t("openapi.sharedErrors.networkError"),
     };
 
     const canceledError: ErrorEntry<ICodeT> = {
@@ -90,25 +92,36 @@ export class ErrorHandler<CodeT extends string> {
 
         return false;
       },
-      getMessage: () => "The request was canceled.",
+      getMessage: () => this.t("openapi.sharedErrors.canceledError"),
     };
 
     const unknownError: ErrorEntry<ICodeT> = {
       code: "UNKNOWN_ERROR",
       condition: () => true,
-      getMessage: () => "An unknown error occurred. Please try again later.",
+      getMessage: () => this.t("openapi.sharedErrors.unknownError"),
     };
 
     // general errors have the lowest priority
     this.entries = [...entries, dataValidationError, internalError, networkError, canceledError, unknownError];
   }
 
-  // convert the error into an application exception
+  private matchesEntry(error: unknown, entry: ErrorEntry<CodeT | GeneralErrorCodes>, code: string | null): boolean {
+    if (entry.condition) {
+      return entry.condition(error);
+    }
+    return code === entry.code;
+  }
+
+  public setTranslateFunction(t: TFunction) {
+    this.t = t;
+  }
+
   public rethrowError(error: unknown): ApplicationException<CodeT | GeneralErrorCodes> {
-    const errorEntry = this.entries.find((entry) => entry.condition(error ?? {}))!;
+    const code = RestUtils.extractServerResponseCode(error);
+    const errorEntry = this.entries.find((entry) => this.matchesEntry(error, entry, code))!;
 
     const serverMessage = RestUtils.extractServerErrorMessage(error);
-    const exception = new ApplicationException(errorEntry.getMessage(error), errorEntry.code, serverMessage);
+    const exception = new ApplicationException(errorEntry.getMessage(error, this.t), errorEntry.code, serverMessage);
 
     this.onRethrowError?.(error, exception);
 
@@ -145,7 +158,7 @@ export class ErrorHandler<CodeT extends string> {
     }
 
     if (fallbackToUnknown) {
-      return "An unknown error occurred. Please try again later.";
+      return defaultT("openapi.sharedErrors.unknownError");
     }
 
     return null;

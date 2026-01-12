@@ -1,0 +1,11 @@
+{
+  "openapi": {
+    "sharedErrors": {
+      "dataValidation": "Pri preverjanju podatkov je prišlo do napake",
+      "internalError": "Prišlo je do notranje napake.",
+      "networkError": "Prišlo je do napake v omrežju.",
+      "canceledError": "Zahteva je bila preklicana.",
+      "unknownError": "Prišlo je do neznane napake."
+    }
+  }
+}
