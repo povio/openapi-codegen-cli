@@ -28,7 +28,7 @@ export class ApplicationException<CodeT> extends Error {
 export interface ErrorEntry<CodeT> {
   code: CodeT;
   condition?: (error: unknown) => boolean;
-  getMessage: (error: unknown, t: TFunction) => string;
+  getMessage: (t: TFunction, error: unknown) => string;
 }
 
 export interface ErrorHandlerOptions<CodeT extends string> {
@@ -98,7 +98,14 @@ export class ErrorHandler<CodeT extends string> {
     const unknownError: ErrorEntry<ICodeT> = {
       code: "UNKNOWN_ERROR",
       condition: () => true,
-      getMessage: () => this.t("openapi.sharedErrors.unknownError"),
+      getMessage: (e) => {
+        if (axios.isAxiosError(e) && e.response?.data?.code) {
+          return this.t("openapi.sharedErrors.unknownErrorWithCode", {
+            code: e.response.data.code,
+          });
+        }
+        return this.t("openapi.sharedErrors.unknownError");
+      },
     };
 
     // general errors have the lowest priority
@@ -121,7 +128,7 @@ export class ErrorHandler<CodeT extends string> {
     const errorEntry = this.entries.find((entry) => this.matchesEntry(error, entry, code))!;
 
     const serverMessage = RestUtils.extractServerErrorMessage(error);
-    const exception = new ApplicationException(errorEntry.getMessage(error, this.t), errorEntry.code, serverMessage);
+    const exception = new ApplicationException(errorEntry.getMessage(this.t, error), errorEntry.code, serverMessage);
 
     this.onRethrowError?.(error, exception);
 
