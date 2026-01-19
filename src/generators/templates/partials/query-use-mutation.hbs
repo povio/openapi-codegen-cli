@@ -10,8 +10,8 @@ export const {{queryName endpoint mutation=true}} = (options?: AppMutationOption
   return {{queryHook}}({
     mutationFn: {{#if endpoint.mediaUpload}}async {{/if}}({{#if (endpointParams endpoint includeFileParam=true)}} { {{{endpointArgs endpoint includeFileParam=true}}}{{#if endpoint.mediaUpload}}, abortController, onUploadProgress{{/if}} } {{/if}}) => {{#if hasMutationFnBody}} { {{/if}}
       {{#if hasAclCheck}}{{{genAclCheckCall endpoint}}}{{/if}}
-      {{#if endpoint.mediaUpload}}const uploadInstructions = await {{importedEndpointName endpoint}}({{{endpointArgs endpoint}}}{{#if hasAxiosRequestConfig}}{{#if (endpointArgs endpoint)}}, {{/if}}{{axiosRequestConfigName}}{{/if}}); 
-      
+      {{#if endpoint.mediaUpload}}const uploadInstructions = await {{importedEndpointName endpoint}}({{{endpointArgs endpoint}}}{{#if hasAxiosRequestConfig}}{{#if (endpointArgs endpoint)}}, {{/if}}{{axiosRequestConfigName}}{{/if}});
+
       if (file && uploadInstructions.url) {
         const method = (data?.method?.toLowerCase() ?? "put") as 'put' | 'post';
         let dataToSend: File | FormData = file;
@@ -34,21 +34,21 @@ export const {{queryName endpoint mutation=true}} = (options?: AppMutationOption
           : undefined,
         });
       }
-      
+
       return uploadInstructions;
       {{else}}
       {{#if hasMutationFnBody}}return {{/if}}{{importedEndpointName endpoint}}({{{endpointArgs endpoint}}}{{#if hasAxiosRequestConfig}}{{#if (endpointArgs endpoint)}}, {{/if}}{{axiosRequestConfigName}}{{/if}})
       {{/if}}
     {{#if hasMutationFnBody}} }{{/if}},
     ...options, {{#if hasMutationEffects}}
-    onSuccess: async (resData, variables, context) => {
+    onSuccess: async (resData, variables, onMutateResult, context) => {
       {{! Mutation effects }}
       {{#if updateQueryEndpoints}}
       {{#if destructuredVariables}}const { {{commaSeparated destructuredVariables }} } = variables;{{/if}}
       const updateKeys = [{{#each updateQueryEndpoints as | endpoint |}}keys.{{endpointName endpoint}}({{{endpointArgs endpoint includeOnlyRequiredParams=true}}}), {{/each}}];
       {{/if}}
       await runMutationEffects(resData, options{{#if updateQueryEndpoints}}, updateKeys{{/if}});
-      options?.onSuccess?.(resData, variables, context);
+      options?.onSuccess?.(resData, variables, onMutateResult, context);
     },{{/if}}
   });
 };
