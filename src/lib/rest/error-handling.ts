@@ -99,11 +99,17 @@ export class ErrorHandler<CodeT extends string> {
       code: "UNKNOWN_ERROR",
       condition: () => true,
       getMessage: (_, e) => {
-        if (axios.isAxiosError(e) && e.response?.data?.code) {
-          return this.t("openapi.sharedErrors.unknownErrorWithCode", {
-            code: e.response.data.code,
-          });
+        const code = RestUtils.extractServerResponseCode(e);
+        const serverMessage = RestUtils.extractServerErrorMessage(e);
+
+        if (code) {
+          let message = `Unknown error, message from server: ${code}`;
+          if (serverMessage) {
+            message += ` ${serverMessage}`;
+          }
+          return message;
         }
+
         return this.t("openapi.sharedErrors.unknownError");
       },
     };
