@@ -307,7 +307,7 @@ function getAllOfZodSchema({ schema, zodSchema, resolver, meta, tag }: GetPartia
   const first = types.at(0)!;
   const rest = types
     .slice(1)
-    .map((type) => `merge(${type.getCodeString(tag, resolver.options)})`)
+    .map((type) => `extend(${type.getCodeString(tag, resolver.options)})`)
     .join(".");
 
   return zodSchema.assign(`${first.getCodeString(tag, resolver.options)}.${rest}`);
