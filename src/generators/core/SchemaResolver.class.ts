@@ -143,7 +143,7 @@ export class SchemaResolver {
     }
 
     const schemaRef = this.getRefByZodSchemaName(zodSchemaName);
-    const schemaTags = schemaRef ? this.getSchemaDataByRef(schemaRef)?.tags ?? [] : [];
+    const schemaTags = schemaRef ? (this.getSchemaDataByRef(schemaRef)?.tags ?? []) : [];
     const zodSchemaTags = this.zodSchemaData.find((data) => data.zodSchemaName === zodSchemaName)?.tags ?? [];
     const tags = getUniqueArray(schemaTags, zodSchemaTags);
     const tag = tags.length === 1 ? tags[0] : this.options.defaultTag;

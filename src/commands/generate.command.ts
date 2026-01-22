@@ -71,8 +71,8 @@ class GenerateOptions implements GenerateParams {
   @YargOption({ envAlias: "builderConfigs", type: "boolean" })
   builderConfigs?: boolean;
 
-  @YargOption({ envAlias: "prettier", default: true, type: "boolean" })
-  prettier?: boolean;
+  @YargOption({ envAlias: "format", default: true, type: "boolean" })
+  format?: boolean;
 
   @YargOption({ envAlias: "verbose", default: false, type: "boolean" })
   verbose?: boolean;

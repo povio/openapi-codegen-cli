@@ -193,7 +193,7 @@ function getReferenceZodSchema({ schema, zodSchema, resolver, meta, tag }: GetPa
 
   const refsPath = zodSchema.meta.referencedBy
     .slice(0, -1)
-    .map((prev) => (prev.ref ? resolver.getZodSchemaNameByRef(prev.ref) ?? prev.ref : undefined))
+    .map((prev) => (prev.ref ? (resolver.getZodSchemaNameByRef(prev.ref) ?? prev.ref) : undefined))
     .filter(Boolean);
   const zodSchemaName = resolver.getZodSchemaNameByRef(schema.$ref);
   if (refsPath.length > 1 && refsPath.includes(zodSchemaName)) {

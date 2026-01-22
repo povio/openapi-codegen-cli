@@ -82,7 +82,7 @@ export function getEndpointParameter({
   const zodSchema = getZodSchema({
     schema,
     resolver,
-    meta: { isRequired: paramObj.in === "path" ? true : paramObj.required ?? false },
+    meta: { isRequired: paramObj.in === "path" ? true : (paramObj.required ?? false) },
     tag,
   });
 

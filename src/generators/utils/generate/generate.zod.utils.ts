@@ -43,7 +43,7 @@ export const getImportedZodSchemaInferedTypeName = (
 };
 
 export function getZodSchemaType(data: GenerateZodSchemaData) {
-  return data.isEnum ? "enum" : data.schemaObj?.type ?? "object";
+  return data.isEnum ? "enum" : (data.schemaObj?.type ?? "object");
 }
 
 export function getZodSchemaDescription(data: GenerateZodSchemaData) {

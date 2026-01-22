@@ -78,7 +78,7 @@ function handleExtractedEnumZodSchemaDataUpdate({
     getNotAllowedInlineEnumError(
       schemaRef
         ? `${getSchemaNameByRef(schemaRef)}.${nameSegments[nameSegments.length - 1]}`
-        : schemaInfo ?? nameSegments.join("."),
+        : (schemaInfo ?? nameSegments.join(".")),
     ),
   );
 }

@@ -3,10 +3,7 @@ import fs from "fs";
 
 const packageJson = JSON.parse(fs.readFileSync("package.json", "utf-8"));
 
-const external = [
-  ...Object.keys(packageJson.dependencies || {}),
-  ...Object.keys(packageJson.peerDependencies || {}),
-];
+const external = [...Object.keys(packageJson.dependencies || {}), ...Object.keys(packageJson.peerDependencies || {})];
 
 // CLI and Node.js builds - run in Node.js
 const nodeBuildOptions = {
