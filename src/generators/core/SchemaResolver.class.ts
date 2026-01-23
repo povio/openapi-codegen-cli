@@ -28,13 +28,14 @@ import {
   getZodSchemaName,
   getZodSchemaOperationName,
 } from "src/generators/utils/zod-schema.utils";
+
 import { DependencyGraph, getOpenAPISchemaDependencyGraph } from "./openapi/getOpenAPISchemaDependencyGraph";
 import { getDeepSchemaRefObjs, getSchemaRefObjs } from "./openapi/getSchemaRefObjs";
-import { ZodSchema } from "./zod/ZodSchema.class";
 import { resolveExtractedEnumZodSchemaNames } from "./zod/enumExtraction/resolveExtractedEnumZodSchemaNames";
 import { resolveExtractedEnumZodSchemaTags } from "./zod/enumExtraction/resolveExtractedEnumZodSchemaTags";
 import { updateExtractedEnumZodSchemaData } from "./zod/enumExtraction/updateExtractedEnumZodSchemaData";
 import { getEnumZodSchemasFromOpenAPIDoc } from "./zod/getZodSchemasFromOpenAPIDoc";
+import { ZodSchema } from "./zod/ZodSchema.class";
 
 interface SchemaData {
   ref: string;

@@ -1,5 +1,6 @@
-import { build } from "esbuild";
 import fs from "fs";
+
+import { build } from "esbuild";
 
 const packageJson = JSON.parse(fs.readFileSync("package.json", "utf-8"));
 

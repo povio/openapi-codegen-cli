@@ -22,9 +22,10 @@ import {
 } from "src/generators/utils/openapi-schema.utils";
 import { isPrimitiveType, wrapWithQuotesIfNeeded } from "src/generators/utils/openapi.utils";
 import { match } from "ts-pattern";
-import { getParentRef, ZodSchema, ZodSchemaMetaData } from "./ZodSchema.class";
+
 import { getZodChain } from "./getZodChain";
 import { getSchemaRefs } from "./getZodSchemaRefs";
+import { getParentRef, ZodSchema, ZodSchemaMetaData } from "./ZodSchema.class";
 
 type GetZodSchemaParams = {
   schema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject;

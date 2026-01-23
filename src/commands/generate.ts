@@ -1,5 +1,5 @@
-import SwaggerParser from "@apidevtools/swagger-parser";
 import { exec } from "child_process";
+
 import { OpenAPIV3 } from "openapi-types";
 import { resolveConfig } from "src/generators/core/resolveConfig";
 import { generateCodeFromOpenAPIDoc } from "src/generators/generateCodeFromOpenAPIDoc";
@@ -7,6 +7,8 @@ import { GenerateOptions } from "src/generators/types/options";
 import { writeGenerateFileData } from "src/generators/utils/file.utils";
 import { logError, logInfo, logSuccess } from "src/helpers/cli.helper";
 import { loadConfig } from "src/helpers/config.helper";
+
+import SwaggerParser from "@apidevtools/swagger-parser";
 
 export type GenerateParams = {
   config?: string;

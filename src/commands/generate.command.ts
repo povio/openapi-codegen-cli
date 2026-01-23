@@ -2,6 +2,7 @@ import { logBanner } from "src/helpers/cli.helper";
 import { getVersion } from "src/helpers/version.helper";
 import { getBuilder, YargOption } from "src/helpers/yargs.helper";
 import yargs from "yargs";
+
 import { generate, GenerateParams } from "./generate";
 
 class GenerateOptions implements GenerateParams {

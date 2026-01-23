@@ -1,6 +1,6 @@
 import { OpenAPIV3 } from "openapi-types";
-import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
 import { getOpenAPISchemaComplexity } from "src/generators/core/openapi/getOpenAPISchemaComplexity";
+import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
 import { WithRequired } from "src/generators/types/common";
 import { GenerateType } from "src/generators/types/generate";
 import { GenerateOptions } from "src/generators/types/options";

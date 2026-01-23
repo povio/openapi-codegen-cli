@@ -1,4 +1,5 @@
 import { describe, expect, test } from "vitest";
+
 import { getImportPath } from "./generate.imports.utils";
 
 describe("Utils: generate imports", () => {

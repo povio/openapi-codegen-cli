@@ -1,5 +1,20 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
   "printWidth": 120,
+  "experimentalSortImports": {
+    "customGroups": [
+      {
+        "groupName": "at-alias",
+        "elementNamePattern": ["@"]
+      },
+      {
+        "groupName": "hash-alias",
+        "elementNamePattern": ["#"]
+      }
+    ],
+    "groups": ["builtin", "external", "internal", "at-alias", "hash-alias", ["parent", "sibling", "index"], "unknown"],
+    "newlinesBetween": true,
+    "internalPattern": ["^src/"]
+  },
   "ignorePatterns": ["**/*.hbs"]
 }

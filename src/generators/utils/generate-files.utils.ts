@@ -13,6 +13,7 @@ import { generateAppRestClient } from "src/generators/generate/generateAppRestCl
 import { generateQueryModules } from "src/generators/generate/generateQueryModules";
 import { generateZodExtended } from "src/generators/generate/generateZodExtended";
 import { GenerateData, GenerateFile, GenerateFileData } from "src/generators/types/generate";
+
 import { getOutputFileName, readAssetSync } from "./file.utils";
 import { getFileNameWithExtension } from "./generate/generate.utils";
 
