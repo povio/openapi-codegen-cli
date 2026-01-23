@@ -307,10 +307,10 @@ function getAllOfZodSchema({ schema, zodSchema, resolver, meta, tag }: GetPartia
   const first = types.at(0)!;
   const rest = types
     .slice(1)
-    .map((type) => `merge(${type.getCodeString(tag, resolver.options)})`)
-    .join(".");
+    .map((type) => `...${type.getCodeString(tag, resolver.options)}.shape`)
+    .join(", ");
 
-  return zodSchema.assign(`${first.getCodeString(tag, resolver.options)}.${rest}`);
+  return zodSchema.assign(`z.object({ ...${first.getCodeString(tag, resolver.options)}.shape, ${rest} })`);
 }
 
 function getPrimitiveZodSchema({ schema, zodSchema, resolver, meta, tag }: GetPartialZodSchemaParams) {

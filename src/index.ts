@@ -20,6 +20,9 @@ export type { AppQueryOptions, AppMutationOptions, AppInfiniteQueryOptions } fro
 export { OpenApiRouter } from "./lib/config/router.context";
 export { OpenApiQueryConfig } from "./lib/config/queryConfig.context";
 
+// i18n resources (for consumer apps to merge into their i18n config)
+export { ns, resources } from "./lib/config/i18n";
+
 // Auth
 export { AuthContext } from "./lib/auth/auth.context";
 export { AuthGuard } from "./lib/auth/AuthGuard";
