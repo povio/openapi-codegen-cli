@@ -12,7 +12,7 @@ export function YargOption(properties: IOptionProperties) {
   return (target: object, propertyKey: string) => {
     if (properties !== undefined && properties !== null) {
       const newMetadata = {
-        ...(Reflect.getMetadata(optionsKey, target) || {}),
+        ...Reflect.getMetadata(optionsKey, target),
         [propertyKey]: {
           ...properties,
           describe: properties.envAlias ? `${properties.describe || ""} [${properties.envAlias}]` : properties.describe,

@@ -5,9 +5,7 @@ import { DEFAULT_GENERATE_OPTIONS } from "src/generators/const/options.const";
 import { ModelMetadata, QueryMetadata, TsType } from "src/generators/types/metadata";
 import { getMetadataFromOpenAPIDoc } from "./getMetadataFromOpenAPIDoc";
 
-describe("getMetadataFromOpenAPIDoc", async () => {
-  const openApiDoc = (await SwaggerParser.bundle("./test/petstore.yaml")) as OpenAPIV3.Document;
-
+describe("getMetadataFromOpenAPIDoc", () => {
   const Category: TsType = {
     type: "Category",
     namespace: "PetModels",
@@ -404,6 +402,8 @@ describe("getMetadataFromOpenAPIDoc", async () => {
   ];
 
   test("getMetadataFromOpenAPIDoc", async () => {
+    const openApiDoc = (await SwaggerParser.bundle("./test/petstore.yaml")) as OpenAPIV3.Document;
+
     const metadata = await getMetadataFromOpenAPIDoc(openApiDoc, {
       ...DEFAULT_GENERATE_OPTIONS,
       excludeRedundantZodSchemas: false,
@@ -414,6 +414,8 @@ describe("getMetadataFromOpenAPIDoc", async () => {
   });
 
   test("getMetadataFromOpenAPIDoc", async () => {
+    const openApiDoc = (await SwaggerParser.bundle("./test/petstore.yaml")) as OpenAPIV3.Document;
+
     const extractEnums = false;
     const metadata = await getMetadataFromOpenAPIDoc(openApiDoc, {
       ...DEFAULT_GENERATE_OPTIONS,

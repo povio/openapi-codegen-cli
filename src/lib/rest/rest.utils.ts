@@ -1,5 +1,6 @@
-import axios, { AxiosError, AxiosResponseHeaders } from "axios";
+import { AxiosError, AxiosResponseHeaders } from "axios";
 import { z } from "zod";
+import { isAxiosError } from "axios";
 
 export namespace RestUtils {
   export const extractServerResponseCode = (e: unknown): string | null => {
@@ -7,7 +8,7 @@ export namespace RestUtils {
       return "validation-exception";
     }
 
-    if (!axios.isAxiosError(e)) {
+    if (!isAxiosError(e)) {
       return null;
     }
 
@@ -38,7 +39,7 @@ export namespace RestUtils {
       return e.message;
     }
 
-    if (!axios.isAxiosError(e)) {
+    if (!isAxiosError(e)) {
       return null;
     }
 

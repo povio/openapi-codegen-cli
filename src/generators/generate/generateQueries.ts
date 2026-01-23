@@ -60,7 +60,7 @@ export function generateQueries({ resolver, data, tag }: GenerateTypeParams) {
 
   const hasMutationEffectsImport = hasMutationEffects && mutationEndpoints.length > 0;
   const mutationEffectsImport: Import = {
-    bindings: [...(mutationEndpoints.length > 0 ? [MUTATION_EFFECTS.optionsType, MUTATION_EFFECTS.hookName] : [])],
+    bindings: mutationEndpoints.length > 0 ? [MUTATION_EFFECTS.optionsType, MUTATION_EFFECTS.hookName] : [],
     from: getMutationEffectsImportPath(resolver.options),
   };
 
