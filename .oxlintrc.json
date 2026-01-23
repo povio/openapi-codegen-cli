@@ -7,7 +7,7 @@
     "pedantic": "off",
     "style": "off",
     "restriction": "off",
-    "suspicious": "off",
+    "suspicious": "error",
     "nursery": "off"
   },
   "env": {
@@ -26,6 +26,7 @@
       }
     ],
     "import/*": "error",
+    "import/no-unassigned-import": "off",
     "typescript/*": "error",
     "unicorn/*": "error",
     "oxc/*": "error",

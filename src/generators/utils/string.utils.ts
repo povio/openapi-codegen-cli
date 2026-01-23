@@ -15,7 +15,7 @@ export const removeSuffix = (text: string, suffix: string) => text.replace(new R
 
 export const getLongestMostCommon = (strs: string[]): string | undefined => {
   const counter = strs.reduce((acc, str) => ({ ...acc, [str]: (acc[str] ?? 0) + 1 }), {} as Record<string, number>);
-  const sortedEntries = Object.entries(counter).sort((a, b) => {
+  const sortedEntries = Object.entries(counter).toSorted((a, b) => {
     if (a[1] === b[1]) {
       return b[0].length - a[0].length;
     }
