@@ -18,7 +18,7 @@ export function getSchemaDescriptions(schemaObj: OpenAPIV3.SchemaObject) {
   ];
 
   const schemaDescriptions = schemaKeys
-    .filter((key) => schemaObj[key])
+    .filter((key) => schemaObj[key] !== undefined)
     .reduce((acc, key) => [...acc, `${capitalize(camelToSpaceSeparated(key))}: \`${schemaObj[key]}\``], [] as string[]);
 
   return schemaDescriptions;

@@ -84,8 +84,8 @@ export function getSchemaTsMetaType({
         return {
           metaType: "object",
           objectProperties: (metaTypes as TsObjectMetaType[]).reduce((acc, { objectProperties }) => {
-            const objectPropertyNames = objectProperties.map(({ name }) => name);
-            return [...acc.filter(({ name }) => !objectPropertyNames.includes(name)), ...objectProperties];
+            const objectPropertyNames = new Set(objectProperties.map(({ name }) => name));
+            return [...acc.filter(({ name }) => !objectPropertyNames.has(name)), ...objectProperties];
           }, [] as TsProperty[]),
         };
       } else {

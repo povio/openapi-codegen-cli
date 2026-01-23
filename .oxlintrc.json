@@ -17,6 +17,7 @@
   },
   "rules": {
     "eslint/*": "error",
+    "eslint/no-await-in-loop": "off",
     "eslint/eqeqeq": [
       "error",
       "always",
@@ -28,6 +29,8 @@
     "typescript/*": "error",
     "unicorn/*": "error",
     "oxc/*": "error",
+    "oxc/no-map-spread": "off",
+    "oxc/no-accumulating-spread": "off",
     "promise/*": "error",
     "vitest/*": "error"
   }

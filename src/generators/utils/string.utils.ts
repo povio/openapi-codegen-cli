@@ -25,11 +25,7 @@ export const getLongestMostCommon = (strs: string[]): string | undefined => {
 };
 
 export const getMostCommonAdjacentCombinationSplit = (strs: string[]): string | undefined => {
-  const splits = strs
-    .map(capitalize)
-    .map(splitByUppercase)
-    .map((split) => getAdjacentStringCombinations(split))
-    .flat();
+  const splits = strs.flatMap((str) => getAdjacentStringCombinations(splitByUppercase(capitalize(str))));
   return getLongestMostCommon(splits);
 };
 

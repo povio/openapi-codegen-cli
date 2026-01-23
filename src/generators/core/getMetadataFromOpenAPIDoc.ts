@@ -98,7 +98,7 @@ function getQueryMetadataParams({
       }
       return a.isRequired ? -1 : 1;
     })
-    .map(({ paramType, ...queryParam }) => queryParam);
+    .map(({ paramType: _paramType, ...queryParam }) => queryParam);
 }
 
 function getQueryMetadataResponse({
