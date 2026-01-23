@@ -5,7 +5,7 @@
     "correctness": "error",
     "perf": "error",
     "pedantic": "off",
-    "style": "off",
+    "style": "error",
     "restriction": "off",
     "suspicious": "error",
     "nursery": "off"
@@ -18,6 +18,10 @@
   "rules": {
     "eslint/*": "error",
     "eslint/no-await-in-loop": "off",
+    "eslint/sort-keys": "off",
+    "eslint/sort-imports": "off",
+    "eslint/no-ternary": "off",
+    "eslint/no-magic-numbers": "off",
     "eslint/eqeqeq": [
       "error",
       "always",
@@ -27,6 +31,11 @@
     ],
     "import/*": "error",
     "import/no-unassigned-import": "off",
+    "import/no-named-export": "off",
+    "import/group-exports": "off",
+    "import/exports-last": "off",
+    "import/prefer-default-export": "off",
+    "import/consistent-type-specifier-style": "off",
     "typescript/*": "error",
     "unicorn/*": "error",
     "oxc/*": "error",
