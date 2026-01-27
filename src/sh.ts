@@ -2,6 +2,7 @@
 
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
+
 import { command as checkCommand } from "./commands/check.command";
 import { command as generateCommand } from "./commands/generate.command";
 import { logError, logInfo } from "./helpers/cli.helper";

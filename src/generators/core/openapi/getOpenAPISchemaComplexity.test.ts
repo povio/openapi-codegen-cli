@@ -1,5 +1,6 @@
 import { OpenAPIV3 } from "openapi-types";
 import { expect, test } from "vitest";
+
 import { getOpenAPISchemaComplexity } from "./getOpenAPISchemaComplexity";
 
 const getComplexity = (schema: OpenAPIV3.SchemaObject) => getOpenAPISchemaComplexity(0, schema);

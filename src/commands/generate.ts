@@ -1,5 +1,5 @@
-import SwaggerParser from "@apidevtools/swagger-parser";
 import { exec } from "child_process";
+
 import { OpenAPIV3 } from "openapi-types";
 import { resolveConfig } from "src/generators/core/resolveConfig";
 import { generateCodeFromOpenAPIDoc } from "src/generators/generateCodeFromOpenAPIDoc";
@@ -8,10 +8,12 @@ import { writeGenerateFileData } from "src/generators/utils/file.utils";
 import { logError, logInfo, logSuccess } from "src/helpers/cli.helper";
 import { loadConfig } from "src/helpers/config.helper";
 
+import SwaggerParser from "@apidevtools/swagger-parser";
+
 export type GenerateParams = {
   config?: string;
   excludeTags?: string;
-  prettier?: boolean;
+  format?: boolean;
   verbose?: boolean;
 } & Partial<
   Pick<
@@ -37,7 +39,7 @@ export type GenerateParams = {
   >
 >;
 
-export async function generate({ prettier, verbose, config: configParam, ...params }: GenerateParams) {
+export async function generate({ format, verbose, config: configParam, ...params }: GenerateParams) {
   const start = Date.now();
 
   if (verbose) {
@@ -64,22 +66,22 @@ export async function generate({ prettier, verbose, config: configParam, ...para
     logSuccess(`Time: ${Date.now() - start}ms`);
   }
 
-  if (prettier) {
-    execPrettier({ output: config.output, verbose });
+  if (format) {
+    execOxfmt({ output: config.output, verbose });
   }
 }
 
-function execPrettier({ output, verbose }: Pick<GenerateParams, "output" | "verbose">) {
+function execOxfmt({ output, verbose }: Pick<GenerateParams, "output" | "verbose">) {
   if (verbose) {
-    logInfo("Running Prettier...");
+    logInfo("Running Oxfmt...");
   }
-  const ignorePathArg = process.env.NODE_ENV === "production" ? "" : "--ignore-path .prettierignore";
-  exec(`prettier --write ${output} ${ignorePathArg}`, (error) => {
+
+  exec(`oxfmt ${output}`, (error) => {
     if (verbose) {
       if (error) {
-        logError(error, "Prettier error");
+        logError(error, "Oxfmt error");
       } else {
-        logSuccess("Prettier finished.");
+        logSuccess("Oxfmt finished.");
       }
     }
   });

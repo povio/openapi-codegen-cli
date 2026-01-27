@@ -1,5 +1,6 @@
 import { GenerateType } from "src/generators/types/generate";
 import { GenerateOptions } from "src/generators/types/options";
+
 import { capitalize } from "./string.utils";
 
 export const getNamespaceName = ({

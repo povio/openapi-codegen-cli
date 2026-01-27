@@ -1,6 +1,6 @@
 import { DEFAULT_GENERATE_OPTIONS } from "src/generators/const/options.const";
-import { deepMerge } from "src/generators/utils/object.utils";
 import { GenerateOptions } from "src/generators/types/options";
+import { deepMerge } from "src/generators/utils/object.utils";
 
 export function resolveConfig({
   fileConfig = {},

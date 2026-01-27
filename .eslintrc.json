@@ -1,7 +1,7 @@
 {
   "parser": "@typescript-eslint/parser",
-  "plugins": ["@typescript-eslint", "prettier", "no-relative-import-paths"],
-  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "prettier"],
+  "plugins": ["@typescript-eslint", "no-relative-import-paths"],
+  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
   "parserOptions": {
     "project": "./tsconfig.eslint.json"
   },
@@ -11,12 +11,6 @@
   },
   "rules": {
     "no-console": ["error"],
-    "prettier/prettier": [
-      "error",
-      {
-        "endOfLine": "auto"
-      }
-    ],
     "@typescript-eslint/no-explicit-any": ["error"],
     "@typescript-eslint/no-unused-vars": ["error", { "ignoreRestSiblings": true }],
     "no-relative-import-paths/no-relative-import-paths": ["error", { "allowSameFolder": true }],

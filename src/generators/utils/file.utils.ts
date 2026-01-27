@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+
 import { GenerateFileData } from "src/generators/types/generate";
 
 function readFileSync(filePath: string) {

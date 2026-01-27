@@ -22,9 +22,10 @@ import {
 } from "src/generators/utils/openapi-schema.utils";
 import { isPrimitiveType, wrapWithQuotesIfNeeded } from "src/generators/utils/openapi.utils";
 import { match } from "ts-pattern";
-import { getParentRef, ZodSchema, ZodSchemaMetaData } from "./ZodSchema.class";
+
 import { getZodChain } from "./getZodChain";
 import { getSchemaRefs } from "./getZodSchemaRefs";
+import { getParentRef, ZodSchema, ZodSchemaMetaData } from "./ZodSchema.class";
 
 type GetZodSchemaParams = {
   schema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject;
@@ -193,7 +194,7 @@ function getReferenceZodSchema({ schema, zodSchema, resolver, meta, tag }: GetPa
 
   const refsPath = zodSchema.meta.referencedBy
     .slice(0, -1)
-    .map((prev) => (prev.ref ? resolver.getZodSchemaNameByRef(prev.ref) ?? prev.ref : undefined))
+    .map((prev) => (prev.ref ? (resolver.getZodSchemaNameByRef(prev.ref) ?? prev.ref) : undefined))
     .filter(Boolean);
   const zodSchemaName = resolver.getZodSchemaNameByRef(schema.$ref);
   if (refsPath.length > 1 && refsPath.includes(zodSchemaName)) {

@@ -28,13 +28,14 @@ import {
   getZodSchemaName,
   getZodSchemaOperationName,
 } from "src/generators/utils/zod-schema.utils";
+
 import { DependencyGraph, getOpenAPISchemaDependencyGraph } from "./openapi/getOpenAPISchemaDependencyGraph";
 import { getDeepSchemaRefObjs, getSchemaRefObjs } from "./openapi/getSchemaRefObjs";
-import { ZodSchema } from "./zod/ZodSchema.class";
 import { resolveExtractedEnumZodSchemaNames } from "./zod/enumExtraction/resolveExtractedEnumZodSchemaNames";
 import { resolveExtractedEnumZodSchemaTags } from "./zod/enumExtraction/resolveExtractedEnumZodSchemaTags";
 import { updateExtractedEnumZodSchemaData } from "./zod/enumExtraction/updateExtractedEnumZodSchemaData";
 import { getEnumZodSchemasFromOpenAPIDoc } from "./zod/getZodSchemasFromOpenAPIDoc";
+import { ZodSchema } from "./zod/ZodSchema.class";
 
 interface SchemaData {
   ref: string;
@@ -143,7 +144,7 @@ export class SchemaResolver {
     }
 
     const schemaRef = this.getRefByZodSchemaName(zodSchemaName);
-    const schemaTags = schemaRef ? this.getSchemaDataByRef(schemaRef)?.tags ?? [] : [];
+    const schemaTags = schemaRef ? (this.getSchemaDataByRef(schemaRef)?.tags ?? []) : [];
     const zodSchemaTags = this.zodSchemaData.find((data) => data.zodSchemaName === zodSchemaName)?.tags ?? [];
     const tags = getUniqueArray(schemaTags, zodSchemaTags);
     const tag = tags.length === 1 ? tags[0] : this.options.defaultTag;

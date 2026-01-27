@@ -1,4 +1,5 @@
 import { describe, expect, test } from "vitest";
+
 import { pathToVariableName, toBoolean } from "./openapi.utils";
 
 describe("Utils: openapi", () => {

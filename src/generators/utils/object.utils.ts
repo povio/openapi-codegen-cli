@@ -1,5 +1,5 @@
-import { Get } from "type-fest";
 import { HasNestedPath, ObjectLiteral } from "src/generators/types/common";
+import { Get } from "type-fest";
 
 /** Get a nested property value from a dot-delimited path. */
 export function getNested<

@@ -1,5 +1,7 @@
-import SwaggerParser from "@apidevtools/swagger-parser";
 import { OpenAPIV3 } from "openapi-types";
+
+import SwaggerParser from "@apidevtools/swagger-parser";
+
 import { DEFAULT_GENERATE_OPTIONS } from "./generators/const/options.const";
 import { getMetadataFromOpenAPIDoc } from "./generators/core/getMetadataFromOpenAPIDoc";
 import { generateCodeFromOpenAPIDoc } from "./generators/generateCodeFromOpenAPIDoc";

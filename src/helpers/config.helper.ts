@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-require-imports */
 import fs, { existsSync, rmSync, writeFileSync } from "fs";
 import path from "path";
+
 import { OpenAPICodegenConfig } from "src/generators/types/config";
+
 import { logError } from "./cli.helper";
 
 const CONFIG_FILE_NAMES = ["openapi-codegen.config.ts"];

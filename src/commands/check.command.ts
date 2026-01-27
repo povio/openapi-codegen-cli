@@ -1,7 +1,8 @@
-import yargs from "yargs";
 import { logBanner } from "src/helpers/cli.helper";
 import { getVersion } from "src/helpers/version.helper";
 import { getBuilder, YargOption } from "src/helpers/yargs.helper";
+import yargs from "yargs";
+
 import { check, CheckParams } from "./check";
 
 class CheckOptions implements CheckParams {

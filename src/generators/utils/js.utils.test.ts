@@ -1,4 +1,5 @@
 import { describe, expect, test } from "vitest";
+
 import { invalidVariableNameCharactersToCamel, isValidPropertyName } from "./js.utils";
 
 describe("Utils: js", () => {

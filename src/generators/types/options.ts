@@ -71,7 +71,8 @@ interface BaseGenerateOptions {
 }
 
 export interface GenerateOptions
-  extends BaseGenerateOptions,
+  extends
+    BaseGenerateOptions,
     ZodGenerateOptions,
     EndpointsGenerateOptions,
     QueriesGenerateOptions,

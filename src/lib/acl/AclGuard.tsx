@@ -1,7 +1,6 @@
 import type { PropsWithChildren } from "react";
-
-import { OpenApiRouter } from "src/lib/config/router.context";
 import { AbilityContext } from "src/lib/acl/ability.context";
+import { OpenApiRouter } from "src/lib/config/router.context";
 
 import type { AppAbilities } from "./appAbility.types";
 
