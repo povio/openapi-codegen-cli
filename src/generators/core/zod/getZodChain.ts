@@ -2,6 +2,7 @@ import { OpenAPIV3 } from "openapi-types";
 import { GenerateOptions } from "src/generators/types/options";
 import { escapeControlCharacters, unwrapQuotesIfNeeded } from "src/generators/utils/openapi.utils";
 import { match } from "ts-pattern";
+
 import { ZodSchemaMetaData } from "./ZodSchema.class";
 
 export function getZodChain({

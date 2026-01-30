@@ -3,8 +3,8 @@ import axios, { AxiosInstance, AxiosRequestConfig, CreateAxiosDefaults } from "a
 import { z } from "zod";
 
 import { ErrorHandler, GeneralErrorCodes, SharedErrorHandler } from "./error-handling";
-import { RestInterceptor } from "./rest-interceptor";
 import { RestClient as IRestClient, RequestConfig, RequestInfo, Response } from "./rest-client.types";
+import { RestInterceptor } from "./rest-interceptor";
 
 export class RestClient implements IRestClient {
   private readonly client: AxiosInstance;
