@@ -53,6 +53,8 @@
     "start:dist": "node ./dist/sh.js",
     "typecheck": "tsc --noEmit",
     "lint": "eslint ./src",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
     "check": "yarn typecheck && yarn lint && yarn test",
     "push": "yarn exec ./scripts/publish.sh",
     "dev:generate": "rm -rf ./output && yarn start generate --config ./test/config.ts",
