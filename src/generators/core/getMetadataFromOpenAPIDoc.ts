@@ -92,14 +92,14 @@ function getQueryMetadataParams({
         paramType: param.type,
       } as QueryMetadata["params"][0] & { paramType: EndpointParameter["type"] };
     })
-    .sort((a, b) => {
+    .toSorted((a, b) => {
       if (a.isRequired === b.isRequired) {
         const sortedParamTypes = ["Path", "Body", "Query", "Header"];
         return sortedParamTypes.indexOf(a.paramType) - sortedParamTypes.indexOf(b.paramType);
       }
       return a.isRequired ? -1 : 1;
     })
-    .map(({ paramType, ...queryParam }) => queryParam);
+    .map(({ paramType: _paramType, ...queryParam }) => queryParam);
 }
 
 function getQueryMetadataResponse({

@@ -1,4 +1,4 @@
-import axios from "axios";
+import { isAxiosError, isCancel } from "axios";
 import { z } from "zod";
 
 import { RestUtils } from "./rest.utils";
@@ -56,7 +56,7 @@ export class ErrorHandler<CodeT extends string> {
     const internalError: ErrorEntry<ICodeT> = {
       code: "INTERNAL_ERROR",
       condition: (e) => {
-        if (axios.isAxiosError(e)) {
+        if (isAxiosError(e)) {
           return e.response?.status != null && e.response.status >= 500 && e.response.status < 600;
         }
 
@@ -68,7 +68,7 @@ export class ErrorHandler<CodeT extends string> {
     const networkError: ErrorEntry<ICodeT> = {
       code: "NETWORK_ERROR",
       condition: (e) => {
-        if (axios.isAxiosError(e)) {
+        if (isAxiosError(e)) {
           return e.code === "ERR_NETWORK";
         }
 
@@ -80,11 +80,11 @@ export class ErrorHandler<CodeT extends string> {
     const canceledError: ErrorEntry<ICodeT> = {
       code: "CANCELED_ERROR",
       condition: (e) => {
-        if (axios.isCancel(e)) {
+        if (isCancel(e)) {
           return true;
         }
 
-        if (axios.isAxiosError(e) && e.code === "ECONNABORTED") {
+        if (isAxiosError(e) && e.code === "ECONNABORTED") {
           return true;
         }
 

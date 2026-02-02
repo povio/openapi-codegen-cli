@@ -60,13 +60,12 @@ async function loadTsConfig(filePath: string): Promise<OpenAPICodegenConfig> {
   const transpiledFilepath = `${filePath.slice(0, -2)}cjs`;
   try {
     const tsConfig = resolveTsConfig(path.dirname(filePath)) ?? {};
-    tsConfig.compilerOptions = {
-      ...tsConfig.compilerOptions,
+    tsConfig.compilerOptions = Object.assign({}, tsConfig.compilerOptions, {
       module: typescript.ModuleKind.NodeNext,
       moduleResolution: typescript.ModuleResolutionKind.NodeNext,
       target: typescript.ScriptTarget.ES2022,
       noEmit: false,
-    };
+    });
 
     const fileContent = fs.readFileSync(filePath, "utf-8");
 

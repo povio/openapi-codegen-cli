@@ -211,7 +211,7 @@ export class SchemaResolver {
   getExtractedEnumZodSchemaNamesReferencedBySchemaRef(schemaRef: string) {
     return this.extractedEnumZodSchemaData.reduce((acc, { zodSchemaName, meta }) => {
       if (zodSchemaName && meta.schemaRefs.includes(schemaRef)) {
-        acc.push(zodSchemaName);
+        return [...acc, zodSchemaName];
       }
       return acc;
     }, [] as string[]);
@@ -245,11 +245,10 @@ export class SchemaResolver {
       return [...chain, currentRef, ref];
     }
     return Array.from(this.dependencyGraph.refsDependencyGraph[currentRef]?.values() ?? [])
-      .map((childRef) => {
+      .flatMap((childRef) => {
         const childChain = this.getCircularSchemaChain(ref, childRef, chain, visited);
         return childChain.length > 0 ? [currentRef, ...childChain] : childChain;
-      })
-      .flat();
+      });
   }
 
   getBaseUrl() {
@@ -418,8 +417,8 @@ export class SchemaResolver {
   }
 
   private handleDuplicateEnumZodSchemas() {
-    const codes = this.enumZodSchemas.map(({ code }) => code);
-    const duplicates = this.enumZodSchemas.filter(({ code }) => codes.includes(code));
+    const codes = new Set(this.enumZodSchemas.map(({ code }) => code));
+    const duplicates = this.enumZodSchemas.filter(({ code }) => codes.has(code));
 
     this.schemaData.forEach((schemaData) => {
       const duplicateCode = duplicates.find(({ zodSchemaName }) => zodSchemaName === schemaData.zodSchemaName)?.code;
@@ -450,7 +449,7 @@ export class SchemaResolver {
     this.extractedEnumZodSchemaData.splice(
       0,
       this.extractedEnumZodSchemaData.length,
-      ...this.extractedEnumZodSchemaData.filter(({ code }) => !codes.includes(code)),
+      ...this.extractedEnumZodSchemaData.filter(({ code }) => !codes.has(code)),
     );
   }
 }

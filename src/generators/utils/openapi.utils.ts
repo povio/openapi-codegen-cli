@@ -108,7 +108,7 @@ export function pathToVariableName(path: string) {
 
   const pathParams = [...path.matchAll(PATH_PARAM_WITH_BRACKETS_REGEX)];
   if (pathParams.length > 0) {
-    const lastPathParam = pathParams.sort((a, b) => a.index - b.index)[pathParams.length - 1][0];
+    const lastPathParam = pathParams.toSorted((a, b) => a.index - b.index)[pathParams.length - 1][0];
     path = `${path.replace(PATH_PARAM_WITH_BRACKETS_REGEX, "")}By${capitalize(lastPathParam.slice(1, -1))}`; // MediaObjects{id} => MediaObjectsById
   }
 

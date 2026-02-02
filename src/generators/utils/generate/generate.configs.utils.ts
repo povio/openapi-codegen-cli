@@ -207,7 +207,7 @@ function resolveBuilderConfigNames(endpoints: ExtendedEndpoint[]): Record<string
       ...endpoint,
       namePathSegments: endpoint.pathSegments.filter((segment) => !isPathSegmentParam(segment)),
     }))
-    .sort((a, b) => a.namePathSegments.length - b.namePathSegments.length);
+    .toSorted((a, b) => a.namePathSegments.length - b.namePathSegments.length);
 
   const namedEndpoints: Record<string, ExtendedEndpoint> = {};
   for (const endpoint of sortedEndpoints) {

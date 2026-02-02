@@ -1,0 +1,47 @@
+{
+  "$schema": "node_modules/oxlint/configuration_schema.json",
+  "plugins": ["eslint", "typescript", "unicorn", "import", "oxc", "promise", "vitest"],
+  "categories": {
+    "correctness": "off",
+    "perf": "error",
+    "pedantic": "off",
+    "style": "off",
+    "restriction": "off",
+    "suspicious": "off",
+    "nursery": "off"
+  },
+  "env": {
+    "builtin": true,
+    "node": true,
+    "shared-node-browser": true
+  },
+  "rules": {
+    "eslint/*": "error",
+    "eslint/no-await-in-loop": "off",
+    "eslint/sort-keys": "off",
+    "eslint/sort-imports": "off",
+    "eslint/no-ternary": "off",
+    "eslint/no-magic-numbers": "off",
+    "eslint/eqeqeq": [
+      "error",
+      "always",
+      {
+        "null": "ignore"
+      }
+    ],
+    "import/*": "error",
+    "import/no-unassigned-import": "off",
+    "import/no-named-export": "off",
+    "import/group-exports": "off",
+    "import/exports-last": "off",
+    "import/prefer-default-export": "off",
+    "import/consistent-type-specifier-style": "off",
+    "typescript/*": "error",
+    "unicorn/*": "error",
+    "oxc/*": "error",
+    "oxc/no-map-spread": "off",
+    "oxc/no-accumulating-spread": "off",
+    "promise/*": "error",
+    "vitest/*": "error"
+  }
+}
