@@ -1,6 +1,6 @@
 {
   "name": "@povio/openapi-codegen-cli",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "keywords": [
     "codegen",
     "openapi",
@@ -62,6 +62,7 @@
     "dev:check": "yarn start check --config ./test/config.ts"
   },
   "dependencies": {
+    "i18next": "^25.7.3",
     "import-fresh": "^3.3.1"
   },
   "devDependencies": {
@@ -96,7 +97,6 @@
   "peerDependencies": {
     "@casl/ability": "^6.7.3",
     "@casl/react": "^5.0.0",
-    "@tanstack/react-query": "^5.85.9",
     "axios": "^1.13.1",
     "react": "^19.1.0",
     "zod": "^4.1.12"
@@ -109,6 +109,7 @@
       "optional": true
     }
   },
+  "@tanstack/react-query": "^5.89.0",
   "engines": {
     "node": ">= 14",
     "npm": ">= 8",
