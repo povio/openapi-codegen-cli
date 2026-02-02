@@ -69,7 +69,7 @@ yarn openapi-codegen generate --config my-config.ts
   --config                            Path to TS config file (default: 'openapi-codegen.config.ts')
   --input                             Path/URL to OpenAPI JSON/YAML document
   --output                            Output directory path (default: 'output')
-  --prettier                          Format the generated code using Prettier (default: true)
+  --format                            Format the generated code using Oxfmt (default: true)
   --verbose                           Display detailed log messages during execution (default: false)
 
   --splitByTags                       Organize output into separate folders based on OpenAPI operation tags (default: true)
@@ -276,7 +276,7 @@ export class JSONDto {
 
 ```ts
 export class JSONDto {
-  @ApiProperty({ additionalProperties: { type: 'any' } })
+  @ApiProperty({ additionalProperties: { type: "any" } })
   @Expose()
   @IsObject()
   nested: NestedDto;

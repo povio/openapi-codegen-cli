@@ -2,6 +2,7 @@ import { logBanner } from "src/helpers/cli.helper";
 import { getVersion } from "src/helpers/version.helper";
 import { getBuilder, YargOption } from "src/helpers/yargs.helper";
 import yargs from "yargs";
+
 import { generate, GenerateParams } from "./generate";
 
 class GenerateOptions implements GenerateParams {
@@ -71,8 +72,8 @@ class GenerateOptions implements GenerateParams {
   @YargOption({ envAlias: "builderConfigs", type: "boolean" })
   builderConfigs?: boolean;
 
-  @YargOption({ envAlias: "prettier", default: true, type: "boolean" })
-  prettier?: boolean;
+  @YargOption({ envAlias: "format", default: true, type: "boolean" })
+  format?: boolean;
 
   @YargOption({ envAlias: "verbose", default: false, type: "boolean" })
   verbose?: boolean;

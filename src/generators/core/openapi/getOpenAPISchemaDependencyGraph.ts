@@ -1,4 +1,5 @@
 import { OpenAPIV3 } from "openapi-types";
+
 import { iterateSchema, OnSchemaCallbackData } from "./iterateSchema";
 
 export interface DependencyGraph {
