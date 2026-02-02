@@ -97,6 +97,7 @@
   "peerDependencies": {
     "@casl/ability": "^6.7.3",
     "@casl/react": "^5.0.0",
+    "@tanstack/react-query": "^5.85.9",
     "axios": "^1.13.1",
     "react": "^19.1.0",
     "zod": "^4.1.12"
@@ -109,7 +110,6 @@
       "optional": true
     }
   },
-  "@tanstack/react-query": "^5.89.0",
   "engines": {
     "node": ">= 14",
     "npm": ">= 8",
