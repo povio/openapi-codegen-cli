@@ -1,4 +1,5 @@
 import { OpenAPIV3 } from "openapi-types";
+
 import { GenerateOptions } from "./options";
 
 export interface GenerateParams {

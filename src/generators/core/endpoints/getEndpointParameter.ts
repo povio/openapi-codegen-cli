@@ -1,5 +1,9 @@
 import { OpenAPIV3 } from "openapi-types";
 import { ALLOWED_PATH_IN } from "src/generators/const/openapi.const";
+import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
+import { getZodChain } from "src/generators/core/zod/getZodChain";
+import { getEnumZodSchemaCodeFromEnumNames, getZodSchema } from "src/generators/core/zod/getZodSchema";
+import { resolveZodSchemaName } from "src/generators/core/zod/resolveZodSchemaName";
 import { EndpointParameter } from "src/generators/types/endpoint";
 import { ParameterObject } from "src/generators/types/openapi";
 import {
@@ -13,10 +17,6 @@ import {
   getZodSchemaOperationName,
 } from "src/generators/utils/zod-schema.utils";
 import { match } from "ts-pattern";
-import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
-import { getZodChain } from "src/generators/core/zod/getZodChain";
-import { getEnumZodSchemaCodeFromEnumNames, getZodSchema } from "src/generators/core/zod/getZodSchema";
-import { resolveZodSchemaName } from "src/generators/core/zod/resolveZodSchemaName";
 
 export function getEndpointParameter({
   resolver,
@@ -82,7 +82,7 @@ export function getEndpointParameter({
   const zodSchema = getZodSchema({
     schema,
     resolver,
-    meta: { isRequired: paramObj.in === "path" ? true : paramObj.required ?? false },
+    meta: { isRequired: paramObj.in === "path" ? true : (paramObj.required ?? false) },
     tag,
   });
 

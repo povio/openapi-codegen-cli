@@ -9,6 +9,7 @@ import { DEFAULT_GENERATE_OPTIONS } from "src/generators/const/options.const";
 import { GenerateFile, GenerateType } from "src/generators/types/generate";
 import { GenerateOptions } from "src/generators/types/options";
 import { decapitalize } from "src/generators/utils/string.utils";
+
 import { getImportPath } from "./generate.imports.utils";
 
 export function getFileNameWithExtension({ fileName, extension }: GenerateFile) {

@@ -1,11 +1,10 @@
 {
   "compilerOptions": {
-    "target": "es2022",
+    "target": "esnext",
     "module": "esnext",
     "outDir": "dist",
     "strict": true,
     "lib": ["esnext", "dom"],
-    "baseUrl": ".",
     "moduleResolution": "node",
     "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true,
@@ -16,7 +15,10 @@
     "noImplicitAny": true,
     "skipLibCheck": true,
     "incremental": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "paths": {
+      "src/*": ["./src/*"]
+    }
   },
   "include": ["src/**/*.ts", "src/lib/**/*.tsx"],
   "exclude": ["node_modules", "src/assets/**"]

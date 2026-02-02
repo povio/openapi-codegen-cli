@@ -42,7 +42,7 @@ export function sortObjKeysFromArray<T extends ObjectLiteral>(obj: T, orderedKey
 
   const sortedEntries = entries
     .filter(([key]) => orderedKeys.includes(key))
-    .sort(([a], [b]) => orderedKeys.indexOf(a) - orderedKeys.indexOf(b))
+    .toSorted(([a], [b]) => orderedKeys.indexOf(a) - orderedKeys.indexOf(b))
     .concat(entries.filter(([key]) => !orderedKeys.includes(key)));
   return Object.fromEntries(sortedEntries);
 }

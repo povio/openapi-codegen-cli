@@ -28,13 +28,14 @@ import {
   getZodSchemaName,
   getZodSchemaOperationName,
 } from "src/generators/utils/zod-schema.utils";
+
 import { DependencyGraph, getOpenAPISchemaDependencyGraph } from "./openapi/getOpenAPISchemaDependencyGraph";
 import { getDeepSchemaRefObjs, getSchemaRefObjs } from "./openapi/getSchemaRefObjs";
-import { ZodSchema } from "./zod/ZodSchema.class";
 import { resolveExtractedEnumZodSchemaNames } from "./zod/enumExtraction/resolveExtractedEnumZodSchemaNames";
 import { resolveExtractedEnumZodSchemaTags } from "./zod/enumExtraction/resolveExtractedEnumZodSchemaTags";
 import { updateExtractedEnumZodSchemaData } from "./zod/enumExtraction/updateExtractedEnumZodSchemaData";
 import { getEnumZodSchemasFromOpenAPIDoc } from "./zod/getZodSchemasFromOpenAPIDoc";
+import { ZodSchema } from "./zod/ZodSchema.class";
 
 interface SchemaData {
   ref: string;
@@ -143,7 +144,7 @@ export class SchemaResolver {
     }
 
     const schemaRef = this.getRefByZodSchemaName(zodSchemaName);
-    const schemaTags = schemaRef ? this.getSchemaDataByRef(schemaRef)?.tags ?? [] : [];
+    const schemaTags = schemaRef ? (this.getSchemaDataByRef(schemaRef)?.tags ?? []) : [];
     const zodSchemaTags = this.zodSchemaData.find((data) => data.zodSchemaName === zodSchemaName)?.tags ?? [];
     const tags = getUniqueArray(schemaTags, zodSchemaTags);
     const tag = tags.length === 1 ? tags[0] : this.options.defaultTag;
@@ -210,7 +211,7 @@ export class SchemaResolver {
   getExtractedEnumZodSchemaNamesReferencedBySchemaRef(schemaRef: string) {
     return this.extractedEnumZodSchemaData.reduce((acc, { zodSchemaName, meta }) => {
       if (zodSchemaName && meta.schemaRefs.includes(schemaRef)) {
-        acc.push(zodSchemaName);
+        return [...acc, zodSchemaName];
       }
       return acc;
     }, [] as string[]);
@@ -244,11 +245,10 @@ export class SchemaResolver {
       return [...chain, currentRef, ref];
     }
     return Array.from(this.dependencyGraph.refsDependencyGraph[currentRef]?.values() ?? [])
-      .map((childRef) => {
+      .flatMap((childRef) => {
         const childChain = this.getCircularSchemaChain(ref, childRef, chain, visited);
         return childChain.length > 0 ? [currentRef, ...childChain] : childChain;
-      })
-      .flat();
+      });
   }
 
   getBaseUrl() {
@@ -417,8 +417,8 @@ export class SchemaResolver {
   }
 
   private handleDuplicateEnumZodSchemas() {
-    const codes = this.enumZodSchemas.map(({ code }) => code);
-    const duplicates = this.enumZodSchemas.filter(({ code }) => codes.includes(code));
+    const codes = new Set(this.enumZodSchemas.map(({ code }) => code));
+    const duplicates = this.enumZodSchemas.filter(({ code }) => codes.has(code));
 
     this.schemaData.forEach((schemaData) => {
       const duplicateCode = duplicates.find(({ zodSchemaName }) => zodSchemaName === schemaData.zodSchemaName)?.code;
@@ -449,7 +449,7 @@ export class SchemaResolver {
     this.extractedEnumZodSchemaData.splice(
       0,
       this.extractedEnumZodSchemaData.length,
-      ...this.extractedEnumZodSchemaData.filter(({ code }) => !codes.includes(code)),
+      ...this.extractedEnumZodSchemaData.filter(({ code }) => !codes.has(code)),
     );
   }
 }

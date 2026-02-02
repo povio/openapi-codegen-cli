@@ -4,8 +4,9 @@ import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
 import { GenerateOptions } from "src/generators/types/options";
 import { getSchemaRef } from "src/generators/utils/openapi.utils";
 import { describe, expect, test } from "vitest";
-import { ZodSchemaMetaData } from "./ZodSchema.class";
+
 import { getZodSchema } from "./getZodSchema";
+import { ZodSchemaMetaData } from "./ZodSchema.class";
 
 const generateOptions = {
   ...DEFAULT_GENERATE_OPTIONS,

@@ -1,11 +1,12 @@
 import { OpenAPIV3 } from "openapi-types";
-import { isReferenceObject } from "src/generators/utils/openapi-schema.utils";
-import { match } from "ts-pattern";
 import { COMPOSITE_KEYWORDS } from "src/generators/const/openapi.const";
 import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
 import { GenerateType } from "src/generators/types/generate";
 import { TsMetaType, TsObjectMetaType, TsProperty, TsType, TsTypeBase } from "src/generators/types/metadata";
 import { PrimitiveType } from "src/generators/types/openapi";
+import { isReferenceObject } from "src/generators/utils/openapi-schema.utils";
+import { match } from "ts-pattern";
+
 import { getTagImportPath } from "./generate/generate.utils";
 import { getImportedZodSchemaInferedTypeName } from "./generate/generate.zod.utils";
 import { isPrimitiveType } from "./openapi.utils";
@@ -84,8 +85,8 @@ export function getSchemaTsMetaType({
         return {
           metaType: "object",
           objectProperties: (metaTypes as TsObjectMetaType[]).reduce((acc, { objectProperties }) => {
-            const objectPropertyNames = objectProperties.map(({ name }) => name);
-            return [...acc.filter(({ name }) => !objectPropertyNames.includes(name)), ...objectProperties];
+            const objectPropertyNames = new Set(objectProperties.map(({ name }) => name));
+            return [...acc.filter(({ name }) => !objectPropertyNames.has(name)), ...objectProperties];
           }, [] as TsProperty[]),
         };
       } else {

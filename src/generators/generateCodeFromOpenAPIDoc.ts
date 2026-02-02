@@ -1,4 +1,5 @@
 import { OpenAPIV3 } from "openapi-types";
+
 import { getDataFromOpenAPIDoc } from "./core/getDataFromOpenAPIDoc";
 import { generateAcl } from "./generate/generateAcl";
 import { generateConfigs } from "./generate/generateConfigs";

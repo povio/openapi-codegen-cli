@@ -1,7 +1,8 @@
-/* eslint-disable no-control-regex, no-useless-escape */
-import { match, P } from "ts-pattern";
 import { ALLOWED_PARAM_MEDIA_TYPES, PRIMITIVE_TYPE_LIST } from "src/generators/const/openapi.const";
 import { ParameterObject, PrimitiveType, SingleType, SortingParameterObject } from "src/generators/types/openapi";
+/* eslint-disable no-control-regex, no-useless-escape */
+import { match, P } from "ts-pattern";
+
 import { isSchemaObject } from "./openapi-schema.utils";
 import { capitalize, kebabToCamel, snakeToCamel } from "./string.utils";
 
@@ -107,7 +108,7 @@ export function pathToVariableName(path: string) {
 
   const pathParams = [...path.matchAll(PATH_PARAM_WITH_BRACKETS_REGEX)];
   if (pathParams.length > 0) {
-    const lastPathParam = pathParams.sort((a, b) => a.index - b.index)[pathParams.length - 1][0];
+    const lastPathParam = pathParams.toSorted((a, b) => a.index - b.index)[pathParams.length - 1][0];
     path = `${path.replace(PATH_PARAM_WITH_BRACKETS_REGEX, "")}By${capitalize(lastPathParam.slice(1, -1))}`; // MediaObjects{id} => MediaObjectsById
   }
 

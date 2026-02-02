@@ -9,6 +9,7 @@ import { getNamespaceName } from "src/generators/utils/namespace.utils";
 import { isArraySchemaObject, isReferenceObject } from "src/generators/utils/openapi-schema.utils";
 import { removeSuffix } from "src/generators/utils/string.utils";
 import { isNamedZodSchema } from "src/generators/utils/zod-schema.utils";
+
 import { getSchemaDescriptions } from "./generate.openapi.utils";
 
 export const getZodSchemaInferedTypeName = (zodSchemaName: string, options: GenerateOptions) =>
@@ -43,7 +44,7 @@ export const getImportedZodSchemaInferedTypeName = (
 };
 
 export function getZodSchemaType(data: GenerateZodSchemaData) {
-  return data.isEnum ? "enum" : data.schemaObj?.type ?? "object";
+  return data.isEnum ? "enum" : (data.schemaObj?.type ?? "object");
 }
 
 export function getZodSchemaDescription(data: GenerateZodSchemaData) {

@@ -21,6 +21,7 @@ import { isReferenceObject } from "src/generators/utils/openapi-schema.utils";
 import { isSortingParameterObject } from "src/generators/utils/openapi.utils";
 import { camelToSpaceSeparated, capitalize, kebabToCamel } from "src/generators/utils/string.utils";
 import { isNamedZodSchema } from "src/generators/utils/zod-schema.utils";
+
 import { getImportedAbilityFunctionName } from "./generate.acl.utils";
 import { getEndpointBody } from "./generate.endpoints.utils";
 import {
@@ -206,7 +207,7 @@ function resolveBuilderConfigNames(endpoints: ExtendedEndpoint[]): Record<string
       ...endpoint,
       namePathSegments: endpoint.pathSegments.filter((segment) => !isPathSegmentParam(segment)),
     }))
-    .sort((a, b) => a.namePathSegments.length - b.namePathSegments.length);
+    .toSorted((a, b) => a.namePathSegments.length - b.namePathSegments.length);
 
   const namedEndpoints: Record<string, ExtendedEndpoint> = {};
   for (const endpoint of sortedEndpoints) {

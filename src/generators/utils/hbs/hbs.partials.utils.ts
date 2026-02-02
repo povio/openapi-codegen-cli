@@ -255,8 +255,8 @@ function registerGenerateCaslAbilityQueryHelper() {
 function registerGenerateAclCheckCallHelper() {
   Handlebars.registerHelper(PartialsHelpers.AclCheckCall, (endpoint: Endpoint) => {
     const checkParams = getAbilityConditionsTypes(endpoint)?.map((condition) => condition.name);
-    const params = endpoint.parameters.map((param) => param.name);
-    const hasAllCheckParams = checkParams?.every((param) => params.includes(param));
+    const params = new Set(endpoint.parameters.map((param) => param.name));
+    const hasAllCheckParams = checkParams?.every((param) => params.has(param));
 
     return getHbsPartialTemplateDelegate("acl-check-call")({
       endpoint,

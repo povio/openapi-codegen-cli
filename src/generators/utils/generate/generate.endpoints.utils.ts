@@ -13,6 +13,7 @@ import { decapitalize, snakeToCamel } from "src/generators/utils/string.utils";
 import { getEndpointTag } from "src/generators/utils/tag.utils";
 import { primitiveTypeToTsType } from "src/generators/utils/ts.utils";
 import { isNamedZodSchema } from "src/generators/utils/zod-schema.utils";
+
 import { getImportedZodSchemaInferedTypeName } from "./generate.zod.utils";
 
 export const getEndpointName = (endpoint: Endpoint) => decapitalize(snakeToCamel(endpoint.operationName));
@@ -81,7 +82,7 @@ export function mapEndpointParamsToFunctionParams(
   }
 
   return params
-    .sort((a, b) => {
+    .toSorted((a, b) => {
       if (a.required === b.required) {
         const sortedParamTypes = ["Path", "Body", "Query", "Header"];
         return sortedParamTypes.indexOf(a.paramType) - sortedParamTypes.indexOf(b.paramType);
