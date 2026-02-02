@@ -1,6 +1,6 @@
 {
   "name": "@povio/openapi-codegen-cli",
-  "version": "2.0.2-rc.6",
+  "version": "2.0.2",
   "keywords": [
     "codegen",
     "openapi",
@@ -109,7 +109,7 @@
       "optional": true
     }
   },
-    "@tanstack/react-query": "^5.89.0",
+  "@tanstack/react-query": "^5.89.0",
   "engines": {
     "node": ">= 14",
     "npm": ">= 8",
