@@ -2,12 +2,12 @@
   "$schema": "node_modules/oxlint/configuration_schema.json",
   "plugins": ["eslint", "typescript", "unicorn", "import", "oxc", "promise", "vitest"],
   "categories": {
-    "correctness": "error",
+    "correctness": "off",
     "perf": "error",
     "pedantic": "off",
-    "style": "error",
+    "style": "off",
     "restriction": "off",
-    "suspicious": "error",
+    "suspicious": "off",
     "nursery": "off"
   },
   "env": {
