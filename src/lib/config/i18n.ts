@@ -1,7 +1,7 @@
 import i18next from "i18next";
 
-import translationEN from "src/lib/assets/locales/en/translation.json";
-import translationSL from "src/lib/assets/locales/sl/translation.json";
+import translationEN from "../assets/locales/en/translation.json";
+import translationSL from "../assets/locales/sl/translation.json";
 
 export const ns = "openapi";
 export const resources = {
