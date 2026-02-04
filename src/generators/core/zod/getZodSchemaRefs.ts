@@ -1,5 +1,5 @@
-import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
-import { isSchemaObject } from "src/generators/utils/openapi-schema.utils";
+import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
+import { isSchemaObject } from "@/generators/utils/openapi-schema.utils";
 
 import { ZodSchema } from "./ZodSchema.class";
 

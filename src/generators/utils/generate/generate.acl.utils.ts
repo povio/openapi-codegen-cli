@@ -1,10 +1,10 @@
-import { Endpoint } from "src/generators/types/endpoint";
-import { GenerateType, GenerateTypeParams, Import } from "src/generators/types/generate";
-import { GenerateOptions } from "src/generators/types/options";
-import { getUniqueArray } from "src/generators/utils/array.utils";
-import { getNamespaceName } from "src/generators/utils/namespace.utils";
-import { capitalize, snakeToCamel } from "src/generators/utils/string.utils";
-import { getEndpointTag } from "src/generators/utils/tag.utils";
+import { Endpoint } from "@/generators/types/endpoint";
+import { GenerateType, GenerateTypeParams, Import } from "@/generators/types/generate";
+import { GenerateOptions } from "@/generators/types/options";
+import { getUniqueArray } from "@/generators/utils/array.utils";
+import { getNamespaceName } from "@/generators/utils/namespace.utils";
+import { capitalize, snakeToCamel } from "@/generators/utils/string.utils";
+import { getEndpointTag } from "@/generators/utils/tag.utils";
 
 import { getModelsImports, mergeImports } from "./generate.imports.utils";
 

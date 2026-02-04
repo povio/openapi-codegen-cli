@@ -1,10 +1,10 @@
 import { OpenAPIV3 } from "openapi-types";
-import { COMPOSITE_KEYWORDS } from "src/generators/const/openapi.const";
-import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
-import { GenerateType } from "src/generators/types/generate";
-import { TsMetaType, TsObjectMetaType, TsProperty, TsType, TsTypeBase } from "src/generators/types/metadata";
-import { PrimitiveType } from "src/generators/types/openapi";
-import { isReferenceObject } from "src/generators/utils/openapi-schema.utils";
+import { COMPOSITE_KEYWORDS } from "@/generators/const/openapi.const";
+import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
+import { GenerateType } from "@/generators/types/generate";
+import { TsMetaType, TsObjectMetaType, TsProperty, TsType, TsTypeBase } from "@/generators/types/metadata";
+import { PrimitiveType } from "@/generators/types/openapi";
+import { isReferenceObject } from "@/generators/utils/openapi-schema.utils";
 import { match } from "ts-pattern";
 
 import { getTagImportPath } from "./generate/generate.utils";

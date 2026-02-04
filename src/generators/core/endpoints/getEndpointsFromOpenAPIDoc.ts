@@ -1,34 +1,34 @@
 import { OpenAPIV3 } from "openapi-types";
-import { JSON_APPLICATION_FORMAT } from "src/generators/const/endpoints.const";
-import { ALLOWED_METHODS } from "src/generators/const/openapi.const";
-import { HttpStatusCode } from "src/generators/const/validation.const";
-import { STRING_SCHEMA, VOID_SCHEMA } from "src/generators/const/zod.const";
-import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
-import { getZodChain } from "src/generators/core/zod/getZodChain";
-import { getZodSchema } from "src/generators/core/zod/getZodSchema";
-import { resolveZodSchemaName } from "src/generators/core/zod/resolveZodSchemaName";
-import { Endpoint, EndpointParameter } from "src/generators/types/endpoint";
-import { OperationObject } from "src/generators/types/openapi";
-import { invalidVariableNameCharactersToCamel } from "src/generators/utils/js.utils";
-import { pick } from "src/generators/utils/object.utils";
-import { isReferenceObject } from "src/generators/utils/openapi-schema.utils";
+import { JSON_APPLICATION_FORMAT } from "@/generators/const/endpoints.const";
+import { ALLOWED_METHODS } from "@/generators/const/openapi.const";
+import { HttpStatusCode } from "@/generators/const/validation.const";
+import { STRING_SCHEMA, VOID_SCHEMA } from "@/generators/const/zod.const";
+import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
+import { getZodChain } from "@/generators/core/zod/getZodChain";
+import { getZodSchema } from "@/generators/core/zod/getZodSchema";
+import { resolveZodSchemaName } from "@/generators/core/zod/resolveZodSchemaName";
+import { Endpoint, EndpointParameter } from "@/generators/types/endpoint";
+import { OperationObject } from "@/generators/types/openapi";
+import { invalidVariableNameCharactersToCamel } from "@/generators/utils/js.utils";
+import { pick } from "@/generators/utils/object.utils";
+import { isReferenceObject } from "@/generators/utils/openapi-schema.utils";
 import {
   isErrorStatus,
   isMainResponseStatus,
   isMediaTypeAllowed,
   isPathExcluded,
   replaceHyphenatedPath,
-} from "src/generators/utils/openapi.utils";
-import { getUniqueOperationName, isOperationExcluded } from "src/generators/utils/operation.utils";
-import { formatTag, getOperationTag } from "src/generators/utils/tag.utils";
+} from "@/generators/utils/openapi.utils";
+import { getUniqueOperationName, isOperationExcluded } from "@/generators/utils/operation.utils";
+import { formatTag, getOperationTag } from "@/generators/utils/tag.utils";
 import {
   getInvalidOperationIdError,
   getInvalidStatusCodeError,
   getMissingPathParameterError,
   getMissingStatusCodeError,
   getMultipleSuccessStatusCodesError,
-} from "src/generators/utils/validation.utils";
-import { getResponseZodSchemaName } from "src/generators/utils/zod-schema.utils";
+} from "@/generators/utils/validation.utils";
+import { getResponseZodSchemaName } from "@/generators/utils/zod-schema.utils";
 
 import { getEndpointAcl } from "./getEndpointAcl";
 import { getEndpointBody } from "./getEndpointBody";

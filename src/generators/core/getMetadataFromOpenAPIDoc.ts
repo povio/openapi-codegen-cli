@@ -1,16 +1,16 @@
 import { OpenAPIV3 } from "openapi-types";
-import { Endpoint, EndpointParameter } from "src/generators/types/endpoint";
-import { GenerateType } from "src/generators/types/generate";
-import { GenerateMetadata, ModelMetadata, QueryMetadata, TsMetaType } from "src/generators/types/metadata";
-import { GenerateOptions } from "src/generators/types/options";
-import { getQueryName } from "src/generators/utils/generate/generate.query.utils";
-import { getTagImportPath } from "src/generators/utils/generate/generate.utils";
-import { invalidVariableNameCharactersToCamel } from "src/generators/utils/js.utils";
-import { getNamespaceName } from "src/generators/utils/namespace.utils";
-import { isMediaTypeAllowed, isParamMediaTypeAllowed } from "src/generators/utils/openapi.utils";
-import { isMutation, isQuery } from "src/generators/utils/query.utils";
-import { formatTag } from "src/generators/utils/tag.utils";
-import { getSchemaTsMetaType, getTsTypeBase } from "src/generators/utils/ts.utils";
+import { Endpoint, EndpointParameter } from "@/generators/types/endpoint";
+import { GenerateType } from "@/generators/types/generate";
+import { GenerateMetadata, ModelMetadata, QueryMetadata, TsMetaType } from "@/generators/types/metadata";
+import { GenerateOptions } from "@/generators/types/options";
+import { getQueryName } from "@/generators/utils/generate/generate.query.utils";
+import { getTagImportPath } from "@/generators/utils/generate/generate.utils";
+import { invalidVariableNameCharactersToCamel } from "@/generators/utils/js.utils";
+import { getNamespaceName } from "@/generators/utils/namespace.utils";
+import { isMediaTypeAllowed, isParamMediaTypeAllowed } from "@/generators/utils/openapi.utils";
+import { isMutation, isQuery } from "@/generators/utils/query.utils";
+import { formatTag } from "@/generators/utils/tag.utils";
+import { getSchemaTsMetaType, getTsTypeBase } from "@/generators/utils/ts.utils";
 
 import { getDataFromOpenAPIDoc } from "./getDataFromOpenAPIDoc";
 import { SchemaResolver } from "./SchemaResolver.class";

@@ -1,6 +1,6 @@
 import { OpenAPIV3 } from "openapi-types";
 import { styleText } from 'node:util';
-import { log } from "src/helpers/cli.helper";
+import { log } from "@/helpers/cli.helper";
 
 import { VALIDATION_ERROR_TYPE_TITLE } from "./const/validation.const";
 import { getDataFromOpenAPIDoc } from "./core/getDataFromOpenAPIDoc";

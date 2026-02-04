@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 
-import { GenerateFileData } from "src/generators/types/generate";
+import { GenerateFileData } from "@/generators/types/generate";
 
 function readFileSync(filePath: string) {
   if (process.env.NODE_ENV === "production") {

@@ -1,13 +1,13 @@
-import { ACL_APP_ABILITIES, ACL_CHECK_HOOK } from "src/generators/const/acl.const";
+import { ACL_APP_ABILITIES, ACL_CHECK_HOOK } from "@/generators/const/acl.const";
 import {
   ABILITY_CONTEXT,
   ABILITY_CONTEXT_IMPORT,
   ERROR_HANDLERS,
   ERROR_HANDLING_IMPORT,
-} from "src/generators/const/deps.const";
-import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
-import { getAppAbilitiesImportPath } from "src/generators/utils/generate/generate.utils";
-import { getHbsTemplateDelegate } from "src/generators/utils/hbs/hbs-template.utils";
+} from "@/generators/const/deps.const";
+import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
+import { getAppAbilitiesImportPath } from "@/generators/utils/generate/generate.utils";
+import { getHbsTemplateDelegate } from "@/generators/utils/hbs/hbs-template.utils";
 
 export function generateAclCheck(resolver: SchemaResolver) {
   const hbsTemplate = getHbsTemplateDelegate(resolver, "acl-check");

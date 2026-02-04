@@ -1,18 +1,18 @@
 import { OpenAPIV3 } from "openapi-types";
-import { BODY_PARAMETER_NAME, DEFAULT_HEADERS } from "src/generators/const/endpoints.const";
-import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
-import { Endpoint } from "src/generators/types/endpoint";
-import { GenerateType } from "src/generators/types/generate";
-import { GenerateOptions } from "src/generators/types/options";
-import { invalidVariableNameCharactersToCamel, isValidPropertyName } from "src/generators/utils/js.utils";
-import { getNamespaceName } from "src/generators/utils/namespace.utils";
-import { isSchemaObject } from "src/generators/utils/openapi-schema.utils";
-import { isPrimitiveType } from "src/generators/utils/openapi.utils";
-import { isQuery } from "src/generators/utils/query.utils";
-import { decapitalize, snakeToCamel } from "src/generators/utils/string.utils";
-import { getEndpointTag } from "src/generators/utils/tag.utils";
-import { primitiveTypeToTsType } from "src/generators/utils/ts.utils";
-import { isNamedZodSchema } from "src/generators/utils/zod-schema.utils";
+import { BODY_PARAMETER_NAME, DEFAULT_HEADERS } from "@/generators/const/endpoints.const";
+import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
+import { Endpoint } from "@/generators/types/endpoint";
+import { GenerateType } from "@/generators/types/generate";
+import { GenerateOptions } from "@/generators/types/options";
+import { invalidVariableNameCharactersToCamel, isValidPropertyName } from "@/generators/utils/js.utils";
+import { getNamespaceName } from "@/generators/utils/namespace.utils";
+import { isSchemaObject } from "@/generators/utils/openapi-schema.utils";
+import { isPrimitiveType } from "@/generators/utils/openapi.utils";
+import { isQuery } from "@/generators/utils/query.utils";
+import { decapitalize, snakeToCamel } from "@/generators/utils/string.utils";
+import { getEndpointTag } from "@/generators/utils/tag.utils";
+import { primitiveTypeToTsType } from "@/generators/utils/ts.utils";
+import { isNamedZodSchema } from "@/generators/utils/zod-schema.utils";
 
 import { getImportedZodSchemaInferedTypeName } from "./generate.zod.utils";
 

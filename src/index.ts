@@ -1,6 +1,4 @@
 // Generator types
-export { GenerateFileData } from "./generators/types/generate";
-export * from "./generators/types/metadata";
 export * from "./generators/types/config";
 
 // REST client

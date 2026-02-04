@@ -1,4 +1,4 @@
-import { AbilityContext } from "src/lib/acl/ability.context";
+import { AbilityContext } from "./ability.context";
 
 import type { AbilityTuple, PureAbility } from "@casl/ability";
 import { type BoundCanProps, createContextualCan } from "@casl/react";

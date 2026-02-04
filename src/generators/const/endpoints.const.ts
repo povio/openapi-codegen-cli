@@ -1,4 +1,4 @@
-import { Import } from "src/generators/types/generate";
+import { Import } from "@/generators/types/generate";
 
 export const JSON_APPLICATION_FORMAT = "application/json";
 export const DEFAULT_HEADERS = {

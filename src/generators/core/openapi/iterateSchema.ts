@@ -1,6 +1,6 @@
 import { OpenAPIV3 } from "openapi-types";
-import { COMPOSITE_KEYWORDS } from "src/generators/const/openapi.const";
-import { isReferenceObject } from "src/generators/utils/openapi-schema.utils";
+import { COMPOSITE_KEYWORDS } from "@/generators/const/openapi.const";
+import { isReferenceObject } from "@/generators/utils/openapi-schema.utils";
 
 export type OnSchemaCallbackData<TData> = { data?: TData } & (
   | { type: "reference"; schema: OpenAPIV3.ReferenceObject }

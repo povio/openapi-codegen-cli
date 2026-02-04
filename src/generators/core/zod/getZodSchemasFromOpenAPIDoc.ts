@@ -1,5 +1,5 @@
-import { EnumZodSchemaData, SchemaResolver } from "src/generators/core/SchemaResolver.class";
-import { getZodSchemaName } from "src/generators/utils/zod-schema.utils";
+import { EnumZodSchemaData, SchemaResolver } from "@/generators/core/SchemaResolver.class";
+import { getZodSchemaName } from "@/generators/utils/zod-schema.utils";
 
 import { getEnumZodSchemaCode, getZodSchema } from "./getZodSchema";
 

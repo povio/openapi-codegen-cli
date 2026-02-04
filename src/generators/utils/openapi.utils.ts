@@ -1,5 +1,5 @@
-import { ALLOWED_PARAM_MEDIA_TYPES, PRIMITIVE_TYPE_LIST } from "src/generators/const/openapi.const";
-import { ParameterObject, PrimitiveType, SingleType, SortingParameterObject } from "src/generators/types/openapi";
+import { ALLOWED_PARAM_MEDIA_TYPES, PRIMITIVE_TYPE_LIST } from "@/generators/const/openapi.const";
+import { ParameterObject, PrimitiveType, SingleType, SortingParameterObject } from "@/generators/types/openapi";
 /* eslint-disable no-control-regex, no-useless-escape */
 import { match, P } from "ts-pattern";
 

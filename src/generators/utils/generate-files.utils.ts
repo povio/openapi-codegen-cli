@@ -1,18 +1,18 @@
-import { ACL_APP_ABILITY_FILE, ACL_CHECK_FILE } from "src/generators/const/acl.const";
+import { ACL_APP_ABILITY_FILE, ACL_CHECK_FILE } from "@/generators/const/acl.const";
 import {
   APP_REST_CLIENT_FILE,
   MUTATION_EFFECTS_FILE,
   QUERY_MODULES_FILE,
   ZOD_EXTENDED_FILE,
-} from "src/generators/const/deps.const";
-import { DEFAULT_GENERATE_OPTIONS } from "src/generators/const/options.const";
-import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
-import { generateAppAcl } from "src/generators/generate/generateAcl";
-import { generateAclCheck } from "src/generators/generate/generateAclCheck";
-import { generateAppRestClient } from "src/generators/generate/generateAppRestClient";
-import { generateQueryModules } from "src/generators/generate/generateQueryModules";
-import { generateZodExtended } from "src/generators/generate/generateZodExtended";
-import { GenerateData, GenerateFile, GenerateFileData } from "src/generators/types/generate";
+} from "@/generators/const/deps.const";
+import { DEFAULT_GENERATE_OPTIONS } from "@/generators/const/options.const";
+import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
+import { generateAppAcl } from "@/generators/generate/generateAcl";
+import { generateAclCheck } from "@/generators/generate/generateAclCheck";
+import { generateAppRestClient } from "@/generators/generate/generateAppRestClient";
+import { generateQueryModules } from "@/generators/generate/generateQueryModules";
+import { generateZodExtended } from "@/generators/generate/generateZodExtended";
+import { GenerateData, GenerateFile, GenerateFileData } from "@/generators/types/generate";
 
 import { getOutputFileName, readAssetSync } from "./file.utils";
 import { getFileNameWithExtension } from "./generate/generate.utils";

@@ -1,6 +1,6 @@
 import { OpenAPIV3 } from "openapi-types";
-import { DEFAULT_GENERATE_OPTIONS } from "src/generators/const/options.const";
-import { ExtendedEndpoint } from "src/generators/types/endpoint";
+import { DEFAULT_GENERATE_OPTIONS } from "@/generators/const/options.const";
+import { ExtendedEndpoint } from "@/generators/types/endpoint";
 import { describe, expect, test } from "vitest";
 
 import {

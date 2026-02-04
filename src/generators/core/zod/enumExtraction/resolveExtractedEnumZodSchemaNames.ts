@@ -1,6 +1,6 @@
-import { ExtractedEnumZodSchemaData, SchemaResolver } from "src/generators/core/SchemaResolver.class";
-import { capitalize, getMostCommonAdjacentCombinationSplit } from "src/generators/utils/string.utils";
-import { getEnumZodSchemaName } from "src/generators/utils/zod-schema.utils";
+import { ExtractedEnumZodSchemaData, SchemaResolver } from "@/generators/core/SchemaResolver.class";
+import { capitalize, getMostCommonAdjacentCombinationSplit } from "@/generators/utils/string.utils";
+import { getEnumZodSchemaName } from "@/generators/utils/zod-schema.utils";
 
 export function resolveExtractedEnumZodSchemaNames(resolver: SchemaResolver) {
   resolver.extractedEnumZodSchemaData.forEach((enumData) => {

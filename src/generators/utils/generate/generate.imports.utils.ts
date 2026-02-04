@@ -1,11 +1,11 @@
-import { TEMPLATE_DATA_FILE_PATH } from "src/generators/const/deps.const";
-import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
-import { Endpoint } from "src/generators/types/endpoint";
-import { GenerateType, Import } from "src/generators/types/generate";
-import { GenerateOptions } from "src/generators/types/options";
-import { getUniqueArray } from "src/generators/utils/array.utils";
-import { getNamespaceName } from "src/generators/utils/namespace.utils";
-import { getEndpointTag } from "src/generators/utils/tag.utils";
+import { TEMPLATE_DATA_FILE_PATH } from "@/generators/const/deps.const";
+import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
+import { Endpoint } from "@/generators/types/endpoint";
+import { GenerateType, Import } from "@/generators/types/generate";
+import { GenerateOptions } from "@/generators/types/options";
+import { getUniqueArray } from "@/generators/utils/array.utils";
+import { getNamespaceName } from "@/generators/utils/namespace.utils";
+import { getEndpointTag } from "@/generators/utils/tag.utils";
 
 import { getAbilityFunctionName } from "./generate.acl.utils";
 import { getEndpointName } from "./generate.endpoints.utils";

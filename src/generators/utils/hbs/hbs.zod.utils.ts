@@ -1,7 +1,7 @@
 import Handlebars from "handlebars";
-import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
-import { GenerateZodSchemaData } from "src/generators/types/generate";
-import { GenerateOptions } from "src/generators/types/options";
+import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
+import { GenerateZodSchemaData } from "@/generators/types/generate";
+import { GenerateOptions } from "@/generators/types/options";
 import {
   getImportedZodSchemaInferedTypeName,
   getImportedZodSchemaName,
@@ -9,7 +9,7 @@ import {
   getZodSchemaInferedTypeName,
   getZodSchemaPropertyDescriptions,
   getZodSchemaType,
-} from "src/generators/utils/generate/generate.zod.utils";
+} from "@/generators/utils/generate/generate.zod.utils";
 
 enum ZodHelpers {
   ZodInferedType = "zodInferedType",
