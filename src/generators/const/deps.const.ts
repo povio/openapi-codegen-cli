@@ -1,4 +1,4 @@
-import { GenerateFile, Import } from "src/generators/types/generate";
+import { GenerateFile, Import } from "@/generators/types/generate";
 
 import { ACL_PACKAGE_IMPORT_PATH, PACKAGE_IMPORT_PATH } from "./package.const";
 

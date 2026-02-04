@@ -1,5 +1,5 @@
-import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
-import { getUniqueArray } from "src/generators/utils/array.utils";
+import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
+import { getUniqueArray } from "@/generators/utils/array.utils";
 
 export function resolveExtractedEnumZodSchemaTags(resolver: SchemaResolver) {
   resolver.extractedEnumZodSchemaData.forEach((enumData) => {

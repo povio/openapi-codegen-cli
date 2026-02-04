@@ -1,14 +1,14 @@
 import { OpenAPIV3 } from "openapi-types";
-import { COMPOSITE_KEYWORDS } from "src/generators/const/openapi.const";
-import { VOID_SCHEMA } from "src/generators/const/zod.const";
-import { iterateSchema, OnSchemaCallbackData } from "src/generators/core/openapi/iterateSchema";
-import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
-import { GenerateType, GenerateZodSchemaData } from "src/generators/types/generate";
-import { GenerateOptions } from "src/generators/types/options";
-import { getNamespaceName } from "src/generators/utils/namespace.utils";
-import { isArraySchemaObject, isReferenceObject } from "src/generators/utils/openapi-schema.utils";
-import { removeSuffix } from "src/generators/utils/string.utils";
-import { isNamedZodSchema } from "src/generators/utils/zod-schema.utils";
+import { COMPOSITE_KEYWORDS } from "@/generators/const/openapi.const";
+import { VOID_SCHEMA } from "@/generators/const/zod.const";
+import { iterateSchema, OnSchemaCallbackData } from "@/generators/core/openapi/iterateSchema";
+import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
+import { GenerateType, GenerateZodSchemaData } from "@/generators/types/generate";
+import { GenerateOptions } from "@/generators/types/options";
+import { getNamespaceName } from "@/generators/utils/namespace.utils";
+import { isArraySchemaObject, isReferenceObject } from "@/generators/utils/openapi-schema.utils";
+import { removeSuffix } from "@/generators/utils/string.utils";
+import { isNamedZodSchema } from "@/generators/utils/zod-schema.utils";
 
 import { getSchemaDescriptions } from "./generate.openapi.utils";
 

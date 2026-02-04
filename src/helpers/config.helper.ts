@@ -2,7 +2,7 @@
 import fs, { existsSync, rmSync, writeFileSync } from "fs";
 import path from "path";
 
-import { OpenAPICodegenConfig } from "src/generators/types/config";
+import { OpenAPICodegenConfig } from "@/generators/types/config";
 
 import { logError } from "./cli.helper";
 

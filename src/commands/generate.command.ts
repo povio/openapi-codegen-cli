@@ -1,6 +1,6 @@
-import { logBanner } from "src/helpers/cli.helper";
-import { getVersion } from "src/helpers/version.helper";
-import { getBuilder, YargOption } from "src/helpers/yargs.helper";
+import { logBanner } from "@/helpers/cli.helper";
+import { getVersion } from "@/helpers/version.helper";
+import { getBuilder, YargOption } from "@/helpers/yargs.helper";
 import yargs from "yargs";
 
 import { generate, GenerateParams } from "./generate";

@@ -1,6 +1,6 @@
-import { Endpoint } from "src/generators/types/endpoint";
-import { OperationObject } from "src/generators/types/openapi";
-import { GenerateOptions } from "src/generators/types/options";
+import { Endpoint } from "@/generators/types/endpoint";
+import { OperationObject } from "@/generators/types/openapi";
+import { GenerateOptions } from "@/generators/types/options";
 
 import { nonWordCharactersToCamel } from "./string.utils";
 

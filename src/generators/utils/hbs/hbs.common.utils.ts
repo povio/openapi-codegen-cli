@@ -1,5 +1,5 @@
 import Handlebars from "handlebars";
-import { capitalize } from "src/generators/utils/string.utils";
+import { capitalize } from "@/generators/utils/string.utils";
 
 enum CommonHelpers {
   IsEqual = "isEqual",

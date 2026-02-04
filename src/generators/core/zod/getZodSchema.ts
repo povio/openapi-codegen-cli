@@ -10,17 +10,17 @@ import {
   STRING_SCHEMA,
   URL_SCHEMA,
   UUID_SCHEMA,
-} from "src/generators/const/zod.const";
-import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
-import { GenerateType } from "src/generators/types/generate";
-import { getNamespaceName } from "src/generators/utils/namespace.utils";
+} from "@/generators/const/zod.const";
+import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
+import { GenerateType } from "@/generators/types/generate";
+import { getNamespaceName } from "@/generators/utils/namespace.utils";
 import {
   inferRequiredSchema,
   isArraySchemaObject,
   isReferenceObject,
   isSchemaObject,
-} from "src/generators/utils/openapi-schema.utils";
-import { isPrimitiveType, wrapWithQuotesIfNeeded } from "src/generators/utils/openapi.utils";
+} from "@/generators/utils/openapi-schema.utils";
+import { isPrimitiveType, wrapWithQuotesIfNeeded } from "@/generators/utils/openapi.utils";
 import { match } from "ts-pattern";
 
 import { getZodChain } from "./getZodChain";

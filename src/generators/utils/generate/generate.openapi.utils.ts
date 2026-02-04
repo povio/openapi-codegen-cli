@@ -1,5 +1,5 @@
 import { OpenAPIV3 } from "openapi-types";
-import { camelToSpaceSeparated, capitalize } from "src/generators/utils/string.utils";
+import { camelToSpaceSeparated, capitalize } from "@/generators/utils/string.utils";
 
 export function getSchemaDescriptions(schemaObj: OpenAPIV3.SchemaObject) {
   const schemaKeys: (keyof OpenAPIV3.SchemaObject)[] = [

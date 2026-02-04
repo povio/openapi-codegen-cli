@@ -1,6 +1,6 @@
-import { GenerateType, GenerateTypeParams } from "src/generators/types/generate";
-import { getHbsTemplateDelegate } from "src/generators/utils/hbs/hbs-template.utils";
-import { getNamespaceName } from "src/generators/utils/namespace.utils";
+import { GenerateType, GenerateTypeParams } from "@/generators/types/generate";
+import { getHbsTemplateDelegate } from "@/generators/utils/hbs/hbs-template.utils";
+import { getNamespaceName } from "@/generators/utils/namespace.utils";
 
 export function generateQueryModules({ resolver, data }: Omit<GenerateTypeParams, "tag">) {
   const modules: { tag: string; namespace: string }[] = [];

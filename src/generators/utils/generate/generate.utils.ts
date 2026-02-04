@@ -1,14 +1,14 @@
-import { ACL_APP_ABILITY_FILE, ACL_CHECK_FILE } from "src/generators/const/acl.const";
+import { ACL_APP_ABILITY_FILE, ACL_CHECK_FILE } from "@/generators/const/acl.const";
 import {
   APP_REST_CLIENT_FILE,
   MUTATION_EFFECTS_FILE,
   QUERY_MODULES_FILE,
   ZOD_EXTENDED_FILE,
-} from "src/generators/const/deps.const";
-import { DEFAULT_GENERATE_OPTIONS } from "src/generators/const/options.const";
-import { GenerateFile, GenerateType } from "src/generators/types/generate";
-import { GenerateOptions } from "src/generators/types/options";
-import { decapitalize } from "src/generators/utils/string.utils";
+} from "@/generators/const/deps.const";
+import { DEFAULT_GENERATE_OPTIONS } from "@/generators/const/options.const";
+import { GenerateFile, GenerateType } from "@/generators/types/generate";
+import { GenerateOptions } from "@/generators/types/options";
+import { decapitalize } from "@/generators/utils/string.utils";
 
 import { getImportPath } from "./generate.imports.utils";
 

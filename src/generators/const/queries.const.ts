@@ -1,4 +1,4 @@
-import { Import } from "src/generators/types/generate";
+import { Import } from "@/generators/types/generate";
 
 export const QUERY_HOOKS = {
   query: "useQuery",

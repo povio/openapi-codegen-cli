@@ -1,28 +1,28 @@
-import { ACL_CHECK_HOOK } from "src/generators/const/acl.const";
-import { MUTATION_EFFECTS, QUERY_MODULE_ENUM, QUERY_OPTIONS_TYPES } from "src/generators/const/deps.const";
+import { ACL_CHECK_HOOK } from "@/generators/const/acl.const";
+import { MUTATION_EFFECTS, QUERY_MODULE_ENUM, QUERY_OPTIONS_TYPES } from "@/generators/const/deps.const";
 import {
   AXIOS_DEFAULT_IMPORT_NAME,
   AXIOS_IMPORT,
   AXIOS_REQUEST_CONFIG_TYPE,
-} from "src/generators/const/endpoints.const";
-import { QUERIES_MODULE_NAME, QUERY_HOOKS, QUERY_IMPORT } from "src/generators/const/queries.const";
-import { EndpointParameter } from "src/generators/types/endpoint";
-import { GenerateType, GenerateTypeParams, Import } from "src/generators/types/generate";
-import { getUniqueArray } from "src/generators/utils/array.utils";
+} from "@/generators/const/endpoints.const";
+import { QUERIES_MODULE_NAME, QUERY_HOOKS, QUERY_IMPORT } from "@/generators/const/queries.const";
+import { EndpointParameter } from "@/generators/types/endpoint";
+import { GenerateType, GenerateTypeParams, Import } from "@/generators/types/generate";
+import { getUniqueArray } from "@/generators/utils/array.utils";
 import {
   getAclImports,
   getEndpointsImports,
   getModelsImports,
-} from "src/generators/utils/generate/generate.imports.utils";
+} from "@/generators/utils/generate/generate.imports.utils";
 import {
   getAclCheckImportPath,
   getMutationEffectsImportPath,
   getQueryModulesImportPath,
-} from "src/generators/utils/generate/generate.utils";
-import { getHbsTemplateDelegate } from "src/generators/utils/hbs/hbs-template.utils";
-import { getNamespaceName } from "src/generators/utils/namespace.utils";
-import { isInfiniteQuery, isMutation, isQuery } from "src/generators/utils/query.utils";
-import { isNamedZodSchema } from "src/generators/utils/zod-schema.utils";
+} from "@/generators/utils/generate/generate.utils";
+import { getHbsTemplateDelegate } from "@/generators/utils/hbs/hbs-template.utils";
+import { getNamespaceName } from "@/generators/utils/namespace.utils";
+import { isInfiniteQuery, isMutation, isQuery } from "@/generators/utils/query.utils";
+import { isNamedZodSchema } from "@/generators/utils/zod-schema.utils";
 
 export function generateQueries({ resolver, data, tag }: GenerateTypeParams) {
   const endpoints = data.get(tag)?.endpoints;

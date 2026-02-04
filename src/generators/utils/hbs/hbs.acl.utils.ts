@@ -1,7 +1,7 @@
 import Handlebars from "handlebars";
-import { SchemaResolver } from "src/generators/core/SchemaResolver.class";
-import { Endpoint } from "src/generators/types/endpoint";
-import { GenerateOptions } from "src/generators/types/options";
+import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
+import { Endpoint } from "@/generators/types/endpoint";
+import { GenerateOptions } from "@/generators/types/options";
 import {
   getAbilityAction,
   getAbilityConditionsTypes,
@@ -11,7 +11,7 @@ import {
   getAbilitySubjectTypes,
   getImportedAbilityFunctionName,
   hasAbilityConditions,
-} from "src/generators/utils/generate/generate.acl.utils";
+} from "@/generators/utils/generate/generate.acl.utils";
 
 enum AclHelpers {
   AbilityFunctionName = "abilityFunctionName",
