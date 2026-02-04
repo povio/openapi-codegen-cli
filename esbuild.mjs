@@ -23,24 +23,5 @@ const nodeBuildOptions = {
   },
 };
 
-// Client/Browser build - runs in React/React-Native apps
-const clientBuildOptions = {
-  bundle: true,
-  sourcemap: false,
-  platform: "browser",
-  format: "esm",
-  minify: true,
-  metafile: false,
-  keepNames: true,
-  external,
-  target: ["es2020"],
-  logLevel: "info",
-  define: {
-    "process.env.NODE_ENV": `"production"`,
-  },
-};
-
 await build({ ...nodeBuildOptions, entryPoints: ["./src/sh.ts"], outfile: "./dist/sh.js" });
 await build({ ...nodeBuildOptions, entryPoints: ["./src/generator.ts"], outfile: "./dist/generator.js" });
-await build({ ...clientBuildOptions, entryPoints: ["./src/index.ts"], outfile: "./dist/index.js" });
-await build({ ...clientBuildOptions, entryPoints: ["./src/acl.ts"], outfile: "./dist/acl.js" });

@@ -1,5 +1,5 @@
 import { type PropsWithChildren, createContext, useEffect, useState } from "react";
-import { AuthContext } from "src/lib/auth/auth.context";
+import { AuthContext } from "../auth/auth.context";
 
 import { AbilityBuilder, type PureAbility, type RawRuleOf, createMongoAbility } from "@casl/ability";
 import { type PackRule, unpackRules } from "@casl/ability/extra";

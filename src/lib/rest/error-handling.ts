@@ -2,7 +2,7 @@ import { isAxiosError, isCancel } from "axios";
 import { type TFunction } from "i18next";
 import { z } from "zod";
 
-import { defaultT } from "src/lib/config/i18n";
+import { defaultT } from "../config/i18n";
 import { RestUtils } from "./rest.utils";
 
 export type GeneralErrorCodes =
