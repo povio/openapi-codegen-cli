@@ -1,13 +1,31 @@
 import react from "@vitejs/plugin-react";
 import { readFileSync } from "fs";
+import { resolve } from "path";
 import { defineConfig } from "vite";
+import dts from "vite-plugin-dts";
 
 const pkg = JSON.parse(readFileSync("./package.json", "utf-8"));
 
 export default defineConfig({
   plugins: [
     react(),
+    dts({
+      insertTypesEntry: true,
+      tsconfigPath: "./tsconfig.json",
+      entryRoot: "src",
+      outDir: "dist",
+      compilerOptions: {
+        paths: {
+          "@/*": ["./src/*"],
+        },
+      },
+    }),
   ],
+  resolve: {
+    alias: {
+      "@": resolve(process.cwd(), "./src"),
+    },
+  },
   build: {
     sourcemap: false,
     emptyOutDir: false,
