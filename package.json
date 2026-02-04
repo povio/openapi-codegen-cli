@@ -24,13 +24,13 @@
     "src/assets/**",
     "src/generators/templates/**"
   ],
-  "main": "./dist/index.js",
+  "main": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.js"
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.mjs"
     },
     "./generator": {
       "types": "./dist/generator.d.ts",
@@ -39,8 +39,8 @@
     },
     "./acl": {
       "types": "./dist/acl.d.ts",
-      "import": "./dist/acl.js",
-      "require": "./dist/acl.js"
+      "import": "./dist/acl.mjs",
+      "require": "./dist/acl.mjs"
     }
   },
   "scripts": {
