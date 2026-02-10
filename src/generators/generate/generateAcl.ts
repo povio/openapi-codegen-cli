@@ -15,7 +15,7 @@ export function generateAcl({ resolver, data, tag }: GenerateTypeParams) {
   const caslAbilityTupleImport: Import = {
     bindings: [
       CASL_ABILITY_BINDING.abilityTuple,
-      ...(hasAdditionalAbilityImports ? [CASL_ABILITY_BINDING.forcedSubject, CASL_ABILITY_BINDING.subject] : []),
+      ...(hasAdditionalAbilityImports ? [CASL_ABILITY_BINDING.subject] : []),
     ],
     from: CASL_ABILITY_IMPORT.from,
   };
