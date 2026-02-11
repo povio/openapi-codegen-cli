@@ -7,6 +7,7 @@ export interface Import {
   defaultImport?: string;
   bindings: string[];
   from: string;
+  typeOnly?: boolean;
 }
 
 export interface GenerateFile {
