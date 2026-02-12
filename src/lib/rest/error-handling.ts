@@ -167,6 +167,9 @@ export class ErrorHandler<CodeT extends string> {
     }
 
     if (error instanceof ApplicationException) {
+      if (error.serverMessage != null) {
+        return error.serverMessage;
+      }
       return error.message;
     }
 
