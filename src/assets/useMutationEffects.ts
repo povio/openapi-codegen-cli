@@ -24,6 +24,8 @@ export function useMutationEffects({ currentModule }: UseMutationEffectsProps) {
     async <TData>(data: TData, options: MutationEffectsOptions = {}, updateKeys?: QueryKey[]) => {
       const { invalidateCurrentModule = true, invalidateModules, invalidateKeys, preferUpdate } = options;
       const shouldUpdate = preferUpdate || (preferUpdate === undefined && config.preferUpdate);
+      const shouldInvalidateCurrentModule =
+        invalidateCurrentModule || (invalidateCurrentModule === undefined && config.invalidateCurrentModule);
 
       const isQueryKeyEqual = (keyA: QueryKey, keyB: QueryKey) =>
         keyA.length === keyB.length && keyA.every((item, index) => item === keyB[index]);
@@ -35,7 +37,7 @@ export function useMutationEffects({ currentModule }: UseMutationEffectsProps) {
             return false;
           }
 
-          const isCurrentModule = invalidateCurrentModule && queryKey[0] === currentModule;
+          const isCurrentModule = shouldInvalidateCurrentModule && queryKey[0] === currentModule;
           const isInvalidateModule = !!invalidateModules && invalidateModules.some((module) => queryKey[0] === module);
           const isInvalidateKey = !!invalidateKeys && invalidateKeys.some((key) => isQueryKeyEqual(queryKey, key));
           return isCurrentModule || isInvalidateModule || isInvalidateKey;
