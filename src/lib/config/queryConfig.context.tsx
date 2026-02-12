@@ -6,7 +6,7 @@ export namespace OpenApiQueryConfig {
   export interface Type {
     preferUpdate?: boolean;
     invalidateCurrentModule?: boolean;
-    invalidationMap?: Record<string, QueryKey[]>;
+    invalidationMap?: (context?: any) => Record<string, QueryKey[]>;
   }
 
   const Context = createContext<Type>({});

@@ -10,6 +10,7 @@ export interface MutationEffectsOptions {
   invalidateModules?: QueryModule[];
   invalidateKeys?: QueryKey[];
   preferUpdate?: boolean;
+  context?: any;
 }
 
 export interface UseMutationEffectsProps {
@@ -22,7 +23,13 @@ export function useMutationEffects({ currentModule }: UseMutationEffectsProps) {
 
   const runMutationEffects = useCallback(
     async <TData>(data: TData, options: MutationEffectsOptions = {}, updateKeys?: QueryKey[]) => {
-      const { invalidateCurrentModule = true, invalidateModules, invalidateKeys, preferUpdate } = options;
+      const {
+        invalidateCurrentModule = true,
+        invalidateModules,
+        invalidateKeys,
+        preferUpdate,
+        context,
+      } = options;
       const shouldUpdate = preferUpdate || (preferUpdate === undefined && config.preferUpdate);
       const shouldInvalidateCurrentModule =
         invalidateCurrentModule || (invalidateCurrentModule === undefined && config.invalidateCurrentModule);
@@ -41,7 +48,7 @@ export function useMutationEffects({ currentModule }: UseMutationEffectsProps) {
           const isInvalidateModule = !!invalidateModules && invalidateModules.some((module) => queryKey[0] === module);
           const isInvalidateKey = !!invalidateKeys && invalidateKeys.some((key) => isQueryKeyEqual(queryKey, key));
 
-          const map = config.invalidationMap?.[currentModule];
+          const map = config.invalidationMap?.(context)?.[currentModule];
           const isMappedKey = !!map && map.some((key) => isQueryKeyEqual(queryKey, key));
 
           return isCurrentModule || isInvalidateModule || isInvalidateKey || isMappedKey;
