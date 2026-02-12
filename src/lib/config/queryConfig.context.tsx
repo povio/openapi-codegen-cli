@@ -1,5 +1,5 @@
 import { createContext, use, useMemo } from "react";
-import {PropsWithChildren} from "react";
+import { PropsWithChildren } from "react";
 
 export namespace OpenApiQueryConfig {
   interface Type {
