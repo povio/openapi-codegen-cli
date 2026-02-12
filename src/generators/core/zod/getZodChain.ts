@@ -1,7 +1,8 @@
 import { OpenAPIV3 } from "openapi-types";
+import { match } from "ts-pattern";
+
 import { GenerateOptions } from "@/generators/types/options";
 import { escapeControlCharacters, unwrapQuotesIfNeeded } from "@/generators/utils/openapi.utils";
-import { match } from "ts-pattern";
 
 import { ZodSchemaMetaData } from "./ZodSchema.class";
 

@@ -1,5 +1,6 @@
 import Handlebars from "handlebars";
 import { OpenAPIV3 } from "openapi-types";
+
 import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
 import { Endpoint } from "@/generators/types/endpoint";
 import { GenerateOptions } from "@/generators/types/options";

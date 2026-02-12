@@ -1,6 +1,6 @@
 import { type PropsWithChildren, useEffect, useState } from "react";
-import { OpenApiRouter } from "../config/router.context";
 
+import { OpenApiRouter } from "../config/router.context";
 import { AuthContext } from "./auth.context";
 
 export interface AuthGuardProps {

@@ -1,10 +1,10 @@
 import { OpenAPIV3 } from "openapi-types";
+import { describe, expect, test } from "vitest";
+
 import { JSON_APPLICATION_FORMAT } from "@/generators/const/endpoints.const";
 import { DEFAULT_GENERATE_OPTIONS } from "@/generators/const/options.const";
 import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
 import { GenerateOptions } from "@/generators/types/options";
-import { describe, expect, test } from "vitest";
-
 import SwaggerParser from "@apidevtools/swagger-parser";
 
 import { getEndpointsFromOpenAPIDoc } from "./getEndpointsFromOpenAPIDoc";

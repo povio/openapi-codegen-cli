@@ -1,9 +1,5 @@
 import { APP_REST_CLIENT_NAME, ZOD_EXTENDED } from "@/generators/const/deps.const";
-import {
-  AXIOS_IMPORT,
-  AXIOS_REQUEST_CONFIG_NAME,
-  AXIOS_REQUEST_CONFIG_TYPE,
-} from "@/generators/const/endpoints.const";
+import { AXIOS_IMPORT, AXIOS_REQUEST_CONFIG_NAME, AXIOS_REQUEST_CONFIG_TYPE } from "@/generators/const/endpoints.const";
 import { ZOD_IMPORT } from "@/generators/const/zod.const";
 import { EndpointParameter } from "@/generators/types/endpoint";
 import { GenerateType, GenerateTypeParams, Import } from "@/generators/types/generate";

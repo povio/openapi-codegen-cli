@@ -1,4 +1,5 @@
 import Handlebars from "handlebars";
+
 import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
 import { readHbsTemplateSync } from "@/generators/utils/file.utils";
 

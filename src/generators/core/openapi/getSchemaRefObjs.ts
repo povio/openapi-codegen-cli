@@ -1,4 +1,5 @@
 import { OpenAPIV3 } from "openapi-types";
+
 import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
 import { isReferenceObject } from "@/generators/utils/openapi-schema.utils";
 import { autocorrectRef } from "@/generators/utils/openapi.utils";

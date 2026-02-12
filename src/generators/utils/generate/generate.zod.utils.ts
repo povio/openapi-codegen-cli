@@ -1,4 +1,5 @@
 import { OpenAPIV3 } from "openapi-types";
+
 import { COMPOSITE_KEYWORDS } from "@/generators/const/openapi.const";
 import { VOID_SCHEMA } from "@/generators/const/zod.const";
 import { iterateSchema, OnSchemaCallbackData } from "@/generators/core/openapi/iterateSchema";

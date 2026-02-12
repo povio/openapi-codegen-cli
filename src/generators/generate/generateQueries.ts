@@ -1,10 +1,6 @@
 import { ACL_CHECK_HOOK } from "@/generators/const/acl.const";
 import { MUTATION_EFFECTS, QUERY_MODULE_ENUM, QUERY_OPTIONS_TYPES } from "@/generators/const/deps.const";
-import {
-  AXIOS_DEFAULT_IMPORT_NAME,
-  AXIOS_IMPORT,
-  AXIOS_REQUEST_CONFIG_TYPE,
-} from "@/generators/const/endpoints.const";
+import { AXIOS_DEFAULT_IMPORT_NAME, AXIOS_IMPORT, AXIOS_REQUEST_CONFIG_TYPE } from "@/generators/const/endpoints.const";
 import { QUERIES_MODULE_NAME, QUERY_HOOKS, QUERY_IMPORT } from "@/generators/const/queries.const";
 import { EndpointParameter } from "@/generators/types/endpoint";
 import { GenerateType, GenerateTypeParams, Import } from "@/generators/types/generate";

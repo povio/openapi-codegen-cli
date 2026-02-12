@@ -1,9 +1,10 @@
-import { ACL_APP_ABILITIES, ACL_CHECK_HOOK, CASL_ABILITY_BINDING, CASL_ABILITY_IMPORT } from "@/generators/const/acl.const";
 import {
-  ABILITY_CONTEXT,
-  ABILITY_CONTEXT_IMPORT,
-  ERROR_HANDLERS,
-} from "@/generators/const/deps.const";
+  ACL_APP_ABILITIES,
+  ACL_CHECK_HOOK,
+  CASL_ABILITY_BINDING,
+  CASL_ABILITY_IMPORT,
+} from "@/generators/const/acl.const";
+import { ABILITY_CONTEXT, ABILITY_CONTEXT_IMPORT, ERROR_HANDLERS } from "@/generators/const/deps.const";
 import { PACKAGE_IMPORT_PATH } from "@/generators/const/package.const";
 import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
 import { Import } from "@/generators/types/generate";

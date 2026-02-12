@@ -1,4 +1,5 @@
 import { OpenAPIV3 } from "openapi-types";
+
 import { BUILD_CONFIG_SUFFIX } from "@/generators/const/buildConfigs.const";
 import { JSON_APPLICATION_FORMAT } from "@/generators/const/endpoints.const";
 import { ANY_SCHEMA } from "@/generators/const/zod.const";

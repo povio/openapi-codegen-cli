@@ -1,6 +1,6 @@
 import { AxiosError, AxiosResponseHeaders } from "axios";
-import { z } from "zod";
 import { isAxiosError } from "axios";
+import { z } from "zod";
 
 export namespace RestUtils {
   export const extractServerResponseCode = (e: unknown): string | null => {

@@ -1,4 +1,5 @@
 import Handlebars from "handlebars";
+
 import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
 import { Endpoint } from "@/generators/types/endpoint";
 import { getInfiniteQueryName, getQueryName } from "@/generators/utils/generate/generate.query.utils";

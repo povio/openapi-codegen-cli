@@ -1,4 +1,5 @@
 import { OpenAPIV3 } from "openapi-types";
+
 import { getOpenAPISchemaComplexity } from "@/generators/core/openapi/getOpenAPISchemaComplexity";
 import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
 import { WithRequired } from "@/generators/types/common";

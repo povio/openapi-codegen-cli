@@ -1,4 +1,5 @@
 import { OpenAPIV3 } from "openapi-types";
+
 import { JSON_APPLICATION_FORMAT } from "@/generators/const/endpoints.const";
 import { ALLOWED_METHODS } from "@/generators/const/openapi.const";
 import { HttpStatusCode } from "@/generators/const/validation.const";

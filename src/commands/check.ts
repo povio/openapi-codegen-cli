@@ -1,10 +1,10 @@
 import { OpenAPIV3 } from "openapi-types";
+
 import { checkOpenAPIDoc } from "@/generators/checkOpenAPIDoc";
 import { resolveConfig } from "@/generators/core/resolveConfig";
 import { GenerateOptions } from "@/generators/types/options";
 import { logInfo, logSuccess } from "@/helpers/cli.helper";
 import { loadConfig } from "@/helpers/config.helper";
-
 import SwaggerParser from "@apidevtools/swagger-parser";
 
 export type CheckParams = {

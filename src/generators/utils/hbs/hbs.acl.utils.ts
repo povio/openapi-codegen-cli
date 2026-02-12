@@ -1,4 +1,5 @@
 import Handlebars from "handlebars";
+
 import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
 import { Endpoint } from "@/generators/types/endpoint";
 import { GenerateOptions } from "@/generators/types/options";

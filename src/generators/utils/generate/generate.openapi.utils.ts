@@ -1,4 +1,5 @@
 import { OpenAPIV3 } from "openapi-types";
+
 import { camelToSpaceSeparated, capitalize } from "@/generators/utils/string.utils";
 
 export function getSchemaDescriptions(schemaObj: OpenAPIV3.SchemaObject) {

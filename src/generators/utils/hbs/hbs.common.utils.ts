@@ -1,4 +1,5 @@
 import Handlebars from "handlebars";
+
 import { capitalize } from "@/generators/utils/string.utils";
 
 enum CommonHelpers {

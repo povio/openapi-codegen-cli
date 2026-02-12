@@ -1,4 +1,5 @@
 import { OpenAPIV3 } from "openapi-types";
+
 import { COMPOSITE_KEYWORDS } from "@/generators/const/openapi.const";
 import { isReferenceObject } from "@/generators/utils/openapi-schema.utils";
 

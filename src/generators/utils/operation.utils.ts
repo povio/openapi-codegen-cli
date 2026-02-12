@@ -1,4 +1,5 @@
 import { OpenAPIV3 } from "openapi-types";
+
 import { RESERVED_WORDS } from "@/generators/const/js.const";
 import { ALLOWED_METHODS } from "@/generators/const/openapi.const";
 import { OperationObject } from "@/generators/types/openapi";

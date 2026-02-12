@@ -1,4 +1,6 @@
 import { OpenAPIV3 } from "openapi-types";
+import { match } from "ts-pattern";
+
 import { ALLOWED_PATH_IN } from "@/generators/const/openapi.const";
 import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
 import { getZodChain } from "@/generators/core/zod/getZodChain";
@@ -16,7 +18,6 @@ import {
   getParamZodSchemaName,
   getZodSchemaOperationName,
 } from "@/generators/utils/zod-schema.utils";
-import { match } from "ts-pattern";
 
 export function getEndpointParameter({
   resolver,

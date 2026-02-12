@@ -1,5 +1,7 @@
+import { styleText } from "node:util";
+
 import { OpenAPIV3 } from "openapi-types";
-import { styleText } from 'node:util';
+
 import { log } from "@/helpers/cli.helper";
 
 import { VALIDATION_ERROR_TYPE_TITLE } from "./const/validation.const";
@@ -18,7 +20,7 @@ export function checkOpenAPIDoc(openApiDoc: OpenAPIV3.Document, options: Generat
     const groupedErrors = groupByType(resolver.validationErrors);
     Object.entries(groupedErrors).forEach(([type, errorMessages]) => {
       log(
-        `${styleText('red', (`${VALIDATION_ERROR_TYPE_TITLE[type as ValidationErrorType]}:`))}\n${errorMessages.map((message) => `- ${message}`).join("\n")}\n`,
+        `${styleText("red", `${VALIDATION_ERROR_TYPE_TITLE[type as ValidationErrorType]}:`)}\n${errorMessages.map((message) => `- ${message}`).join("\n")}\n`,
       );
     });
   } else {
@@ -26,7 +28,7 @@ export function checkOpenAPIDoc(openApiDoc: OpenAPIV3.Document, options: Generat
       (acc, tag) => [...acc, ...getOutputFileNames(tag, options)],
       [] as string[],
     );
-    log(`${styleText('green', ("Outputs:"))}\n${outputs.map((output) => `- ${output}`).join("\n")}\n`);
+    log(`${styleText("green", "Outputs:")}\n${outputs.map((output) => `- ${output}`).join("\n")}\n`);
   }
 
   return resolver.validationErrors;

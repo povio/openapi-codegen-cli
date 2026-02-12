@@ -1,4 +1,5 @@
 import { OpenAPIV3 } from "openapi-types";
+
 import { ALLOWED_METHODS } from "@/generators/const/openapi.const";
 import { OperationObject } from "@/generators/types/openapi";
 import { GenerateOptions } from "@/generators/types/options";
@@ -244,11 +245,10 @@ export class SchemaResolver {
     if (this.dependencyGraph.refsDependencyGraph[currentRef]?.has(ref)) {
       return [...chain, currentRef, ref];
     }
-    return Array.from(this.dependencyGraph.refsDependencyGraph[currentRef]?.values() ?? [])
-      .flatMap((childRef) => {
-        const childChain = this.getCircularSchemaChain(ref, childRef, chain, visited);
-        return childChain.length > 0 ? [currentRef, ...childChain] : childChain;
-      });
+    return Array.from(this.dependencyGraph.refsDependencyGraph[currentRef]?.values() ?? []).flatMap((childRef) => {
+      const childChain = this.getCircularSchemaChain(ref, childRef, chain, visited);
+      return childChain.length > 0 ? [currentRef, ...childChain] : childChain;
+    });
   }
 
   getBaseUrl() {

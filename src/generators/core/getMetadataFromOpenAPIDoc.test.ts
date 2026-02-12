@@ -1,8 +1,8 @@
 import { OpenAPIV3 } from "openapi-types";
-import { DEFAULT_GENERATE_OPTIONS } from "@/generators/const/options.const";
-import { ModelMetadata, QueryMetadata, TsType } from "@/generators/types/metadata";
 import { describe, expect, test } from "vitest";
 
+import { DEFAULT_GENERATE_OPTIONS } from "@/generators/const/options.const";
+import { ModelMetadata, QueryMetadata, TsType } from "@/generators/types/metadata";
 import SwaggerParser from "@apidevtools/swagger-parser";
 
 import { getMetadataFromOpenAPIDoc } from "./getMetadataFromOpenAPIDoc";

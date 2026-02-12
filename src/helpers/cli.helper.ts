@@ -1,6 +1,7 @@
+import { styleText } from "node:util";
+
 /* eslint-disable no-console, @typescript-eslint/no-explicit-any */
 import type { Prompt as PromptSyncPrompt } from "prompt-sync";
-import { styleText } from 'node:util';
 
 /**
  * Wraps prop in a dynamic import
@@ -20,7 +21,7 @@ async function prompt(...args: Parameters<PromptSyncPrompt>) {
  */
 export function logVariable(name: string, value: any, defaultValue?: string | number) {
   if (defaultValue !== undefined && defaultValue !== value) {
-    console.log(`${styleText('yellow', (`${name}:`.padEnd(20)))}${styleText('magenta', (value))}`);
+    console.log(`${styleText("yellow", `${name}:`.padEnd(20))}${styleText("magenta", value)}`);
   } else {
     console.log(`${`${name}:`.padEnd(20)}${value}`);
   }
@@ -35,27 +36,27 @@ export function logInfo(message: string) {
 }
 
 export function logNotice(message: string) {
-  console.log(styleText('magenta', (`[NOTICE] ${message}`)));
+  console.log(styleText("magenta", `[NOTICE] ${message}`));
 }
 
 export function logSuccess(message: string) {
-  console.log(styleText('green', (`[SUCCESS] ${message}`)));
+  console.log(styleText("green", `[SUCCESS] ${message}`));
 }
 
 export function logWarning(message: string) {
-  console.log(styleText('red', (`[WARNING] ${message}`)));
+  console.log(styleText("red", `[WARNING] ${message}`));
 }
 
 export function logError(error: Error | string, message?: string) {
   if (error instanceof Error) {
-    console.log(styleText('red', (`[ERROR] ${message || error.message}`)));
+    console.log(styleText("red", `[ERROR] ${message || error.message}`));
   } else {
-    console.log(styleText('red', (`[ERROR] ${error}`)));
+    console.log(styleText("red", `[ERROR] ${error}`));
   }
 }
 
 export function logBanner(message: string) {
-  console.log(styleText('bgYellow', (`==== ${message} ====`)));
+  console.log(styleText("bgYellow", `==== ${message} ====`));
 }
 
 /**

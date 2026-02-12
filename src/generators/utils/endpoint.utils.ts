@@ -1,4 +1,5 @@
 import { OpenAPIV3 } from "openapi-types";
+
 import { Endpoint, ExtendedEndpoint } from "@/generators/types/endpoint";
 import { GenerateOptions } from "@/generators/types/options";
 

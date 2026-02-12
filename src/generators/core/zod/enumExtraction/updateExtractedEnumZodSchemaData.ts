@@ -1,4 +1,5 @@
 import { OpenAPIV3 } from "openapi-types";
+
 import { iterateSchema, OnSchemaCallbackData } from "@/generators/core/openapi/iterateSchema";
 import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
 import { getEnumZodSchemaCode } from "@/generators/core/zod/getZodSchema";

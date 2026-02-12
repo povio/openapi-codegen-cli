@@ -1,4 +1,5 @@
 import { OpenAPIV3 } from "openapi-types";
+
 import { COMPLEXITY_THRESHOLD } from "@/generators/const/openapi.const";
 import { getOpenAPISchemaComplexity } from "@/generators/core/openapi/getOpenAPISchemaComplexity";
 import { SchemaResolver } from "@/generators/core/SchemaResolver.class";

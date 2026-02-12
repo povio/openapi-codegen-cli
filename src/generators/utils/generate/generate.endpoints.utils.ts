@@ -1,4 +1,5 @@
 import { OpenAPIV3 } from "openapi-types";
+
 import { BODY_PARAMETER_NAME, DEFAULT_HEADERS } from "@/generators/const/endpoints.const";
 import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
 import { Endpoint } from "@/generators/types/endpoint";

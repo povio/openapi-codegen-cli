@@ -1,4 +1,5 @@
 import { OpenAPIV3 } from "openapi-types";
+
 import { Endpoint, EndpointParameter } from "@/generators/types/endpoint";
 import { GenerateType } from "@/generators/types/generate";
 import { GenerateMetadata, ModelMetadata, QueryMetadata, TsMetaType } from "@/generators/types/metadata";

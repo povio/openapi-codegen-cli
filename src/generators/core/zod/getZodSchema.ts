@@ -1,4 +1,6 @@
 import { OpenAPIV3 } from "openapi-types";
+import { match } from "ts-pattern";
+
 import {
   ANY_SCHEMA,
   BLOB_SCHEMA,
@@ -21,7 +23,6 @@ import {
   isSchemaObject,
 } from "@/generators/utils/openapi-schema.utils";
 import { isPrimitiveType, wrapWithQuotesIfNeeded } from "@/generators/utils/openapi.utils";
-import { match } from "ts-pattern";
 
 import { getZodChain } from "./getZodChain";
 import { getSchemaRefs } from "./getZodSchemaRefs";
