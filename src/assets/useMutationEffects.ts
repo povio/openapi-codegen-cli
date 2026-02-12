@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 
-import { OpenApiQueryConfig } from "@povio/openapi-codegen-cli";
+import { OpenApiQueryConfig } from "../lib/config/queryConfig.context";
 import { QueryKey, useQueryClient } from "@tanstack/react-query";
 
 import { QueryModule } from "./queryModules";
@@ -40,7 +40,11 @@ export function useMutationEffects({ currentModule }: UseMutationEffectsProps) {
           const isCurrentModule = shouldInvalidateCurrentModule && queryKey[0] === currentModule;
           const isInvalidateModule = !!invalidateModules && invalidateModules.some((module) => queryKey[0] === module);
           const isInvalidateKey = !!invalidateKeys && invalidateKeys.some((key) => isQueryKeyEqual(queryKey, key));
-          return isCurrentModule || isInvalidateModule || isInvalidateKey;
+
+          const map = config.invalidationMap?.[currentModule];
+          const isMappedKey = !!map && map.some((key) => isQueryKeyEqual(queryKey, key));
+
+          return isCurrentModule || isInvalidateModule || isInvalidateKey || isMappedKey;
         },
       });
 
@@ -48,7 +52,7 @@ export function useMutationEffects({ currentModule }: UseMutationEffectsProps) {
         updateKeys.map((queryKey) => queryClient.setQueryData(queryKey, data));
       }
     },
-    [queryClient, currentModule, config.preferUpdate],
+    [queryClient, currentModule, config.preferUpdate, config.invalidationMap],
   );
 
   return { runMutationEffects };
