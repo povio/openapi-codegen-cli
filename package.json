@@ -70,7 +70,7 @@
     "@apidevtools/swagger-parser": "^10.1.0",
     "@casl/ability": "^6.7.3",
     "@casl/react": "^5.0.0",
-    "@tanstack/react-query": "~5.85.9",
+    "@tanstack/react-query": "~5.90.21",
     "@types/node": "^20.12.12",
     "@types/prompt-sync": "^4.2.3",
     "@types/react": "^19.1.0",
@@ -100,7 +100,7 @@
   "peerDependencies": {
     "@casl/ability": "^6.7.3",
     "@casl/react": "^5.0.0",
-    "@tanstack/react-query": "^5.85.9",
+    "@tanstack/react-query": "^5.90.21",
     "axios": "^1.13.1",
     "react": "^19.1.0",
     "zod": "^4.1.12"
