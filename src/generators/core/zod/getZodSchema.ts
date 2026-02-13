@@ -179,6 +179,10 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag }: Get
     return zodSchema.assign(ANY_SCHEMA);
   }
 
+  if ((schemaType as unknown) === "null") {
+    return zodSchema.assign("z.null()");
+  }
+
   if (!schemaType) {
     return zodSchema.assign("z.unknown()");
   }
