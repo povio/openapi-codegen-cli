@@ -46,6 +46,12 @@ export const MUTATION_EFFECTS = {
 };
 export const MUTATION_EFFECTS_FILE: GenerateFile = { fileName: "useMutationEffects", extension: "ts" };
 
+// CrossTabQueryInvalidation
+export const CROSS_TAB_QUERY_INVALIDATION_FILE: GenerateFile = {
+  fileName: "useCrossTabQueryInvalidation",
+  extension: "ts",
+};
+
 // ZodExtended
 export const ZOD_EXTENDED = {
   namespace: "ZodExtended",

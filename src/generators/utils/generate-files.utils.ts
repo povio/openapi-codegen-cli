@@ -1,6 +1,7 @@
 import { ACL_APP_ABILITY_FILE, ACL_CHECK_FILE } from "@/generators/const/acl.const";
 import {
   APP_REST_CLIENT_FILE,
+  CROSS_TAB_QUERY_INVALIDATION_FILE,
   MUTATION_EFFECTS_FILE,
   QUERY_MODULES_FILE,
   ZOD_EXTENDED_FILE,
@@ -50,7 +51,7 @@ export function getMutationEffectsFiles(data: GenerateData, resolver: SchemaReso
   }
 
   return [
-    ...getAssetFiles([MUTATION_EFFECTS_FILE], resolver),
+    ...getAssetFiles([MUTATION_EFFECTS_FILE, CROSS_TAB_QUERY_INVALIDATION_FILE], resolver),
     {
       fileName: getOutputFileName({
         output: resolver.options.output,
