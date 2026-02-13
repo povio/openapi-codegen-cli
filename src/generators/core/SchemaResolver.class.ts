@@ -366,7 +366,7 @@ export class SchemaResolver {
 
         for (const statusCode in operation.responses) {
           const responseObj = <OpenAPIV3.ResponseObject>this.resolveObject(operation.responses[statusCode]);
-          const mediaTypes = Object.keys(responseObj.content ?? {});
+          const mediaTypes = Object.keys(responseObj?.content ?? {});
           const matchingMediaType = mediaTypes.find(isMediaTypeAllowed);
           if (matchingMediaType) {
             const matchingMediaSchema = responseObj.content?.[matchingMediaType]?.schema;

@@ -121,7 +121,7 @@ export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver) {
         endpoint.responseStatusCodes.push(statusCode);
 
         const responseObj = <OpenAPIV3.ResponseObject>resolver.resolveObject(operation.responses[statusCode]);
-        const mediaTypes = Object.keys(responseObj.content ?? {});
+        const mediaTypes = Object.keys(responseObj?.content ?? {});
         const matchingMediaType = mediaTypes.find(isMediaTypeAllowed);
 
         let schema: OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject | undefined;
@@ -168,12 +168,12 @@ export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver) {
           if (isMainResponseStatus(status) && !endpoint.response) {
             endpoint.response = responseZodSchema;
             endpoint.responseObject = responseObj;
-            endpoint.responseDescription = responseObj.description;
+            endpoint.responseDescription = responseObj?.description;
           } else if (statusCode !== "default" && isErrorStatus(status)) {
             endpoint.errors.push({
               zodSchema: responseZodSchema,
               status,
-              description: responseObj.description,
+              description: responseObj?.description,
             });
           }
         }
