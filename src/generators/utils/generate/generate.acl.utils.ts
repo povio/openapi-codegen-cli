@@ -27,7 +27,7 @@ export const hasAbilityConditions = (endpoint: Endpoint) => !!getAbilityConditio
 export const getAbilityConditionsTypes = (endpoint: Endpoint) =>
   endpoint.acl?.[0].conditionsTypes?.sort((a, b) => a.name.localeCompare(b.name));
 
-export const getAbilityDescription = (endpoint: Endpoint) => endpoint.acl?.[0].description;
+export const getAbilityDescription = (endpoint: Endpoint) => endpoint.acl?.[0]?.description;
 
 export const getAbilitySubjectTypes = (endpoint: Endpoint) => {
   const abilitySubject = getAbilitySubject(endpoint);

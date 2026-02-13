@@ -46,7 +46,7 @@ export function getEndpointParameter({
       throw new Error(`Unsupported media type for param ${paramObj.name}: ${mediaTypes.join(", ")}`);
     }
 
-    const mediaTypeObject = paramObj.content[matchingMediaType];
+    const mediaTypeObject = paramObj.content?.[matchingMediaType];
     if (!mediaTypeObject) {
       throw new Error(`No content with media type for param ${paramObj.name}: ${matchingMediaType}`);
     }

@@ -241,7 +241,7 @@ function getInputsConfig(resolver: SchemaResolver, endpointParameter?: EndpointP
 
   let schema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject | undefined;
   if (endpointParameter.type === "Body") {
-    schema = endpointParameter.bodyObject?.content[JSON_APPLICATION_FORMAT]?.schema;
+    schema = endpointParameter.bodyObject?.content?.[JSON_APPLICATION_FORMAT]?.schema;
   } else {
     schema = endpointParameter.parameterObject?.schema;
   }

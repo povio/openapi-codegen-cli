@@ -1345,7 +1345,7 @@ __metadata:
     "@apidevtools/swagger-parser": "npm:^10.1.0"
     "@casl/ability": "npm:^6.7.3"
     "@casl/react": "npm:^5.0.0"
-    "@tanstack/react-query": "npm:~5.85.9"
+    "@tanstack/react-query": "npm:~5.90.21"
     "@types/node": "npm:^20.12.12"
     "@types/prompt-sync": "npm:^4.2.3"
     "@types/react": "npm:^19.1.0"
@@ -1376,7 +1376,7 @@ __metadata:
   peerDependencies:
     "@casl/ability": ^6.7.3
     "@casl/react": ^5.0.0
-    "@tanstack/react-query": ^5.85.9
+    "@tanstack/react-query": ^5.90.21
     axios: ^1.13.1
     react: ^19.1.0
     zod: ^4.1.12
@@ -1792,21 +1792,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tanstack/query-core@npm:5.85.9":
-  version: 5.85.9
-  resolution: "@tanstack/query-core@npm:5.85.9"
-  checksum: 10c0/c7a02e816f49e2b0c8cfc7db1541742d85e6aca82c67f849813b352800dc225dbf89d506c3187c9ffb5643bb0b0309255b03b039fbffaae293415850baaae2ab
+"@tanstack/query-core@npm:5.90.20":
+  version: 5.90.20
+  resolution: "@tanstack/query-core@npm:5.90.20"
+  checksum: 10c0/70637dfcecd5ed9d810629aa27f1632af8a4bcd083e75cf29408d058c32f8234704a3231ec280e2c4016ea0485b16124fdf70ab97793b5a7b670f43f7659e9fe
   languageName: node
   linkType: hard
 
-"@tanstack/react-query@npm:~5.85.9":
-  version: 5.85.9
-  resolution: "@tanstack/react-query@npm:5.85.9"
+"@tanstack/react-query@npm:~5.90.21":
+  version: 5.90.21
+  resolution: "@tanstack/react-query@npm:5.90.21"
   dependencies:
-    "@tanstack/query-core": "npm:5.85.9"
+    "@tanstack/query-core": "npm:5.90.20"
   peerDependencies:
     react: ^18 || ^19
-  checksum: 10c0/d20f418567812bc2417784d2da319f59f3f7ab96deba47e18aae59716c8499c85b7eb5b10ff5463958fb3f07043facbf2a815d541bafb644e8a339a8d4f5a88f
+  checksum: 10c0/e8994c57f6ceb2c886a4d6486a8c6a3f89bc6b1220de3e732448d7fcbeb386e9358f03c73804de72004c6ac2668d0bf1b44cedbb273d3e4b33afcbaee7b7d24d
   languageName: node
   linkType: hard
 
