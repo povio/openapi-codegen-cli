@@ -47,7 +47,7 @@ export const {{queryName endpoint mutation=true}} = (options?: AppMutationOption
       {{#if destructuredVariables}}const { {{commaSeparated destructuredVariables }} } = variables;{{/if}}
       const updateKeys = [{{#each updateQueryEndpoints as | endpoint |}}keys.{{endpointName endpoint}}({{{endpointArgs endpoint includeOnlyRequiredParams=true}}}), {{/each}}];
       {{/if}}
-      await runMutationEffects(resData, options{{#if updateQueryEndpoints}}, updateKeys{{/if}});
+      await runMutationEffects(resData, variables, options{{#if updateQueryEndpoints}}, updateKeys{{/if}});
       options?.onSuccess?.(resData, variables, onMutateResult, context);
     },{{/if}}
   });
