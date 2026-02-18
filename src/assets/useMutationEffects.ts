@@ -1,15 +1,14 @@
 import { useCallback, useEffect } from "react";
 
-import { OpenApiQueryConfig } from "@povio/openapi-codegen-cli";
 import { QueryKey, useQueryClient } from "@tanstack/react-query";
 
-import { QueryModule } from "./queryModules";
+import { OpenApiQueryConfig, QueryModule, InvalidationMap } from "../lib/config/queryConfig.context";
 import { broadcastQueryInvalidation, setupCrossTabListener } from "./useCrossTabQueryInvalidation";
 
 export interface MutationEffectsOptions {
   invalidateCurrentModule?: boolean;
   crossTabInvalidation?: boolean;
-  invalidationMap?: Record<string, (context: Record<string, string>) => QueryKey[]>;
+  invalidationMap?: InvalidationMap;
   invalidateModules?: QueryModule[];
   invalidateKeys?: QueryKey[];
   preferUpdate?: boolean;
@@ -29,8 +28,19 @@ export function useMutationEffects({ currentModule }: UseMutationEffectsProps) {
   }, [queryClient, config.crossTabInvalidation]);
 
   const runMutationEffects = useCallback(
-    async <TData>(data: TData, options: MutationEffectsOptions = {}, updateKeys?: QueryKey[]) => {
-      const { invalidateCurrentModule = true, invalidateModules, invalidateKeys, preferUpdate } = options;
+    async <TData, TVariables>(
+      data: TData,
+      variables: TVariables,
+      options: MutationEffectsOptions = {},
+      updateKeys?: QueryKey[],
+    ) => {
+      const {
+        invalidateCurrentModule = true,
+        invalidateModules,
+        invalidateKeys,
+        preferUpdate,
+        invalidationMap,
+      } = options;
       const shouldUpdate = preferUpdate || (preferUpdate === undefined && config.preferUpdate);
       const shouldInvalidateCurrentModule =
         invalidateCurrentModule || (invalidateCurrentModule === undefined && config.invalidateCurrentModule);
@@ -51,7 +61,7 @@ export function useMutationEffects({ currentModule }: UseMutationEffectsProps) {
           const isInvalidateModule = !!invalidateModules && invalidateModules.some((module) => queryKey[0] === module);
           const isInvalidateKey = !!invalidateKeys && invalidateKeys.some((key) => isQueryKeyEqual(queryKey, key));
 
-          const map = config.invalidationMap?.[currentModule]?.(data);
+          const map = (invalidationMap || config.invalidationMap)?.[currentModule]?.(data, variables);
           const isMappedKey = !!map && map.some((key) => isQueryKeyEqual(queryKey, key));
 
           const shouldInvalidate = isCurrentModule || isInvalidateModule || isInvalidateKey || isMappedKey;

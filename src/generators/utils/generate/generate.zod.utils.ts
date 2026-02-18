@@ -104,7 +104,9 @@ export function getZodSchemaPropertyDescriptions(resolver: SchemaResolver, data:
 
     if (schemaData.schema && segments[segments.length - 1] !== ARRAY_INDEX) {
       const resolvedSchema = resolver.resolveObject(schemaData.schema);
-      const schemaDescriptions = [resolvedSchema?.description, ...getSchemaDescriptions(resolvedSchema)].filter(Boolean);
+      const schemaDescriptions = [resolvedSchema?.description, ...getSchemaDescriptions(resolvedSchema)].filter(
+        Boolean,
+      );
       const propertyKey = segments.join(".");
       if (!(properties[propertyKey] && "type" in schemaData.schema && schemaData.schema.type === "object")) {
         delete properties[propertyKey];
