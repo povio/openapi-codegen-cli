@@ -53,8 +53,8 @@ export function getQueryModulesImportPath(options: GenerateOptions) {
   return `${getImportPath(options)}${QUERY_MODULES_FILE.fileName}`;
 }
 
-export function getMutationEffectsImportPath(options: GenerateOptions) {
-  return `${getImportPath(options)}${MUTATION_EFFECTS_FILE.fileName}`;
+export function getMutationEffectsImportPath(_options: GenerateOptions) {
+  return "@povio/openapi-codegen-cli";
 }
 
 export function getAclCheckImportPath(options: GenerateOptions) {
