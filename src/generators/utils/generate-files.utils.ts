@@ -1,10 +1,6 @@
 import { ACL_APP_ABILITY_FILE, ACL_CHECK_FILE } from "@/generators/const/acl.const";
-import {
-  APP_REST_CLIENT_FILE,
-  CROSS_TAB_QUERY_INVALIDATION_FILE,
-  QUERY_MODULES_FILE,
-  ZOD_EXTENDED_FILE,
-} from "@/generators/const/deps.const";
+import { APP_REST_CLIENT_FILE, CROSS_TAB_QUERY_INVALIDATION_FILE, MUTATION_EFFECTS_FILE, QUERY_MODULES_FILE, ZOD_EXTENDED_FILE } from "@/generators/const/deps.const";
+import { PACKAGE_IMPORT_PATH } from "@/generators/const/package.const";
 import { DEFAULT_GENERATE_OPTIONS } from "@/generators/const/options.const";
 import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
 import { generateAppAcl } from "@/generators/generate/generateAcl";
@@ -50,7 +46,7 @@ export function getMutationEffectsFiles(data: GenerateData, resolver: SchemaReso
   }
 
   return [
-    ...getAssetFiles([CROSS_TAB_QUERY_INVALIDATION_FILE], resolver),
+    ...getAssetFiles([MUTATION_EFFECTS_FILE, CROSS_TAB_QUERY_INVALIDATION_FILE], resolver),
     {
       fileName: getOutputFileName({
         output: resolver.options.output,
@@ -100,8 +96,17 @@ function getAssetFiles(files: GenerateFile[], resolver: SchemaResolver): Generat
 
 function getAssetFile(file: GenerateFile, resolver: SchemaResolver): GenerateFileData {
   const fileName = getFileNameWithExtension(file);
+  let content = readAssetSync(fileName);
+
+  if (file.fileName === MUTATION_EFFECTS_FILE.fileName) {
+    content = content.replace(
+      'import { OpenApiQueryConfig, QueryModule, InvalidationMap } from "../lib/config/queryConfig.context";',
+      `import { OpenApiQueryConfig, InvalidationMap } from "${PACKAGE_IMPORT_PATH}";\nimport { QueryModule } from "./${QUERY_MODULES_FILE.fileName}";`,
+    );
+  }
+
   return {
     fileName: getOutputFileName({ output: resolver.options.output, fileName }),
-    content: readAssetSync(fileName),
+    content,
   };
 }
