@@ -1,7 +1,6 @@
 import { useCallback, useEffect } from "react";
 
 import { QueryKey, useQueryClient } from "@tanstack/react-query";
-
 import { OpenApiQueryConfig, QueryModule, InvalidationMap } from "../lib/config/queryConfig.context";
 import { broadcastQueryInvalidation, setupCrossTabListener } from "./useCrossTabQueryInvalidation";
 
@@ -28,43 +27,37 @@ export function useMutationEffects({ currentModule }: UseMutationEffectsProps) {
   }, [queryClient, config.crossTabInvalidation]);
 
   const runMutationEffects = useCallback(
-    async <TData, TVariables>(
-      data: TData,
-      variables: TVariables,
-      options: MutationEffectsOptions = {},
-      updateKeys?: QueryKey[],
-    ) => {
-      const {
-        invalidateCurrentModule = true,
-        invalidateModules,
-        invalidateKeys,
-        preferUpdate,
-        invalidationMap,
-      } = options;
-      const shouldUpdate = preferUpdate || (preferUpdate === undefined && config.preferUpdate);
-      const shouldInvalidateCurrentModule =
-        invalidateCurrentModule || (invalidateCurrentModule === undefined && config.invalidateCurrentModule);
+    async <TData, TVariables>(data: TData, variables: TVariables, options: MutationEffectsOptions = {}, updateKeys?: QueryKey[]) => {
+      const { invalidateCurrentModule, invalidateModules, invalidateKeys, preferUpdate } = options;
+      const shouldUpdate = preferUpdate ?? config.preferUpdate ?? false;
+      const shouldInvalidateCurrentModule = invalidateCurrentModule ?? config.invalidateCurrentModule ?? true;
 
       const isQueryKeyEqual = (keyA: QueryKey, keyB: QueryKey) =>
         keyA.length === keyB.length && keyA.every((item, index) => item === keyB[index]);
+      const isQueryKeyPrefix = (queryKey: QueryKey, prefixKey: QueryKey) =>
+        prefixKey.length <= queryKey.length && prefixKey.every((item, index) => item === queryKey[index]);
+      const mappedInvalidationKeys = config.invalidationMap?.[currentModule]?.(data, variables);
+
+      const shouldInvalidateQuery = (queryKey: QueryKey) => {
+        const isUpdateKey = updateKeys?.some((key) => isQueryKeyEqual(queryKey, key));
+        if (shouldUpdate && isUpdateKey) {
+          return false;
+        }
+
+        const isCurrentModule = shouldInvalidateCurrentModule && queryKey[0] === currentModule;
+        const isInvalidateModule = !!invalidateModules && invalidateModules.some((module) => queryKey[0] === module);
+        const isInvalidateKey = !!invalidateKeys && invalidateKeys.some((key) => isQueryKeyPrefix(queryKey, key));
+        const isMappedKey =
+          !!mappedInvalidationKeys && mappedInvalidationKeys.some((key) => isQueryKeyPrefix(queryKey, key));
+
+        return isCurrentModule || isInvalidateModule || isInvalidateKey || isMappedKey;
+      };
 
       const invalidatedQueryKeys: QueryKey[] = [];
 
       queryClient.invalidateQueries({
         predicate: ({ queryKey }) => {
-          const isUpdateKey = updateKeys?.some((key) => isQueryKeyEqual(queryKey, key));
-          if (shouldUpdate && isUpdateKey) {
-            return false;
-          }
-
-          const isCurrentModule = shouldInvalidateCurrentModule && queryKey[0] === currentModule;
-          const isInvalidateModule = !!invalidateModules && invalidateModules.some((module) => queryKey[0] === module);
-          const isInvalidateKey = !!invalidateKeys && invalidateKeys.some((key) => isQueryKeyEqual(queryKey, key));
-
-          const map = (invalidationMap || config.invalidationMap)?.[currentModule]?.(data, variables);
-          const isMappedKey = !!map && map.some((key) => isQueryKeyEqual(queryKey, key));
-
-          const shouldInvalidate = isCurrentModule || isInvalidateModule || isInvalidateKey || isMappedKey;
+          const shouldInvalidate = shouldInvalidateQuery(queryKey);
 
           if (shouldInvalidate && config.crossTabInvalidation) {
             invalidatedQueryKeys.push([...queryKey]);
@@ -82,7 +75,14 @@ export function useMutationEffects({ currentModule }: UseMutationEffectsProps) {
         updateKeys.map((queryKey) => queryClient.setQueryData(queryKey, data));
       }
     },
-    [queryClient, currentModule, config.preferUpdate, config.invalidationMap, config.crossTabInvalidation],
+    [
+      queryClient,
+      currentModule,
+      config.preferUpdate,
+      config.invalidateCurrentModule,
+      config.invalidationMap,
+      config.crossTabInvalidation,
+    ],
   );
 
   return { runMutationEffects };
