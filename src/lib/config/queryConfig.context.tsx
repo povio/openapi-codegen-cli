@@ -6,7 +6,10 @@ import type { QueryKey } from "@tanstack/react-query";
 export type QueryModule = string | number | symbol;
 
 export type InvalidationMapFunc<TData = any, TVariables = any> = (data: TData, variables: TVariables) => QueryKey[];
-export type InvalidationMap<TData = any, TVariables = any> = Record<QueryModule, InvalidationMapFunc<TData, TVariables>>;
+export type InvalidationMap<TData = any, TVariables = any> = Record<
+  QueryModule,
+  InvalidationMapFunc<TData, TVariables>
+>;
 
 export namespace OpenApiQueryConfig {
   interface Type {

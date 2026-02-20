@@ -27,7 +27,12 @@ export function useMutationEffects({ currentModule }: UseMutationEffectsProps) {
   }, [queryClient, config.crossTabInvalidation]);
 
   const runMutationEffects = useCallback(
-    async <TData, TVariables>(data: TData, variables: TVariables, options: MutationEffectsOptions = {}, updateKeys?: QueryKey[]) => {
+    async <TData, TVariables>(
+      data: TData,
+      variables: TVariables,
+      options: MutationEffectsOptions = {},
+      updateKeys?: QueryKey[],
+    ) => {
       const { invalidateCurrentModule, invalidateModules, invalidateKeys, preferUpdate } = options;
       const shouldUpdate = preferUpdate ?? config.preferUpdate ?? false;
       const shouldInvalidateCurrentModule = invalidateCurrentModule ?? config.invalidateCurrentModule ?? true;
