@@ -9,7 +9,7 @@ export interface AuthGuardProps {
 }
 
 export const AuthGuard = ({ type, redirectTo, children }: PropsWithChildren<AuthGuardProps>) => {
-  const { isAuthenticated, routes, loadingState } = AuthContext.useAuth();
+  const { isAuthenticated, isInitializing, routes, loadingState } = AuthContext.useAuth();
   const { replace } = OpenApiRouter.useRouter();
 
   const [hasMounted, setHasMounted] = useState(false);
@@ -18,7 +18,7 @@ export const AuthGuard = ({ type, redirectTo, children }: PropsWithChildren<Auth
     setHasMounted(true);
   }, []);
 
-  if (!hasMounted) {
+  if (!hasMounted || isInitializing) {
     return loadingState;
   }
 
