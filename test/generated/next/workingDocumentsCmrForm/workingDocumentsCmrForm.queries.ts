@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -28,14 +27,14 @@ export const keys = {
  * @returns { UseMutationResult<WorkingDocumentsCmrFormModels.CmrDocumentResponseDTO> } 
  * @statusCodes [201, 401]
  */
-export const useCreate = (options?: AppMutationOptions<typeof WorkingDocumentsCmrFormApi.create, { positionId: string, officeId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreate = (options?: AppMutationOptions<typeof WorkingDocumentsCmrFormApi.create, { positionId: string, officeId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, officeId }) => { 
       checkAcl(WorkingDocumentsCmrFormAcl.canUseCreate({ officeId } ));
-      return WorkingDocumentsCmrFormApi.create(positionId, officeId, config)
+      return WorkingDocumentsCmrFormApi.create(positionId, officeId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -56,14 +55,14 @@ export const useCreate = (options?: AppMutationOptions<typeof WorkingDocumentsCm
  * @returns { UseQueryResult<WorkingDocumentsCmrFormModels.CmrDocumentResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useGetCmrData = <TData>({ positionId, cmrId, officeId }: { positionId: string, cmrId: string, officeId: string }, options?: AppQueryOptions<typeof WorkingDocumentsCmrFormApi.getCmrData, TData>, config?: AxiosRequestConfig) => {
+export const useGetCmrData = <TData>({ positionId, cmrId, officeId }: { positionId: string, cmrId: string, officeId: string }, options?: AppQueryOptions<typeof WorkingDocumentsCmrFormApi.getCmrData, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.getCmrData(positionId, cmrId, officeId),
     queryFn: () => { 
     checkAcl(WorkingDocumentsCmrFormAcl.canUseGetCmrData({ officeId } ));
-    return WorkingDocumentsCmrFormApi.getCmrData(positionId, cmrId, officeId, config) },
+    return WorkingDocumentsCmrFormApi.getCmrData(positionId, cmrId, officeId) },
     ...options,
   });
 };
@@ -80,14 +79,14 @@ export const useGetCmrData = <TData>({ positionId, cmrId, officeId }: { position
  * @returns { UseMutationResult<WorkingDocumentsCmrFormModels.CmrDocumentResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useUpdateCmrData = (options?: AppMutationOptions<typeof WorkingDocumentsCmrFormApi.updateCmrData, { positionId: string, cmrId: string, officeId: string, data: WorkingDocumentsCmrFormModels.UpdateCmrDocumentRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdateCmrData = (options?: AppMutationOptions<typeof WorkingDocumentsCmrFormApi.updateCmrData, { positionId: string, cmrId: string, officeId: string, data: WorkingDocumentsCmrFormModels.UpdateCmrDocumentRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, cmrId, officeId, data }) => { 
       checkAcl(WorkingDocumentsCmrFormAcl.canUseUpdateCmrData({ officeId } ));
-      return WorkingDocumentsCmrFormApi.updateCmrData(positionId, cmrId, officeId, data, config)
+      return WorkingDocumentsCmrFormApi.updateCmrData(positionId, cmrId, officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -110,14 +109,14 @@ export const useUpdateCmrData = (options?: AppMutationOptions<typeof WorkingDocu
  * @returns { UseMutationResult<void> } CMR document deleted
  * @statusCodes [204, 401, 404]
  */
-export const useDeleteCmr = (options?: AppMutationOptions<typeof WorkingDocumentsCmrFormApi.deleteCmr, { positionId: string, cmrId: string, officeId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useDeleteCmr = (options?: AppMutationOptions<typeof WorkingDocumentsCmrFormApi.deleteCmr, { positionId: string, cmrId: string, officeId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, cmrId, officeId }) => { 
       checkAcl(WorkingDocumentsCmrFormAcl.canUseDeleteCmr({ officeId } ));
-      return WorkingDocumentsCmrFormApi.deleteCmr(positionId, cmrId, officeId, config)
+      return WorkingDocumentsCmrFormApi.deleteCmr(positionId, cmrId, officeId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -138,14 +137,14 @@ export const useDeleteCmr = (options?: AppMutationOptions<typeof WorkingDocument
  * @returns { UseQueryResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
  */
-export const usePreviewCmr = <TData>({ positionId, cmrId, officeId }: { positionId: string, cmrId: string, officeId: string }, options?: AppQueryOptions<typeof WorkingDocumentsCmrFormApi.previewCmr, TData>, config?: AxiosRequestConfig) => {
+export const usePreviewCmr = <TData>({ positionId, cmrId, officeId }: { positionId: string, cmrId: string, officeId: string }, options?: AppQueryOptions<typeof WorkingDocumentsCmrFormApi.previewCmr, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.previewCmr(positionId, cmrId, officeId),
     queryFn: () => { 
     checkAcl(WorkingDocumentsCmrFormAcl.canUsePreviewCmr({ officeId } ));
-    return WorkingDocumentsCmrFormApi.previewCmr(positionId, cmrId, officeId, config) },
+    return WorkingDocumentsCmrFormApi.previewCmr(positionId, cmrId, officeId) },
     ...options,
   });
 };
@@ -161,14 +160,14 @@ export const usePreviewCmr = <TData>({ positionId, cmrId, officeId }: { position
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
  */
-export const usePreviewCmrMutation = (options?: AppMutationOptions<typeof WorkingDocumentsCmrFormApi.previewCmr, { positionId: string, cmrId: string, officeId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const usePreviewCmrMutation = (options?: AppMutationOptions<typeof WorkingDocumentsCmrFormApi.previewCmr, { positionId: string, cmrId: string, officeId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, cmrId, officeId }) => { 
       checkAcl(WorkingDocumentsCmrFormAcl.canUsePreviewCmr({ officeId } ));
-      return WorkingDocumentsCmrFormApi.previewCmr(positionId, cmrId, officeId, config)
+      return WorkingDocumentsCmrFormApi.previewCmr(positionId, cmrId, officeId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -192,14 +191,14 @@ export const usePreviewCmrMutation = (options?: AppMutationOptions<typeof Workin
  * @returns { UseMutationResult<void> } 
  * @statusCodes [201, 401]
  */
-export const useGenerateCmr = (options?: AppMutationOptions<typeof WorkingDocumentsCmrFormApi.generateCmr, { positionId: string, cmrId: string, officeId: string, data: CommonModels.GenerateWorkingDocumentRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useGenerateCmr = (options?: AppMutationOptions<typeof WorkingDocumentsCmrFormApi.generateCmr, { positionId: string, cmrId: string, officeId: string, data: CommonModels.GenerateWorkingDocumentRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, cmrId, officeId, data }) => { 
       checkAcl(WorkingDocumentsCmrFormAcl.canUseGenerateCmr({ officeId } ));
-      return WorkingDocumentsCmrFormApi.generateCmr(positionId, cmrId, officeId, data, config)
+      return WorkingDocumentsCmrFormApi.generateCmr(positionId, cmrId, officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -34,14 +33,14 @@ export const keys = {
  * @returns { UseQueryResult<ContainerYardsModels.ContainerYardsPaginateResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: ContainerYardsModels.ContainerYardFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof ContainerYardsApi.paginate, TData>, config?: AxiosRequestConfig) => {
+export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: ContainerYardsModels.ContainerYardFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof ContainerYardsApi.paginate, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.paginate(limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(ContainerYardsAcl.canUsePaginate());
-    return ContainerYardsApi.paginate(limit, order, filter, page, cursor, config) },
+    return ContainerYardsApi.paginate(limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -59,14 +58,14 @@ export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { lim
  * @returns { UseInfiniteQueryResult<ContainerYardsModels.ContainerYardsPaginateResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: ContainerYardsModels.ContainerYardFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof ContainerYardsApi.paginate, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: ContainerYardsModels.ContainerYardFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof ContainerYardsApi.paginate, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.paginateInfinite(limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(ContainerYardsAcl.canUsePaginate());
-    return ContainerYardsApi.paginate(limit, order, filter, pageParam, cursor, config) },
+    return ContainerYardsApi.paginate(limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -85,14 +84,14 @@ export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { l
  * @returns { UseMutationResult<ContainerYardsModels.ContainerYardResponseDTO> } 
  * @statusCodes [200, 201, 401]
  */
-export const useCreate = (options?: AppMutationOptions<typeof ContainerYardsApi.create, { data: ContainerYardsModels.CreateContainerYardRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreate = (options?: AppMutationOptions<typeof ContainerYardsApi.create, { data: ContainerYardsModels.CreateContainerYardRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ data }) => { 
       checkAcl(ContainerYardsAcl.canUseCreate());
-      return ContainerYardsApi.create(data, config)
+      return ContainerYardsApi.create(data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -115,14 +114,14 @@ export const useCreate = (options?: AppMutationOptions<typeof ContainerYardsApi.
  * @returns { UseQueryResult<ContainerYardsModels.ContainerYardsPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: ContainerYardsModels.ContainerYardLabelFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof ContainerYardsApi.paginateLabels, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: ContainerYardsModels.ContainerYardLabelFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof ContainerYardsApi.paginateLabels, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.paginateLabels(limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(ContainerYardsAcl.canUsePaginateLabels());
-    return ContainerYardsApi.paginateLabels(limit, order, filter, page, cursor, config) },
+    return ContainerYardsApi.paginateLabels(limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -140,14 +139,14 @@ export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }:
  * @returns { UseInfiniteQueryResult<ContainerYardsModels.ContainerYardsPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: ContainerYardsModels.ContainerYardLabelFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof ContainerYardsApi.paginateLabels, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: ContainerYardsModels.ContainerYardLabelFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof ContainerYardsApi.paginateLabels, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.paginateLabelsInfinite(limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(ContainerYardsAcl.canUsePaginateLabels());
-    return ContainerYardsApi.paginateLabels(limit, order, filter, pageParam, cursor, config) },
+    return ContainerYardsApi.paginateLabels(limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -166,14 +165,14 @@ export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor 
  * @returns { UseQueryResult<CommonModels.LabelResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useGetLabelById = <TData>({ id }: { id: string }, options?: AppQueryOptions<typeof ContainerYardsApi.getLabelById, TData>, config?: AxiosRequestConfig) => {
+export const useGetLabelById = <TData>({ id }: { id: string }, options?: AppQueryOptions<typeof ContainerYardsApi.getLabelById, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.getLabelById(id),
     queryFn: () => { 
     checkAcl(ContainerYardsAcl.canUseGetLabelById());
-    return ContainerYardsApi.getLabelById(id, config) },
+    return ContainerYardsApi.getLabelById(id) },
     ...options,
   });
 };
@@ -187,14 +186,14 @@ export const useGetLabelById = <TData>({ id }: { id: string }, options?: AppQuer
  * @returns { UseMutationResult<ContainerYardsModels.ContainerYardResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useArchive = (options?: AppMutationOptions<typeof ContainerYardsApi.archive, { id: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useArchive = (options?: AppMutationOptions<typeof ContainerYardsApi.archive, { id: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ id }) => { 
       checkAcl(ContainerYardsAcl.canUseArchive());
-      return ContainerYardsApi.archive(id, config)
+      return ContainerYardsApi.archive(id)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -215,14 +214,14 @@ export const useArchive = (options?: AppMutationOptions<typeof ContainerYardsApi
  * @returns { UseMutationResult<ContainerYardsModels.ContainerYardResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useUnarchive = (options?: AppMutationOptions<typeof ContainerYardsApi.unarchive, { id: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUnarchive = (options?: AppMutationOptions<typeof ContainerYardsApi.unarchive, { id: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ id }) => { 
       checkAcl(ContainerYardsAcl.canUseUnarchive());
-      return ContainerYardsApi.unarchive(id, config)
+      return ContainerYardsApi.unarchive(id)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -244,14 +243,14 @@ export const useUnarchive = (options?: AppMutationOptions<typeof ContainerYardsA
  * @returns { UseMutationResult<ContainerYardsModels.ContainerYardResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useUpdate = (options?: AppMutationOptions<typeof ContainerYardsApi.update, { id: string, data: ContainerYardsModels.UpdateContainerYardRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdate = (options?: AppMutationOptions<typeof ContainerYardsApi.update, { id: string, data: ContainerYardsModels.UpdateContainerYardRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ id, data }) => { 
       checkAcl(ContainerYardsAcl.canUseUpdate());
-      return ContainerYardsApi.update(id, data, config)
+      return ContainerYardsApi.update(id, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -272,14 +271,14 @@ export const useUpdate = (options?: AppMutationOptions<typeof ContainerYardsApi.
  * @returns { UseQueryResult<ContainerYardsModels.ContainerYardResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useFindById = <TData>({ id }: { id: string }, options?: AppQueryOptions<typeof ContainerYardsApi.findById, TData>, config?: AxiosRequestConfig) => {
+export const useFindById = <TData>({ id }: { id: string }, options?: AppQueryOptions<typeof ContainerYardsApi.findById, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.findById(id),
     queryFn: () => { 
     checkAcl(ContainerYardsAcl.canUseFindById());
-    return ContainerYardsApi.findById(id, config) },
+    return ContainerYardsApi.findById(id) },
     ...options,
   });
 };

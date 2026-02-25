@@ -16,7 +16,7 @@ export const SearchItemTypeEnum = SearchItemTypeEnumSchema.enum;
  * @property { string } id  
  * @property { string } label  
  */
-export const SearchItemDtoSchema = z.object({ type: SearchItemTypeEnumSchema, id: z.string(), label: z.string().nullable() }).readonly();
+export const SearchItemDtoSchema = z.object({ type: SearchItemTypeEnumSchema, id: z.string(), label: z.string().nullable() });
 export type SearchItemDto = z.infer<typeof SearchItemDtoSchema>;
 
 /** 
@@ -28,7 +28,7 @@ export type SearchItemDto = z.infer<typeof SearchItemDtoSchema>;
  * @property { number } containersCount  
  * @property { number } totalCount  
  */
-export const SearchResponseDtoSchema = z.object({ items: z.array(SearchItemDtoSchema).readonly(), projectsCount: z.number(), bookingsCount: z.number(), containersCount: z.number(), totalCount: z.number() }).readonly();
+export const SearchResponseDtoSchema = z.object({ items: z.array(SearchItemDtoSchema), projectsCount: z.number(), bookingsCount: z.number(), containersCount: z.number(), totalCount: z.number() });
 export type SearchResponseDto = z.infer<typeof SearchResponseDtoSchema>;
 
 /** 
@@ -36,7 +36,7 @@ export type SearchResponseDto = z.infer<typeof SearchResponseDtoSchema>;
  * @type { object }
  * @property { string } search  
  */
-export const SearchRequestDtoSchema = z.object({ search: z.string() }).readonly();
+export const SearchRequestDtoSchema = z.object({ search: z.string() });
 export type SearchRequestDto = z.infer<typeof SearchRequestDtoSchema>;
 
 }

@@ -7,7 +7,7 @@ export namespace CustomerAccountModels {
  * @property { string } id Company ID 
  * @property { string } name Company name 
  */
-export const CustomerCompanyDtoSchema = z.object({ id: z.string().describe("Company ID"), name: z.string().describe("Company name").nullish() }).readonly();
+export const CustomerCompanyDtoSchema = z.object({ id: z.string(), name: z.string().nullish() });
 export type CustomerCompanyDto = z.infer<typeof CustomerCompanyDtoSchema>;
 
 /** 
@@ -16,7 +16,7 @@ export type CustomerCompanyDto = z.infer<typeof CustomerCompanyDtoSchema>;
  * @property { string } id Company ID 
  * @property { string } name Company name 
  */
-export const CustomerBusinessPartnerDtoSchema = z.object({ id: z.string().describe("Company ID"), name: z.string().describe("Company name") }).readonly();
+export const CustomerBusinessPartnerDtoSchema = z.object({ id: z.string(), name: z.string() });
 export type CustomerBusinessPartnerDto = z.infer<typeof CustomerBusinessPartnerDtoSchema>;
 
 /** 
@@ -31,7 +31,7 @@ export type CustomerBusinessPartnerDto = z.infer<typeof CustomerBusinessPartnerD
  * @property { CustomerCompanyDto } company Company 
  * @property { CustomerBusinessPartnerDto } businessPartner  
  */
-export const CustomerAccountDtoSchema = z.object({ aclRules: z.array(z.array(z.any()).readonly()).readonly().describe("Can hold any type of value"), id: z.string().describe("Customer ID"), email: z.email().describe("Email"), firstName: z.string().describe("First name"), lastName: z.string().describe("Last name"), phone: z.string().describe("Phone number").nullish(), company: CustomerCompanyDtoSchema.describe("Company").nullish(), businessPartner: CustomerBusinessPartnerDtoSchema.nullish() }).readonly();
+export const CustomerAccountDtoSchema = z.object({ aclRules: z.array(z.array(z.any())), id: z.string(), email: z.email(), firstName: z.string(), lastName: z.string(), phone: z.string().nullish(), company: CustomerCompanyDtoSchema.nullish(), businessPartner: CustomerBusinessPartnerDtoSchema.nullish() });
 export type CustomerAccountDto = z.infer<typeof CustomerAccountDtoSchema>;
 
 }

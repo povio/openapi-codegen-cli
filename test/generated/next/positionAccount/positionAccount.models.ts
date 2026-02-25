@@ -12,7 +12,7 @@ export namespace PositionAccountModels {
  * @property { number } displayAmount Display amount 
  * @property { string } displayCurrencyCode Display currency code 
  */
-export const PositionAccountTotalsResponseDtoSchema = z.object({ totalBuyRates: z.number().describe("Total buy rates"), totalSellRates: z.number().describe("Total sell rates"), totalProfit: z.number().describe("Total profit"), margin: z.number().describe("Margin percentage").nullish(), displayAmount: z.number().describe("Display amount"), displayCurrencyCode: z.string().describe("Display currency code") }).readonly();
+export const PositionAccountTotalsResponseDtoSchema = z.object({ totalBuyRates: z.number(), totalSellRates: z.number(), totalProfit: z.number(), margin: z.number().nullish(), displayAmount: z.number(), displayCurrencyCode: z.string() });
 export type PositionAccountTotalsResponseDto = z.infer<typeof PositionAccountTotalsResponseDtoSchema>;
 
 /** 
@@ -21,7 +21,7 @@ export type PositionAccountTotalsResponseDto = z.infer<typeof PositionAccountTot
  * @property { PositionAccountTotalsResponseDto } totals  
  * @property { PositionAccountTotalsResponseDto[] } totalsPerCurrency  
  */
-export const PositionAccountMasterTotalsDtoSchema = z.object({ totals: PositionAccountTotalsResponseDtoSchema, totalsPerCurrency: z.array(PositionAccountTotalsResponseDtoSchema).readonly() }).readonly();
+export const PositionAccountMasterTotalsDtoSchema = z.object({ totals: PositionAccountTotalsResponseDtoSchema, totalsPerCurrency: z.array(PositionAccountTotalsResponseDtoSchema) });
 export type PositionAccountMasterTotalsDto = z.infer<typeof PositionAccountMasterTotalsDtoSchema>;
 
 /** 
@@ -31,7 +31,7 @@ export type PositionAccountMasterTotalsDto = z.infer<typeof PositionAccountMaste
  * @property { string } positionNumber  
  * @property { string } accountId  
  */
-export const ChildPositionAccountReferenceDtoSchema = z.object({ positionId: z.string().nullish(), positionNumber: z.string(), accountId: z.string() }).readonly();
+export const ChildPositionAccountReferenceDtoSchema = z.object({ positionId: z.string().nullish(), positionNumber: z.string(), accountId: z.string() });
 export type ChildPositionAccountReferenceDto = z.infer<typeof ChildPositionAccountReferenceDtoSchema>;
 
 /** 
@@ -46,7 +46,7 @@ export type ChildPositionAccountReferenceDto = z.infer<typeof ChildPositionAccou
  * @property { PositionAccountMasterTotalsDto } masterTotals  
  * @property { ChildPositionAccountReferenceDto[] } childPositionAccounts  
  */
-export const PositionAccountResponseDtoSchema = z.object({ id: z.string().describe("Account ID"), positionId: z.string().describe("Position ID").nullish(), invoiceId: z.string().describe("Invoice ID").nullish(), items: z.array(CommonModels.PositionAccountItemDtoResponseSchema).readonly().describe("Account items"), totals: PositionAccountTotalsResponseDtoSchema, totalsPerCurrency: z.array(PositionAccountTotalsResponseDtoSchema).readonly(), masterTotals: PositionAccountMasterTotalsDtoSchema.nullish(), childPositionAccounts: z.array(ChildPositionAccountReferenceDtoSchema).readonly().nullish() }).readonly();
+export const PositionAccountResponseDtoSchema = z.object({ id: z.string(), positionId: z.string().nullish(), invoiceId: z.string().nullish(), items: z.array(CommonModels.PositionAccountItemDtoResponseSchema), totals: PositionAccountTotalsResponseDtoSchema, totalsPerCurrency: z.array(PositionAccountTotalsResponseDtoSchema), masterTotals: PositionAccountMasterTotalsDtoSchema.nullish(), childPositionAccounts: z.array(ChildPositionAccountReferenceDtoSchema).nullish() });
 export type PositionAccountResponseDto = z.infer<typeof PositionAccountResponseDtoSchema>;
 
 }

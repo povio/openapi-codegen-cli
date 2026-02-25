@@ -13,7 +13,7 @@ export namespace EmployeeRolesModels {
  * @property { string[] } permissions Permissions associated with the role 
  * @property { number } numberOfUsers Number of users associated with the role 
  */
-export const EmployeeRoleListItemResponseSchema = z.object({ id: z.string().describe("Unique identifier of the role"), name: z.string().describe("Name of the role"), color: z.string().describe("Color associated with the role").nullish(), description: z.string().describe("Description of the role").nullish(), context: CommonModels.EmployeeRoleContextSchema.describe("Role context").nullish(), permissions: z.array(z.string()).readonly().describe("Permissions associated with the role"), numberOfUsers: z.number().describe("Number of users associated with the role") }).readonly();
+export const EmployeeRoleListItemResponseSchema = z.object({ id: z.string(), name: z.string(), color: z.string().nullish(), description: z.string().nullish(), context: CommonModels.EmployeeRoleContextSchema.nullish(), permissions: z.array(z.string()), numberOfUsers: z.number() });
 export type EmployeeRoleListItemResponse = z.infer<typeof EmployeeRoleListItemResponseSchema>;
 
 /** 
@@ -23,7 +23,7 @@ export type EmployeeRoleListItemResponse = z.infer<typeof EmployeeRoleListItemRe
  * @property { string } context Role context 
  * @property { string } search  
  */
-export const EmployeeRolePaginationFilterDtoSchema = z.object({ name: z.string().describe("Name"), context: CommonModels.EmployeeRoleContextSchema.describe("Role context"), search: z.string() }).readonly();
+export const EmployeeRolePaginationFilterDtoSchema = z.object({ name: z.string().nullable(), context: CommonModels.EmployeeRoleContextSchema.nullable(), search: z.string().nullable() }).partial();
 export type EmployeeRolePaginationFilterDto = z.infer<typeof EmployeeRolePaginationFilterDtoSchema>;
 
 /** 
@@ -37,7 +37,7 @@ export type EmployeeRolePaginationFilterDto = z.infer<typeof EmployeeRolePaginat
  * @property { string[] } permissions Permission IDs associated with the role
  * can only be either office or global. Default: `` 
  */
-export const EmployeeRoleCreateRequestSchema = z.object({ name: z.string().describe("Name of the role"), color: z.string().describe("Color of the role"), description: z.string().describe("Color of the role").nullish(), context: CommonModels.EmployeeRoleContextSchema.describe("Role context\n - office or global"), permissions: z.array(z.string()).readonly().describe("Permission IDs associated with the role\n can only be either office or global").default([]) }).readonly();
+export const EmployeeRoleCreateRequestSchema = z.object({ name: z.string(), color: z.string(), description: z.string().nullish(), context: CommonModels.EmployeeRoleContextSchema, permissions: z.array(z.string()).default([]) });
 export type EmployeeRoleCreateRequest = z.infer<typeof EmployeeRoleCreateRequestSchema>;
 
 /** 
@@ -50,7 +50,7 @@ export type EmployeeRoleCreateRequest = z.infer<typeof EmployeeRoleCreateRequest
  * @property { string } context Scope where this rule is applied 
  * @property { boolean } enabled  
  */
-export const EmployeeRolePermissionDtoSchema = z.object({ id: z.string().describe("Employee Permission unique identifier"), label: z.string(), group: z.string(), description: z.string().nullish(), context: CommonModels.EmployeeRoleContextSchema.describe("Scope where this rule is applied"), enabled: z.boolean() }).readonly();
+export const EmployeeRolePermissionDtoSchema = z.object({ id: z.string(), label: z.string(), group: z.string(), description: z.string().nullish(), context: CommonModels.EmployeeRoleContextSchema, enabled: z.boolean() });
 export type EmployeeRolePermissionDto = z.infer<typeof EmployeeRolePermissionDtoSchema>;
 
 /** 
@@ -60,7 +60,7 @@ export type EmployeeRolePermissionDto = z.infer<typeof EmployeeRolePermissionDto
  * @property { string } color Role Color 
  * @property { string } description Role Description 
  */
-export const EmployeeRoleUpdateRequestSchema = z.object({ name: z.string().describe("Role Id"), color: z.string().describe("Role Color"), description: z.string().describe("Role Description") }).readonly();
+export const EmployeeRoleUpdateRequestSchema = z.object({ name: z.string(), color: z.string(), description: z.string() });
 export type EmployeeRoleUpdateRequest = z.infer<typeof EmployeeRoleUpdateRequestSchema>;
 
 /** 
@@ -68,7 +68,7 @@ export type EmployeeRoleUpdateRequest = z.infer<typeof EmployeeRoleUpdateRequest
  * @type { object }
  * @property { boolean } toggled Turn the permission on or off 
  */
-export const EmployeeRoleTogglePermissionRequestSchema = z.object({ toggled: z.boolean().describe("Turn the permission on or off") }).readonly();
+export const EmployeeRoleTogglePermissionRequestSchema = z.object({ toggled: z.boolean() });
 export type EmployeeRoleTogglePermissionRequest = z.infer<typeof EmployeeRoleTogglePermissionRequestSchema>;
 
 /** 
@@ -76,7 +76,7 @@ export type EmployeeRoleTogglePermissionRequest = z.infer<typeof EmployeeRoleTog
  * @type { object }
  * @property { string } newRoleName  
  */
-export const CopyEmployeeRoleDtoSchema = z.object({ newRoleName: z.string() }).readonly();
+export const CopyEmployeeRoleDtoSchema = z.object({ newRoleName: z.string() });
 export type CopyEmployeeRoleDto = z.infer<typeof CopyEmployeeRoleDtoSchema>;
 
 /** 
@@ -97,14 +97,14 @@ export const EmployeeRolesListOrderParamEnum = EmployeeRolesListOrderParamEnumSc
  * @property { number } totalItems Total available items 
  * @property { EmployeeRoleListItemResponse[] } items  
  */
-export const EmployeeRolesListResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(EmployeeRoleListItemResponseSchema).readonly() }).readonly().shape });
+export const EmployeeRolesListResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(EmployeeRoleListItemResponseSchema).nullable() }).partial().shape });
 export type EmployeeRolesListResponse = z.infer<typeof EmployeeRolesListResponseSchema>;
 
 /** 
  * LabelsResponseSchema 
  * @type { array }
  */
-export const LabelsResponseSchema = z.array(CommonModels.LabelResponseDTOSchema).readonly();
+export const LabelsResponseSchema = z.array(CommonModels.LabelResponseDTOSchema);
 export type LabelsResponse = z.infer<typeof LabelsResponseSchema>;
 
 /** 
@@ -117,7 +117,7 @@ export type LabelsResponse = z.infer<typeof LabelsResponseSchema>;
  * @property { number } totalItems Total available items 
  * @property { EmployeeRolePermissionDto[] } items  
  */
-export const EmployeeRolesPaginatePermissionsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(EmployeeRolePermissionDtoSchema).readonly() }).readonly().shape });
+export const EmployeeRolesPaginatePermissionsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(EmployeeRolePermissionDtoSchema).nullable() }).partial().shape });
 export type EmployeeRolesPaginatePermissionsResponse = z.infer<typeof EmployeeRolesPaginatePermissionsResponseSchema>;
 
 }

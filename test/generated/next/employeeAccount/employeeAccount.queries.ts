@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { AppQueryOptions } from "@povio/openapi-codegen-cli";
@@ -19,12 +18,11 @@ export const keys = {
  * @returns { UseQueryResult<EmployeeAccountModels.EmployeeAccountDto> } 
  * @statusCodes [200, 401]
  */
-export const useGet = <TData>(options?: AppQueryOptions<typeof EmployeeAccountApi.get, TData>, config?: AxiosRequestConfig) => {
+export const useGet = <TData>(options?: AppQueryOptions<typeof EmployeeAccountApi.get, TData>) => {
   
   return useQuery({
     queryKey: keys.get(),
-    queryFn: () => 
-    EmployeeAccountApi.get(config),
+    queryFn: EmployeeAccountApi.get,
     ...options,
   });
 };

@@ -8,7 +8,7 @@ export namespace AirportsModels {
  * @property { string } id  
  * @property { string } name  
  */
-export const AirportEmployeeDTOSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const AirportEmployeeDTOSchema = z.object({ id: z.string(), name: z.string() });
 export type AirportEmployeeDTO = z.infer<typeof AirportEmployeeDTOSchema>;
 
 /** 
@@ -25,7 +25,7 @@ export type AirportEmployeeDTO = z.infer<typeof AirportEmployeeDTOSchema>;
  * @property { AirportEmployeeDTO } updatedBy  
  * @property { string } updatedAt  
  */
-export const AirportResponseDTOSchema = z.object({ id: z.string().describe("Unique identifier of the airport"), name: z.string().describe("Name of the airport"), matchCode: z.string().describe("Match code for the airport"), iataCode: z.string().describe("IATA code of the airport"), createdById: z.string().nullish(), createdBy: AirportEmployeeDTOSchema.nullish(), createdAt: z.iso.datetime({ offset: true }), updatedById: z.string().nullish(), updatedBy: AirportEmployeeDTOSchema.nullish(), updatedAt: z.iso.datetime({ offset: true }) }).readonly();
+export const AirportResponseDTOSchema = z.object({ id: z.string(), name: z.string(), matchCode: z.string(), iataCode: z.string(), createdById: z.string().nullish(), createdBy: AirportEmployeeDTOSchema.nullish(), createdAt: z.iso.datetime({ offset: true }), updatedById: z.string().nullish(), updatedBy: AirportEmployeeDTOSchema.nullish(), updatedAt: z.iso.datetime({ offset: true }) });
 export type AirportResponseDTO = z.infer<typeof AirportResponseDTOSchema>;
 
 /** 
@@ -33,7 +33,7 @@ export type AirportResponseDTO = z.infer<typeof AirportResponseDTOSchema>;
  * @type { object }
  * @property { string } search Search term to filter airports by name, match code or IATA code 
  */
-export const AirportPaginationFilterDtoSchema = z.object({ search: z.string().describe("Search term to filter airports by name, match code or IATA code") }).readonly();
+export const AirportPaginationFilterDtoSchema = z.object({ search: z.string().nullable() }).partial();
 export type AirportPaginationFilterDto = z.infer<typeof AirportPaginationFilterDtoSchema>;
 
 /** 
@@ -41,7 +41,7 @@ export type AirportPaginationFilterDto = z.infer<typeof AirportPaginationFilterD
  * @type { object }
  * @property { string } search  
  */
-export const AirportLabelFilterDtoSchema = z.object({ search: z.string() }).readonly();
+export const AirportLabelFilterDtoSchema = z.object({ search: z.string().nullable() }).partial();
 export type AirportLabelFilterDto = z.infer<typeof AirportLabelFilterDtoSchema>;
 
 /** 
@@ -51,7 +51,7 @@ export type AirportLabelFilterDto = z.infer<typeof AirportLabelFilterDtoSchema>;
  * @property { string } matchCode Match code for the airport 
  * @property { string } iataCode IATA code of the airport 
  */
-export const CreateAirportRequestDTOSchema = z.object({ name: z.string().describe("Name of the airport"), matchCode: z.string().describe("Match code for the airport"), iataCode: z.string().describe("IATA code of the airport") }).readonly();
+export const CreateAirportRequestDTOSchema = z.object({ name: z.string(), matchCode: z.string(), iataCode: z.string() });
 export type CreateAirportRequestDTO = z.infer<typeof CreateAirportRequestDTOSchema>;
 
 /** 
@@ -61,7 +61,7 @@ export type CreateAirportRequestDTO = z.infer<typeof CreateAirportRequestDTOSche
  * @property { string } matchCode Match code for the airport 
  * @property { string } iataCode IATA code of the airport 
  */
-export const UpdateAirportRequestDTOSchema = z.object({ name: z.string().describe("Name of the airport"), matchCode: z.string().describe("Match code for the airport"), iataCode: z.string().describe("IATA code of the airport") }).readonly();
+export const UpdateAirportRequestDTOSchema = z.object({ name: z.string().nullable(), matchCode: z.string().nullable(), iataCode: z.string().nullable() }).partial();
 export type UpdateAirportRequestDTO = z.infer<typeof UpdateAirportRequestDTOSchema>;
 
 /** 
@@ -82,7 +82,7 @@ export const AirportsPaginateOrderParamEnum = AirportsPaginateOrderParamEnumSche
  * @property { number } totalItems Total available items 
  * @property { AirportResponseDTO[] } items  
  */
-export const AirportsPaginateResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(AirportResponseDTOSchema).readonly() }).readonly().shape });
+export const AirportsPaginateResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(AirportResponseDTOSchema).nullable() }).partial().shape });
 export type AirportsPaginateResponse = z.infer<typeof AirportsPaginateResponseSchema>;
 
 /** 
@@ -103,7 +103,7 @@ export const AirportsPaginateLabelsOrderParamEnum = AirportsPaginateLabelsOrderP
  * @property { number } totalItems Total available items 
  * @property { CommonModels.LabelResponseDTO[] } items  
  */
-export const AirportsPaginateLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).readonly() }).readonly().shape });
+export const AirportsPaginateLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).nullable() }).partial().shape });
 export type AirportsPaginateLabelsResponse = z.infer<typeof AirportsPaginateLabelsResponseSchema>;
 
 }

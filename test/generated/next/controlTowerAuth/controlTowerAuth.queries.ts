@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -19,12 +18,12 @@ export const moduleName = QueryModule.ControlTowerAuth;
  * @returns { UseMutationResult<ControlTowerAuthModels.LoginResponseDto> } 
  * @statusCodes [200, 400, 401]
  */
-export const useLogin = (options?: AppMutationOptions<typeof ControlTowerAuthApi.login, { data: ControlTowerAuthModels.LoginRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useLogin = (options?: AppMutationOptions<typeof ControlTowerAuthApi.login, { data: ControlTowerAuthModels.LoginRequestDto }> & MutationEffectsOptions) => {
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ data }) => 
-      ControlTowerAuthApi.login(data, config)
+      ControlTowerAuthApi.login(data)
 ,
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -42,12 +41,12 @@ export const useLogin = (options?: AppMutationOptions<typeof ControlTowerAuthApi
  * @returns { UseMutationResult<ControlTowerAuthModels.LoginResponseDto> } 
  * @statusCodes [200, 400, 401]
  */
-export const useResetPassword = (options?: AppMutationOptions<typeof ControlTowerAuthApi.resetPassword, { data: ControlTowerAuthModels.PasswordResetDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useResetPassword = (options?: AppMutationOptions<typeof ControlTowerAuthApi.resetPassword, { data: ControlTowerAuthModels.PasswordResetDto }> & MutationEffectsOptions) => {
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ data }) => 
-      ControlTowerAuthApi.resetPassword(data, config)
+      ControlTowerAuthApi.resetPassword(data)
 ,
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

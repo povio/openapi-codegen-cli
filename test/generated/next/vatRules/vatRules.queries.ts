@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -33,14 +32,14 @@ export const keys = {
  * @returns { UseQueryResult<VatRulesModels.VatRulesPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: VatRulesModels.VatRuleFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof VatRulesApi.paginateLabels, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: VatRulesModels.VatRuleFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof VatRulesApi.paginateLabels, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.paginateLabels(limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(VatRulesAcl.canUsePaginateLabels());
-    return VatRulesApi.paginateLabels(limit, order, filter, page, cursor, config) },
+    return VatRulesApi.paginateLabels(limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -58,14 +57,14 @@ export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }:
  * @returns { UseInfiniteQueryResult<VatRulesModels.VatRulesPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: VatRulesModels.VatRuleFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof VatRulesApi.paginateLabels, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: VatRulesModels.VatRuleFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof VatRulesApi.paginateLabels, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.paginateLabelsInfinite(limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(VatRulesAcl.canUsePaginateLabels());
-    return VatRulesApi.paginateLabels(limit, order, filter, pageParam, cursor, config) },
+    return VatRulesApi.paginateLabels(limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -88,14 +87,14 @@ export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor 
  * @returns { UseQueryResult<VatRulesModels.VatRulesListResponse> } 
  * @statusCodes [200, 401]
  */
-export const useList = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: VatRulesModels.VatRuleFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof VatRulesApi.list, TData>, config?: AxiosRequestConfig) => {
+export const useList = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: VatRulesModels.VatRuleFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof VatRulesApi.list, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.list(limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(VatRulesAcl.canUseList());
-    return VatRulesApi.list(limit, order, filter, page, cursor, config) },
+    return VatRulesApi.list(limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -113,14 +112,14 @@ export const useList = <TData>({ limit, order, filter, page, cursor }: { limit: 
  * @returns { UseInfiniteQueryResult<VatRulesModels.VatRulesListResponse> } 
  * @statusCodes [200, 401]
  */
-export const useListInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: VatRulesModels.VatRuleFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof VatRulesApi.list, TData>, config?: AxiosRequestConfig) => {
+export const useListInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: VatRulesModels.VatRuleFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof VatRulesApi.list, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.listInfinite(limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(VatRulesAcl.canUseList());
-    return VatRulesApi.list(limit, order, filter, pageParam, cursor, config) },
+    return VatRulesApi.list(limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -139,14 +138,14 @@ export const useListInfinite = <TData>({ limit, order, filter, cursor }: { limit
  * @returns { UseMutationResult<VatRulesModels.VatRuleResponseDTO> } 
  * @statusCodes [201, 401, 409]
  */
-export const useCreate = (options?: AppMutationOptions<typeof VatRulesApi.create, { data: VatRulesModels.CreateVatRuleRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreate = (options?: AppMutationOptions<typeof VatRulesApi.create, { data: VatRulesModels.CreateVatRuleRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ data }) => { 
       checkAcl(VatRulesAcl.canUseCreate());
-      return VatRulesApi.create(data, config)
+      return VatRulesApi.create(data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -165,14 +164,14 @@ export const useCreate = (options?: AppMutationOptions<typeof VatRulesApi.create
  * @returns { UseQueryResult<VatRulesModels.VatRuleResponseDTO> } 
  * @statusCodes [200, 401, 404]
  */
-export const useFindById = <TData>({ id }: { id: string }, options?: AppQueryOptions<typeof VatRulesApi.findById, TData>, config?: AxiosRequestConfig) => {
+export const useFindById = <TData>({ id }: { id: string }, options?: AppQueryOptions<typeof VatRulesApi.findById, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.findById(id),
     queryFn: () => { 
     checkAcl(VatRulesAcl.canUseFindById());
-    return VatRulesApi.findById(id, config) },
+    return VatRulesApi.findById(id) },
     ...options,
   });
 };
@@ -187,14 +186,14 @@ export const useFindById = <TData>({ id }: { id: string }, options?: AppQueryOpt
  * @returns { UseMutationResult<VatRulesModels.VatRuleResponseDTO> } 
  * @statusCodes [200, 401, 404, 409]
  */
-export const useUpdate = (options?: AppMutationOptions<typeof VatRulesApi.update, { id: string, data: VatRulesModels.UpdateVatRuleRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdate = (options?: AppMutationOptions<typeof VatRulesApi.update, { id: string, data: VatRulesModels.UpdateVatRuleRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ id, data }) => { 
       checkAcl(VatRulesAcl.canUseUpdate());
-      return VatRulesApi.update(id, data, config)
+      return VatRulesApi.update(id, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -215,14 +214,14 @@ export const useUpdate = (options?: AppMutationOptions<typeof VatRulesApi.update
  * @returns { UseMutationResult<VatRulesModels.VatRuleResponseDTO> } 
  * @statusCodes [200, 401, 404, 409]
  */
-export const useArchive = (options?: AppMutationOptions<typeof VatRulesApi.archive, { id: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useArchive = (options?: AppMutationOptions<typeof VatRulesApi.archive, { id: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ id }) => { 
       checkAcl(VatRulesAcl.canUseArchive());
-      return VatRulesApi.archive(id, config)
+      return VatRulesApi.archive(id)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -243,14 +242,14 @@ export const useArchive = (options?: AppMutationOptions<typeof VatRulesApi.archi
  * @returns { UseMutationResult<VatRulesModels.VatRuleResponseDTO> } 
  * @statusCodes [200, 401, 404, 409]
  */
-export const useUnarchive = (options?: AppMutationOptions<typeof VatRulesApi.unarchive, { id: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUnarchive = (options?: AppMutationOptions<typeof VatRulesApi.unarchive, { id: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ id }) => { 
       checkAcl(VatRulesAcl.canUseUnarchive());
-      return VatRulesApi.unarchive(id, config)
+      return VatRulesApi.unarchive(id)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

@@ -8,7 +8,7 @@ export namespace OfficesModels {
  * @property { string } isoCode  
  * @property { string } name  
  */
-export const OfficeCurrencyResponseDtoSchema = z.object({ isoCode: z.string(), name: z.string() }).readonly();
+export const OfficeCurrencyResponseDtoSchema = z.object({ isoCode: z.string(), name: z.string() });
 export type OfficeCurrencyResponseDto = z.infer<typeof OfficeCurrencyResponseDtoSchema>;
 
 /** 
@@ -18,7 +18,7 @@ export type OfficeCurrencyResponseDto = z.infer<typeof OfficeCurrencyResponseDto
  * @property { string } bankAccountId  
  * @property { string } bankAccountName  
  */
-export const OfficeBankAccountCurrencyMappingResponseDtoSchema = z.object({ currency: z.string(), bankAccountId: z.string(), bankAccountName: z.string() }).readonly();
+export const OfficeBankAccountCurrencyMappingResponseDtoSchema = z.object({ currency: z.string(), bankAccountId: z.string(), bankAccountName: z.string() });
 export type OfficeBankAccountCurrencyMappingResponseDto = z.infer<typeof OfficeBankAccountCurrencyMappingResponseDtoSchema>;
 
 /** 
@@ -39,7 +39,7 @@ export type OfficeBankAccountCurrencyMappingResponseDto = z.infer<typeof OfficeB
  * @property { string } minimumIncomingInvoiceServiceDate  
  * @property { boolean } factoringReportingEnabled  
  */
-export const OfficeBookkeepingResponseDtoSchema = z.object({ generalLedgerSystem: z.string(), defaultCurrency: OfficeCurrencyResponseDtoSchema.nullish(), availableCurrencies: z.array(OfficeCurrencyResponseDtoSchema).readonly(), showPaymentInstructions: z.boolean(), showCompanyRegistrationNumber: z.boolean(), showInvoiceVatLinesInOfficeCurrency: z.boolean(), reportInvoicesToHungarianTaxAuthority: z.boolean(), bankAccountCurrencyMapping: z.array(OfficeBankAccountCurrencyMappingResponseDtoSchema).readonly(), costCenterId: z.string().nullish(), minimumOutgoingInvoiceDate: z.iso.datetime({ offset: true }).nullish(), minimumOutgoingInvoiceServiceDate: z.iso.datetime({ offset: true }).nullish(), minimumIncomingInvoiceDate: z.iso.datetime({ offset: true }).nullish(), minimumIncomingInvoiceServiceDate: z.iso.datetime({ offset: true }).nullish(), factoringReportingEnabled: z.boolean() }).readonly();
+export const OfficeBookkeepingResponseDtoSchema = z.object({ generalLedgerSystem: z.string(), defaultCurrency: OfficeCurrencyResponseDtoSchema.nullish(), availableCurrencies: z.array(OfficeCurrencyResponseDtoSchema), showPaymentInstructions: z.boolean(), showCompanyRegistrationNumber: z.boolean(), showInvoiceVatLinesInOfficeCurrency: z.boolean(), reportInvoicesToHungarianTaxAuthority: z.boolean(), bankAccountCurrencyMapping: z.array(OfficeBankAccountCurrencyMappingResponseDtoSchema), costCenterId: z.string().nullish(), minimumOutgoingInvoiceDate: z.iso.datetime({ offset: true }).nullish(), minimumOutgoingInvoiceServiceDate: z.iso.datetime({ offset: true }).nullish(), minimumIncomingInvoiceDate: z.iso.datetime({ offset: true }).nullish(), minimumIncomingInvoiceServiceDate: z.iso.datetime({ offset: true }).nullish(), factoringReportingEnabled: z.boolean() });
 export type OfficeBookkeepingResponseDto = z.infer<typeof OfficeBookkeepingResponseDtoSchema>;
 
 /** 
@@ -58,7 +58,7 @@ export const OfficeDocumentPartEnum = OfficeDocumentPartEnumSchema.enum;
  * @property { CommonModels.LanguageEnum } language  
  * @property { OfficeDocumentPartEnum } documentPart  
  */
-export const OfficeDocumentSettingsResponseDtoSchema = z.object({ id: z.string(), mediaUrl: z.string(), language: CommonModels.LanguageEnumSchema, documentPart: OfficeDocumentPartEnumSchema }).readonly();
+export const OfficeDocumentSettingsResponseDtoSchema = z.object({ id: z.string(), mediaUrl: z.string(), language: CommonModels.LanguageEnumSchema, documentPart: OfficeDocumentPartEnumSchema });
 export type OfficeDocumentSettingsResponseDto = z.infer<typeof OfficeDocumentSettingsResponseDtoSchema>;
 
 /** 
@@ -74,7 +74,7 @@ export type OfficeDocumentSettingsResponseDto = z.infer<typeof OfficeDocumentSet
  * @property { string } country Country name 
  * @property { string } isoCode3 3 letter country code 
  */
-export const AddressResponseDTOSchema = z.object({ id: z.string().describe("ID of the address"), street: z.string().describe("Street address"), secondaryStreet: z.string().describe("Secondary street address"), zip: z.string().describe("ZIP/Postal code"), city: z.string().describe("City name"), district: z.string().describe("District"), isoCode2: z.string().describe("2 letter country code"), country: z.string().describe("Country name"), isoCode3: z.string().describe("3 letter country code") }).readonly();
+export const AddressResponseDTOSchema = z.object({ id: z.string(), street: z.string(), secondaryStreet: z.string(), zip: z.string(), city: z.string(), district: z.string(), isoCode2: z.string(), country: z.string(), isoCode3: z.string() });
 export type AddressResponseDTO = z.infer<typeof AddressResponseDTOSchema>;
 
 /** 
@@ -88,7 +88,7 @@ export type AddressResponseDTO = z.infer<typeof AddressResponseDTOSchema>;
  * @property { string } addressId  
  * @property { AddressResponseDTO } address  
  */
-export const OfficeRepresentingBusinessPartnerResponseDtoSchema = z.object({ id: z.string(), name: z.string(), types: z.array(z.string()).readonly(), email: z.array(z.string()).readonly().nullish(), phone: z.array(z.string()).readonly().nullish(), addressId: z.string().nullish(), address: AddressResponseDTOSchema.nullish() }).readonly();
+export const OfficeRepresentingBusinessPartnerResponseDtoSchema = z.object({ id: z.string(), name: z.string(), types: z.array(z.string()), email: z.array(z.string()).nullish(), phone: z.array(z.string()).nullish(), addressId: z.string().nullish(), address: AddressResponseDTOSchema.nullish() });
 export type OfficeRepresentingBusinessPartnerResponseDto = z.infer<typeof OfficeRepresentingBusinessPartnerResponseDtoSchema>;
 
 /** 
@@ -97,7 +97,7 @@ export type OfficeRepresentingBusinessPartnerResponseDto = z.infer<typeof Office
  * @property { number } days  
  * @property { string } relativeTo  
  */
-export const OfficePaymentTermsResponseDtoSchema = z.object({ days: z.number(), relativeTo: CommonModels.OfficePaymentTermsDateTypeSchema }).readonly();
+export const OfficePaymentTermsResponseDtoSchema = z.object({ days: z.number().nullable(), relativeTo: CommonModels.OfficePaymentTermsDateTypeSchema.nullable() }).partial();
 export type OfficePaymentTermsResponseDto = z.infer<typeof OfficePaymentTermsResponseDtoSchema>;
 
 /** 
@@ -106,7 +106,7 @@ export type OfficePaymentTermsResponseDto = z.infer<typeof OfficePaymentTermsRes
  * @property { string } id  
  * @property { string } name  
  */
-export const OfficeCountryResponseDtoSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const OfficeCountryResponseDtoSchema = z.object({ id: z.string(), name: z.string() });
 export type OfficeCountryResponseDto = z.infer<typeof OfficeCountryResponseDtoSchema>;
 
 /** 
@@ -122,7 +122,7 @@ export type OfficeCountryResponseDto = z.infer<typeof OfficeCountryResponseDtoSc
  * @property { string } footer.mediaUrl  
  * @property { boolean } isFactoringBank  
  */
-export const OfficeBankAccountResponseDtoSchema = z.object({ id: z.string(), name: z.string(), bankName: z.string(), iban: z.string(), swiftBic: z.string(), useFooterOnInvoice: z.boolean(), footer: z.object({ mediaUrl: z.string() }).readonly().nullish(), isFactoringBank: z.boolean() }).readonly();
+export const OfficeBankAccountResponseDtoSchema = z.object({ id: z.string(), name: z.string(), bankName: z.string(), iban: z.string(), swiftBic: z.string(), useFooterOnInvoice: z.boolean(), footer: z.object({ mediaUrl: z.string() }).nullish(), isFactoringBank: z.boolean() });
 export type OfficeBankAccountResponseDto = z.infer<typeof OfficeBankAccountResponseDtoSchema>;
 
 /** 
@@ -150,7 +150,7 @@ export type OfficeBankAccountResponseDto = z.infer<typeof OfficeBankAccountRespo
  * @property { OfficeRepresentingBusinessPartnerResponseDto } representingBusinessPartner  
  * @property { boolean } hasInttraCredentials  
  */
-export const OfficeDetailResponseDtoSchema = z.object({ id: z.string(), name: z.string(), symbol: z.string().nullable(), invoicePrefix: z.number().nullable(), autoClosePositionsAfterDays: z.number().nullish(), defaultLanguage: z.string().nullable(), locale: CommonModels.LocaleEnumSchema.nullish(), vatId: z.string().nullable(), taxNumber: z.string().nullable(), restrictPositionInvolvedParties: z.boolean(), showWatermarkOnDocuments: z.boolean(), usePartnerMatchCodes: z.boolean(), restrictFinancePartnersToRelationship: z.boolean(), termsExport: OfficePaymentTermsResponseDtoSchema.nullable(), termsImport: OfficePaymentTermsResponseDtoSchema.nullable(), country: OfficeCountryResponseDtoSchema.nullable(), bankAccounts: z.array(OfficeBankAccountResponseDtoSchema).readonly(), bookkeeping: OfficeBookkeepingResponseDtoSchema, documentSettings: z.array(OfficeDocumentSettingsResponseDtoSchema).readonly(), representingBusinessPartner: OfficeRepresentingBusinessPartnerResponseDtoSchema.nullable(), hasInttraCredentials: z.boolean().nullish() }).readonly();
+export const OfficeDetailResponseDtoSchema = z.object({ id: z.string(), name: z.string(), symbol: z.string().nullable(), invoicePrefix: z.number().nullable(), autoClosePositionsAfterDays: z.number().nullish(), defaultLanguage: z.string().nullable(), locale: CommonModels.LocaleEnumSchema.nullish(), vatId: z.string().nullable(), taxNumber: z.string().nullable(), restrictPositionInvolvedParties: z.boolean(), showWatermarkOnDocuments: z.boolean(), usePartnerMatchCodes: z.boolean(), restrictFinancePartnersToRelationship: z.boolean(), termsExport: OfficePaymentTermsResponseDtoSchema.nullable(), termsImport: OfficePaymentTermsResponseDtoSchema.nullable(), country: OfficeCountryResponseDtoSchema.nullable(), bankAccounts: z.array(OfficeBankAccountResponseDtoSchema), bookkeeping: OfficeBookkeepingResponseDtoSchema, documentSettings: z.array(OfficeDocumentSettingsResponseDtoSchema), representingBusinessPartner: OfficeRepresentingBusinessPartnerResponseDtoSchema.nullable(), hasInttraCredentials: z.boolean().nullish() });
 export type OfficeDetailResponseDto = z.infer<typeof OfficeDetailResponseDtoSchema>;
 
 /** 
@@ -188,7 +188,7 @@ export type OfficeDetailResponseDto = z.infer<typeof OfficeDetailResponseDtoSche
  * @property { OfficeRepresentingBusinessPartnerResponseDto } representingBusinessPartner  
  * @property { boolean } factoringReportingEnabled  
  */
-export const OfficeResponseDtoSchema = z.object({ id: z.string(), name: z.string(), symbol: z.string().nullable(), invoicePrefix: z.number().nullable(), autoClosePositionsAfterDays: z.number().nullish(), defaultLanguage: z.string().nullable(), locale: CommonModels.LocaleEnumSchema.nullish(), vatId: z.string().nullable(), taxNumber: z.string().nullable(), termsExport: OfficePaymentTermsResponseDtoSchema.nullable(), termsImport: OfficePaymentTermsResponseDtoSchema.nullable(), showPaymentInstructions: z.boolean(), showCompanyRegistrationNumber: z.boolean(), restrictPositionInvolvedParties: z.boolean(), showWatermarkOnDocuments: z.boolean(), showInvoiceVatLinesInOfficeCurrency: z.boolean(), usePartnerMatchCodes: z.boolean(), restrictFinancePartnersToRelationship: z.boolean(), reportInvoicesToHungarianTaxAuthority: z.boolean(), costCenterId: z.string().nullish(), minimumOutgoingInvoiceDate: z.iso.datetime({ offset: true }).nullish(), minimumOutgoingInvoiceServiceDate: z.iso.datetime({ offset: true }).nullish(), minimumIncomingInvoiceDate: z.iso.datetime({ offset: true }).nullish(), minimumIncomingInvoiceServiceDate: z.iso.datetime({ offset: true }).nullish(), countryId: z.string().nullable(), defaultCurrencyId: z.string().nullable(), availableCurrencyIds: z.array(z.string()).readonly().nullable(), generalLedgerSystem: z.string().nullable(), representingBusinessPartnerId: z.string().nullable(), representingBusinessPartner: OfficeRepresentingBusinessPartnerResponseDtoSchema.nullable(), factoringReportingEnabled: z.boolean() }).readonly();
+export const OfficeResponseDtoSchema = z.object({ id: z.string(), name: z.string(), symbol: z.string().nullable(), invoicePrefix: z.number().nullable(), autoClosePositionsAfterDays: z.number().nullish(), defaultLanguage: z.string().nullable(), locale: CommonModels.LocaleEnumSchema.nullish(), vatId: z.string().nullable(), taxNumber: z.string().nullable(), termsExport: OfficePaymentTermsResponseDtoSchema.nullable(), termsImport: OfficePaymentTermsResponseDtoSchema.nullable(), showPaymentInstructions: z.boolean(), showCompanyRegistrationNumber: z.boolean(), restrictPositionInvolvedParties: z.boolean(), showWatermarkOnDocuments: z.boolean(), showInvoiceVatLinesInOfficeCurrency: z.boolean(), usePartnerMatchCodes: z.boolean(), restrictFinancePartnersToRelationship: z.boolean(), reportInvoicesToHungarianTaxAuthority: z.boolean(), costCenterId: z.string().nullish(), minimumOutgoingInvoiceDate: z.iso.datetime({ offset: true }).nullish(), minimumOutgoingInvoiceServiceDate: z.iso.datetime({ offset: true }).nullish(), minimumIncomingInvoiceDate: z.iso.datetime({ offset: true }).nullish(), minimumIncomingInvoiceServiceDate: z.iso.datetime({ offset: true }).nullish(), countryId: z.string().nullable(), defaultCurrencyId: z.string().nullable(), availableCurrencyIds: z.array(z.string()).nullable(), generalLedgerSystem: z.string().nullable(), representingBusinessPartnerId: z.string().nullable(), representingBusinessPartner: OfficeRepresentingBusinessPartnerResponseDtoSchema.nullable(), factoringReportingEnabled: z.boolean() });
 export type OfficeResponseDto = z.infer<typeof OfficeResponseDtoSchema>;
 
 /** 
@@ -197,7 +197,7 @@ export type OfficeResponseDto = z.infer<typeof OfficeResponseDtoSchema>;
  * @property { number } days  
  * @property { string } relativeTo  
  */
-export const UpdateOfficePaymentTermsRequestSchema = z.object({ days: z.number(), relativeTo: CommonModels.OfficePaymentTermsDateTypeSchema }).readonly();
+export const UpdateOfficePaymentTermsRequestSchema = z.object({ days: z.number(), relativeTo: CommonModels.OfficePaymentTermsDateTypeSchema });
 export type UpdateOfficePaymentTermsRequest = z.infer<typeof UpdateOfficePaymentTermsRequestSchema>;
 
 /** 
@@ -206,7 +206,7 @@ export type UpdateOfficePaymentTermsRequest = z.infer<typeof UpdateOfficePayment
  * @property { string } currency  
  * @property { string } bankAccountId  
  */
-export const UpdateOfficeBankAccountCurrencyMappingSchema = z.object({ currency: z.string(), bankAccountId: z.string() }).readonly();
+export const UpdateOfficeBankAccountCurrencyMappingSchema = z.object({ currency: z.string(), bankAccountId: z.string() });
 export type UpdateOfficeBankAccountCurrencyMapping = z.infer<typeof UpdateOfficeBankAccountCurrencyMappingSchema>;
 
 /** 
@@ -243,7 +243,7 @@ export type UpdateOfficeBankAccountCurrencyMapping = z.infer<typeof UpdateOffice
  * @property { boolean } factoringReportingEnabled  
  * @property { UpdateOfficeBankAccountCurrencyMapping[] } bankAccountCurrencyMapping Office bank account currency mapping 
  */
-export const UpdateOfficeRequestSchema = z.object({ name: z.string().describe("Office Name"), symbol: z.string().describe("Office Symbol"), invoicePrefix: z.number().describe("Office Invoice Prefix"), autoClosePositionsAfterDays: z.number(), defaultLanguage: z.string().describe("Office Default Language"), locale: CommonModels.LocaleEnumSchema, vatId: z.string().describe("Office Vat Id"), taxNumber: z.string().describe("Office Tax Number"), termsExport: UpdateOfficePaymentTermsRequestSchema.describe("Office Terms Export"), termsImport: UpdateOfficePaymentTermsRequestSchema.describe("Office Terms Import"), showPaymentInstructions: z.boolean().describe("Office Show Payment Instructions"), showCompanyRegistrationNumber: z.boolean(), reportInvoicesToHungarianTaxAuthority: z.boolean(), restrictPositionInvolvedParties: z.boolean(), showWatermarkOnDocuments: z.boolean(), showInvoiceVatLinesInOfficeCurrency: z.boolean(), usePartnerMatchCodes: z.boolean(), restrictFinancePartnersToRelationship: z.boolean(), costCenterId: z.string(), minimumOutgoingInvoiceDate: z.iso.datetime({ offset: true }), minimumOutgoingInvoiceServiceDate: z.iso.datetime({ offset: true }), minimumIncomingInvoiceDate: z.iso.datetime({ offset: true }), minimumIncomingInvoiceServiceDate: z.iso.datetime({ offset: true }), countryId: z.string().describe("Office country id"), defaultCurrencyId: z.string().describe("Office default currency id"), representingBusinessPartnerId: z.string().describe("Representing business partner id"), availableCurrencyIds: z.array(z.string()).readonly().describe("Office availableCurrencyIds"), generalLedgerSystem: z.string().describe("Office general ledger system"), factoringReportingEnabled: z.boolean(), bankAccountCurrencyMapping: z.array(UpdateOfficeBankAccountCurrencyMappingSchema).readonly().describe("Office bank account currency mapping") }).readonly();
+export const UpdateOfficeRequestSchema = z.object({ name: z.string().nullable(), symbol: z.string().nullable(), invoicePrefix: z.number().nullable(), autoClosePositionsAfterDays: z.number().nullable(), defaultLanguage: z.string().nullable(), locale: CommonModels.LocaleEnumSchema.nullable(), vatId: z.string().nullable(), taxNumber: z.string().nullable(), termsExport: UpdateOfficePaymentTermsRequestSchema.nullable(), termsImport: UpdateOfficePaymentTermsRequestSchema.nullable(), showPaymentInstructions: z.boolean().nullable(), showCompanyRegistrationNumber: z.boolean().nullable(), reportInvoicesToHungarianTaxAuthority: z.boolean().nullable(), restrictPositionInvolvedParties: z.boolean().nullable(), showWatermarkOnDocuments: z.boolean().nullable(), showInvoiceVatLinesInOfficeCurrency: z.boolean().nullable(), usePartnerMatchCodes: z.boolean().nullable(), restrictFinancePartnersToRelationship: z.boolean().nullable(), costCenterId: z.string().nullable(), minimumOutgoingInvoiceDate: z.iso.datetime({ offset: true }).nullable(), minimumOutgoingInvoiceServiceDate: z.iso.datetime({ offset: true }).nullable(), minimumIncomingInvoiceDate: z.iso.datetime({ offset: true }).nullable(), minimumIncomingInvoiceServiceDate: z.iso.datetime({ offset: true }).nullable(), countryId: z.string().nullable(), defaultCurrencyId: z.string().nullable(), representingBusinessPartnerId: z.string().nullable(), availableCurrencyIds: z.array(z.string()).nullable(), generalLedgerSystem: z.string().nullable(), factoringReportingEnabled: z.boolean().nullable(), bankAccountCurrencyMapping: z.array(UpdateOfficeBankAccountCurrencyMappingSchema).nullable() }).partial();
 export type UpdateOfficeRequest = z.infer<typeof UpdateOfficeRequestSchema>;
 
 /** 
@@ -255,7 +255,7 @@ export type UpdateOfficeRequest = z.infer<typeof UpdateOfficeRequestSchema>;
  * @property { string } language Language of the document 
  * @property { string } documentPart Part of the document this image represents 
  */
-export const UploadOfficeDocumentRequestDtoSchema = z.object({ fileName: z.string().describe("File name with extension"), mimeType: z.string().describe("MIME type of the file"), fileSize: z.number().describe("Size of the file"), language: CommonModels.LanguageEnumSchema.describe("Language of the document"), documentPart: OfficeDocumentPartEnumSchema.describe("Part of the document this image represents") }).readonly();
+export const UploadOfficeDocumentRequestDtoSchema = z.object({ fileName: z.string(), mimeType: z.string(), fileSize: z.number(), language: CommonModels.LanguageEnumSchema, documentPart: OfficeDocumentPartEnumSchema });
 export type UploadOfficeDocumentRequestDto = z.infer<typeof UploadOfficeDocumentRequestDtoSchema>;
 
 /** 
@@ -265,7 +265,7 @@ export type UploadOfficeDocumentRequestDto = z.infer<typeof UploadOfficeDocument
  * @property { string } name  
  * @property { number } numberOfEmployees  
  */
-export const OfficeListItemResponseSchema = z.object({ id: z.string(), name: z.string(), numberOfEmployees: z.number() }).readonly();
+export const OfficeListItemResponseSchema = z.object({ id: z.string(), name: z.string(), numberOfEmployees: z.number() });
 export type OfficeListItemResponse = z.infer<typeof OfficeListItemResponseSchema>;
 
 /** 
@@ -274,7 +274,7 @@ export type OfficeListItemResponse = z.infer<typeof OfficeListItemResponseSchema
  * @property { string } name Name 
  * @property { string } search  
  */
-export const OfficeFilterDtoSchema = z.object({ name: z.string().describe("Name"), search: z.string() }).readonly();
+export const OfficeFilterDtoSchema = z.object({ name: z.string().nullable(), search: z.string().nullable() }).partial();
 export type OfficeFilterDto = z.infer<typeof OfficeFilterDtoSchema>;
 
 /** 
@@ -282,7 +282,7 @@ export type OfficeFilterDto = z.infer<typeof OfficeFilterDtoSchema>;
  * @type { object }
  * @property { string } search  
  */
-export const OfficeLabelFilterDtoSchema = z.object({ search: z.string() }).readonly();
+export const OfficeLabelFilterDtoSchema = z.object({ search: z.string().nullable() }).partial();
 export type OfficeLabelFilterDto = z.infer<typeof OfficeLabelFilterDtoSchema>;
 
 /** 
@@ -290,7 +290,7 @@ export type OfficeLabelFilterDto = z.infer<typeof OfficeLabelFilterDtoSchema>;
  * @type { object }
  * @property { string } name  
  */
-export const CreateOfficeRequestSchema = z.object({ name: z.string() }).readonly();
+export const CreateOfficeRequestSchema = z.object({ name: z.string() });
 export type CreateOfficeRequest = z.infer<typeof CreateOfficeRequestSchema>;
 
 /** 
@@ -300,7 +300,7 @@ export type CreateOfficeRequest = z.infer<typeof CreateOfficeRequestSchema>;
  * @property { string } url URL to upload the file to 
  * @property { string } documentId ID of the created/updated document setting 
  */
-export const DocumentImageUploadInstructionsDtoSchema = z.object({ method: z.string().describe("HTTP method to use for upload"), url: z.string().describe("URL to upload the file to"), documentId: z.string().describe("ID of the created/updated document setting") }).readonly();
+export const DocumentImageUploadInstructionsDtoSchema = z.object({ method: z.string(), url: z.string(), documentId: z.string() });
 export type DocumentImageUploadInstructionsDto = z.infer<typeof DocumentImageUploadInstructionsDtoSchema>;
 
 /** 
@@ -312,7 +312,7 @@ export type DocumentImageUploadInstructionsDto = z.infer<typeof DocumentImageUpl
  * @property { string } swiftBic SWIFT/BIC code 
  * @property { boolean } useFooterOnInvoice Use footer on invoice 
  */
-export const CreateOfficeBankAccountDtoSchema = z.object({ name: z.string().describe("Bank account name"), bankName: z.string().describe("Bank name"), iban: z.string().describe("IBAN"), swiftBic: z.string().describe("SWIFT/BIC code"), useFooterOnInvoice: z.boolean().describe("Use footer on invoice") }).readonly();
+export const CreateOfficeBankAccountDtoSchema = z.object({ name: z.string().nullable(), bankName: z.string().nullable(), iban: z.string().nullable(), swiftBic: z.string().nullable(), useFooterOnInvoice: z.boolean().nullable() }).partial();
 export type CreateOfficeBankAccountDto = z.infer<typeof CreateOfficeBankAccountDtoSchema>;
 
 /** 
@@ -325,7 +325,7 @@ export type CreateOfficeBankAccountDto = z.infer<typeof CreateOfficeBankAccountD
  * @property { boolean } useFooterOnInvoice Use footer on invoice 
  * @property { boolean } isFactoringBank Is factoring bank 
  */
-export const UpdateOfficeBankAccountDtoSchema = z.object({ name: z.string().describe("Bank account name"), bankName: z.string().describe("Bank name"), iban: z.string().describe("IBAN"), swiftBic: z.string().describe("SWIFT/BIC code"), useFooterOnInvoice: z.boolean().describe("Use footer on invoice"), isFactoringBank: z.boolean().describe("Is factoring bank") }).readonly();
+export const UpdateOfficeBankAccountDtoSchema = z.object({ name: z.string().nullable(), bankName: z.string().nullable(), iban: z.string().nullable(), swiftBic: z.string().nullable(), useFooterOnInvoice: z.boolean().nullable(), isFactoringBank: z.boolean().nullable() }).partial();
 export type UpdateOfficeBankAccountDto = z.infer<typeof UpdateOfficeBankAccountDtoSchema>;
 
 /** 
@@ -335,7 +335,7 @@ export type UpdateOfficeBankAccountDto = z.infer<typeof UpdateOfficeBankAccountD
  * @property { string } mimeType File MIME type 
  * @property { number } fileSize Size of the file 
  */
-export const UploadOfficeBankAccountFooterRequestDtoSchema = z.object({ fileName: z.string().describe("File name"), mimeType: z.string().describe("File MIME type"), fileSize: z.number().describe("Size of the file") }).readonly();
+export const UploadOfficeBankAccountFooterRequestDtoSchema = z.object({ fileName: z.string(), mimeType: z.string(), fileSize: z.number() });
 export type UploadOfficeBankAccountFooterRequestDto = z.infer<typeof UploadOfficeBankAccountFooterRequestDtoSchema>;
 
 /** 
@@ -356,14 +356,14 @@ export const OfficesPaginateOrderParamEnum = OfficesPaginateOrderParamEnumSchema
  * @property { number } totalItems Total available items 
  * @property { OfficeListItemResponse[] } items  
  */
-export const OfficesPaginateResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(OfficeListItemResponseSchema).readonly() }).readonly().shape });
+export const OfficesPaginateResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(OfficeListItemResponseSchema).nullable() }).partial().shape });
 export type OfficesPaginateResponse = z.infer<typeof OfficesPaginateResponseSchema>;
 
 /** 
  * FindAllLabelsResponseSchema 
  * @type { array }
  */
-export const FindAllLabelsResponseSchema = z.array(CommonModels.LabelResponseDTOSchema).readonly();
+export const FindAllLabelsResponseSchema = z.array(CommonModels.LabelResponseDTOSchema);
 export type FindAllLabelsResponse = z.infer<typeof FindAllLabelsResponseSchema>;
 
 /** 
@@ -384,7 +384,7 @@ export const OfficesPaginateLabelsOrderParamEnum = OfficesPaginateLabelsOrderPar
  * @property { number } totalItems Total available items 
  * @property { CommonModels.LabelResponseDTO[] } items  
  */
-export const OfficesPaginateLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).readonly() }).readonly().shape });
+export const OfficesPaginateLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).nullable() }).partial().shape });
 export type OfficesPaginateLabelsResponse = z.infer<typeof OfficesPaginateLabelsResponseSchema>;
 
 }

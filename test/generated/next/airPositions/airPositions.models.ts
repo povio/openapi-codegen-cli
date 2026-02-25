@@ -26,7 +26,7 @@ export const AirPositionCustomsStatusTypeEnum = AirPositionCustomsStatusTypeEnum
  * @property { string } createdAt  
  * @property { string } updatedAt  
  */
-export const AirPositionResponseDTOSchema = z.object({ id: z.string(), hawbNumber: z.string().nullish(), mawbNumber: z.string().nullish(), airlineDeadline: z.iso.datetime({ offset: true }).nullish(), customsStatus: z.string().nullish(), customsStatusType: AirPositionCustomsStatusTypeEnumSchema.nullish(), hawbRequired: z.boolean(), mawbRequired: z.boolean(), mrnT1Number: z.string().nullish(), isCourier: z.boolean().nullish(), deliveryToConsignee: z.iso.datetime({ offset: true }).nullish(), createdAt: z.iso.datetime({ offset: true }), updatedAt: z.iso.datetime({ offset: true }) }).readonly();
+export const AirPositionResponseDTOSchema = z.object({ id: z.string(), hawbNumber: z.string().nullish(), mawbNumber: z.string().nullish(), airlineDeadline: z.iso.datetime({ offset: true }).nullish(), customsStatus: z.string().nullish(), customsStatusType: AirPositionCustomsStatusTypeEnumSchema.nullish(), hawbRequired: z.boolean(), mawbRequired: z.boolean(), mrnT1Number: z.string().nullish(), isCourier: z.boolean().nullish(), deliveryToConsignee: z.iso.datetime({ offset: true }).nullish(), createdAt: z.iso.datetime({ offset: true }), updatedAt: z.iso.datetime({ offset: true }) });
 export type AirPositionResponseDTO = z.infer<typeof AirPositionResponseDTOSchema>;
 
 /** 
@@ -43,7 +43,7 @@ export type AirPositionResponseDTO = z.infer<typeof AirPositionResponseDTOSchema
  * @property { boolean } isCourier  
  * @property { string } deliveryToConsignee  
  */
-export const UpdateAirPositionRequestDTOSchema = z.object({ hawbNumber: z.string(), mawbNumber: z.string(), airlineDeadline: z.iso.datetime({ offset: true }), customsStatus: z.string(), customsStatusType: AirPositionCustomsStatusTypeEnumSchema, mrnT1Number: z.string(), hawbRequired: z.boolean(), mawbRequired: z.boolean(), isCourier: z.boolean(), deliveryToConsignee: z.iso.datetime({ offset: true }) }).readonly();
+export const UpdateAirPositionRequestDTOSchema = z.object({ hawbNumber: z.string().nullable(), mawbNumber: z.string().nullable(), airlineDeadline: z.iso.datetime({ offset: true }).nullable(), customsStatus: z.string().nullable(), customsStatusType: AirPositionCustomsStatusTypeEnumSchema.nullable(), mrnT1Number: z.string().nullable(), hawbRequired: z.boolean().nullable(), mawbRequired: z.boolean().nullable(), isCourier: z.boolean().nullable(), deliveryToConsignee: z.iso.datetime({ offset: true }).nullable() }).partial();
 export type UpdateAirPositionRequestDTO = z.infer<typeof UpdateAirPositionRequestDTOSchema>;
 
 }

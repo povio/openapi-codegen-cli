@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -21,12 +20,11 @@ export const keys = {
  * @returns { UseQueryResult<EmployeeSettingsModels.EmployeeSettingsResponseDto> } 
  * @statusCodes [200, 401]
  */
-export const useGetAll = <TData>(options?: AppQueryOptions<typeof EmployeeSettingsApi.getAll, TData>, config?: AxiosRequestConfig) => {
+export const useGetAll = <TData>(options?: AppQueryOptions<typeof EmployeeSettingsApi.getAll, TData>) => {
   
   return useQuery({
     queryKey: keys.getAll(),
-    queryFn: () => 
-    EmployeeSettingsApi.getAll(config),
+    queryFn: EmployeeSettingsApi.getAll,
     ...options,
   });
 };
@@ -40,12 +38,12 @@ export const useGetAll = <TData>(options?: AppQueryOptions<typeof EmployeeSettin
  * @returns { UseMutationResult<void> } 
  * @statusCodes [204, 401]
  */
-export const useUpdate = (options?: AppMutationOptions<typeof EmployeeSettingsApi.update, { key: string, data: EmployeeSettingsModels.UpdateEmployeeSettingDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdate = (options?: AppMutationOptions<typeof EmployeeSettingsApi.update, { key: string, data: EmployeeSettingsModels.UpdateEmployeeSettingDto }> & MutationEffectsOptions) => {
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ key, data }) => 
-      EmployeeSettingsApi.update(key, data, config)
+      EmployeeSettingsApi.update(key, data)
 ,
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

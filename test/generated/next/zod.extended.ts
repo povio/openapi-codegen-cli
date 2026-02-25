@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ErrorHandler, SharedErrorHandler } from "@povio/openapi-codegen-cli";
+import { ErrorHandler, SharedErrorHandler } from "";
 
 export namespace ZodExtended {
   interface ParseOptions {

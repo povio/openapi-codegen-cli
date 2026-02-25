@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -34,14 +33,14 @@ export const keys = {
  * @returns { UseQueryResult<EmployeeRolesModels.EmployeeRolesListResponse> } 
  * @statusCodes [200, 401]
  */
-export const useList = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: EmployeeRolesModels.EmployeeRolePaginationFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof EmployeeRolesApi.list, TData>, config?: AxiosRequestConfig) => {
+export const useList = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: EmployeeRolesModels.EmployeeRolePaginationFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof EmployeeRolesApi.list, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.list(limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(EmployeeRolesAcl.canUseList());
-    return EmployeeRolesApi.list(limit, order, filter, page, cursor, config) },
+    return EmployeeRolesApi.list(limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -59,14 +58,14 @@ export const useList = <TData>({ limit, order, filter, page, cursor }: { limit: 
  * @returns { UseInfiniteQueryResult<EmployeeRolesModels.EmployeeRolesListResponse> } 
  * @statusCodes [200, 401]
  */
-export const useListInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: EmployeeRolesModels.EmployeeRolePaginationFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof EmployeeRolesApi.list, TData>, config?: AxiosRequestConfig) => {
+export const useListInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: EmployeeRolesModels.EmployeeRolePaginationFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof EmployeeRolesApi.list, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.listInfinite(limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(EmployeeRolesAcl.canUseList());
-    return EmployeeRolesApi.list(limit, order, filter, pageParam, cursor, config) },
+    return EmployeeRolesApi.list(limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -85,14 +84,14 @@ export const useListInfinite = <TData>({ limit, order, filter, cursor }: { limit
  * @returns { UseMutationResult<CommonModels.EmployeeRoleResponse> } 
  * @statusCodes [201, 401]
  */
-export const useCreate = (options?: AppMutationOptions<typeof EmployeeRolesApi.create, { data: EmployeeRolesModels.EmployeeRoleCreateRequest }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreate = (options?: AppMutationOptions<typeof EmployeeRolesApi.create, { data: EmployeeRolesModels.EmployeeRoleCreateRequest }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ data }) => { 
       checkAcl(EmployeeRolesAcl.canUseCreate());
-      return EmployeeRolesApi.create(data, config)
+      return EmployeeRolesApi.create(data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -112,14 +111,14 @@ export const useCreate = (options?: AppMutationOptions<typeof EmployeeRolesApi.c
  * @returns { UseQueryResult<EmployeeRolesModels.LabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const useLabels = <TData>({ search, context }: { search?: string, context?: CommonModels.EmployeeRoleContext }, options?: AppQueryOptions<typeof EmployeeRolesApi.labels, TData>, config?: AxiosRequestConfig) => {
+export const useLabels = <TData>({ search, context }: { search?: string, context?: CommonModels.EmployeeRoleContext }, options?: AppQueryOptions<typeof EmployeeRolesApi.labels, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.labels(search, context),
     queryFn: () => { 
     checkAcl(EmployeeRolesAcl.canUseLabels());
-    return EmployeeRolesApi.labels(search, context, config) },
+    return EmployeeRolesApi.labels(search, context) },
     ...options,
   });
 };
@@ -133,14 +132,14 @@ export const useLabels = <TData>({ search, context }: { search?: string, context
  * @returns { UseQueryResult<CommonModels.EmployeeRoleResponse> } 
  * @statusCodes [200, 401]
  */
-export const useFind = <TData>({ roleId }: { roleId: string }, options?: AppQueryOptions<typeof EmployeeRolesApi.find, TData>, config?: AxiosRequestConfig) => {
+export const useFind = <TData>({ roleId }: { roleId: string }, options?: AppQueryOptions<typeof EmployeeRolesApi.find, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.find(roleId),
     queryFn: () => { 
     checkAcl(EmployeeRolesAcl.canUseFind());
-    return EmployeeRolesApi.find(roleId, config) },
+    return EmployeeRolesApi.find(roleId) },
     ...options,
   });
 };
@@ -155,14 +154,14 @@ export const useFind = <TData>({ roleId }: { roleId: string }, options?: AppQuer
  * @returns { UseMutationResult<CommonModels.EmployeeRoleResponse> } 
  * @statusCodes [200, 401]
  */
-export const useUpdate = (options?: AppMutationOptions<typeof EmployeeRolesApi.update, { roleId: string, data: EmployeeRolesModels.EmployeeRoleUpdateRequest }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdate = (options?: AppMutationOptions<typeof EmployeeRolesApi.update, { roleId: string, data: EmployeeRolesModels.EmployeeRoleUpdateRequest }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ roleId, data }) => { 
       checkAcl(EmployeeRolesAcl.canUseUpdate());
-      return EmployeeRolesApi.update(roleId, data, config)
+      return EmployeeRolesApi.update(roleId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -183,14 +182,14 @@ export const useUpdate = (options?: AppMutationOptions<typeof EmployeeRolesApi.u
  * @returns { UseMutationResult<CommonModels.StatusResponseDto> } 
  * @statusCodes [200, 401]
  */
-export const useDeleteEmployeesRolesByRoleId = (options?: AppMutationOptions<typeof EmployeeRolesApi.deleteEmployeesRolesByRoleId, { roleId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useDeleteEmployeesRolesByRoleId = (options?: AppMutationOptions<typeof EmployeeRolesApi.deleteEmployeesRolesByRoleId, { roleId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ roleId }) => { 
       checkAcl(EmployeeRolesAcl.canUseDeleteEmployeesRolesByRoleId());
-      return EmployeeRolesApi.deleteEmployeesRolesByRoleId(roleId, config)
+      return EmployeeRolesApi.deleteEmployeesRolesByRoleId(roleId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -211,14 +210,14 @@ export const useDeleteEmployeesRolesByRoleId = (options?: AppMutationOptions<typ
  * @returns { UseQueryResult<EmployeeRolesModels.EmployeeRolesPaginatePermissionsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginatePermissions = <TData>({ roleId }: { roleId: string }, options?: AppQueryOptions<typeof EmployeeRolesApi.paginatePermissions, TData>, config?: AxiosRequestConfig) => {
+export const usePaginatePermissions = <TData>({ roleId }: { roleId: string }, options?: AppQueryOptions<typeof EmployeeRolesApi.paginatePermissions, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.paginatePermissions(roleId),
     queryFn: () => { 
     checkAcl(EmployeeRolesAcl.canUsePaginatePermissions());
-    return EmployeeRolesApi.paginatePermissions(roleId, config) },
+    return EmployeeRolesApi.paginatePermissions(roleId) },
     ...options,
   });
 };
@@ -234,14 +233,14 @@ export const usePaginatePermissions = <TData>({ roleId }: { roleId: string }, op
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
  */
-export const useTogglePermission = (options?: AppMutationOptions<typeof EmployeeRolesApi.togglePermission, { roleId: string, permission: string, data: EmployeeRolesModels.EmployeeRoleTogglePermissionRequest }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useTogglePermission = (options?: AppMutationOptions<typeof EmployeeRolesApi.togglePermission, { roleId: string, permission: string, data: EmployeeRolesModels.EmployeeRoleTogglePermissionRequest }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ roleId, permission, data }) => { 
       checkAcl(EmployeeRolesAcl.canUseTogglePermission());
-      return EmployeeRolesApi.togglePermission(roleId, permission, data, config)
+      return EmployeeRolesApi.togglePermission(roleId, permission, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -261,14 +260,14 @@ export const useTogglePermission = (options?: AppMutationOptions<typeof Employee
  * @returns { UseMutationResult<CommonModels.EmployeeRoleResponse> } 
  * @statusCodes [201, 401]
  */
-export const useCopy = (options?: AppMutationOptions<typeof EmployeeRolesApi.copy, { roleId: string, data: EmployeeRolesModels.CopyEmployeeRoleDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCopy = (options?: AppMutationOptions<typeof EmployeeRolesApi.copy, { roleId: string, data: EmployeeRolesModels.CopyEmployeeRoleDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ roleId, data }) => { 
       checkAcl(EmployeeRolesAcl.canUseCopy());
-      return EmployeeRolesApi.copy(roleId, data, config)
+      return EmployeeRolesApi.copy(roleId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

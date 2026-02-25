@@ -1,115 +1,110 @@
 import { AppRestClient } from "@/data/app-rest-client";
-import { AxiosRequestConfig } from "axios";
 import { z } from "zod";
 import { ZodExtended } from "@/data/zod.extended";
 import { OfficesModels } from "./offices.models";
 
 export namespace OfficesApi {
-export const paginate = (limit: number, order?: string, filter?: OfficesModels.OfficeFilterDto, page?: number, cursor?: string, config?: AxiosRequestConfig) => {
+export const paginate = (limit: number, order?: string, filter?: OfficesModels.OfficeFilterDto, page?: number, cursor?: string, ) => {
     return AppRestClient.get(
         { resSchema: OfficesModels.OfficesPaginateResponseSchema },
         `/offices`,
         {
-            ...config,
             params: {
                 order: ZodExtended.parse(ZodExtended.sortExp(OfficesModels.OfficesPaginateOrderParamEnumSchema).optional(), order, { type: "query", name: "order" }),
                 filter: ZodExtended.parse(OfficesModels.OfficeFilterDtoSchema.optional(), filter, { type: "query", name: "filter" }),
-                limit: ZodExtended.parse(z.number().gte(1).lte(100).describe("Items per response").default(20), limit, { type: "query", name: "limit" }),
-                page: ZodExtended.parse(z.number().describe("1-indexed page number to begin from").nullish(), page, { type: "query", name: "page" }),
-                cursor: ZodExtended.parse(z.string().describe("ID of item to start after").nullish(), cursor, { type: "query", name: "cursor" }),
+                limit: ZodExtended.parse(z.number().gte(1).lte(100).default(20), limit, { type: "query", name: "limit" }),
+                page: ZodExtended.parse(z.number().nullish(), page, { type: "query", name: "page" }),
+                cursor: ZodExtended.parse(z.string().nullish(), cursor, { type: "query", name: "cursor" }),
             },
         }
     )
 };
-export const create = (data: OfficesModels.CreateOfficeRequest, config?: AxiosRequestConfig) => {
+export const create = (data: OfficesModels.CreateOfficeRequest, ) => {
     return AppRestClient.post(
         { resSchema: OfficesModels.OfficeResponseDtoSchema },
         `/offices`,
         ZodExtended.parse(OfficesModels.CreateOfficeRequestSchema, data),
-        config
+        
     )
 };
-export const findAllLabels = (search?: string, config?: AxiosRequestConfig) => {
+export const findAllLabels = (search?: string, ) => {
     return AppRestClient.get(
         { resSchema: OfficesModels.FindAllLabelsResponseSchema },
         `/offices/labels`,
         {
-            ...config,
             params: {
                 search: ZodExtended.parse(z.string().nullish(), search, { type: "query", name: "search" }),
             },
         }
     )
 };
-export const paginateLabels = (limit: number, order?: string, filter?: OfficesModels.OfficeLabelFilterDto, page?: number, cursor?: string, config?: AxiosRequestConfig) => {
+export const paginateLabels = (limit: number, order?: string, filter?: OfficesModels.OfficeLabelFilterDto, page?: number, cursor?: string, ) => {
     return AppRestClient.get(
         { resSchema: OfficesModels.OfficesPaginateLabelsResponseSchema },
         `/offices/labels/paginate`,
         {
-            ...config,
             params: {
                 order: ZodExtended.parse(ZodExtended.sortExp(OfficesModels.OfficesPaginateLabelsOrderParamEnumSchema).optional(), order, { type: "query", name: "order" }),
                 filter: ZodExtended.parse(OfficesModels.OfficeLabelFilterDtoSchema.optional(), filter, { type: "query", name: "filter" }),
-                limit: ZodExtended.parse(z.number().gte(1).lte(100).describe("Items per response").default(20), limit, { type: "query", name: "limit" }),
-                page: ZodExtended.parse(z.number().describe("1-indexed page number to begin from").nullish(), page, { type: "query", name: "page" }),
-                cursor: ZodExtended.parse(z.string().describe("ID of item to start after").nullish(), cursor, { type: "query", name: "cursor" }),
+                limit: ZodExtended.parse(z.number().gte(1).lte(100).default(20), limit, { type: "query", name: "limit" }),
+                page: ZodExtended.parse(z.number().nullish(), page, { type: "query", name: "page" }),
+                cursor: ZodExtended.parse(z.string().nullish(), cursor, { type: "query", name: "cursor" }),
             },
         }
     )
 };
-export const get = (id: string, config?: AxiosRequestConfig) => {
+export const get = (id: string, ) => {
     return AppRestClient.get(
         { resSchema: OfficesModels.OfficeDetailResponseDtoSchema },
         `/offices/${id}`,
-        config
+        
     )
 };
-export const update = (id: string, data: OfficesModels.UpdateOfficeRequest, config?: AxiosRequestConfig) => {
+export const update = (id: string, data: OfficesModels.UpdateOfficeRequest, ) => {
     return AppRestClient.put(
         { resSchema: OfficesModels.OfficeResponseDtoSchema },
         `/offices/${id}`,
         ZodExtended.parse(OfficesModels.UpdateOfficeRequestSchema, data),
-        config
+        
     )
 };
-export const uploadDocumentImage = (officeId: string, data: OfficesModels.UploadOfficeDocumentRequestDto, config?: AxiosRequestConfig) => {
+export const uploadDocumentImage = (officeId: string, data: OfficesModels.UploadOfficeDocumentRequestDto, ) => {
     return AppRestClient.post(
         { resSchema: OfficesModels.DocumentImageUploadInstructionsDtoSchema },
         `/offices/${officeId}/document-image`,
         ZodExtended.parse(OfficesModels.UploadOfficeDocumentRequestDtoSchema, data),
-        config
+        
     )
 };
-export const createBankAccount = (officeId: string, data: OfficesModels.CreateOfficeBankAccountDto, config?: AxiosRequestConfig) => {
+export const createBankAccount = (officeId: string, data: OfficesModels.CreateOfficeBankAccountDto, ) => {
     return AppRestClient.post(
         { resSchema: OfficesModels.OfficeBankAccountResponseDtoSchema },
         `/offices/${officeId}/bank-accounts`,
         ZodExtended.parse(OfficesModels.CreateOfficeBankAccountDtoSchema, data),
-        config
+        
     )
 };
-export const updateBankAccount = (accountId: string, officeId: string, data: OfficesModels.UpdateOfficeBankAccountDto, config?: AxiosRequestConfig) => {
+export const updateBankAccount = (accountId: string, officeId: string, data: OfficesModels.UpdateOfficeBankAccountDto, ) => {
     return AppRestClient.patch(
         { resSchema: OfficesModels.OfficeBankAccountResponseDtoSchema },
         `/offices/${officeId}/bank-accounts/${accountId}`,
         ZodExtended.parse(OfficesModels.UpdateOfficeBankAccountDtoSchema, data),
-        config
+        
     )
 };
-export const deleteBankAccount = (accountId: string, officeId: string, config?: AxiosRequestConfig) => {
+export const deleteBankAccount = (accountId: string, officeId: string, ) => {
     return AppRestClient.delete(
         { resSchema: z.void() },
         `/offices/${officeId}/bank-accounts/${accountId}`,
-        undefined,
-        config
+        
     )
 };
-export const uploadBankAccountFooter = (accountId: string, officeId: string, data: OfficesModels.UploadOfficeBankAccountFooterRequestDto, config?: AxiosRequestConfig) => {
+export const uploadBankAccountFooter = (accountId: string, officeId: string, data: OfficesModels.UploadOfficeBankAccountFooterRequestDto, ) => {
     return AppRestClient.post(
         { resSchema: OfficesModels.DocumentImageUploadInstructionsDtoSchema },
         `/offices/${officeId}/bank-accounts/${accountId}/footer`,
         ZodExtended.parse(OfficesModels.UploadOfficeBankAccountFooterRequestDtoSchema, data),
-        config
+        
     )
 };
 }

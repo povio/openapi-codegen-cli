@@ -64,8 +64,20 @@ class GenerateOptions implements GenerateParams {
   @YargOption({ envAlias: "mutationEffects", type: "boolean" })
   mutationEffects?: boolean;
 
+  @YargOption({ envAlias: "workspaceContext", type: "boolean" })
+  workspaceContext?: boolean;
+
   @YargOption({ envAlias: "parseRequestParams", type: "boolean" })
   parseRequestParams?: boolean;
+
+  @YargOption({ envAlias: "inlineEndpoints", type: "boolean" })
+  inlineEndpoints?: boolean;
+
+  @YargOption({ envAlias: "inlineEndpointsExcludeModules" })
+  inlineEndpointsExcludeModules?: string;
+
+  @YargOption({ envAlias: "modelsOnly", type: "boolean" })
+  modelsOnly?: boolean;
 
   @YargOption({ envAlias: "axiosRequestConfig", type: "boolean" })
   axiosRequestConfig?: boolean;

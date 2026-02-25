@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { AppQueryOptions } from "@povio/openapi-codegen-cli";
@@ -26,12 +25,12 @@ export const keys = {
  * @returns { UseQueryResult<ControlTowerCalendarModels.CalendarResponseDto> } 
  * @statusCodes [200, 401]
  */
-export const useGetCalendar = <TData>({ from, to, type, search, poNumbers, containerNumbers, bookingNumbers }: { from: string, to: string, type: ControlTowerCalendarModels.CalendarTypeEnum, search?: string, poNumbers?: ControlTowerCalendarModels.GetCalendarPoNumbersParam, containerNumbers?: ControlTowerCalendarModels.GetCalendarContainerNumbersParam, bookingNumbers?: ControlTowerCalendarModels.GetCalendarBookingNumbersParam }, options?: AppQueryOptions<typeof ControlTowerCalendarApi.getCalendar, TData>, config?: AxiosRequestConfig) => {
+export const useGetCalendar = <TData>({ from, to, type, search, poNumbers, containerNumbers, bookingNumbers }: { from: string, to: string, type: ControlTowerCalendarModels.CalendarTypeEnum, search?: string, poNumbers?: ControlTowerCalendarModels.GetCalendarPoNumbersParam, containerNumbers?: ControlTowerCalendarModels.GetCalendarContainerNumbersParam, bookingNumbers?: ControlTowerCalendarModels.GetCalendarBookingNumbersParam }, options?: AppQueryOptions<typeof ControlTowerCalendarApi.getCalendar, TData>) => {
   
   return useQuery({
     queryKey: keys.getCalendar(from, to, type, search, poNumbers, containerNumbers, bookingNumbers),
     queryFn: () => 
-    ControlTowerCalendarApi.getCalendar(from, to, type, search, poNumbers, containerNumbers, bookingNumbers, config),
+    ControlTowerCalendarApi.getCalendar(from, to, type, search, poNumbers, containerNumbers, bookingNumbers),
     ...options,
   });
 };

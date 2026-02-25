@@ -15,7 +15,7 @@ export namespace InttraOfficeIntegrationModels {
  * @property { string } ediId  
  * @property { string } notificationEmail  
  */
-export const OfficeInttraCredentialsResponseDtoSchema = z.object({ id: z.string(), createdAt: z.iso.datetime({ offset: true }), updatedAt: z.iso.datetime({ offset: true }), rotatedByUserId: z.string().nullish(), officeId: z.string(), sftpUsername: z.string().nullish(), sftpPublicKey: z.string().nullish(), partnerCode: z.string().nullish(), ediId: z.string().nullish(), notificationEmail: z.string().nullish() }).readonly();
+export const OfficeInttraCredentialsResponseDtoSchema = z.object({ id: z.string(), createdAt: z.iso.datetime({ offset: true }), updatedAt: z.iso.datetime({ offset: true }), rotatedByUserId: z.string().nullish(), officeId: z.string(), sftpUsername: z.string().nullish(), sftpPublicKey: z.string().nullish(), partnerCode: z.string().nullish(), ediId: z.string().nullish(), notificationEmail: z.string().nullish() });
 export type OfficeInttraCredentialsResponseDto = z.infer<typeof OfficeInttraCredentialsResponseDtoSchema>;
 
 /** 
@@ -25,7 +25,7 @@ export type OfficeInttraCredentialsResponseDto = z.infer<typeof OfficeInttraCred
  * @property { string } rotatedAt  
  * @property { string } rotatedByUserId  
  */
-export const GenerateInttraCredentialsResponseDtoSchema = z.object({ publicKey: z.string(), rotatedAt: z.iso.datetime({ offset: true }), rotatedByUserId: z.string() }).readonly();
+export const GenerateInttraCredentialsResponseDtoSchema = z.object({ publicKey: z.string(), rotatedAt: z.iso.datetime({ offset: true }), rotatedByUserId: z.string() });
 export type GenerateInttraCredentialsResponseDto = z.infer<typeof GenerateInttraCredentialsResponseDtoSchema>;
 
 /** 
@@ -37,7 +37,7 @@ export type GenerateInttraCredentialsResponseDto = z.infer<typeof GenerateInttra
  * @property { string } ediId  
  * @property { string } notificationEmail  
  */
-export const UpdateInttraCredentialsRequestDtoSchema = z.object({ sftpUsername: z.string(), sftpPassword: z.string(), partnerCode: z.string(), ediId: z.string(), notificationEmail: z.string() }).readonly();
+export const UpdateInttraCredentialsRequestDtoSchema = z.object({ sftpUsername: z.string().nullable(), sftpPassword: z.string().nullable(), partnerCode: z.string().nullable(), ediId: z.string().nullable(), notificationEmail: z.string().nullable() }).partial();
 export type UpdateInttraCredentialsRequestDto = z.infer<typeof UpdateInttraCredentialsRequestDtoSchema>;
 
 /** 
@@ -46,7 +46,7 @@ export type UpdateInttraCredentialsRequestDto = z.infer<typeof UpdateInttraCrede
  * @property { string } rotatedAt  
  * @property { string } rotatedByUserId  
  */
-export const UpdateInttraCredentialsResponseDtoSchema = z.object({ rotatedAt: z.iso.datetime({ offset: true }), rotatedByUserId: z.string() }).readonly();
+export const UpdateInttraCredentialsResponseDtoSchema = z.object({ rotatedAt: z.iso.datetime({ offset: true }), rotatedByUserId: z.string() });
 export type UpdateInttraCredentialsResponseDto = z.infer<typeof UpdateInttraCredentialsResponseDtoSchema>;
 
 }

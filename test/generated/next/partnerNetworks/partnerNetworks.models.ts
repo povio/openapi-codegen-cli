@@ -8,7 +8,7 @@ export namespace PartnerNetworksModels {
  * @property { string } id  
  * @property { string } name  
  */
-export const PartnerNetworkEmployeeDTOSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const PartnerNetworkEmployeeDTOSchema = z.object({ id: z.string(), name: z.string() });
 export type PartnerNetworkEmployeeDTO = z.infer<typeof PartnerNetworkEmployeeDTOSchema>;
 
 /** 
@@ -24,7 +24,7 @@ export type PartnerNetworkEmployeeDTO = z.infer<typeof PartnerNetworkEmployeeDTO
  * @property { PartnerNetworkEmployeeDTO } updatedBy  
  * @property { string } updatedAt  
  */
-export const PartnerNetworkResponseDTOSchema = z.object({ id: z.string().describe("Unique identifier of the partner network"), name: z.string().describe("Name of the partner network"), archived: z.boolean().describe("Whether the partner network is archived"), createdById: z.string().nullish(), createdBy: PartnerNetworkEmployeeDTOSchema.nullish(), createdAt: z.iso.datetime({ offset: true }), updatedById: z.string().nullish(), updatedBy: PartnerNetworkEmployeeDTOSchema.nullish(), updatedAt: z.iso.datetime({ offset: true }) }).readonly();
+export const PartnerNetworkResponseDTOSchema = z.object({ id: z.string(), name: z.string(), archived: z.boolean(), createdById: z.string().nullish(), createdBy: PartnerNetworkEmployeeDTOSchema.nullish(), createdAt: z.iso.datetime({ offset: true }), updatedById: z.string().nullish(), updatedBy: PartnerNetworkEmployeeDTOSchema.nullish(), updatedAt: z.iso.datetime({ offset: true }) });
 export type PartnerNetworkResponseDTO = z.infer<typeof PartnerNetworkResponseDTOSchema>;
 
 /** 
@@ -32,7 +32,7 @@ export type PartnerNetworkResponseDTO = z.infer<typeof PartnerNetworkResponseDTO
  * @type { object }
  * @property { string } search  
  */
-export const PartnerNetworkLabelFilterDtoSchema = z.object({ search: z.string() }).readonly();
+export const PartnerNetworkLabelFilterDtoSchema = z.object({ search: z.string().nullable() }).partial();
 export type PartnerNetworkLabelFilterDto = z.infer<typeof PartnerNetworkLabelFilterDtoSchema>;
 
 /** 
@@ -41,7 +41,7 @@ export type PartnerNetworkLabelFilterDto = z.infer<typeof PartnerNetworkLabelFil
  * @property { string } search Free search 
  * @property { boolean } archived  
  */
-export const PartnerNetworkPaginationFilterDtoSchema = z.object({ search: z.string().describe("Free search"), archived: z.boolean() }).readonly();
+export const PartnerNetworkPaginationFilterDtoSchema = z.object({ search: z.string().nullable(), archived: z.boolean().nullable() }).partial();
 export type PartnerNetworkPaginationFilterDto = z.infer<typeof PartnerNetworkPaginationFilterDtoSchema>;
 
 /** 
@@ -49,7 +49,7 @@ export type PartnerNetworkPaginationFilterDto = z.infer<typeof PartnerNetworkPag
  * @type { object }
  * @property { string } name Name of the partner network 
  */
-export const CreatePartnerNetworkRequestDTOSchema = z.object({ name: z.string().describe("Name of the partner network") }).readonly();
+export const CreatePartnerNetworkRequestDTOSchema = z.object({ name: z.string() });
 export type CreatePartnerNetworkRequestDTO = z.infer<typeof CreatePartnerNetworkRequestDTOSchema>;
 
 /** 
@@ -57,7 +57,7 @@ export type CreatePartnerNetworkRequestDTO = z.infer<typeof CreatePartnerNetwork
  * @type { object }
  * @property { string } name Name of the partner network 
  */
-export const UpdatePartnerNetworkRequestDTOSchema = z.object({ name: z.string().describe("Name of the partner network") }).readonly();
+export const UpdatePartnerNetworkRequestDTOSchema = z.object({ name: z.string().nullable() }).partial();
 export type UpdatePartnerNetworkRequestDTO = z.infer<typeof UpdatePartnerNetworkRequestDTOSchema>;
 
 /** 
@@ -78,7 +78,7 @@ export const PartnerNetworksPaginateLabelsOrderParamEnum = PartnerNetworksPagina
  * @property { number } totalItems Total available items 
  * @property { CommonModels.LabelResponseDTO[] } items  
  */
-export const PartnerNetworksPaginateLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).readonly() }).readonly().shape });
+export const PartnerNetworksPaginateLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).nullable() }).partial().shape });
 export type PartnerNetworksPaginateLabelsResponse = z.infer<typeof PartnerNetworksPaginateLabelsResponseSchema>;
 
 /** 
@@ -99,7 +99,7 @@ export const PartnerNetworksPaginateOrderParamEnum = PartnerNetworksPaginateOrde
  * @property { number } totalItems Total available items 
  * @property { PartnerNetworkResponseDTO[] } items  
  */
-export const PartnerNetworksPaginateResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(PartnerNetworkResponseDTOSchema).readonly() }).readonly().shape });
+export const PartnerNetworksPaginateResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(PartnerNetworkResponseDTOSchema).nullable() }).partial().shape });
 export type PartnerNetworksPaginateResponse = z.infer<typeof PartnerNetworksPaginateResponseSchema>;
 
 }

@@ -8,7 +8,7 @@ export namespace WarehousesModels {
  * @property { string } id  
  * @property { string } name  
  */
-export const WarehouseCityDtoSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const WarehouseCityDtoSchema = z.object({ id: z.string(), name: z.string() });
 export type WarehouseCityDto = z.infer<typeof WarehouseCityDtoSchema>;
 
 /** 
@@ -19,7 +19,7 @@ export type WarehouseCityDto = z.infer<typeof WarehouseCityDtoSchema>;
  * @property { string } isoCode2  
  * @property { string } isoCode3  
  */
-export const WarehouseCountryDtoSchema = z.object({ id: z.string(), name: z.string(), isoCode2: z.string(), isoCode3: z.string() }).readonly();
+export const WarehouseCountryDtoSchema = z.object({ id: z.string(), name: z.string(), isoCode2: z.string(), isoCode3: z.string() });
 export type WarehouseCountryDto = z.infer<typeof WarehouseCountryDtoSchema>;
 
 /** 
@@ -28,7 +28,7 @@ export type WarehouseCountryDto = z.infer<typeof WarehouseCountryDtoSchema>;
  * @property { string } id  
  * @property { string } name  
  */
-export const WarehouseEmployeeDTOSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const WarehouseEmployeeDTOSchema = z.object({ id: z.string(), name: z.string() });
 export type WarehouseEmployeeDTO = z.infer<typeof WarehouseEmployeeDTOSchema>;
 
 /** 
@@ -53,7 +53,7 @@ export type WarehouseEmployeeDTO = z.infer<typeof WarehouseEmployeeDTOSchema>;
  * @property { WarehouseEmployeeDTO } updatedBy  
  * @property { string } updatedAt  
  */
-export const WarehouseResponseDTOSchema = z.object({ id: z.string(), name: z.string().nullish(), shortName: z.string().nullish(), additionalInformation: z.string().nullish(), matchCode: z.string(), street: z.string().nullish(), secondaryStreet: z.string().nullish(), zip: z.string().nullish(), city: WarehouseCityDtoSchema.nullish(), country: WarehouseCountryDtoSchema.nullish(), district: z.string().nullish(), archived: z.boolean(), createdById: z.string().nullish(), createdBy: WarehouseEmployeeDTOSchema.nullish(), createdAt: z.iso.datetime({ offset: true }), updatedById: z.string().nullish(), updatedBy: WarehouseEmployeeDTOSchema.nullish(), updatedAt: z.iso.datetime({ offset: true }) }).readonly();
+export const WarehouseResponseDTOSchema = z.object({ id: z.string(), name: z.string().nullish(), shortName: z.string().nullish(), additionalInformation: z.string().nullish(), matchCode: z.string(), street: z.string().nullish(), secondaryStreet: z.string().nullish(), zip: z.string().nullish(), city: WarehouseCityDtoSchema.nullish(), country: WarehouseCountryDtoSchema.nullish(), district: z.string().nullish(), archived: z.boolean(), createdById: z.string().nullish(), createdBy: WarehouseEmployeeDTOSchema.nullish(), createdAt: z.iso.datetime({ offset: true }), updatedById: z.string().nullish(), updatedBy: WarehouseEmployeeDTOSchema.nullish(), updatedAt: z.iso.datetime({ offset: true }) });
 export type WarehouseResponseDTO = z.infer<typeof WarehouseResponseDTOSchema>;
 
 /** 
@@ -70,7 +70,7 @@ export type WarehouseResponseDTO = z.infer<typeof WarehouseResponseDTOSchema>;
  * @property { string } countryId  
  * @property { string } district  
  */
-export const CreateWarehouseRequestDTOSchema = z.object({ name: z.string().nullish(), shortName: z.string().nullish(), additionalInformation: z.string().nullish(), matchCode: z.string(), street: z.string().nullish(), secondaryStreet: z.string().nullish(), zip: z.string().nullish(), cityId: z.string().nullish(), countryId: z.string().nullish(), district: z.string().nullish() }).readonly();
+export const CreateWarehouseRequestDTOSchema = z.object({ name: z.string().nullish(), shortName: z.string().nullish(), additionalInformation: z.string().nullish(), matchCode: z.string(), street: z.string().nullish(), secondaryStreet: z.string().nullish(), zip: z.string().nullish(), cityId: z.string().nullish(), countryId: z.string().nullish(), district: z.string().nullish() });
 export type CreateWarehouseRequestDTO = z.infer<typeof CreateWarehouseRequestDTOSchema>;
 
 /** 
@@ -78,7 +78,7 @@ export type CreateWarehouseRequestDTO = z.infer<typeof CreateWarehouseRequestDTO
  * @type { object }
  * @property { string } search  
  */
-export const WarehouseLabelFilterDtoSchema = z.object({ search: z.string() }).readonly();
+export const WarehouseLabelFilterDtoSchema = z.object({ search: z.string().nullable() }).partial();
 export type WarehouseLabelFilterDto = z.infer<typeof WarehouseLabelFilterDtoSchema>;
 
 /** 
@@ -87,7 +87,7 @@ export type WarehouseLabelFilterDto = z.infer<typeof WarehouseLabelFilterDtoSche
  * @property { string } search  
  * @property { boolean } archived Filter by archived status 
  */
-export const WarehouseFilterDtoSchema = z.object({ search: z.string(), archived: z.boolean().describe("Filter by archived status") }).readonly();
+export const WarehouseFilterDtoSchema = z.object({ search: z.string().nullable(), archived: z.boolean().nullable() }).partial();
 export type WarehouseFilterDto = z.infer<typeof WarehouseFilterDtoSchema>;
 
 /** 
@@ -104,7 +104,7 @@ export type WarehouseFilterDto = z.infer<typeof WarehouseFilterDtoSchema>;
  * @property { string } countryId  
  * @property { string } district  
  */
-export const UpdateWarehouseRequestDTOSchema = z.object({ name: z.string(), shortName: z.string(), additionalInformation: z.string(), matchCode: z.string(), street: z.string(), secondaryStreet: z.string(), zip: z.string(), cityId: z.string(), countryId: z.string(), district: z.string() }).readonly();
+export const UpdateWarehouseRequestDTOSchema = z.object({ name: z.string().nullable(), shortName: z.string().nullable(), additionalInformation: z.string().nullable(), matchCode: z.string().nullable(), street: z.string().nullable(), secondaryStreet: z.string().nullable(), zip: z.string().nullable(), cityId: z.string().nullable(), countryId: z.string().nullable(), district: z.string().nullable() }).partial();
 export type UpdateWarehouseRequestDTO = z.infer<typeof UpdateWarehouseRequestDTOSchema>;
 
 /** 
@@ -125,7 +125,7 @@ export const WarehousesPaginateOrderParamEnum = WarehousesPaginateOrderParamEnum
  * @property { number } totalItems Total available items 
  * @property { WarehouseResponseDTO[] } items  
  */
-export const WarehousesPaginateResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(WarehouseResponseDTOSchema).readonly() }).readonly().shape });
+export const WarehousesPaginateResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(WarehouseResponseDTOSchema).nullable() }).partial().shape });
 export type WarehousesPaginateResponse = z.infer<typeof WarehousesPaginateResponseSchema>;
 
 /** 
@@ -146,7 +146,7 @@ export const WarehousesPaginateLabelsOrderParamEnum = WarehousesPaginateLabelsOr
  * @property { number } totalItems Total available items 
  * @property { CommonModels.LabelResponseDTO[] } items  
  */
-export const WarehousesPaginateLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).readonly() }).readonly().shape });
+export const WarehousesPaginateLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).nullable() }).partial().shape });
 export type WarehousesPaginateLabelsResponse = z.infer<typeof WarehousesPaginateLabelsResponseSchema>;
 
 }

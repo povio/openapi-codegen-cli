@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -28,14 +27,14 @@ export const keys = {
  * @returns { UseMutationResult<WorkingDocumentsIsfFormModels.IsfDocumentResponseDTO> } 
  * @statusCodes [201, 401]
  */
-export const useCreate = (options?: AppMutationOptions<typeof WorkingDocumentsIsfFormApi.create, { positionId: string, officeId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreate = (options?: AppMutationOptions<typeof WorkingDocumentsIsfFormApi.create, { positionId: string, officeId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, officeId }) => { 
       checkAcl(WorkingDocumentsIsfFormAcl.canUseCreate({ officeId } ));
-      return WorkingDocumentsIsfFormApi.create(positionId, officeId, config)
+      return WorkingDocumentsIsfFormApi.create(positionId, officeId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -56,14 +55,14 @@ export const useCreate = (options?: AppMutationOptions<typeof WorkingDocumentsIs
  * @returns { UseQueryResult<WorkingDocumentsIsfFormModels.IsfDocumentResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useGetIsfData = <TData>({ positionId, isfId, officeId }: { positionId: string, isfId: string, officeId: string }, options?: AppQueryOptions<typeof WorkingDocumentsIsfFormApi.getIsfData, TData>, config?: AxiosRequestConfig) => {
+export const useGetIsfData = <TData>({ positionId, isfId, officeId }: { positionId: string, isfId: string, officeId: string }, options?: AppQueryOptions<typeof WorkingDocumentsIsfFormApi.getIsfData, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.getIsfData(positionId, isfId, officeId),
     queryFn: () => { 
     checkAcl(WorkingDocumentsIsfFormAcl.canUseGetIsfData({ officeId } ));
-    return WorkingDocumentsIsfFormApi.getIsfData(positionId, isfId, officeId, config) },
+    return WorkingDocumentsIsfFormApi.getIsfData(positionId, isfId, officeId) },
     ...options,
   });
 };
@@ -80,14 +79,14 @@ export const useGetIsfData = <TData>({ positionId, isfId, officeId }: { position
  * @returns { UseMutationResult<WorkingDocumentsIsfFormModels.IsfDocumentResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useUpdateIsfData = (options?: AppMutationOptions<typeof WorkingDocumentsIsfFormApi.updateIsfData, { positionId: string, isfId: string, officeId: string, data: WorkingDocumentsIsfFormModels.UpdateIsfDocumentRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdateIsfData = (options?: AppMutationOptions<typeof WorkingDocumentsIsfFormApi.updateIsfData, { positionId: string, isfId: string, officeId: string, data: WorkingDocumentsIsfFormModels.UpdateIsfDocumentRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, isfId, officeId, data }) => { 
       checkAcl(WorkingDocumentsIsfFormAcl.canUseUpdateIsfData({ officeId } ));
-      return WorkingDocumentsIsfFormApi.updateIsfData(positionId, isfId, officeId, data, config)
+      return WorkingDocumentsIsfFormApi.updateIsfData(positionId, isfId, officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -110,14 +109,14 @@ export const useUpdateIsfData = (options?: AppMutationOptions<typeof WorkingDocu
  * @returns { UseMutationResult<void> } ISF document deleted
  * @statusCodes [204, 401, 404]
  */
-export const useDeleteIsf = (options?: AppMutationOptions<typeof WorkingDocumentsIsfFormApi.deleteIsf, { positionId: string, isfId: string, officeId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useDeleteIsf = (options?: AppMutationOptions<typeof WorkingDocumentsIsfFormApi.deleteIsf, { positionId: string, isfId: string, officeId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, isfId, officeId }) => { 
       checkAcl(WorkingDocumentsIsfFormAcl.canUseDeleteIsf({ officeId } ));
-      return WorkingDocumentsIsfFormApi.deleteIsf(positionId, isfId, officeId, config)
+      return WorkingDocumentsIsfFormApi.deleteIsf(positionId, isfId, officeId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -138,14 +137,14 @@ export const useDeleteIsf = (options?: AppMutationOptions<typeof WorkingDocument
  * @returns { UseQueryResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
  */
-export const usePreviewIsf = <TData>({ positionId, isfId, officeId }: { positionId: string, isfId: string, officeId: string }, options?: AppQueryOptions<typeof WorkingDocumentsIsfFormApi.previewIsf, TData>, config?: AxiosRequestConfig) => {
+export const usePreviewIsf = <TData>({ positionId, isfId, officeId }: { positionId: string, isfId: string, officeId: string }, options?: AppQueryOptions<typeof WorkingDocumentsIsfFormApi.previewIsf, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.previewIsf(positionId, isfId, officeId),
     queryFn: () => { 
     checkAcl(WorkingDocumentsIsfFormAcl.canUsePreviewIsf({ officeId } ));
-    return WorkingDocumentsIsfFormApi.previewIsf(positionId, isfId, officeId, config) },
+    return WorkingDocumentsIsfFormApi.previewIsf(positionId, isfId, officeId) },
     ...options,
   });
 };
@@ -161,14 +160,14 @@ export const usePreviewIsf = <TData>({ positionId, isfId, officeId }: { position
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
  */
-export const usePreviewIsfMutation = (options?: AppMutationOptions<typeof WorkingDocumentsIsfFormApi.previewIsf, { positionId: string, isfId: string, officeId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const usePreviewIsfMutation = (options?: AppMutationOptions<typeof WorkingDocumentsIsfFormApi.previewIsf, { positionId: string, isfId: string, officeId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, isfId, officeId }) => { 
       checkAcl(WorkingDocumentsIsfFormAcl.canUsePreviewIsf({ officeId } ));
-      return WorkingDocumentsIsfFormApi.previewIsf(positionId, isfId, officeId, config)
+      return WorkingDocumentsIsfFormApi.previewIsf(positionId, isfId, officeId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -192,14 +191,14 @@ export const usePreviewIsfMutation = (options?: AppMutationOptions<typeof Workin
  * @returns { UseMutationResult<void> } 
  * @statusCodes [201, 401]
  */
-export const useGenerateIsf = (options?: AppMutationOptions<typeof WorkingDocumentsIsfFormApi.generateIsf, { positionId: string, isfId: string, officeId: string, data: CommonModels.GenerateWorkingDocumentRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useGenerateIsf = (options?: AppMutationOptions<typeof WorkingDocumentsIsfFormApi.generateIsf, { positionId: string, isfId: string, officeId: string, data: CommonModels.GenerateWorkingDocumentRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, isfId, officeId, data }) => { 
       checkAcl(WorkingDocumentsIsfFormAcl.canUseGenerateIsf({ officeId } ));
-      return WorkingDocumentsIsfFormApi.generateIsf(positionId, isfId, officeId, data, config)
+      return WorkingDocumentsIsfFormApi.generateIsf(positionId, isfId, officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

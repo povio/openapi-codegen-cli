@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -29,14 +28,14 @@ export const keys = {
  * @returns { UseMutationResult<DepotsModels.DepotResponseDTO> } 
  * @statusCodes [201, 401]
  */
-export const useCreate = (options?: AppMutationOptions<typeof DepotsApi.create, { data: DepotsModels.CreateDepotRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreate = (options?: AppMutationOptions<typeof DepotsApi.create, { data: DepotsModels.CreateDepotRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ data }) => { 
       checkAcl(DepotsAcl.canUseCreate());
-      return DepotsApi.create(data, config)
+      return DepotsApi.create(data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -59,14 +58,14 @@ export const useCreate = (options?: AppMutationOptions<typeof DepotsApi.create, 
  * @returns { UseQueryResult<DepotsModels.DepotsPaginateResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: DepotsModels.DepotPaginationFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof DepotsApi.paginate, TData>, config?: AxiosRequestConfig) => {
+export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: DepotsModels.DepotPaginationFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof DepotsApi.paginate, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.paginate(limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(DepotsAcl.canUsePaginate());
-    return DepotsApi.paginate(limit, order, filter, page, cursor, config) },
+    return DepotsApi.paginate(limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -84,14 +83,14 @@ export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { lim
  * @returns { UseInfiniteQueryResult<DepotsModels.DepotsPaginateResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: DepotsModels.DepotPaginationFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof DepotsApi.paginate, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: DepotsModels.DepotPaginationFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof DepotsApi.paginate, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.paginateInfinite(limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(DepotsAcl.canUsePaginate());
-    return DepotsApi.paginate(limit, order, filter, pageParam, cursor, config) },
+    return DepotsApi.paginate(limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -114,14 +113,14 @@ export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { l
  * @returns { UseQueryResult<DepotsModels.DepotsPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: DepotsModels.DepotLabelFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof DepotsApi.paginateLabels, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: DepotsModels.DepotLabelFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof DepotsApi.paginateLabels, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.paginateLabels(limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(DepotsAcl.canUsePaginateLabels());
-    return DepotsApi.paginateLabels(limit, order, filter, page, cursor, config) },
+    return DepotsApi.paginateLabels(limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -139,14 +138,14 @@ export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }:
  * @returns { UseInfiniteQueryResult<DepotsModels.DepotsPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: DepotsModels.DepotLabelFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof DepotsApi.paginateLabels, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: DepotsModels.DepotLabelFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof DepotsApi.paginateLabels, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.paginateLabelsInfinite(limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(DepotsAcl.canUsePaginateLabels());
-    return DepotsApi.paginateLabels(limit, order, filter, pageParam, cursor, config) },
+    return DepotsApi.paginateLabels(limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -165,14 +164,14 @@ export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor 
  * @returns { UseQueryResult<DepotsModels.DepotResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useFindById = <TData>({ id }: { id: string }, options?: AppQueryOptions<typeof DepotsApi.findById, TData>, config?: AxiosRequestConfig) => {
+export const useFindById = <TData>({ id }: { id: string }, options?: AppQueryOptions<typeof DepotsApi.findById, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.findById(id),
     queryFn: () => { 
     checkAcl(DepotsAcl.canUseFindById());
-    return DepotsApi.findById(id, config) },
+    return DepotsApi.findById(id) },
     ...options,
   });
 };
@@ -187,14 +186,14 @@ export const useFindById = <TData>({ id }: { id: string }, options?: AppQueryOpt
  * @returns { UseMutationResult<DepotsModels.DepotResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useUpdate = (options?: AppMutationOptions<typeof DepotsApi.update, { id: string, data: DepotsModels.UpdateDepotRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdate = (options?: AppMutationOptions<typeof DepotsApi.update, { id: string, data: DepotsModels.UpdateDepotRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ id, data }) => { 
       checkAcl(DepotsAcl.canUseUpdate());
-      return DepotsApi.update(id, data, config)
+      return DepotsApi.update(id, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -215,14 +214,14 @@ export const useUpdate = (options?: AppMutationOptions<typeof DepotsApi.update, 
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
  */
-export const useArchive = (options?: AppMutationOptions<typeof DepotsApi.archive, { id: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useArchive = (options?: AppMutationOptions<typeof DepotsApi.archive, { id: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ id }) => { 
       checkAcl(DepotsAcl.canUseArchive());
-      return DepotsApi.archive(id, config)
+      return DepotsApi.archive(id)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -241,14 +240,14 @@ export const useArchive = (options?: AppMutationOptions<typeof DepotsApi.archive
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
  */
-export const useUnarchive = (options?: AppMutationOptions<typeof DepotsApi.unarchive, { id: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUnarchive = (options?: AppMutationOptions<typeof DepotsApi.unarchive, { id: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ id }) => { 
       checkAcl(DepotsAcl.canUseUnarchive());
-      return DepotsApi.unarchive(id, config)
+      return DepotsApi.unarchive(id)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

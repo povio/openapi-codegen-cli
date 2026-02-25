@@ -7,7 +7,7 @@ export namespace ControlTowerMeModels {
  * @property { string } self  
  * @property { string } related  
  */
-export const LinksDtoSchema = z.object({ self: z.string(), related: z.string() }).readonly();
+export const LinksDtoSchema = z.object({ self: z.string().nullable(), related: z.string().nullable() }).partial();
 export type LinksDto = z.infer<typeof LinksDtoSchema>;
 
 /** 
@@ -19,7 +19,7 @@ export type LinksDto = z.infer<typeof LinksDtoSchema>;
  * @property { object } relationships  
  * @property { LinksDto } links  
  */
-export const ApiResponseDataDtoSchema = z.object({ type: z.string(), id: z.string(), attributes: z.object({}).readonly().nullish(), relationships: z.object({}).readonly().nullish(), links: LinksDtoSchema.nullish() }).readonly();
+export const ApiResponseDataDtoSchema = z.object({ type: z.string(), id: z.string(), attributes: z.object({}).nullish(), relationships: z.object({}).nullish(), links: LinksDtoSchema.nullish() });
 export type ApiResponseDataDto = z.infer<typeof ApiResponseDataDtoSchema>;
 
 /** 
@@ -29,7 +29,7 @@ export type ApiResponseDataDto = z.infer<typeof ApiResponseDataDtoSchema>;
  * @property { string } self  
  * @property { string } last  
  */
-export const PaginationLinksDtoSchema = z.object({ next: z.string(), self: z.string(), last: z.string() }).readonly();
+export const PaginationLinksDtoSchema = z.object({ next: z.string().nullable(), self: z.string().nullable(), last: z.string().nullable() }).partial();
 export type PaginationLinksDto = z.infer<typeof PaginationLinksDtoSchema>;
 
 /** 
@@ -38,7 +38,7 @@ export type PaginationLinksDto = z.infer<typeof PaginationLinksDtoSchema>;
  * @property { ApiResponseDataDto } data  
  * @property { PaginationLinksDto } links  
  */
-export const ApiResponseDtoSchema = z.object({ data: ApiResponseDataDtoSchema, links: PaginationLinksDtoSchema.nullish() }).readonly();
+export const ApiResponseDtoSchema = z.object({ data: ApiResponseDataDtoSchema, links: PaginationLinksDtoSchema.nullish() });
 export type ApiResponseDto = z.infer<typeof ApiResponseDtoSchema>;
 
 /** 
@@ -58,7 +58,7 @@ export const DelayNotificationEnum = DelayNotificationEnumSchema.enum;
  * @property { boolean } onsiteDelivery  
  * @property { DelayNotificationEnum } delay  
  */
-export const UserEmailPreferencesDtoSchema = z.object({ originDeparture: z.boolean(), loadedOnVessel: z.boolean(), destinationArrival: z.boolean(), onsiteDelivery: z.boolean(), delay: DelayNotificationEnumSchema }).readonly();
+export const UserEmailPreferencesDtoSchema = z.object({ originDeparture: z.boolean(), loadedOnVessel: z.boolean(), destinationArrival: z.boolean(), onsiteDelivery: z.boolean(), delay: DelayNotificationEnumSchema });
 export type UserEmailPreferencesDto = z.infer<typeof UserEmailPreferencesDtoSchema>;
 
 /** 
@@ -66,7 +66,7 @@ export type UserEmailPreferencesDto = z.infer<typeof UserEmailPreferencesDtoSche
  * @type { object }
  * @property { string[] } projectIds  
  */
-export const UserProjectAccessDtoSchema = z.object({ projectIds: z.array(z.string()).readonly() }).readonly();
+export const UserProjectAccessDtoSchema = z.object({ projectIds: z.array(z.string()) });
 export type UserProjectAccessDto = z.infer<typeof UserProjectAccessDtoSchema>;
 
 /** 
@@ -88,7 +88,7 @@ export const UserRoleEnum = UserRoleEnumSchema.enum;
  * @property { UserRoleEnum } role  
  * @property { boolean } isAdmin  
  */
-export const UserDetailDtoSchema = z.object({ id: z.string(), name: z.string().min(3), email: z.email(), emailPreferences: UserEmailPreferencesDtoSchema.nullable(), projectAccess: UserProjectAccessDtoSchema.nullable(), role: UserRoleEnumSchema.nullable(), isAdmin: z.boolean() }).readonly();
+export const UserDetailDtoSchema = z.object({ id: z.string(), name: z.string().min(3), email: z.email(), emailPreferences: UserEmailPreferencesDtoSchema.nullable(), projectAccess: UserProjectAccessDtoSchema.nullable(), role: UserRoleEnumSchema.nullable(), isAdmin: z.boolean() });
 export type UserDetailDto = z.infer<typeof UserDetailDtoSchema>;
 
 /** 
@@ -100,7 +100,7 @@ export type UserDetailDto = z.infer<typeof UserDetailDtoSchema>;
  * @property { boolean } onsiteDelivery  
  * @property { DelayNotificationEnum } delay  
  */
-export const UserEmailPreferencesUpdateDtoSchema = z.object({ originDeparture: z.boolean(), loadedOnVessel: z.boolean(), destinationArrival: z.boolean(), onsiteDelivery: z.boolean(), delay: DelayNotificationEnumSchema }).readonly();
+export const UserEmailPreferencesUpdateDtoSchema = z.object({ originDeparture: z.boolean(), loadedOnVessel: z.boolean(), destinationArrival: z.boolean(), onsiteDelivery: z.boolean(), delay: DelayNotificationEnumSchema });
 export type UserEmailPreferencesUpdateDto = z.infer<typeof UserEmailPreferencesUpdateDtoSchema>;
 
 /** 
@@ -108,7 +108,7 @@ export type UserEmailPreferencesUpdateDto = z.infer<typeof UserEmailPreferencesU
  * @type { object }
  * @property { number[] } projectIds  
  */
-export const UserProjectAccessUpdateDtoSchema = z.object({ projectIds: z.array(z.number()).readonly() }).readonly();
+export const UserProjectAccessUpdateDtoSchema = z.object({ projectIds: z.array(z.number()) });
 export type UserProjectAccessUpdateDto = z.infer<typeof UserProjectAccessUpdateDtoSchema>;
 
 /** 
@@ -120,7 +120,7 @@ export type UserProjectAccessUpdateDto = z.infer<typeof UserProjectAccessUpdateD
  * @property { UserEmailPreferencesUpdateDto } emailPreferences  
  * @property { UserProjectAccessUpdateDto } projectAccess  
  */
-export const UserUpdateDtoSchema = z.object({ name: z.string(), email: z.email(), password: z.string(), emailPreferences: UserEmailPreferencesUpdateDtoSchema, projectAccess: UserProjectAccessUpdateDtoSchema }).readonly();
+export const UserUpdateDtoSchema = z.object({ name: z.string(), email: z.email(), password: z.string(), emailPreferences: UserEmailPreferencesUpdateDtoSchema, projectAccess: UserProjectAccessUpdateDtoSchema });
 export type UserUpdateDto = z.infer<typeof UserUpdateDtoSchema>;
 
 /** 
@@ -129,7 +129,7 @@ export type UserUpdateDto = z.infer<typeof UserUpdateDtoSchema>;
  * @property { string } name  
  * @property { string } email  
  */
-export const UserBasicUpdateDtoSchema = z.object({ name: z.string(), email: z.email() }).readonly();
+export const UserBasicUpdateDtoSchema = z.object({ name: z.string(), email: z.email() });
 export type UserBasicUpdateDto = z.infer<typeof UserBasicUpdateDtoSchema>;
 
 /** 
@@ -137,7 +137,7 @@ export type UserBasicUpdateDto = z.infer<typeof UserBasicUpdateDtoSchema>;
  * @type { object }
  * @property { string } password  
  */
-export const UserPasswordUpdateDtoSchema = z.object({ password: z.string() }).readonly();
+export const UserPasswordUpdateDtoSchema = z.object({ password: z.string() });
 export type UserPasswordUpdateDto = z.infer<typeof UserPasswordUpdateDtoSchema>;
 
 /** 
@@ -147,7 +147,7 @@ export type UserPasswordUpdateDto = z.infer<typeof UserPasswordUpdateDtoSchema>;
  * @property { PaginationLinksDto } links  
  * @property { UserDetailDto } data.attributes  
  */
-export const GetUserProfileResponseSchema = z.object({ ...ApiResponseDtoSchema.shape, ...z.object({ data: z.object({ attributes: UserDetailDtoSchema }).readonly() }).readonly().shape });
+export const GetUserProfileResponseSchema = z.object({ ...ApiResponseDtoSchema.shape, ...z.object({ data: z.object({ attributes: UserDetailDtoSchema.nullable() }).partial().nullable() }).partial().shape });
 export type GetUserProfileResponse = z.infer<typeof GetUserProfileResponseSchema>;
 
 /** 
@@ -157,7 +157,7 @@ export type GetUserProfileResponse = z.infer<typeof GetUserProfileResponseSchema
  * @property { PaginationLinksDto } links  
  * @property { UserDetailDto } data.attributes  
  */
-export const UpdateUserDataResponseSchema = z.object({ ...ApiResponseDtoSchema.shape, ...z.object({ data: z.object({ attributes: UserDetailDtoSchema }).readonly() }).readonly().shape });
+export const UpdateUserDataResponseSchema = z.object({ ...ApiResponseDtoSchema.shape, ...z.object({ data: z.object({ attributes: UserDetailDtoSchema.nullable() }).partial().nullable() }).partial().shape });
 export type UpdateUserDataResponse = z.infer<typeof UpdateUserDataResponseSchema>;
 
 /** 
@@ -167,7 +167,7 @@ export type UpdateUserDataResponse = z.infer<typeof UpdateUserDataResponseSchema
  * @property { PaginationLinksDto } links  
  * @property { UserDetailDto } data.attributes  
  */
-export const UpdateUserProfileResponseSchema = z.object({ ...ApiResponseDtoSchema.shape, ...z.object({ data: z.object({ attributes: UserDetailDtoSchema }).readonly() }).readonly().shape });
+export const UpdateUserProfileResponseSchema = z.object({ ...ApiResponseDtoSchema.shape, ...z.object({ data: z.object({ attributes: UserDetailDtoSchema.nullable() }).partial().nullable() }).partial().shape });
 export type UpdateUserProfileResponse = z.infer<typeof UpdateUserProfileResponseSchema>;
 
 }

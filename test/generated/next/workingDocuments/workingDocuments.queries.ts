@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { useAclCheck } from "@/data/acl/useAclCheck";
@@ -32,14 +31,14 @@ export const keys = {
  * @returns { UseQueryResult<WorkingDocumentsModels.WorkingDocumentsListResponse> } 
  * @statusCodes [200, 401]
  */
-export const useList = <TData>({ positionId, officeId, limit, order, filter, page, cursor }: { positionId: string, officeId: string, limit: number, order?: string, filter?: WorkingDocumentsModels.WorkingDocumentFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof WorkingDocumentsApi.list, TData>, config?: AxiosRequestConfig) => {
+export const useList = <TData>({ positionId, officeId, limit, order, filter, page, cursor }: { positionId: string, officeId: string, limit: number, order?: string, filter?: WorkingDocumentsModels.WorkingDocumentFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof WorkingDocumentsApi.list, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.list(positionId, officeId, limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(WorkingDocumentsAcl.canUseList({ officeId } ));
-    return WorkingDocumentsApi.list(positionId, officeId, limit, order, filter, page, cursor, config) },
+    return WorkingDocumentsApi.list(positionId, officeId, limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -59,14 +58,14 @@ export const useList = <TData>({ positionId, officeId, limit, order, filter, pag
  * @returns { UseInfiniteQueryResult<WorkingDocumentsModels.WorkingDocumentsListResponse> } 
  * @statusCodes [200, 401]
  */
-export const useListInfinite = <TData>({ positionId, officeId, limit, order, filter, cursor }: { positionId: string, officeId: string, limit: number, order?: string, filter?: WorkingDocumentsModels.WorkingDocumentFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof WorkingDocumentsApi.list, TData>, config?: AxiosRequestConfig) => {
+export const useListInfinite = <TData>({ positionId, officeId, limit, order, filter, cursor }: { positionId: string, officeId: string, limit: number, order?: string, filter?: WorkingDocumentsModels.WorkingDocumentFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof WorkingDocumentsApi.list, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.listInfinite(positionId, officeId, limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(WorkingDocumentsAcl.canUseList({ officeId } ));
-    return WorkingDocumentsApi.list(positionId, officeId, limit, order, filter, pageParam, cursor, config) },
+    return WorkingDocumentsApi.list(positionId, officeId, limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -87,14 +86,14 @@ export const useListInfinite = <TData>({ positionId, officeId, limit, order, fil
  * @returns { UseQueryResult<WorkingDocumentsModels.WorkingDocumentResponseDTO> } 
  * @statusCodes [200, 401, 404]
  */
-export const useFindById = <TData>({ positionId, id, officeId }: { positionId: string, id: string, officeId: string }, options?: AppQueryOptions<typeof WorkingDocumentsApi.findById, TData>, config?: AxiosRequestConfig) => {
+export const useFindById = <TData>({ positionId, id, officeId }: { positionId: string, id: string, officeId: string }, options?: AppQueryOptions<typeof WorkingDocumentsApi.findById, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.findById(positionId, id, officeId),
     queryFn: () => { 
     checkAcl(WorkingDocumentsAcl.canUseFindById({ officeId } ));
-    return WorkingDocumentsApi.findById(positionId, id, officeId, config) },
+    return WorkingDocumentsApi.findById(positionId, id, officeId) },
     ...options,
   });
 };

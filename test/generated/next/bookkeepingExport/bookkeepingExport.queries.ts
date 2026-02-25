@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -31,14 +30,14 @@ export const keys = {
  * @returns { UseMutationResult<BookkeepingExportModels.CreateBookkeepingExportBatchResponseDto> } 
  * @statusCodes [201, 401]
  */
-export const useCreateBatch = (options?: AppMutationOptions<typeof BookkeepingExportApi.createBatch, { officeId: string, data: BookkeepingExportModels.CreateBookkeepingExportBatchRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreateBatch = (options?: AppMutationOptions<typeof BookkeepingExportApi.createBatch, { officeId: string, data: BookkeepingExportModels.CreateBookkeepingExportBatchRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, data }) => { 
       checkAcl(BookkeepingExportAcl.canUseCreateBatch({ officeId } ));
-      return BookkeepingExportApi.createBatch(officeId, data, config)
+      return BookkeepingExportApi.createBatch(officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -62,14 +61,14 @@ export const useCreateBatch = (options?: AppMutationOptions<typeof BookkeepingEx
  * @returns { UseQueryResult<BookkeepingExportModels.PaginateBatchesResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateBatches = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: BookkeepingExportModels.BookkeepingExportBatchPreviewFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof BookkeepingExportApi.paginateBatches, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateBatches = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: BookkeepingExportModels.BookkeepingExportBatchPreviewFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof BookkeepingExportApi.paginateBatches, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.paginateBatches(officeId, limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(BookkeepingExportAcl.canUsePaginateBatches({ officeId } ));
-    return BookkeepingExportApi.paginateBatches(officeId, limit, order, filter, page, cursor, config) },
+    return BookkeepingExportApi.paginateBatches(officeId, limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -88,14 +87,14 @@ export const usePaginateBatches = <TData>({ officeId, limit, order, filter, page
  * @returns { UseInfiniteQueryResult<BookkeepingExportModels.PaginateBatchesResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateBatchesInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: BookkeepingExportModels.BookkeepingExportBatchPreviewFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof BookkeepingExportApi.paginateBatches, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateBatchesInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: BookkeepingExportModels.BookkeepingExportBatchPreviewFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof BookkeepingExportApi.paginateBatches, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.paginateBatchesInfinite(officeId, limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(BookkeepingExportAcl.canUsePaginateBatches({ officeId } ));
-    return BookkeepingExportApi.paginateBatches(officeId, limit, order, filter, pageParam, cursor, config) },
+    return BookkeepingExportApi.paginateBatches(officeId, limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -115,14 +114,14 @@ export const usePaginateBatchesInfinite = <TData>({ officeId, limit, order, filt
  * @returns { UseQueryResult<BookkeepingExportModels.BookkeepingExportBatchDetailsDto> } 
  * @statusCodes [200, 401]
  */
-export const useGetBatch = <TData>({ officeId, batchId }: { officeId: string, batchId: string }, options?: AppQueryOptions<typeof BookkeepingExportApi.getBatch, TData>, config?: AxiosRequestConfig) => {
+export const useGetBatch = <TData>({ officeId, batchId }: { officeId: string, batchId: string }, options?: AppQueryOptions<typeof BookkeepingExportApi.getBatch, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.getBatch(officeId, batchId),
     queryFn: () => { 
     checkAcl(BookkeepingExportAcl.canUseGetBatch({ officeId } ));
-    return BookkeepingExportApi.getBatch(officeId, batchId, config) },
+    return BookkeepingExportApi.getBatch(officeId, batchId) },
     ...options,
   });
 };
@@ -138,14 +137,14 @@ export const useGetBatch = <TData>({ officeId, batchId }: { officeId: string, ba
  * @returns { UseMutationResult<BookkeepingExportModels.BookkeepingExportBatchDetailsDto> } 
  * @statusCodes [200, 401]
  */
-export const useUpdateBatchFormat = (options?: AppMutationOptions<typeof BookkeepingExportApi.updateBatchFormat, { officeId: string, batchId: string, data: BookkeepingExportModels.UpdateBookkeepingExportBatchRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdateBatchFormat = (options?: AppMutationOptions<typeof BookkeepingExportApi.updateBatchFormat, { officeId: string, batchId: string, data: BookkeepingExportModels.UpdateBookkeepingExportBatchRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, batchId, data }) => { 
       checkAcl(BookkeepingExportAcl.canUseUpdateBatchFormat({ officeId } ));
-      return BookkeepingExportApi.updateBatchFormat(officeId, batchId, data, config)
+      return BookkeepingExportApi.updateBatchFormat(officeId, batchId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -168,14 +167,14 @@ export const useUpdateBatchFormat = (options?: AppMutationOptions<typeof Bookkee
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
  */
-export const useUpdateBatchItem = (options?: AppMutationOptions<typeof BookkeepingExportApi.updateBatchItem, { officeId: string, batchId: string, data: BookkeepingExportModels.UpdateBookkeepingExportBatchItemRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdateBatchItem = (options?: AppMutationOptions<typeof BookkeepingExportApi.updateBatchItem, { officeId: string, batchId: string, data: BookkeepingExportModels.UpdateBookkeepingExportBatchItemRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, batchId, data }) => { 
       checkAcl(BookkeepingExportAcl.canUseUpdateBatchItem({ officeId } ));
-      return BookkeepingExportApi.updateBatchItem(officeId, batchId, data, config)
+      return BookkeepingExportApi.updateBatchItem(officeId, batchId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -200,14 +199,14 @@ export const useUpdateBatchItem = (options?: AppMutationOptions<typeof Bookkeepi
  * @returns { UseQueryResult<BookkeepingExportModels.PaginateBatchItemsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateBatchItems = <TData>({ officeId, batchId, limit, order, filter, page, cursor }: { officeId: string, batchId: string, limit: number, order?: string, filter?: BookkeepingExportModels.BookkeepingExportItemDetailFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof BookkeepingExportApi.paginateBatchItems, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateBatchItems = <TData>({ officeId, batchId, limit, order, filter, page, cursor }: { officeId: string, batchId: string, limit: number, order?: string, filter?: BookkeepingExportModels.BookkeepingExportItemDetailFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof BookkeepingExportApi.paginateBatchItems, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.paginateBatchItems(officeId, batchId, limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(BookkeepingExportAcl.canUsePaginateBatchItems({ officeId } ));
-    return BookkeepingExportApi.paginateBatchItems(officeId, batchId, limit, order, filter, page, cursor, config) },
+    return BookkeepingExportApi.paginateBatchItems(officeId, batchId, limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -227,14 +226,14 @@ export const usePaginateBatchItems = <TData>({ officeId, batchId, limit, order, 
  * @returns { UseInfiniteQueryResult<BookkeepingExportModels.PaginateBatchItemsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateBatchItemsInfinite = <TData>({ officeId, batchId, limit, order, filter, cursor }: { officeId: string, batchId: string, limit: number, order?: string, filter?: BookkeepingExportModels.BookkeepingExportItemDetailFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof BookkeepingExportApi.paginateBatchItems, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateBatchItemsInfinite = <TData>({ officeId, batchId, limit, order, filter, cursor }: { officeId: string, batchId: string, limit: number, order?: string, filter?: BookkeepingExportModels.BookkeepingExportItemDetailFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof BookkeepingExportApi.paginateBatchItems, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.paginateBatchItemsInfinite(officeId, batchId, limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(BookkeepingExportAcl.canUsePaginateBatchItems({ officeId } ));
-    return BookkeepingExportApi.paginateBatchItems(officeId, batchId, limit, order, filter, pageParam, cursor, config) },
+    return BookkeepingExportApi.paginateBatchItems(officeId, batchId, limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -254,14 +253,14 @@ export const usePaginateBatchItemsInfinite = <TData>({ officeId, batchId, limit,
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
  */
-export const useValidateBookkeepingBatch = (options?: AppMutationOptions<typeof BookkeepingExportApi.validateBookkeepingBatch, { officeId: string, batchId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useValidateBookkeepingBatch = (options?: AppMutationOptions<typeof BookkeepingExportApi.validateBookkeepingBatch, { officeId: string, batchId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, batchId }) => { 
       checkAcl(BookkeepingExportAcl.canUseValidateBookkeepingBatch({ officeId } ));
-      return BookkeepingExportApi.validateBookkeepingBatch(officeId, batchId, config)
+      return BookkeepingExportApi.validateBookkeepingBatch(officeId, batchId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -281,14 +280,14 @@ export const useValidateBookkeepingBatch = (options?: AppMutationOptions<typeof 
  * @returns { UseMutationResult<void> } 
  * @statusCodes [201, 401]
  */
-export const useExportBookkeepingBatch = (options?: AppMutationOptions<typeof BookkeepingExportApi.exportBookkeepingBatch, { officeId: string, batchId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useExportBookkeepingBatch = (options?: AppMutationOptions<typeof BookkeepingExportApi.exportBookkeepingBatch, { officeId: string, batchId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, batchId }) => { 
       checkAcl(BookkeepingExportAcl.canUseExportBookkeepingBatch({ officeId } ));
-      return BookkeepingExportApi.exportBookkeepingBatch(officeId, batchId, config)
+      return BookkeepingExportApi.exportBookkeepingBatch(officeId, batchId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -308,14 +307,14 @@ export const useExportBookkeepingBatch = (options?: AppMutationOptions<typeof Bo
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
  */
-export const useRevertBookkeepingBatch = (options?: AppMutationOptions<typeof BookkeepingExportApi.revertBookkeepingBatch, { officeId: string, batchId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useRevertBookkeepingBatch = (options?: AppMutationOptions<typeof BookkeepingExportApi.revertBookkeepingBatch, { officeId: string, batchId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, batchId }) => { 
       checkAcl(BookkeepingExportAcl.canUseRevertBookkeepingBatch({ officeId } ));
-      return BookkeepingExportApi.revertBookkeepingBatch(officeId, batchId, config)
+      return BookkeepingExportApi.revertBookkeepingBatch(officeId, batchId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -336,14 +335,14 @@ export const useRevertBookkeepingBatch = (options?: AppMutationOptions<typeof Bo
  * @returns { UseQueryResult<BookkeepingExportModels.GetVatLineItemsResponse> } 
  * @statusCodes [200, 401]
  */
-export const useGetVatLineItems = <TData>({ officeId, batchId, order }: { officeId: string, batchId: string, order?: string }, options?: AppQueryOptions<typeof BookkeepingExportApi.getVatLineItems, TData>, config?: AxiosRequestConfig) => {
+export const useGetVatLineItems = <TData>({ officeId, batchId, order }: { officeId: string, batchId: string, order?: string }, options?: AppQueryOptions<typeof BookkeepingExportApi.getVatLineItems, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.getVatLineItems(officeId, batchId, order),
     queryFn: () => { 
     checkAcl(BookkeepingExportAcl.canUseGetVatLineItems({ officeId } ));
-    return BookkeepingExportApi.getVatLineItems(officeId, batchId, order, config) },
+    return BookkeepingExportApi.getVatLineItems(officeId, batchId, order) },
     ...options,
   });
 };

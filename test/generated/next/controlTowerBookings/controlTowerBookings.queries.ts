@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { AppQueryOptions, AppInfiniteQueryOptions } from "@povio/openapi-codegen-cli";
@@ -28,12 +27,12 @@ export const keys = {
  * @returns { UseQueryResult<ControlTowerBookingsModels.ControlTowerBookingsFindAllResponse> } 
  * @statusCodes [200, 401]
  */
-export const useFindAll = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: ControlTowerBookingsModels.BookingFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof ControlTowerBookingsApi.findAll, TData>, config?: AxiosRequestConfig) => {
+export const useFindAll = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: ControlTowerBookingsModels.BookingFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof ControlTowerBookingsApi.findAll, TData>) => {
   
   return useQuery({
     queryKey: keys.findAll(limit, order, filter, page, cursor),
     queryFn: () => 
-    ControlTowerBookingsApi.findAll(limit, order, filter, page, cursor, config),
+    ControlTowerBookingsApi.findAll(limit, order, filter, page, cursor),
     ...options,
   });
 };
@@ -50,12 +49,12 @@ export const useFindAll = <TData>({ limit, order, filter, page, cursor }: { limi
  * @returns { UseInfiniteQueryResult<ControlTowerBookingsModels.ControlTowerBookingsFindAllResponse> } 
  * @statusCodes [200, 401]
  */
-export const useFindAllInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: ControlTowerBookingsModels.BookingFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof ControlTowerBookingsApi.findAll, TData>, config?: AxiosRequestConfig) => {
+export const useFindAllInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: ControlTowerBookingsModels.BookingFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof ControlTowerBookingsApi.findAll, TData>) => {
 
   return useInfiniteQuery({
     queryKey: keys.findAllInfinite(limit, order, filter, cursor),
     queryFn: ({ pageParam }) => 
-    ControlTowerBookingsApi.findAll(limit, order, filter, pageParam, cursor, config),
+    ControlTowerBookingsApi.findAll(limit, order, filter, pageParam, cursor),
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -73,12 +72,12 @@ export const useFindAllInfinite = <TData>({ limit, order, filter, cursor }: { li
  * @returns { UseQueryResult<ControlTowerBookingsModels.BookingResponseDto> } 
  * @statusCodes [200, 401]
  */
-export const useFindById = <TData>({ id }: { id: string }, options?: AppQueryOptions<typeof ControlTowerBookingsApi.findById, TData>, config?: AxiosRequestConfig) => {
+export const useFindById = <TData>({ id }: { id: string }, options?: AppQueryOptions<typeof ControlTowerBookingsApi.findById, TData>) => {
   
   return useQuery({
     queryKey: keys.findById(id),
     queryFn: () => 
-    ControlTowerBookingsApi.findById(id, config),
+    ControlTowerBookingsApi.findById(id),
     ...options,
   });
 };
@@ -92,12 +91,12 @@ export const useFindById = <TData>({ id }: { id: string }, options?: AppQueryOpt
  * @returns { UseQueryResult<ControlTowerBookingsModels.PackageResponseDto> } 
  * @statusCodes [200, 401]
  */
-export const useFindPackageById = <TData>({ packageId, bookingId }: { packageId: string, bookingId: string }, options?: AppQueryOptions<typeof ControlTowerBookingsApi.findPackageById, TData>, config?: AxiosRequestConfig) => {
+export const useFindPackageById = <TData>({ packageId, bookingId }: { packageId: string, bookingId: string }, options?: AppQueryOptions<typeof ControlTowerBookingsApi.findPackageById, TData>) => {
   
   return useQuery({
     queryKey: keys.findPackageById(packageId, bookingId),
     queryFn: () => 
-    ControlTowerBookingsApi.findPackageById(packageId, bookingId, config),
+    ControlTowerBookingsApi.findPackageById(packageId, bookingId),
     ...options,
   });
 };

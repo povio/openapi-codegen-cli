@@ -83,7 +83,7 @@ export namespace PositionsModels {
  * @property { string } parentPosition.id  
  * @property { string } parentPosition.number  
  */
-export const PositionPreviewResponseDtoSchema = z.object({ id: z.string(), externalSystemId: z.string().nullish(), transportMode: CommonModels.TransportModeEnumSchema, direction: CommonModels.DirectionEnumSchema, loadType: CommonModels.LoadTypeEnumSchema.nullish(), createdAt: z.iso.datetime({ offset: true }).nullish(), number: z.string(), isCancelled: z.boolean(), customer: z.object({ id: z.string(), name: z.string(), matchCode: z.string(), label: z.string(), phone: z.string().nullish(), email: z.string().nullish() }).readonly(), customerReference: z.string().nullish(), consignee: z.object({ id: z.string().nullable(), name: z.string().nullable(), matchCode: z.string().nullable(), label: z.string().nullable() }).readonly().nullish(), consigneeReference: z.string().nullish(), carrier: z.object({ id: z.string().nullable(), name: z.string().nullable(), matchCode: z.string().nullable(), label: z.string().nullable() }).readonly().nullish(), carrierReference: z.string().nullish(), positionNumber: z.number().nullish(), hblNumber: z.string().nullish(), mblNumber: z.string().nullish(), bookingNumber: z.string().nullish(), vessel: z.string().nullish(), voyage: z.string().nullish(), vesselCarrier: z.string().describe("Carrier name from route point (sea positions only)").nullish(), origin: z.object({ id: z.string().nullable(), name: z.string().nullable() }).readonly().nullish(), loadDate: z.iso.datetime({ offset: true }).nullish(), loadingPort: z.object({ id: z.string().nullable(), name: z.string().nullable() }).readonly().nullish(), dischargePort: z.object({ id: z.string().nullable(), name: z.string().nullable() }).readonly().nullish(), destination: z.object({ id: z.string().nullable(), name: z.string().nullable() }).readonly().nullish(), deliveryDate: z.iso.datetime({ offset: true }).nullish(), equipment: z.string().nullish(), serviceType: CommonModels.ServiceTypeEnumSchema.nullish(), destinationOffice: z.object({ id: z.string().nullable(), name: z.string().nullable() }).readonly().nullish(), currency: z.string().nullish(), profit: z.number().nullish(), margin: z.number().nullish(), employee: z.object({ id: z.string().nullable(), name: z.string().nullable() }).readonly().nullish(), project: z.object({ id: z.string().nullable(), name: z.string().nullable() }).readonly().nullish(), serviceDate: z.iso.datetime({ offset: true }).nullish(), departureDate: z.iso.datetime({ offset: true }).nullish(), arrivalDate: z.iso.datetime({ offset: true }).nullish(), blfromCostumerDate: z.iso.datetime({ offset: true }).nullish(), blfromCarrierDate: z.iso.datetime({ offset: true }).nullish(), customsDate: z.iso.datetime({ offset: true }).nullish(), vgmCustomerDate: z.iso.datetime({ offset: true }).nullish(), routing: CommonModels.SeaRoutingEnumSchema.nullish(), notes: CommonModels.EditorContentResponseDtoSchema.describe("Notes").nullish(), isMasterPosition: z.boolean(), hasInvoices: z.boolean().describe("Whether this position has at least one invoice").nullish(), parentPosition: z.object({ id: z.string().nullable(), number: z.string().nullable() }).readonly().nullish() }).readonly();
+export const PositionPreviewResponseDtoSchema = z.object({ id: z.string(), externalSystemId: z.string().nullish(), transportMode: CommonModels.TransportModeEnumSchema, direction: CommonModels.DirectionEnumSchema, loadType: CommonModels.LoadTypeEnumSchema.nullish(), createdAt: z.iso.datetime({ offset: true }).nullish(), number: z.string(), isCancelled: z.boolean(), customer: z.object({ id: z.string(), name: z.string(), matchCode: z.string(), label: z.string(), phone: z.string().nullish(), email: z.string().nullish() }), customerReference: z.string().nullish(), consignee: z.object({ id: z.string().nullable(), name: z.string().nullable(), matchCode: z.string().nullable(), label: z.string().nullable() }).nullish(), consigneeReference: z.string().nullish(), carrier: z.object({ id: z.string().nullable(), name: z.string().nullable(), matchCode: z.string().nullable(), label: z.string().nullable() }).nullish(), carrierReference: z.string().nullish(), positionNumber: z.number().nullish(), hblNumber: z.string().nullish(), mblNumber: z.string().nullish(), bookingNumber: z.string().nullish(), vessel: z.string().nullish(), voyage: z.string().nullish(), vesselCarrier: z.string().nullish(), origin: z.object({ id: z.string().nullable(), name: z.string().nullable() }).nullish(), loadDate: z.iso.datetime({ offset: true }).nullish(), loadingPort: z.object({ id: z.string().nullable(), name: z.string().nullable() }).nullish(), dischargePort: z.object({ id: z.string().nullable(), name: z.string().nullable() }).nullish(), destination: z.object({ id: z.string().nullable(), name: z.string().nullable() }).nullish(), deliveryDate: z.iso.datetime({ offset: true }).nullish(), equipment: z.string().nullish(), serviceType: CommonModels.ServiceTypeEnumSchema.nullish(), destinationOffice: z.object({ id: z.string().nullable(), name: z.string().nullable() }).nullish(), currency: z.string().nullish(), profit: z.number().nullish(), margin: z.number().nullish(), employee: z.object({ id: z.string().nullable(), name: z.string().nullable() }).nullish(), project: z.object({ id: z.string().nullable(), name: z.string().nullable() }).nullish(), serviceDate: z.iso.datetime({ offset: true }).nullish(), departureDate: z.iso.datetime({ offset: true }).nullish(), arrivalDate: z.iso.datetime({ offset: true }).nullish(), blfromCostumerDate: z.iso.datetime({ offset: true }).nullish(), blfromCarrierDate: z.iso.datetime({ offset: true }).nullish(), customsDate: z.iso.datetime({ offset: true }).nullish(), vgmCustomerDate: z.iso.datetime({ offset: true }).nullish(), routing: CommonModels.SeaRoutingEnumSchema.nullish(), notes: CommonModels.EditorContentResponseDtoSchema.nullish(), isMasterPosition: z.boolean(), hasInvoices: z.boolean().nullish(), parentPosition: z.object({ id: z.string().nullable(), number: z.string().nullable() }).nullish() });
 export type PositionPreviewResponseDto = z.infer<typeof PositionPreviewResponseDtoSchema>;
 
 /** 
@@ -129,7 +129,7 @@ export type PositionPreviewResponseDto = z.infer<typeof PositionPreviewResponseD
  * @property { string } voyage Filter positions by voyage number 
  * @property { string } vesselCarrier Filter positions by vessel or carrier name 
  */
-export const PositionFilterDtoSchema = z.object({ transportMode: CommonModels.TransportModeEnumSchema, customerId: z.array(z.string()).readonly(), carrierId: z.array(z.string()).readonly().describe("Filter positions by carrier IDs"), consigneeId: z.array(z.string()).readonly().describe("Filter positions by consignee IDs"), isCancelled: z.boolean(), status: CommonModels.PositionStatusEnumSchema, number: z.string(), direction: CommonModels.DirectionEnumSchema, loadType: CommonModels.LoadTypeEnumSchema, serviceType: CommonModels.ServiceTypeEnumSchema, employee: z.array(z.string()).readonly().describe("Filter positions by employee IDs"), searchQuery: z.string(), externalSystemId: z.string().describe("Filter positions by external system ID (substring match)"), createdAt: CommonModels.DateRangeDtoSchema, serviceDate: CommonModels.DateRangeDtoSchema, departureDate: CommonModels.DateRangeDtoSchema, arrivalDate: CommonModels.DateRangeDtoSchema, blfromCostumerDate: CommonModels.DateRangeDtoSchema, blfromCarrierDate: CommonModels.DateRangeDtoSchema, customsDate: CommonModels.DateRangeDtoSchema, vgmCustomerDate: CommonModels.DateRangeDtoSchema, partnerNetworkId: z.string().describe("Filter positions by partner network ID"), projectLiteId: z.array(z.string()).readonly().describe("Filter positions by project IDs"), checklistItemsDone: z.array(z.string()).readonly().describe("Checklist item ids that must be completed"), checklistItemsNotDone: z.array(z.string()).readonly().describe("Checklist item ids that must be not completed"), routing: CommonModels.SeaRoutingEnumSchema, isExcludedFromStatistics: z.array(CommonModels.BooleanFilterEnumSchema).readonly(), isMasterPosition: z.boolean(), loadingPortId: z.array(z.string()).readonly().describe("Filter positions by loading port/airport IDs (checks both sea port of loading and air airport of departure)"), dischargePortId: z.array(z.string()).readonly().describe("Filter positions by discharge port/airport IDs (checks both sea port of discharge and air destination airport)"), customerReference: z.string().describe("Filter positions by customer reference"), carrierReference: z.string().describe("Filter positions by carrier reference"), consigneeReference: z.string().describe("Filter positions by consignee reference"), hblNumber: z.string().describe("Filter positions by HBL/HAWB number"), mblNumber: z.string().describe("Filter positions by MBL/MAWB number"), bookingNumber: z.string().describe("Filter positions by booking number"), vessel: z.string().describe("Filter positions by vessel name"), voyage: z.string().describe("Filter positions by voyage number"), vesselCarrier: z.string().describe("Filter positions by vessel or carrier name") }).readonly();
+export const PositionFilterDtoSchema = z.object({ transportMode: CommonModels.TransportModeEnumSchema.nullable(), customerId: z.array(z.string()).nullable(), carrierId: z.array(z.string()).nullable(), consigneeId: z.array(z.string()).nullable(), isCancelled: z.boolean().nullable(), status: CommonModels.PositionStatusEnumSchema.nullable(), number: z.string().nullable(), direction: CommonModels.DirectionEnumSchema.nullable(), loadType: CommonModels.LoadTypeEnumSchema.nullable(), serviceType: CommonModels.ServiceTypeEnumSchema.nullable(), employee: z.array(z.string()).nullable(), searchQuery: z.string().nullable(), externalSystemId: z.string().nullable(), createdAt: CommonModels.DateRangeDtoSchema.nullable(), serviceDate: CommonModels.DateRangeDtoSchema.nullable(), departureDate: CommonModels.DateRangeDtoSchema.nullable(), arrivalDate: CommonModels.DateRangeDtoSchema.nullable(), blfromCostumerDate: CommonModels.DateRangeDtoSchema.nullable(), blfromCarrierDate: CommonModels.DateRangeDtoSchema.nullable(), customsDate: CommonModels.DateRangeDtoSchema.nullable(), vgmCustomerDate: CommonModels.DateRangeDtoSchema.nullable(), partnerNetworkId: z.string().nullable(), projectLiteId: z.array(z.string()).nullable(), checklistItemsDone: z.array(z.string()).nullable(), checklistItemsNotDone: z.array(z.string()).nullable(), routing: CommonModels.SeaRoutingEnumSchema.nullable(), isExcludedFromStatistics: z.array(CommonModels.BooleanFilterEnumSchema).nullable(), isMasterPosition: z.boolean().nullable(), loadingPortId: z.array(z.string()).nullable(), dischargePortId: z.array(z.string()).nullable(), customerReference: z.string().nullable(), carrierReference: z.string().nullable(), consigneeReference: z.string().nullable(), hblNumber: z.string().nullable(), mblNumber: z.string().nullable(), bookingNumber: z.string().nullable(), vessel: z.string().nullable(), voyage: z.string().nullable(), vesselCarrier: z.string().nullable() }).partial();
 export type PositionFilterDto = z.infer<typeof PositionFilterDtoSchema>;
 
 /** 
@@ -161,7 +161,7 @@ export type PositionFilterDto = z.infer<typeof PositionFilterDtoSchema>;
  * @property { CommonModels.SeaRoutingEnum } routing  
  * @property { CommonModels.BooleanFilterEnum[] } isExcludedFromStatistics  
  */
-export const PositionExportFilterDtoSchema = z.object({ transportMode: CommonModels.TransportModeEnumSchema, customerId: z.array(z.string()).readonly(), isCancelled: z.boolean(), status: CommonModels.PositionStatusEnumSchema, number: z.string(), direction: CommonModels.DirectionEnumSchema, loadType: CommonModels.LoadTypeEnumSchema, serviceType: CommonModels.ServiceTypeEnumSchema, responsibleEmployee: z.array(z.string()).readonly().describe("Filter positions by responsible employee IDs"), searchQuery: z.string(), externalSystemId: z.string().describe("Filter positions by external system ID (substring match)"), statusDate: CommonModels.DateRangeDtoSchema, serviceDate: CommonModels.DateRangeDtoSchema, dateOfDeparture: CommonModels.DateRangeDtoSchema, dateOfArrival: CommonModels.DateRangeDtoSchema, blfromCostumerDate: CommonModels.DateRangeDtoSchema, blfromCarrierDate: CommonModels.DateRangeDtoSchema, customsDate: CommonModels.DateRangeDtoSchema, vgmCustomerDate: CommonModels.DateRangeDtoSchema, partnerNetworkId: z.string().describe("Filter positions by partner network ID"), projectLiteId: z.array(z.string()).readonly().describe("Filter positions by project IDs"), checklistItemsDone: z.array(z.string()).readonly().describe("Checklist item ids that must be completed"), checklistItemsNotDone: z.array(z.string()).readonly().describe("Checklist item ids that must be not completed"), routing: CommonModels.SeaRoutingEnumSchema, isExcludedFromStatistics: z.array(CommonModels.BooleanFilterEnumSchema).readonly() }).readonly();
+export const PositionExportFilterDtoSchema = z.object({ transportMode: CommonModels.TransportModeEnumSchema.nullable(), customerId: z.array(z.string()).nullable(), isCancelled: z.boolean().nullable(), status: CommonModels.PositionStatusEnumSchema.nullable(), number: z.string().nullable(), direction: CommonModels.DirectionEnumSchema.nullable(), loadType: CommonModels.LoadTypeEnumSchema.nullable(), serviceType: CommonModels.ServiceTypeEnumSchema.nullable(), responsibleEmployee: z.array(z.string()).nullable(), searchQuery: z.string().nullable(), externalSystemId: z.string().nullable(), statusDate: CommonModels.DateRangeDtoSchema.nullable(), serviceDate: CommonModels.DateRangeDtoSchema.nullable(), dateOfDeparture: CommonModels.DateRangeDtoSchema.nullable(), dateOfArrival: CommonModels.DateRangeDtoSchema.nullable(), blfromCostumerDate: CommonModels.DateRangeDtoSchema.nullable(), blfromCarrierDate: CommonModels.DateRangeDtoSchema.nullable(), customsDate: CommonModels.DateRangeDtoSchema.nullable(), vgmCustomerDate: CommonModels.DateRangeDtoSchema.nullable(), partnerNetworkId: z.string().nullable(), projectLiteId: z.array(z.string()).nullable(), checklistItemsDone: z.array(z.string()).nullable(), checklistItemsNotDone: z.array(z.string()).nullable(), routing: CommonModels.SeaRoutingEnumSchema.nullable(), isExcludedFromStatistics: z.array(CommonModels.BooleanFilterEnumSchema).nullable() }).partial();
 export type PositionExportFilterDto = z.infer<typeof PositionExportFilterDtoSchema>;
 
 /** 
@@ -179,7 +179,7 @@ export const PositionExportColumn = PositionExportColumnSchema.enum;
  * @property { PositionExportColumn[] } columns Min Items: `1` 
  * @property { PositionExportFilterDto } filter  
  */
-export const PositionExportRequestDtoSchema = z.object({ order: z.string().describe("Order by fields (comma separated with +/- prefix): number, transportMode, isCancelled, direction, loadType, serviceDate, createdAt, departureDate, arrivalDate, blfromCostumerDate, blfromCarrierDate, customsDate, vgmCustomerDate, serviceType, externalSystemId, employee, project, profit, margin, isMasterPosition"), columns: z.array(PositionExportColumnSchema).readonly().min(1), filter: PositionExportFilterDtoSchema }).readonly();
+export const PositionExportRequestDtoSchema = z.object({ order: z.string().nullable(), columns: z.array(PositionExportColumnSchema).min(1).nullable(), filter: PositionExportFilterDtoSchema.nullable() }).partial();
 export type PositionExportRequestDto = z.infer<typeof PositionExportRequestDtoSchema>;
 
 /** 
@@ -193,7 +193,7 @@ export type PositionExportRequestDto = z.infer<typeof PositionExportRequestDtoSc
  * @property { string } estimatedServiceDate  
  * @property { string } customerBusinessPartnerId  
  */
-export const CreatePositionRequestDtoSchema = z.object({ section: CommonModels.SectionEnumSchema, direction: CommonModels.DirectionEnumSchema, transportMode: CommonModels.TransportModeEnumSchema, loadType: CommonModels.LoadTypeEnumSchema, serviceType: CommonModels.ServiceTypeEnumSchema, estimatedServiceDate: z.iso.datetime({ offset: true }), customerBusinessPartnerId: z.string() }).readonly();
+export const CreatePositionRequestDtoSchema = z.object({ section: CommonModels.SectionEnumSchema, direction: CommonModels.DirectionEnumSchema, transportMode: CommonModels.TransportModeEnumSchema, loadType: CommonModels.LoadTypeEnumSchema, serviceType: CommonModels.ServiceTypeEnumSchema, estimatedServiceDate: z.iso.datetime({ offset: true }), customerBusinessPartnerId: z.string() });
 export type CreatePositionRequestDto = z.infer<typeof CreatePositionRequestDtoSchema>;
 
 /** 
@@ -210,7 +210,7 @@ export type CreatePositionRequestDto = z.infer<typeof CreatePositionRequestDtoSc
  * @property { boolean } packageNote  
  * @property { boolean } packageCustomsMark  
  */
-export const DuplicatePositionPackageInformationParametersDtoSchema = z.object({ enabled: z.boolean(), packageType: z.boolean(), packageQuantity: z.boolean(), packageDescription: z.boolean(), packageHsCodes: z.boolean(), packageNetWeight: z.boolean(), packageGrossWeight: z.boolean(), packageCaseMark: z.boolean(), packageNote: z.boolean(), packageCustomsMark: z.boolean() }).readonly();
+export const DuplicatePositionPackageInformationParametersDtoSchema = z.object({ enabled: z.boolean(), packageType: z.boolean(), packageQuantity: z.boolean(), packageDescription: z.boolean(), packageHsCodes: z.boolean(), packageNetWeight: z.boolean(), packageGrossWeight: z.boolean(), packageCaseMark: z.boolean(), packageNote: z.boolean(), packageCustomsMark: z.boolean() });
 export type DuplicatePositionPackageInformationParametersDto = z.infer<typeof DuplicatePositionPackageInformationParametersDtoSchema>;
 
 /** 
@@ -219,7 +219,7 @@ export type DuplicatePositionPackageInformationParametersDto = z.infer<typeof Du
  * @property { boolean } enabled  
  * @property { DuplicatePositionPackageInformationParametersDto } packageInformation  
  */
-export const DuplicatePositionCargoParametersDtoSchema = z.object({ enabled: z.boolean(), packageInformation: DuplicatePositionPackageInformationParametersDtoSchema }).readonly();
+export const DuplicatePositionCargoParametersDtoSchema = z.object({ enabled: z.boolean(), packageInformation: DuplicatePositionPackageInformationParametersDtoSchema });
 export type DuplicatePositionCargoParametersDto = z.infer<typeof DuplicatePositionCargoParametersDtoSchema>;
 
 /** 
@@ -228,7 +228,7 @@ export type DuplicatePositionCargoParametersDto = z.infer<typeof DuplicatePositi
  * @property { boolean } enabled  
  * @property { boolean } quoteReference  
  */
-export const DuplicatePositionOverviewParametersDtoSchema = z.object({ enabled: z.boolean(), quoteReference: z.boolean() }).readonly();
+export const DuplicatePositionOverviewParametersDtoSchema = z.object({ enabled: z.boolean(), quoteReference: z.boolean() });
 export type DuplicatePositionOverviewParametersDto = z.infer<typeof DuplicatePositionOverviewParametersDtoSchema>;
 
 /** 
@@ -237,7 +237,7 @@ export type DuplicatePositionOverviewParametersDto = z.infer<typeof DuplicatePos
  * @property { boolean } enabled  
  * @property { boolean } involvedPartySection  
  */
-export const DuplicatePositionInvolvedPartiesParametersDtoSchema = z.object({ enabled: z.boolean(), involvedPartySection: z.boolean() }).readonly();
+export const DuplicatePositionInvolvedPartiesParametersDtoSchema = z.object({ enabled: z.boolean(), involvedPartySection: z.boolean() });
 export type DuplicatePositionInvolvedPartiesParametersDto = z.infer<typeof DuplicatePositionInvolvedPartiesParametersDtoSchema>;
 
 /** 
@@ -247,7 +247,7 @@ export type DuplicatePositionInvolvedPartiesParametersDto = z.infer<typeof Dupli
  * @property { boolean } routeDates  
  * @property { boolean } routeLocation  
  */
-export const DuplicatePositionRoutesParametersDtoSchema = z.object({ enabled: z.boolean(), routeDates: z.boolean(), routeLocation: z.boolean() }).readonly();
+export const DuplicatePositionRoutesParametersDtoSchema = z.object({ enabled: z.boolean(), routeDates: z.boolean(), routeLocation: z.boolean() });
 export type DuplicatePositionRoutesParametersDto = z.infer<typeof DuplicatePositionRoutesParametersDtoSchema>;
 
 /** 
@@ -256,7 +256,7 @@ export type DuplicatePositionRoutesParametersDto = z.infer<typeof DuplicatePosit
  * @property { boolean } enabled  
  * @property { boolean } exchangeRate  
  */
-export const DuplicatePositionFinanceAccountParametersDtoSchema = z.object({ enabled: z.boolean(), exchangeRate: z.boolean() }).readonly();
+export const DuplicatePositionFinanceAccountParametersDtoSchema = z.object({ enabled: z.boolean(), exchangeRate: z.boolean() });
 export type DuplicatePositionFinanceAccountParametersDto = z.infer<typeof DuplicatePositionFinanceAccountParametersDtoSchema>;
 
 /** 
@@ -266,7 +266,7 @@ export type DuplicatePositionFinanceAccountParametersDto = z.infer<typeof Duplic
  * @property { boolean } hblWorkingDocument  
  * @property { boolean } siWorkingDocument  
  */
-export const DuplicatePositionDocumentsParametersDtoSchema = z.object({ enabled: z.boolean(), hblWorkingDocument: z.boolean(), siWorkingDocument: z.boolean() }).readonly();
+export const DuplicatePositionDocumentsParametersDtoSchema = z.object({ enabled: z.boolean(), hblWorkingDocument: z.boolean(), siWorkingDocument: z.boolean() });
 export type DuplicatePositionDocumentsParametersDto = z.infer<typeof DuplicatePositionDocumentsParametersDtoSchema>;
 
 /** 
@@ -279,7 +279,7 @@ export type DuplicatePositionDocumentsParametersDto = z.infer<typeof DuplicatePo
  * @property { DuplicatePositionFinanceAccountParametersDto } financeAccount  
  * @property { DuplicatePositionDocumentsParametersDto } documents  
  */
-export const DuplicatePositionParametersDtoSchema = z.object({ overview: DuplicatePositionOverviewParametersDtoSchema, involvedParties: DuplicatePositionInvolvedPartiesParametersDtoSchema, cargo: DuplicatePositionCargoParametersDtoSchema, routes: DuplicatePositionRoutesParametersDtoSchema, financeAccount: DuplicatePositionFinanceAccountParametersDtoSchema, documents: DuplicatePositionDocumentsParametersDtoSchema }).readonly();
+export const DuplicatePositionParametersDtoSchema = z.object({ overview: DuplicatePositionOverviewParametersDtoSchema, involvedParties: DuplicatePositionInvolvedPartiesParametersDtoSchema, cargo: DuplicatePositionCargoParametersDtoSchema, routes: DuplicatePositionRoutesParametersDtoSchema, financeAccount: DuplicatePositionFinanceAccountParametersDtoSchema, documents: DuplicatePositionDocumentsParametersDtoSchema });
 export type DuplicatePositionParametersDto = z.infer<typeof DuplicatePositionParametersDtoSchema>;
 
 /** 
@@ -288,7 +288,7 @@ export type DuplicatePositionParametersDto = z.infer<typeof DuplicatePositionPar
  * @property { string } estimatedServiceDate Suggested estimated service date for the duplicated position (ISO 8601) 
  * @property { DuplicatePositionParametersDto } parameters Default duplication parameters with section and sub-parameter flags 
  */
-export const DuplicatePositionDefaultParametersResponseDtoSchema = z.object({ estimatedServiceDate: z.string().describe("Suggested estimated service date for the duplicated position (ISO 8601)"), parameters: DuplicatePositionParametersDtoSchema.describe("Default duplication parameters with section and sub-parameter flags") }).readonly();
+export const DuplicatePositionDefaultParametersResponseDtoSchema = z.object({ estimatedServiceDate: z.string(), parameters: DuplicatePositionParametersDtoSchema });
 export type DuplicatePositionDefaultParametersResponseDto = z.infer<typeof DuplicatePositionDefaultParametersResponseDtoSchema>;
 
 /** 
@@ -306,7 +306,7 @@ export const PositionSectionEnum = PositionSectionEnumSchema.enum;
  * @property { DuplicatePositionParametersDto } parameters Nested parameters for duplication control. Preferred over sections. 
  * @property { string } estimatedServiceDate  
  */
-export const DuplicatePositionRequestDtoSchema = z.object({ sections: z.array(PositionSectionEnumSchema).readonly().describe("Legacy: sections to duplicate. Ignored when parameters is provided.").nullish(), parameters: DuplicatePositionParametersDtoSchema.describe("Nested parameters for duplication control. Preferred over sections.").nullish(), estimatedServiceDate: z.iso.datetime({ offset: true }) }).readonly();
+export const DuplicatePositionRequestDtoSchema = z.object({ sections: z.array(PositionSectionEnumSchema).nullish(), parameters: DuplicatePositionParametersDtoSchema.nullish(), estimatedServiceDate: z.iso.datetime({ offset: true }) });
 export type DuplicatePositionRequestDto = z.infer<typeof DuplicatePositionRequestDtoSchema>;
 
 /** 
@@ -338,7 +338,7 @@ export type DuplicatePositionRequestDto = z.infer<typeof DuplicatePositionReques
  * @property { CommonModels.MovementTypeEnum } inttraTypeOfMove  
  * @property { number } volumetricWeightModifier Volumetric weight modifier 
  */
-export const UpdatePositionDtoSchema = z.object({ externalSystemId: z.string(), statusDate: z.iso.datetime({ offset: true }), status: CommonModels.PositionStatusEnumSchema, loadType: CommonModels.LoadTypeEnumSchema, incoterms: CommonModels.IncotermsEnumSchema, secondIncoterms: CommonModels.IncotermsEnumSchema, fillingCompany: z.string(), sellingContract: z.string(), fillingScacCode: z.string(), serviceValidity: z.iso.datetime({ offset: true }), ratesValidity: z.iso.datetime({ offset: true }), serviceType: CommonModels.ServiceTypeEnumSchema, buyRateReference: z.string(), frequency: CommonModels.FrequencyEnumSchema, isParentPosition: z.boolean(), isExcludedFromStatistics: z.boolean(), team: z.string(), salesRepId: z.string(), responsibleEmployeeId: z.string(), receivedByEmployeeId: z.string(), originOfficeId: z.string(), projectLiteId: z.string(), notes: CommonModels.EditorContentUpdateDtoSchema.describe("Notes"), inttraTypeOfMove: CommonModels.MovementTypeEnumSchema, volumetricWeightModifier: z.number().describe("Volumetric weight modifier") }).readonly();
+export const UpdatePositionDtoSchema = z.object({ externalSystemId: z.string().nullable(), statusDate: z.iso.datetime({ offset: true }).nullable(), status: CommonModels.PositionStatusEnumSchema.nullable(), loadType: CommonModels.LoadTypeEnumSchema.nullable(), incoterms: CommonModels.IncotermsEnumSchema.nullable(), secondIncoterms: CommonModels.IncotermsEnumSchema.nullable(), fillingCompany: z.string().nullable(), sellingContract: z.string().nullable(), fillingScacCode: z.string().nullable(), serviceValidity: z.iso.datetime({ offset: true }).nullable(), ratesValidity: z.iso.datetime({ offset: true }).nullable(), serviceType: CommonModels.ServiceTypeEnumSchema.nullable(), buyRateReference: z.string().nullable(), frequency: CommonModels.FrequencyEnumSchema.nullable(), isParentPosition: z.boolean().nullable(), isExcludedFromStatistics: z.boolean().nullable(), team: z.string().nullable(), salesRepId: z.string().nullable(), responsibleEmployeeId: z.string().nullable(), receivedByEmployeeId: z.string().nullable(), originOfficeId: z.string().nullable(), projectLiteId: z.string().nullable(), notes: CommonModels.EditorContentUpdateDtoSchema.nullable(), inttraTypeOfMove: CommonModels.MovementTypeEnumSchema.nullable(), volumetricWeightModifier: z.number().nullable() }).partial();
 export type UpdatePositionDto = z.infer<typeof UpdatePositionDtoSchema>;
 
 /** 
@@ -347,7 +347,7 @@ export type UpdatePositionDto = z.infer<typeof UpdatePositionDtoSchema>;
  * @property { string } id  
  * @property { string } name  
  */
-export const ChildPositionCustomerDtoSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const ChildPositionCustomerDtoSchema = z.object({ id: z.string(), name: z.string() });
 export type ChildPositionCustomerDto = z.infer<typeof ChildPositionCustomerDtoSchema>;
 
 /** 
@@ -356,7 +356,7 @@ export type ChildPositionCustomerDto = z.infer<typeof ChildPositionCustomerDtoSc
  * @property { number } amount  
  * @property { string } currency  
  */
-export const ChildPositionProfitDtoSchema = z.object({ amount: z.number(), currency: z.string() }).readonly();
+export const ChildPositionProfitDtoSchema = z.object({ amount: z.number(), currency: z.string() });
 export type ChildPositionProfitDto = z.infer<typeof ChildPositionProfitDtoSchema>;
 
 /** 
@@ -370,7 +370,7 @@ export type ChildPositionProfitDto = z.infer<typeof ChildPositionProfitDtoSchema
  * @property { ChildPositionCustomerDto } customer  
  * @property { ChildPositionProfitDto } profit  
  */
-export const ChildPositionResponseDtoSchema = z.object({ id: z.string(), number: z.string(), packages: z.number(), weight: z.number(), volume: z.number(), customer: ChildPositionCustomerDtoSchema, profit: ChildPositionProfitDtoSchema }).readonly();
+export const ChildPositionResponseDtoSchema = z.object({ id: z.string(), number: z.string(), packages: z.number(), weight: z.number(), volume: z.number(), customer: ChildPositionCustomerDtoSchema, profit: ChildPositionProfitDtoSchema });
 export type ChildPositionResponseDto = z.infer<typeof ChildPositionResponseDtoSchema>;
 
 /** 
@@ -380,7 +380,7 @@ export type ChildPositionResponseDto = z.infer<typeof ChildPositionResponseDtoSc
  * @property { boolean } isParentPosition  
  * @property { boolean } isLinkedPosition  
  */
-export const PositionLabelsFilterDtoSchema = z.object({ search: z.string(), isParentPosition: z.boolean(), isLinkedPosition: z.boolean() }).readonly();
+export const PositionLabelsFilterDtoSchema = z.object({ search: z.string().nullable(), isParentPosition: z.boolean().nullable(), isLinkedPosition: z.boolean().nullable() }).partial();
 export type PositionLabelsFilterDto = z.infer<typeof PositionLabelsFilterDtoSchema>;
 
 /** 
@@ -395,7 +395,7 @@ export type PositionLabelsFilterDto = z.infer<typeof PositionLabelsFilterDtoSche
  * @property { number } limit Items per response 
  * @property { number } totalItems Total available items 
  */
-export const PositionListResponseDtoSchema = z.object({ items: z.array(z.string()).readonly().describe("Items"), totalProfit: z.number(), profitPerPosition: z.number(), page: z.number().describe("1-indexed page number to begin from").nullish(), cursor: z.string().describe("ID of item to start after").nullish(), nextCursor: z.string().describe("Cursor for next set of items").nullish(), limit: z.number().describe("Items per response"), totalItems: z.number().describe("Total available items") }).readonly();
+export const PositionListResponseDtoSchema = z.object({ items: z.array(z.string()), totalProfit: z.number(), profitPerPosition: z.number(), page: z.number().nullish(), cursor: z.string().nullish(), nextCursor: z.string().nullish(), limit: z.number(), totalItems: z.number() });
 export type PositionListResponseDto = z.infer<typeof PositionListResponseDtoSchema>;
 
 /** 
@@ -403,7 +403,7 @@ export type PositionListResponseDto = z.infer<typeof PositionListResponseDtoSche
  * @type { object }
  * @property { string[] } childPositionIds  
  */
-export const LinkChildPositionsRequestDtoSchema = z.object({ childPositionIds: z.array(z.string()).readonly() }).readonly();
+export const LinkChildPositionsRequestDtoSchema = z.object({ childPositionIds: z.array(z.string()) });
 export type LinkChildPositionsRequestDto = z.infer<typeof LinkChildPositionsRequestDtoSchema>;
 
 /** 
@@ -411,7 +411,7 @@ export type LinkChildPositionsRequestDto = z.infer<typeof LinkChildPositionsRequ
  * @type { object }
  * @property { string[] } childPositionIds  
  */
-export const UnlinkChildPositionsRequestDtoSchema = z.object({ childPositionIds: z.array(z.string()).readonly() }).readonly();
+export const UnlinkChildPositionsRequestDtoSchema = z.object({ childPositionIds: z.array(z.string()) });
 export type UnlinkChildPositionsRequestDto = z.infer<typeof UnlinkChildPositionsRequestDtoSchema>;
 
 /** 
@@ -424,7 +424,7 @@ export type UnlinkChildPositionsRequestDto = z.infer<typeof UnlinkChildPositions
  * @property { number } totalItems Total available items 
  * @property { CommonModels.LabelResponseDTO[] } items  
  */
-export const PositionsFindAllResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).readonly() }).readonly().shape });
+export const PositionsFindAllResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).nullable() }).partial().shape });
 export type PositionsFindAllResponse = z.infer<typeof PositionsFindAllResponseSchema>;
 
 /** 
@@ -447,7 +447,7 @@ export const PositionsPaginateOrderParamEnum = PositionsPaginateOrderParamEnumSc
  * @property { number } totalItems Total available items 
  * @property { PositionPreviewResponseDto[] } items  
  */
-export const PositionsPaginateResponseSchema = z.object({ ...PositionListResponseDtoSchema.shape, ...z.object({ items: z.array(PositionPreviewResponseDtoSchema).readonly() }).readonly().shape });
+export const PositionsPaginateResponseSchema = z.object({ ...PositionListResponseDtoSchema.shape, ...z.object({ items: z.array(PositionPreviewResponseDtoSchema).nullable() }).partial().shape });
 export type PositionsPaginateResponse = z.infer<typeof PositionsPaginateResponseSchema>;
 
 /** 
@@ -462,7 +462,7 @@ export type PositionsPaginateResponse = z.infer<typeof PositionsPaginateResponse
  * @property { number } totalItems Total available items 
  * @property { PositionPreviewResponseDto[] } items  
  */
-export const TotalProfitResponseSchema = z.object({ ...PositionListResponseDtoSchema.shape, ...z.object({ items: z.array(PositionPreviewResponseDtoSchema).readonly() }).readonly().shape });
+export const TotalProfitResponseSchema = z.object({ ...PositionListResponseDtoSchema.shape, ...z.object({ items: z.array(PositionPreviewResponseDtoSchema).nullable() }).partial().shape });
 export type TotalProfitResponse = z.infer<typeof TotalProfitResponseSchema>;
 
 /** 
@@ -475,14 +475,14 @@ export type TotalProfitResponse = z.infer<typeof TotalProfitResponseSchema>;
  * @property { number } totalItems Total available items 
  * @property { CommonModels.BusinessPartnerLabelResponseDTO[] } items  
  */
-export const PositionsListAvailablePartnersForResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.BusinessPartnerLabelResponseDTOSchema).readonly() }).readonly().shape });
+export const PositionsListAvailablePartnersForResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.BusinessPartnerLabelResponseDTOSchema).nullable() }).partial().shape });
 export type PositionsListAvailablePartnersForResponse = z.infer<typeof PositionsListAvailablePartnersForResponseSchema>;
 
 /** 
  * ListRouteLabelsResponseSchema 
  * @type { array }
  */
-export const ListRouteLabelsResponseSchema = z.array(CommonModels.LabelResponseDTOSchema).readonly();
+export const ListRouteLabelsResponseSchema = z.array(CommonModels.LabelResponseDTOSchema);
 export type ListRouteLabelsResponse = z.infer<typeof ListRouteLabelsResponseSchema>;
 
 /** 
@@ -495,7 +495,7 @@ export type ListRouteLabelsResponse = z.infer<typeof ListRouteLabelsResponseSche
  * @property { number } totalItems Total available items 
  * @property { ChildPositionResponseDto[] } items  
  */
-export const ListChildResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(ChildPositionResponseDtoSchema).readonly() }).readonly().shape });
+export const ListChildResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(ChildPositionResponseDtoSchema).nullable() }).partial().shape });
 export type ListChildResponse = z.infer<typeof ListChildResponseSchema>;
 
 }

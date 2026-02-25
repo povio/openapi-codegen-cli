@@ -8,14 +8,14 @@ export namespace BankAccountsModels {
  * @property { string } search Search by name or bank name 
  * @property { string } officeId Office ID to filter by 
  */
-export const BankAccountFilterDtoSchema = z.object({ search: z.string().describe("Search by name or bank name"), officeId: z.string().describe("Office ID to filter by") }).readonly();
+export const BankAccountFilterDtoSchema = z.object({ search: z.string().nullable(), officeId: z.string().nullable() }).partial();
 export type BankAccountFilterDto = z.infer<typeof BankAccountFilterDtoSchema>;
 
 /** 
  * BankAccountsFindAllResponseSchema 
  * @type { array }
  */
-export const BankAccountsFindAllResponseSchema = z.array(CommonModels.LabelResponseDTOSchema).readonly();
+export const BankAccountsFindAllResponseSchema = z.array(CommonModels.LabelResponseDTOSchema);
 export type BankAccountsFindAllResponse = z.infer<typeof BankAccountsFindAllResponseSchema>;
 
 /** 
@@ -36,7 +36,7 @@ export const BankAccountsPaginateLabelsOrderParamEnum = BankAccountsPaginateLabe
  * @property { number } totalItems Total available items 
  * @property { CommonModels.LabelResponseDTO[] } items  
  */
-export const BankAccountsPaginateLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).readonly() }).readonly().shape });
+export const BankAccountsPaginateLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).nullable() }).partial().shape });
 export type BankAccountsPaginateLabelsResponse = z.infer<typeof BankAccountsPaginateLabelsResponseSchema>;
 
 }

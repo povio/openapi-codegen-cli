@@ -8,7 +8,7 @@ export namespace ChecklistItemsModels {
  * @property { string } id  
  * @property { string } name  
  */
-export const ChecklistItemEmployeeDTOSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const ChecklistItemEmployeeDTOSchema = z.object({ id: z.string(), name: z.string() });
 export type ChecklistItemEmployeeDTO = z.infer<typeof ChecklistItemEmployeeDTOSchema>;
 
 /** 
@@ -26,7 +26,7 @@ export type ChecklistItemEmployeeDTO = z.infer<typeof ChecklistItemEmployeeDTOSc
  * @property { ChecklistItemEmployeeDTO } updatedBy Employee who last updated this checklist item 
  * @property { string } updatedAt Updated at 
  */
-export const ChecklistItemResponseDTOSchema = z.object({ id: z.string().describe("Checklist item ID"), name: z.string().describe("Checklist item name"), officeId: z.string().describe("Office ID"), archived: z.boolean().describe("Is archived"), archivedAt: z.iso.datetime({ offset: true }).describe("Archived at").nullish(), createdById: z.string().describe("ID of the employee who created this checklist item").nullish(), createdBy: ChecklistItemEmployeeDTOSchema.describe("Employee who created this checklist item").nullish(), createdAt: z.iso.datetime({ offset: true }).describe("Created at"), updatedById: z.string().describe("ID of the employee who last updated this checklist item").nullish(), updatedBy: ChecklistItemEmployeeDTOSchema.describe("Employee who last updated this checklist item").nullish(), updatedAt: z.iso.datetime({ offset: true }).describe("Updated at") }).readonly();
+export const ChecklistItemResponseDTOSchema = z.object({ id: z.string(), name: z.string(), officeId: z.string(), archived: z.boolean(), archivedAt: z.iso.datetime({ offset: true }).nullish(), createdById: z.string().nullish(), createdBy: ChecklistItemEmployeeDTOSchema.nullish(), createdAt: z.iso.datetime({ offset: true }), updatedById: z.string().nullish(), updatedBy: ChecklistItemEmployeeDTOSchema.nullish(), updatedAt: z.iso.datetime({ offset: true }) });
 export type ChecklistItemResponseDTO = z.infer<typeof ChecklistItemResponseDTOSchema>;
 
 /** 
@@ -34,7 +34,7 @@ export type ChecklistItemResponseDTO = z.infer<typeof ChecklistItemResponseDTOSc
  * @type { object }
  * @property { string } name Checklist item name. Min Length: `3`. Max Length: `256` 
  */
-export const CreateChecklistItemRequestDTOSchema = z.object({ name: z.string().min(3).max(256).describe("Checklist item name") }).readonly();
+export const CreateChecklistItemRequestDTOSchema = z.object({ name: z.string().min(3).max(256) });
 export type CreateChecklistItemRequestDTO = z.infer<typeof CreateChecklistItemRequestDTOSchema>;
 
 /** 
@@ -42,7 +42,7 @@ export type CreateChecklistItemRequestDTO = z.infer<typeof CreateChecklistItemRe
  * @type { object }
  * @property { string } search  
  */
-export const ChecklistItemLabelFilterDtoSchema = z.object({ search: z.string() }).readonly();
+export const ChecklistItemLabelFilterDtoSchema = z.object({ search: z.string().nullable() }).partial();
 export type ChecklistItemLabelFilterDto = z.infer<typeof ChecklistItemLabelFilterDtoSchema>;
 
 /** 
@@ -51,7 +51,7 @@ export type ChecklistItemLabelFilterDto = z.infer<typeof ChecklistItemLabelFilte
  * @property { string } search  
  * @property { boolean } archived  
  */
-export const ChecklistItemFilterDtoSchema = z.object({ search: z.string(), archived: z.boolean() }).readonly();
+export const ChecklistItemFilterDtoSchema = z.object({ search: z.string().nullable(), archived: z.boolean().nullable() }).partial();
 export type ChecklistItemFilterDto = z.infer<typeof ChecklistItemFilterDtoSchema>;
 
 /** 
@@ -59,7 +59,7 @@ export type ChecklistItemFilterDto = z.infer<typeof ChecklistItemFilterDtoSchema
  * @type { object }
  * @property { string } name Checklist item name. Min Length: `3`. Max Length: `256` 
  */
-export const UpdateChecklistItemRequestDTOSchema = z.object({ name: z.string().min(3).max(256).describe("Checklist item name") }).readonly();
+export const UpdateChecklistItemRequestDTOSchema = z.object({ name: z.string().min(3).max(256).nullable() }).partial();
 export type UpdateChecklistItemRequestDTO = z.infer<typeof UpdateChecklistItemRequestDTOSchema>;
 
 /** 
@@ -80,7 +80,7 @@ export const ChecklistItemsPaginateOrderParamEnum = ChecklistItemsPaginateOrderP
  * @property { number } totalItems Total available items 
  * @property { ChecklistItemResponseDTO[] } items  
  */
-export const ChecklistItemsPaginateResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(ChecklistItemResponseDTOSchema).readonly() }).readonly().shape });
+export const ChecklistItemsPaginateResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(ChecklistItemResponseDTOSchema).nullable() }).partial().shape });
 export type ChecklistItemsPaginateResponse = z.infer<typeof ChecklistItemsPaginateResponseSchema>;
 
 /** 
@@ -101,7 +101,7 @@ export const ChecklistItemsPaginateLabelsOrderParamEnum = ChecklistItemsPaginate
  * @property { number } totalItems Total available items 
  * @property { CommonModels.LabelResponseDTO[] } items  
  */
-export const ChecklistItemsPaginateLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).readonly() }).readonly().shape });
+export const ChecklistItemsPaginateLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).nullable() }).partial().shape });
 export type ChecklistItemsPaginateLabelsResponse = z.infer<typeof ChecklistItemsPaginateLabelsResponseSchema>;
 
 }

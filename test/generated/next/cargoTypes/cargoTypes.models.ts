@@ -8,7 +8,7 @@ export namespace CargoTypesModels {
  * @property { string } id  
  * @property { string } name  
  */
-export const CargoTypeEmployeeDTOSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const CargoTypeEmployeeDTOSchema = z.object({ id: z.string(), name: z.string() });
 export type CargoTypeEmployeeDTO = z.infer<typeof CargoTypeEmployeeDTOSchema>;
 
 /** 
@@ -33,7 +33,7 @@ export type CargoTypeEmployeeDTO = z.infer<typeof CargoTypeEmployeeDTOSchema>;
  * @property { CargoTypeEmployeeDTO } updatedBy  
  * @property { string } updatedAt  
  */
-export const CargoTypeResponseDTOSchema = z.object({ id: z.string().describe("Unique identifier for the cargo type"), name: z.string().describe("Name of the cargo type"), shortName: z.string().describe("Short name of the cargo type").nullish(), length: z.number().describe("Length of the cargo type").nullish(), width: z.number().describe("Width of the cargo type").nullish(), height: z.number().describe("Height of the cargo type").nullish(), unit: z.string().describe("Measurement unit for dimensions"), emptyWeight: z.number().describe("Empty weight of the cargo container").nullish(), containerIsoCode: z.string().describe("Container ISO code").nullish(), isContainer: z.boolean().describe("Whether this cargo type is a container").nullish(), modules: z.array(CommonModels.TransportModeEnumSchema).readonly().describe("Transport modules applicable to the cargo type"), archived: z.boolean().describe("Indicates if the cargo type is archived"), createdById: z.string().nullish(), createdBy: CargoTypeEmployeeDTOSchema.nullish(), createdAt: z.iso.datetime({ offset: true }), updatedById: z.string().nullish(), updatedBy: CargoTypeEmployeeDTOSchema.nullish(), updatedAt: z.iso.datetime({ offset: true }) }).readonly();
+export const CargoTypeResponseDTOSchema = z.object({ id: z.string(), name: z.string(), shortName: z.string().nullish(), length: z.number().nullish(), width: z.number().nullish(), height: z.number().nullish(), unit: z.string(), emptyWeight: z.number().nullish(), containerIsoCode: z.string().nullish(), isContainer: z.boolean().nullish(), modules: z.array(CommonModels.TransportModeEnumSchema), archived: z.boolean(), createdById: z.string().nullish(), createdBy: CargoTypeEmployeeDTOSchema.nullish(), createdAt: z.iso.datetime({ offset: true }), updatedById: z.string().nullish(), updatedBy: CargoTypeEmployeeDTOSchema.nullish(), updatedAt: z.iso.datetime({ offset: true }) });
 export type CargoTypeResponseDTO = z.infer<typeof CargoTypeResponseDTOSchema>;
 
 /** 
@@ -51,7 +51,7 @@ export const TransportModuleEnum = TransportModuleEnumSchema.enum;
  * @property { boolean } archived Archived status filter 
  * @property { string } search  
  */
-export const CargoTypePaginationFilterDtoSchema = z.object({ module: TransportModuleEnumSchema, archived: z.boolean().describe("Archived status filter"), search: z.string() }).readonly();
+export const CargoTypePaginationFilterDtoSchema = z.object({ module: TransportModuleEnumSchema.nullable(), archived: z.boolean().nullable(), search: z.string().nullable() }).partial();
 export type CargoTypePaginationFilterDto = z.infer<typeof CargoTypePaginationFilterDtoSchema>;
 
 /** 
@@ -68,7 +68,7 @@ export type CargoTypePaginationFilterDto = z.infer<typeof CargoTypePaginationFil
  * @property { string } unit Measurement unit for dimensions 
  * @property { CommonModels.TransportModeEnum[] } modules Transport modes applicable to the cargo type 
  */
-export const CreateCargoTypeRequestDTOSchema = z.object({ name: z.string().describe("Name of the cargo type"), shortName: z.string().describe("Short name of the cargo type").nullish(), length: z.number().describe("Length of the cargo type").nullish(), width: z.number().describe("Width of the cargo type").nullish(), height: z.number().describe("Height of the cargo type").nullish(), emptyWeight: z.number().describe("Empty weight of the cargo container").nullish(), containerIsoCode: z.string().describe("Container ISO code").nullish(), isContainer: z.boolean().describe("Whether this cargo type is a container").nullish(), unit: z.string().describe("Measurement unit for dimensions"), modules: z.array(CommonModels.TransportModeEnumSchema).readonly().describe("Transport modes applicable to the cargo type") }).readonly();
+export const CreateCargoTypeRequestDTOSchema = z.object({ name: z.string(), shortName: z.string().nullish(), length: z.number().nullish(), width: z.number().nullish(), height: z.number().nullish(), emptyWeight: z.number().nullish(), containerIsoCode: z.string().nullish(), isContainer: z.boolean().nullish(), unit: z.string(), modules: z.array(CommonModels.TransportModeEnumSchema) });
 export type CreateCargoTypeRequestDTO = z.infer<typeof CreateCargoTypeRequestDTOSchema>;
 
 /** 
@@ -85,7 +85,7 @@ export type CreateCargoTypeRequestDTO = z.infer<typeof CreateCargoTypeRequestDTO
  * @property { string } unit Measurement unit for dimensions 
  * @property { CommonModels.TransportModeEnum[] } modules Transport modules applicable to the cargo type 
  */
-export const UpdateCargoTypeRequestDTOSchema = z.object({ name: z.string().describe("Name of the cargo type"), shortName: z.string().describe("Short name of the cargo type"), length: z.number().describe("Length of the cargo type").nullable(), width: z.number().describe("Width of the cargo type").nullable(), height: z.number().describe("Height of the cargo type").nullable(), emptyWeight: z.number().describe("Empty weight of the cargo container").nullable(), containerIsoCode: z.string().describe("Container ISO code").nullable(), isContainer: z.boolean().describe("Whether this cargo type is a container").nullable(), unit: z.string().describe("Measurement unit for dimensions"), modules: z.array(CommonModels.TransportModeEnumSchema).readonly().describe("Transport modules applicable to the cargo type") }).readonly();
+export const UpdateCargoTypeRequestDTOSchema = z.object({ name: z.string().nullable(), shortName: z.string().nullable(), length: z.number().nullable(), width: z.number().nullable(), height: z.number().nullable(), emptyWeight: z.number().nullable(), containerIsoCode: z.string().nullable(), isContainer: z.boolean().nullable(), unit: z.string().nullable(), modules: z.array(CommonModels.TransportModeEnumSchema).nullable() }).partial();
 export type UpdateCargoTypeRequestDTO = z.infer<typeof UpdateCargoTypeRequestDTOSchema>;
 
 /** 
@@ -93,7 +93,7 @@ export type UpdateCargoTypeRequestDTO = z.infer<typeof UpdateCargoTypeRequestDTO
  * @type { object }
  * @property { string } search  
  */
-export const CargoTypeLabelFilterDtoSchema = z.object({ search: z.string() }).readonly();
+export const CargoTypeLabelFilterDtoSchema = z.object({ search: z.string().nullable() }).partial();
 export type CargoTypeLabelFilterDto = z.infer<typeof CargoTypeLabelFilterDtoSchema>;
 
 /** 
@@ -114,7 +114,7 @@ export const CargoTypesPaginateOrderParamEnum = CargoTypesPaginateOrderParamEnum
  * @property { number } totalItems Total available items 
  * @property { CargoTypeResponseDTO[] } items  
  */
-export const CargoTypesPaginateResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CargoTypeResponseDTOSchema).readonly() }).readonly().shape });
+export const CargoTypesPaginateResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CargoTypeResponseDTOSchema).nullable() }).partial().shape });
 export type CargoTypesPaginateResponse = z.infer<typeof CargoTypesPaginateResponseSchema>;
 
 /** 
@@ -135,7 +135,7 @@ export const CargoTypesPaginateLabelsOrderParamEnum = CargoTypesPaginateLabelsOr
  * @property { number } totalItems Total available items 
  * @property { CommonModels.LabelResponseDTO[] } items  
  */
-export const CargoTypesPaginateLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).readonly() }).readonly().shape });
+export const CargoTypesPaginateLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).nullable() }).partial().shape });
 export type CargoTypesPaginateLabelsResponse = z.infer<typeof CargoTypesPaginateLabelsResponseSchema>;
 
 }

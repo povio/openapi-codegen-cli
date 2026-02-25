@@ -10,7 +10,7 @@ export namespace WorkingDocumentsTemplatedDocumentModels {
  * @property { string } capturedAt  
  * @property { CommonModels.TemplateBlocksResponseDTO } blocks  
  */
-export const TemplatedDocumentBlueprintDtoSchema = z.object({ templateId: z.string(), templateName: z.string(), capturedAt: z.string(), blocks: CommonModels.TemplateBlocksResponseDTOSchema }).readonly();
+export const TemplatedDocumentBlueprintDtoSchema = z.object({ templateId: z.string(), templateName: z.string(), capturedAt: z.string(), blocks: CommonModels.TemplateBlocksResponseDTOSchema });
 export type TemplatedDocumentBlueprintDto = z.infer<typeof TemplatedDocumentBlueprintDtoSchema>;
 
 /** 
@@ -29,7 +29,7 @@ export type TemplatedDocumentBlueprintDto = z.infer<typeof TemplatedDocumentBlue
  * @property { string } updatedAt  
  * @property { string } issuedAt  
  */
-export const TemplatedDocumentResponseDtoSchema = z.object({ id: z.string(), positionId: z.string(), officeId: z.string(), name: z.string(), nameSuffix: z.string().nullish(), defaultFileName: z.string(), versionNumber: z.number(), blueprint: TemplatedDocumentBlueprintDtoSchema.describe("Captured template blueprint"), data: CommonModels.TemplatedDocumentDataDtoSchema.describe("Document data"), createdAt: z.iso.datetime({ offset: true }), updatedAt: z.iso.datetime({ offset: true }), issuedAt: z.iso.datetime({ offset: true }).nullish() }).readonly();
+export const TemplatedDocumentResponseDtoSchema = z.object({ id: z.string(), positionId: z.string(), officeId: z.string(), name: z.string(), nameSuffix: z.string().nullish(), defaultFileName: z.string(), versionNumber: z.number(), blueprint: TemplatedDocumentBlueprintDtoSchema, data: CommonModels.TemplatedDocumentDataDtoSchema, createdAt: z.iso.datetime({ offset: true }), updatedAt: z.iso.datetime({ offset: true }), issuedAt: z.iso.datetime({ offset: true }).nullish() });
 export type TemplatedDocumentResponseDto = z.infer<typeof TemplatedDocumentResponseDtoSchema>;
 
 /** 
@@ -38,7 +38,7 @@ export type TemplatedDocumentResponseDto = z.infer<typeof TemplatedDocumentRespo
  * @property { string } nameSuffix Optional suffix for the document name 
  * @property { CommonModels.TemplatedDocumentDataUpdateDto } data Partial document data to update 
  */
-export const UpdateTemplatedDocumentRequestDtoSchema = z.object({ nameSuffix: z.string().describe("Optional suffix for the document name"), data: CommonModels.TemplatedDocumentDataUpdateDtoSchema.describe("Partial document data to update") }).readonly();
+export const UpdateTemplatedDocumentRequestDtoSchema = z.object({ nameSuffix: z.string().nullable(), data: CommonModels.TemplatedDocumentDataUpdateDtoSchema.nullable() }).partial();
 export type UpdateTemplatedDocumentRequestDto = z.infer<typeof UpdateTemplatedDocumentRequestDtoSchema>;
 
 /** 
@@ -47,7 +47,7 @@ export type UpdateTemplatedDocumentRequestDto = z.infer<typeof UpdateTemplatedDo
  * @property { string } templateId Template ID to use for creating the document 
  * @property { string } nameSuffix Optional suffix for the document name 
  */
-export const CreateTemplatedDocumentRequestDtoSchema = z.object({ templateId: z.string().describe("Template ID to use for creating the document"), nameSuffix: z.string().describe("Optional suffix for the document name").nullish() }).readonly();
+export const CreateTemplatedDocumentRequestDtoSchema = z.object({ templateId: z.string(), nameSuffix: z.string().nullish() });
 export type CreateTemplatedDocumentRequestDto = z.infer<typeof CreateTemplatedDocumentRequestDtoSchema>;
 
 /** 
@@ -55,7 +55,7 @@ export type CreateTemplatedDocumentRequestDto = z.infer<typeof CreateTemplatedDo
  * @type { object }
  * @property { string } issuedAt  
  */
-export const GenerateWorkingDocumentPreviewRequestDtoSchema = z.object({ issuedAt: z.iso.datetime({ offset: true }) }).readonly();
+export const GenerateWorkingDocumentPreviewRequestDtoSchema = z.object({ issuedAt: z.iso.datetime({ offset: true }).nullable() }).partial();
 export type GenerateWorkingDocumentPreviewRequestDto = z.infer<typeof GenerateWorkingDocumentPreviewRequestDtoSchema>;
 
 }

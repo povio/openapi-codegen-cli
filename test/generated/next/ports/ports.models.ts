@@ -8,7 +8,7 @@ export namespace PortsModels {
  * @property { string } id  
  * @property { string } name  
  */
-export const PortCityDtoSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const PortCityDtoSchema = z.object({ id: z.string(), name: z.string() });
 export type PortCityDto = z.infer<typeof PortCityDtoSchema>;
 
 /** 
@@ -19,7 +19,7 @@ export type PortCityDto = z.infer<typeof PortCityDtoSchema>;
  * @property { string } isoCode2  
  * @property { string } isoCode3  
  */
-export const PortCountryDtoSchema = z.object({ id: z.string(), name: z.string(), isoCode2: z.string(), isoCode3: z.string() }).readonly();
+export const PortCountryDtoSchema = z.object({ id: z.string(), name: z.string(), isoCode2: z.string(), isoCode3: z.string() });
 export type PortCountryDto = z.infer<typeof PortCountryDtoSchema>;
 
 /** 
@@ -31,7 +31,7 @@ export type PortCountryDto = z.infer<typeof PortCountryDtoSchema>;
  * @property { string } district District name 
  * @property { PortCountryDto } country  
  */
-export const PortAddressDtoSchema = z.object({ street: z.string().describe("Street address"), zip: z.string().describe("ZIP/Postal code"), city: PortCityDtoSchema.nullish(), district: z.string().describe("District name").nullish(), country: PortCountryDtoSchema.nullish() }).readonly();
+export const PortAddressDtoSchema = z.object({ street: z.string(), zip: z.string(), city: PortCityDtoSchema.nullish(), district: z.string().nullish(), country: PortCountryDtoSchema.nullish() });
 export type PortAddressDto = z.infer<typeof PortAddressDtoSchema>;
 
 /** 
@@ -40,7 +40,7 @@ export type PortAddressDto = z.infer<typeof PortAddressDtoSchema>;
  * @property { string } id  
  * @property { string } name  
  */
-export const PortEmployeeDTOSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const PortEmployeeDTOSchema = z.object({ id: z.string(), name: z.string() });
 export type PortEmployeeDTO = z.infer<typeof PortEmployeeDTOSchema>;
 
 /** 
@@ -57,7 +57,7 @@ export type PortEmployeeDTO = z.infer<typeof PortEmployeeDTOSchema>;
  * @property { PortEmployeeDTO } updatedBy  
  * @property { string } updatedAt  
  */
-export const PortResponseDTOSchema = z.object({ id: z.string().describe("Unique identifier of the port"), name: z.string().describe("Name of the port"), matchCode: z.string().describe("Match code for the port"), address: PortAddressDtoSchema.describe("Address details of the port"), createdById: z.string().nullish(), createdBy: PortEmployeeDTOSchema.nullish(), createdAt: z.iso.datetime({ offset: true }), updatedById: z.string().nullish(), updatedBy: PortEmployeeDTOSchema.nullish(), updatedAt: z.iso.datetime({ offset: true }) }).readonly();
+export const PortResponseDTOSchema = z.object({ id: z.string(), name: z.string(), matchCode: z.string(), address: PortAddressDtoSchema, createdById: z.string().nullish(), createdBy: PortEmployeeDTOSchema.nullish(), createdAt: z.iso.datetime({ offset: true }), updatedById: z.string().nullish(), updatedBy: PortEmployeeDTOSchema.nullish(), updatedAt: z.iso.datetime({ offset: true }) });
 export type PortResponseDTO = z.infer<typeof PortResponseDTOSchema>;
 
 /** 
@@ -65,7 +65,7 @@ export type PortResponseDTO = z.infer<typeof PortResponseDTOSchema>;
  * @type { object }
  * @property { string } search Search term to filter ports by name or match code 
  */
-export const PortPaginationFilterDtoSchema = z.object({ search: z.string().describe("Search term to filter ports by name or match code") }).readonly();
+export const PortPaginationFilterDtoSchema = z.object({ search: z.string().nullable() }).partial();
 export type PortPaginationFilterDto = z.infer<typeof PortPaginationFilterDtoSchema>;
 
 /** 
@@ -73,7 +73,7 @@ export type PortPaginationFilterDto = z.infer<typeof PortPaginationFilterDtoSche
  * @type { object }
  * @property { string } search  
  */
-export const PortLabelFilterDtoSchema = z.object({ search: z.string() }).readonly();
+export const PortLabelFilterDtoSchema = z.object({ search: z.string().nullable() }).partial();
 export type PortLabelFilterDto = z.infer<typeof PortLabelFilterDtoSchema>;
 
 /** 
@@ -88,7 +88,7 @@ export type PortLabelFilterDto = z.infer<typeof PortLabelFilterDtoSchema>;
  * @property { string } countryId Country id 
  * @property { string } district  
  */
-export const CreatePortRequestDTOSchema = z.object({ name: z.string(), matchCode: z.string(), street: z.string().describe("Street address"), secondaryStreet: z.string().nullish(), zip: z.string().describe("ZIP / Postal code"), cityId: z.string().describe("City id"), countryId: z.string().describe("Country id"), district: z.string().nullish() }).readonly();
+export const CreatePortRequestDTOSchema = z.object({ name: z.string(), matchCode: z.string(), street: z.string(), secondaryStreet: z.string().nullish(), zip: z.string(), cityId: z.string(), countryId: z.string(), district: z.string().nullish() });
 export type CreatePortRequestDTO = z.infer<typeof CreatePortRequestDTOSchema>;
 
 /** 
@@ -103,7 +103,7 @@ export type CreatePortRequestDTO = z.infer<typeof CreatePortRequestDTOSchema>;
  * @property { string } countryId Updated country id 
  * @property { string } district  
  */
-export const UpdatePortRequestDTOSchema = z.object({ name: z.string().describe("Updated name"), matchCode: z.string().describe("Updated match code"), street: z.string().describe("Updated street address"), secondaryStreet: z.string().describe("Updated secondary street"), zip: z.string().describe("Updated ZIP/Postal code"), cityId: z.string().describe("Updated city id"), countryId: z.string().describe("Updated country id"), district: z.string() }).readonly();
+export const UpdatePortRequestDTOSchema = z.object({ name: z.string().nullable(), matchCode: z.string().nullable(), street: z.string().nullable(), secondaryStreet: z.string().nullable(), zip: z.string().nullable(), cityId: z.string().nullable(), countryId: z.string().nullable(), district: z.string().nullable() }).partial();
 export type UpdatePortRequestDTO = z.infer<typeof UpdatePortRequestDTOSchema>;
 
 /** 
@@ -124,7 +124,7 @@ export const PortsPaginateOrderParamEnum = PortsPaginateOrderParamEnumSchema.enu
  * @property { number } totalItems Total available items 
  * @property { PortResponseDTO[] } items  
  */
-export const PortsPaginateResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(PortResponseDTOSchema).readonly() }).readonly().shape });
+export const PortsPaginateResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(PortResponseDTOSchema).nullable() }).partial().shape });
 export type PortsPaginateResponse = z.infer<typeof PortsPaginateResponseSchema>;
 
 /** 
@@ -145,7 +145,7 @@ export const PortsPaginateLabelsOrderParamEnum = PortsPaginateLabelsOrderParamEn
  * @property { number } totalItems Total available items 
  * @property { CommonModels.LabelResponseDTO[] } items  
  */
-export const PortsPaginateLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).readonly() }).readonly().shape });
+export const PortsPaginateLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).nullable() }).partial().shape });
 export type PortsPaginateLabelsResponse = z.infer<typeof PortsPaginateLabelsResponseSchema>;
 
 }

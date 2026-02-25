@@ -8,7 +8,7 @@ export namespace EmploymentModels {
  * @property { string } officeId  
  * @property { string } employeeId  
  */
-export const EmploymentCreateRequestSchema = z.object({ officeId: z.string(), employeeId: z.string() }).readonly();
+export const EmploymentCreateRequestSchema = z.object({ officeId: z.string(), employeeId: z.string() });
 export type EmploymentCreateRequest = z.infer<typeof EmploymentCreateRequestSchema>;
 
 /** 
@@ -17,7 +17,7 @@ export type EmploymentCreateRequest = z.infer<typeof EmploymentCreateRequestSche
  * @property { string } officeId Office IDs 
  * @property { string } employeeId Employee IDs 
  */
-export const EmploymentFilterDtoSchema = z.object({ officeId: z.string().describe("Office IDs"), employeeId: z.string().describe("Employee IDs") }).readonly();
+export const EmploymentFilterDtoSchema = z.object({ officeId: z.string().nullable(), employeeId: z.string().nullable() }).partial();
 export type EmploymentFilterDto = z.infer<typeof EmploymentFilterDtoSchema>;
 
 /** 
@@ -29,7 +29,7 @@ export type EmploymentFilterDto = z.infer<typeof EmploymentFilterDtoSchema>;
  * @property { string } description Description of the role 
  * @property { string[] } permissions Permissions associated with the role 
  */
-export const EmploymentRoleMemberResponseSchema = z.object({ roleId: z.string(), name: z.string().describe("Name of the role"), color: z.string().describe("Color associated with the role").nullish(), description: z.string().describe("Description of the role").nullish(), permissions: z.array(z.string()).readonly().describe("Permissions associated with the role") }).readonly();
+export const EmploymentRoleMemberResponseSchema = z.object({ roleId: z.string(), name: z.string(), color: z.string().nullish(), description: z.string().nullish(), permissions: z.array(z.string()) });
 export type EmploymentRoleMemberResponse = z.infer<typeof EmploymentRoleMemberResponseSchema>;
 
 /** 
@@ -37,7 +37,7 @@ export type EmploymentRoleMemberResponse = z.infer<typeof EmploymentRoleMemberRe
  * @type { object }
  * @property { string[] } roleIds Array of role IDs 
  */
-export const EmploymentRoleMembershipsUpdateRequestSchema = z.object({ roleIds: z.array(z.string()).readonly().describe("Array of role IDs") }).readonly();
+export const EmploymentRoleMembershipsUpdateRequestSchema = z.object({ roleIds: z.array(z.string()) });
 export type EmploymentRoleMembershipsUpdateRequest = z.infer<typeof EmploymentRoleMembershipsUpdateRequestSchema>;
 
 /** 
@@ -46,7 +46,7 @@ export type EmploymentRoleMembershipsUpdateRequest = z.infer<typeof EmploymentRo
  * @property { string } costCenter  
  * @property { string[] } roleIds  
  */
-export const UpdateEmploymentRequestDtoSchema = z.object({ costCenter: z.string(), roleIds: z.array(z.string()).readonly() }).readonly();
+export const UpdateEmploymentRequestDtoSchema = z.object({ costCenter: z.string().nullable(), roleIds: z.array(z.string()).nullable() }).partial();
 export type UpdateEmploymentRequestDto = z.infer<typeof UpdateEmploymentRequestDtoSchema>;
 
 /** 
@@ -69,7 +69,7 @@ export const EmploymentPaginationPopulateFields = EmploymentPaginationPopulateFi
  * EmploymentListPopulateParamSchema 
  * @type { array }
  */
-export const EmploymentListPopulateParamSchema = z.array(EmploymentPaginationPopulateFieldsSchema).readonly().nullish();
+export const EmploymentListPopulateParamSchema = z.array(EmploymentPaginationPopulateFieldsSchema).nullish();
 export type EmploymentListPopulateParam = z.infer<typeof EmploymentListPopulateParamSchema>;
 
 /** 
@@ -82,7 +82,7 @@ export type EmploymentListPopulateParam = z.infer<typeof EmploymentListPopulateP
  * @property { number } totalItems Total available items 
  * @property { CommonModels.EmploymentResponse[] } items  
  */
-export const EmploymentListResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.EmploymentResponseSchema).readonly() }).readonly().shape });
+export const EmploymentListResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.EmploymentResponseSchema).nullable() }).partial().shape });
 export type EmploymentListResponse = z.infer<typeof EmploymentListResponseSchema>;
 
 /** 
@@ -95,7 +95,7 @@ export type EmploymentListResponse = z.infer<typeof EmploymentListResponseSchema
  * @property { number } totalItems Total available items 
  * @property { EmploymentRoleMemberResponse[] } items  
  */
-export const EmploymentListRolesResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(EmploymentRoleMemberResponseSchema).readonly() }).readonly().shape });
+export const EmploymentListRolesResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(EmploymentRoleMemberResponseSchema).nullable() }).partial().shape });
 export type EmploymentListRolesResponse = z.infer<typeof EmploymentListRolesResponseSchema>;
 
 /** 
@@ -108,7 +108,7 @@ export type EmploymentListRolesResponse = z.infer<typeof EmploymentListRolesResp
  * @property { number } totalItems Total available items 
  * @property { EmploymentRoleMemberResponse[] } items  
  */
-export const EmploymentUpdateRolesResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(EmploymentRoleMemberResponseSchema).readonly() }).readonly().shape });
+export const EmploymentUpdateRolesResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(EmploymentRoleMemberResponseSchema).nullable() }).partial().shape });
 export type EmploymentUpdateRolesResponse = z.infer<typeof EmploymentUpdateRolesResponseSchema>;
 
 }

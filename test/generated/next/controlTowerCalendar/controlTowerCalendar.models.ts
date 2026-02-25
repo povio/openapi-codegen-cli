@@ -16,7 +16,7 @@ export const EventRelationTypeEnum = EventRelationTypeEnumSchema.enum;
  * @property { string } id  
  * @property { string } number  
  */
-export const CalendarEventRelationDtoSchema = z.object({ type: EventRelationTypeEnumSchema, id: z.string(), number: z.string() }).readonly();
+export const CalendarEventRelationDtoSchema = z.object({ type: EventRelationTypeEnumSchema, id: z.string(), number: z.string() });
 export type CalendarEventRelationDto = z.infer<typeof CalendarEventRelationDtoSchema>;
 
 /** 
@@ -37,7 +37,7 @@ export const CalendarTypeEnum = CalendarTypeEnumSchema.enum;
  * @property { string } title  
  * @property { CalendarEventRelationDto[] } relations  
  */
-export const CalendarEventDtoSchema = z.object({ entityId: z.string(), entityNumber: z.string(), entityType: CalendarTypeEnumSchema, date: z.iso.datetime({ offset: true }), title: z.string(), relations: z.array(CalendarEventRelationDtoSchema).readonly() }).readonly();
+export const CalendarEventDtoSchema = z.object({ entityId: z.string(), entityNumber: z.string(), entityType: CalendarTypeEnumSchema, date: z.iso.datetime({ offset: true }), title: z.string(), relations: z.array(CalendarEventRelationDtoSchema) });
 export type CalendarEventDto = z.infer<typeof CalendarEventDtoSchema>;
 
 /** 
@@ -47,7 +47,7 @@ export type CalendarEventDto = z.infer<typeof CalendarEventDtoSchema>;
  * @property { string[] } bookingNumbers  
  * @property { string[] } containerNumbers  
  */
-export const FiltersDtoSchema = z.object({ poNumbers: z.array(z.string()).readonly(), bookingNumbers: z.array(z.string()).readonly(), containerNumbers: z.array(z.string()).readonly() }).readonly();
+export const FiltersDtoSchema = z.object({ poNumbers: z.array(z.string()), bookingNumbers: z.array(z.string()), containerNumbers: z.array(z.string()) });
 export type FiltersDto = z.infer<typeof FiltersDtoSchema>;
 
 /** 
@@ -56,7 +56,7 @@ export type FiltersDto = z.infer<typeof FiltersDtoSchema>;
  * @property { CalendarEventDto[] } events  
  * @property { FiltersDto } filters  
  */
-export const CalendarDtoSchema = z.object({ events: z.array(CalendarEventDtoSchema).readonly(), filters: FiltersDtoSchema }).readonly();
+export const CalendarDtoSchema = z.object({ events: z.array(CalendarEventDtoSchema), filters: FiltersDtoSchema });
 export type CalendarDto = z.infer<typeof CalendarDtoSchema>;
 
 /** 
@@ -64,28 +64,28 @@ export type CalendarDto = z.infer<typeof CalendarDtoSchema>;
  * @type { object }
  * @property { CalendarDto } data  
  */
-export const CalendarResponseDtoSchema = z.object({ data: CalendarDtoSchema }).readonly();
+export const CalendarResponseDtoSchema = z.object({ data: CalendarDtoSchema });
 export type CalendarResponseDto = z.infer<typeof CalendarResponseDtoSchema>;
 
 /** 
  * GetCalendarPoNumbersParamSchema 
  * @type { array }
  */
-export const GetCalendarPoNumbersParamSchema = z.array(z.string()).readonly().nullish();
+export const GetCalendarPoNumbersParamSchema = z.array(z.string()).nullish();
 export type GetCalendarPoNumbersParam = z.infer<typeof GetCalendarPoNumbersParamSchema>;
 
 /** 
  * GetCalendarContainerNumbersParamSchema 
  * @type { array }
  */
-export const GetCalendarContainerNumbersParamSchema = z.array(z.string()).readonly().nullish();
+export const GetCalendarContainerNumbersParamSchema = z.array(z.string()).nullish();
 export type GetCalendarContainerNumbersParam = z.infer<typeof GetCalendarContainerNumbersParamSchema>;
 
 /** 
  * GetCalendarBookingNumbersParamSchema 
  * @type { array }
  */
-export const GetCalendarBookingNumbersParamSchema = z.array(z.string()).readonly().nullish();
+export const GetCalendarBookingNumbersParamSchema = z.array(z.string()).nullish();
 export type GetCalendarBookingNumbersParam = z.infer<typeof GetCalendarBookingNumbersParamSchema>;
 
 }

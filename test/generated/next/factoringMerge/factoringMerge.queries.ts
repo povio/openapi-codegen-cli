@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -26,14 +25,14 @@ export const keys = {
  * @returns { UseMutationResult<FactoringMergeModels.FactoringMergeUploadInstructionsResponseDto> } 
  * @statusCodes [201, 401, default]
  */
-export const usePrepareUpload = (options?: AppMutationOptions<typeof FactoringMergeApi.prepareUpload, { officeId: string, data: FactoringMergeModels.PrepareFactoringMergeRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const usePrepareUpload = (options?: AppMutationOptions<typeof FactoringMergeApi.prepareUpload, { officeId: string, data: FactoringMergeModels.PrepareFactoringMergeRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, data }) => { 
       checkAcl(FactoringMergeAcl.canUsePrepareUpload({ officeId } ));
-      return FactoringMergeApi.prepareUpload(officeId, data, config)
+      return FactoringMergeApi.prepareUpload(officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -53,14 +52,14 @@ export const usePrepareUpload = (options?: AppMutationOptions<typeof FactoringMe
  * @returns { UseMutationResult<FactoringMergeModels.FactoringMergeBatchResponseDto> } 
  * @statusCodes [201, 401, default]
  */
-export const useProcessMerge = (options?: AppMutationOptions<typeof FactoringMergeApi.processMerge, { officeId: string, batchId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useProcessMerge = (options?: AppMutationOptions<typeof FactoringMergeApi.processMerge, { officeId: string, batchId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, batchId }) => { 
       checkAcl(FactoringMergeAcl.canUseProcessMerge({ officeId } ));
-      return FactoringMergeApi.processMerge(officeId, batchId, config)
+      return FactoringMergeApi.processMerge(officeId, batchId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -82,14 +81,14 @@ export const useProcessMerge = (options?: AppMutationOptions<typeof FactoringMer
  * @returns { UseQueryResult<FactoringMergeModels.FactoringMergeBatchResponseDto> } 
  * @statusCodes [200, 401, default]
  */
-export const useGetMergeBatch = <TData>({ officeId, batchId }: { officeId: string, batchId: string }, options?: AppQueryOptions<typeof FactoringMergeApi.getMergeBatch, TData>, config?: AxiosRequestConfig) => {
+export const useGetMergeBatch = <TData>({ officeId, batchId }: { officeId: string, batchId: string }, options?: AppQueryOptions<typeof FactoringMergeApi.getMergeBatch, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.getMergeBatch(officeId, batchId),
     queryFn: () => { 
     checkAcl(FactoringMergeAcl.canUseGetMergeBatch({ officeId } ));
-    return FactoringMergeApi.getMergeBatch(officeId, batchId, config) },
+    return FactoringMergeApi.getMergeBatch(officeId, batchId) },
     ...options,
   });
 };

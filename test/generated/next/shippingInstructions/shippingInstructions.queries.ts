@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -28,14 +27,14 @@ export const keys = {
  * @returns { UseMutationResult<ShippingInstructionsModels.ShippingInstructionsResponseDto> } 
  * @statusCodes [201, 401]
  */
-export const useCreate = (options?: AppMutationOptions<typeof ShippingInstructionsApi.create, { officeId: string, positionId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreate = (options?: AppMutationOptions<typeof ShippingInstructionsApi.create, { officeId: string, positionId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, positionId }) => { 
       checkAcl(ShippingInstructionsAcl.canUseCreate({ officeId } ));
-      return ShippingInstructionsApi.create(officeId, positionId, config)
+      return ShippingInstructionsApi.create(officeId, positionId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -56,14 +55,14 @@ export const useCreate = (options?: AppMutationOptions<typeof ShippingInstructio
  * @returns { UseQueryResult<ShippingInstructionsModels.ShippingInstructionsResponseDto> } 
  * @statusCodes [200, 401]
  */
-export const useGet = <TData>({ officeId, positionId, id }: { officeId: string, positionId: string, id: string }, options?: AppQueryOptions<typeof ShippingInstructionsApi.get, TData>, config?: AxiosRequestConfig) => {
+export const useGet = <TData>({ officeId, positionId, id }: { officeId: string, positionId: string, id: string }, options?: AppQueryOptions<typeof ShippingInstructionsApi.get, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.get(officeId, positionId, id),
     queryFn: () => { 
     checkAcl(ShippingInstructionsAcl.canUseGet({ officeId } ));
-    return ShippingInstructionsApi.get(officeId, positionId, id, config) },
+    return ShippingInstructionsApi.get(officeId, positionId, id) },
     ...options,
   });
 };
@@ -80,14 +79,14 @@ export const useGet = <TData>({ officeId, positionId, id }: { officeId: string, 
  * @returns { UseMutationResult<ShippingInstructionsModels.ShippingInstructionsResponseDto> } Shipping instructions updated successfully
  * @statusCodes [200, 401, 404]
  */
-export const useUpdate = (options?: AppMutationOptions<typeof ShippingInstructionsApi.update, { officeId: string, positionId: string, id: string, data: ShippingInstructionsModels.UpdateShippingInstructionsRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdate = (options?: AppMutationOptions<typeof ShippingInstructionsApi.update, { officeId: string, positionId: string, id: string, data: ShippingInstructionsModels.UpdateShippingInstructionsRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, positionId, id, data }) => { 
       checkAcl(ShippingInstructionsAcl.canUseUpdate({ officeId } ));
-      return ShippingInstructionsApi.update(officeId, positionId, id, data, config)
+      return ShippingInstructionsApi.update(officeId, positionId, id, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -110,14 +109,14 @@ export const useUpdate = (options?: AppMutationOptions<typeof ShippingInstructio
  * @returns { UseMutationResult<void> } Shipping instructions deleted
  * @statusCodes [204, 401, 404]
  */
-export const useDeleteOfficesPositionsShippingInstructionsById = (options?: AppMutationOptions<typeof ShippingInstructionsApi.deleteOfficesPositionsShippingInstructionsById, { officeId: string, positionId: string, id: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useDeleteOfficesPositionsShippingInstructionsById = (options?: AppMutationOptions<typeof ShippingInstructionsApi.deleteOfficesPositionsShippingInstructionsById, { officeId: string, positionId: string, id: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, positionId, id }) => { 
       checkAcl(ShippingInstructionsAcl.canUseDeleteOfficesPositionsShippingInstructionsById({ officeId } ));
-      return ShippingInstructionsApi.deleteOfficesPositionsShippingInstructionsById(officeId, positionId, id, config)
+      return ShippingInstructionsApi.deleteOfficesPositionsShippingInstructionsById(officeId, positionId, id)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -138,14 +137,14 @@ export const useDeleteOfficesPositionsShippingInstructionsById = (options?: AppM
  * @returns { UseQueryResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
  */
-export const usePreview = <TData>({ officeId, positionId, id }: { officeId: string, positionId: string, id: string }, options?: AppQueryOptions<typeof ShippingInstructionsApi.preview, TData>, config?: AxiosRequestConfig) => {
+export const usePreview = <TData>({ officeId, positionId, id }: { officeId: string, positionId: string, id: string }, options?: AppQueryOptions<typeof ShippingInstructionsApi.preview, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.preview(officeId, positionId, id),
     queryFn: () => { 
     checkAcl(ShippingInstructionsAcl.canUsePreview({ officeId } ));
-    return ShippingInstructionsApi.preview(officeId, positionId, id, config) },
+    return ShippingInstructionsApi.preview(officeId, positionId, id) },
     ...options,
   });
 };
@@ -161,14 +160,14 @@ export const usePreview = <TData>({ officeId, positionId, id }: { officeId: stri
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
  */
-export const usePreviewMutation = (options?: AppMutationOptions<typeof ShippingInstructionsApi.preview, { officeId: string, positionId: string, id: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const usePreviewMutation = (options?: AppMutationOptions<typeof ShippingInstructionsApi.preview, { officeId: string, positionId: string, id: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, positionId, id }) => { 
       checkAcl(ShippingInstructionsAcl.canUsePreview({ officeId } ));
-      return ShippingInstructionsApi.preview(officeId, positionId, id, config)
+      return ShippingInstructionsApi.preview(officeId, positionId, id)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -192,14 +191,14 @@ export const usePreviewMutation = (options?: AppMutationOptions<typeof ShippingI
  * @returns { UseMutationResult<void> } 
  * @statusCodes [201, 401]
  */
-export const useGenerate = (options?: AppMutationOptions<typeof ShippingInstructionsApi.generate, { officeId: string, positionId: string, id: string, data: CommonModels.GenerateWorkingDocumentRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useGenerate = (options?: AppMutationOptions<typeof ShippingInstructionsApi.generate, { officeId: string, positionId: string, id: string, data: CommonModels.GenerateWorkingDocumentRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, positionId, id, data }) => { 
       checkAcl(ShippingInstructionsAcl.canUseGenerate({ officeId } ));
-      return ShippingInstructionsApi.generate(officeId, positionId, id, data, config)
+      return ShippingInstructionsApi.generate(officeId, positionId, id, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

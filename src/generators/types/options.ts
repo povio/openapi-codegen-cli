@@ -13,15 +13,19 @@ interface ZodGenerateOptions {
 
 interface EndpointsGenerateOptions {
   restClientImportPath: string;
+  errorHandlingImportPath?: string;
   withDeprecatedEndpoints?: boolean;
   removeOperationPrefixEndingWith?: string;
   parseRequestParams?: boolean;
+  inlineEndpoints?: boolean;
+  inlineEndpointsExcludeModules?: string[];
 }
 
 interface QueriesGenerateOptions {
   queryTypesImportPath: string;
   axiosRequestConfig?: boolean;
   mutationEffects?: boolean;
+  workspaceContext?: boolean;
 }
 
 interface InfiniteQueriesGenerateOptions {
@@ -40,6 +44,7 @@ interface ACLGenerateOptions {
   acl: boolean;
   checkAcl?: boolean;
   abilityContextGenericAppAbilities: boolean;
+  abilityContextImportPath?: string;
 }
 
 interface BuilderConfigsGenerateOptions {
@@ -68,6 +73,8 @@ interface BaseGenerateOptions {
   importPath: "ts" | "relative" | "absolute";
   configs: Record<GenerateType, GenerateConfig>;
   baseUrl: string;
+  modelsOnly?: boolean;
+  standalone?: boolean;
 }
 
 export interface GenerateOptions

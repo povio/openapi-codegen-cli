@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -40,14 +39,14 @@ export const keys = {
  * @returns { UseQueryResult<PositionsModels.PositionsFindAllResponse> } 
  * @statusCodes [200, 401]
  */
-export const useFindAll = <TData>({ officeId, limit, filter, page, cursor }: { officeId: string, limit: number, filter?: PositionsModels.PositionLabelsFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof PositionsApi.findAll, TData>, config?: AxiosRequestConfig) => {
+export const useFindAll = <TData>({ officeId, limit, filter, page, cursor }: { officeId: string, limit: number, filter?: PositionsModels.PositionLabelsFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof PositionsApi.findAll, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.findAll(officeId, limit, filter, page, cursor),
     queryFn: () => { 
     checkAcl(PositionsAcl.canUseFindAll({ officeId } ));
-    return PositionsApi.findAll(officeId, limit, filter, page, cursor, config) },
+    return PositionsApi.findAll(officeId, limit, filter, page, cursor) },
     ...options,
   });
 };
@@ -65,14 +64,14 @@ export const useFindAll = <TData>({ officeId, limit, filter, page, cursor }: { o
  * @returns { UseInfiniteQueryResult<PositionsModels.PositionsFindAllResponse> } 
  * @statusCodes [200, 401]
  */
-export const useFindAllInfinite = <TData>({ officeId, limit, filter, cursor }: { officeId: string, limit: number, filter?: PositionsModels.PositionLabelsFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof PositionsApi.findAll, TData>, config?: AxiosRequestConfig) => {
+export const useFindAllInfinite = <TData>({ officeId, limit, filter, cursor }: { officeId: string, limit: number, filter?: PositionsModels.PositionLabelsFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof PositionsApi.findAll, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.findAllInfinite(officeId, limit, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(PositionsAcl.canUseFindAll({ officeId } ));
-    return PositionsApi.findAll(officeId, limit, filter, pageParam, cursor, config) },
+    return PositionsApi.findAll(officeId, limit, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -96,14 +95,14 @@ export const useFindAllInfinite = <TData>({ officeId, limit, filter, cursor }: {
  * @returns { UseQueryResult<PositionsModels.PositionsPaginateResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginate = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: PositionsModels.PositionFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof PositionsApi.paginate, TData>, config?: AxiosRequestConfig) => {
+export const usePaginate = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: PositionsModels.PositionFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof PositionsApi.paginate, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.paginate(officeId, limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(PositionsAcl.canUsePaginate({ officeId } ));
-    return PositionsApi.paginate(officeId, limit, order, filter, page, cursor, config) },
+    return PositionsApi.paginate(officeId, limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -122,14 +121,14 @@ export const usePaginate = <TData>({ officeId, limit, order, filter, page, curso
  * @returns { UseInfiniteQueryResult<PositionsModels.PositionsPaginateResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: PositionsModels.PositionFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof PositionsApi.paginate, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: PositionsModels.PositionFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof PositionsApi.paginate, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.paginateInfinite(officeId, limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(PositionsAcl.canUsePaginate({ officeId } ));
-    return PositionsApi.paginate(officeId, limit, order, filter, pageParam, cursor, config) },
+    return PositionsApi.paginate(officeId, limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -149,14 +148,14 @@ export const usePaginateInfinite = <TData>({ officeId, limit, order, filter, cur
  * @returns { UseMutationResult<CommonModels.PositionCoreResponseDto> } Position created successfully
  * @statusCodes [201, 400, 401, 404]
  */
-export const useCreate = (options?: AppMutationOptions<typeof PositionsApi.create, { officeId: string, data: PositionsModels.CreatePositionRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreate = (options?: AppMutationOptions<typeof PositionsApi.create, { officeId: string, data: PositionsModels.CreatePositionRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, data }) => { 
       checkAcl(PositionsAcl.canUseCreate({ officeId } ));
-      return PositionsApi.create(officeId, data, config)
+      return PositionsApi.create(officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -175,14 +174,14 @@ export const useCreate = (options?: AppMutationOptions<typeof PositionsApi.creat
  * @returns { UseQueryResult<PositionsModels.TotalProfitResponse> } 
  * @statusCodes [200, 401]
  */
-export const useTotalProfit = <TData>({ officeId }: { officeId: string }, options?: AppQueryOptions<typeof PositionsApi.totalProfit, TData>, config?: AxiosRequestConfig) => {
+export const useTotalProfit = <TData>({ officeId }: { officeId: string }, options?: AppQueryOptions<typeof PositionsApi.totalProfit, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.totalProfit(officeId),
     queryFn: () => { 
     checkAcl(PositionsAcl.canUseTotalProfit({ officeId } ));
-    return PositionsApi.totalProfit(officeId, config) },
+    return PositionsApi.totalProfit(officeId) },
     ...options,
   });
 };
@@ -199,14 +198,14 @@ export const useTotalProfit = <TData>({ officeId }: { officeId: string }, option
  * @returns { UseQueryResult<PositionsModels.PositionsListAvailablePartnersForResponse> } 
  * @statusCodes [200, 401]
  */
-export const useListAvailablePartnersFor = <TData>({ officeId, positionId, search, useCase }: { officeId: string, positionId: string, search?: string, useCase?: CommonModels.PositionAvailablePartnersUseCase }, options?: AppQueryOptions<typeof PositionsApi.listAvailablePartnersFor, TData>, config?: AxiosRequestConfig) => {
+export const useListAvailablePartnersFor = <TData>({ officeId, positionId, search, useCase }: { officeId: string, positionId: string, search?: string, useCase?: CommonModels.PositionAvailablePartnersUseCase }, options?: AppQueryOptions<typeof PositionsApi.listAvailablePartnersFor, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.listAvailablePartnersFor(officeId, positionId, search, useCase),
     queryFn: () => { 
     checkAcl(PositionsAcl.canUseListAvailablePartnersFor({ officeId } ));
-    return PositionsApi.listAvailablePartnersFor(officeId, positionId, search, useCase, config) },
+    return PositionsApi.listAvailablePartnersFor(officeId, positionId, search, useCase) },
     ...options,
   });
 };
@@ -221,14 +220,14 @@ export const useListAvailablePartnersFor = <TData>({ officeId, positionId, searc
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 201, 401]
  */
-export const useExportPositions = (options?: AppMutationOptions<typeof PositionsApi.exportPositions, { officeId: string, data: PositionsModels.PositionExportRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useExportPositions = (options?: AppMutationOptions<typeof PositionsApi.exportPositions, { officeId: string, data: PositionsModels.PositionExportRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, data }) => { 
       checkAcl(PositionsAcl.canUseExportPositions({ officeId } ));
-      return PositionsApi.exportPositions(officeId, data, config)
+      return PositionsApi.exportPositions(officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -248,14 +247,14 @@ export const useExportPositions = (options?: AppMutationOptions<typeof Positions
  * @returns { UseQueryResult<CommonModels.PositionCoreResponseDto> } Position retrieved successfully
  * @statusCodes [200, 401, 403, 404]
  */
-export const useGet = <TData>({ officeId, positionId }: { officeId: string, positionId: string }, options?: AppQueryOptions<typeof PositionsApi.get, TData>, config?: AxiosRequestConfig) => {
+export const useGet = <TData>({ officeId, positionId }: { officeId: string, positionId: string }, options?: AppQueryOptions<typeof PositionsApi.get, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.get(officeId, positionId),
     queryFn: () => { 
     checkAcl(PositionsAcl.canUseGet({ officeId } ));
-    return PositionsApi.get(officeId, positionId, config) },
+    return PositionsApi.get(officeId, positionId) },
     ...options,
   });
 };
@@ -271,14 +270,14 @@ export const useGet = <TData>({ officeId, positionId }: { officeId: string, posi
  * @returns { UseMutationResult<CommonModels.PositionCoreResponseDto> } Position updated successfully
  * @statusCodes [200, 400, 401, 404]
  */
-export const useUpdate = (options?: AppMutationOptions<typeof PositionsApi.update, { officeId: string, positionId: string, data: PositionsModels.UpdatePositionDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdate = (options?: AppMutationOptions<typeof PositionsApi.update, { officeId: string, positionId: string, data: PositionsModels.UpdatePositionDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, positionId, data }) => { 
       checkAcl(PositionsAcl.canUseUpdate({ officeId } ));
-      return PositionsApi.update(officeId, positionId, data, config)
+      return PositionsApi.update(officeId, positionId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -300,14 +299,14 @@ export const useUpdate = (options?: AppMutationOptions<typeof PositionsApi.updat
  * @returns { UseQueryResult<PositionsModels.ListRouteLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const useListRouteLabels = <TData>({ officeId, positionId }: { officeId: string, positionId: string }, options?: AppQueryOptions<typeof PositionsApi.listRouteLabels, TData>, config?: AxiosRequestConfig) => {
+export const useListRouteLabels = <TData>({ officeId, positionId }: { officeId: string, positionId: string }, options?: AppQueryOptions<typeof PositionsApi.listRouteLabels, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.listRouteLabels(officeId, positionId),
     queryFn: () => { 
     checkAcl(PositionsAcl.canUseListRouteLabels({ officeId } ));
-    return PositionsApi.listRouteLabels(officeId, positionId, config) },
+    return PositionsApi.listRouteLabels(officeId, positionId) },
     ...options,
   });
 };
@@ -322,14 +321,14 @@ export const useListRouteLabels = <TData>({ officeId, positionId }: { officeId: 
  * @returns { UseQueryResult<PositionsModels.DuplicatePositionDefaultParametersResponseDto> } Default parameters and suggested estimated service date
  * @statusCodes [200, 401, 404]
  */
-export const useGetDuplicateDefaultParameters = <TData>({ officeId, positionId }: { officeId: string, positionId: string }, options?: AppQueryOptions<typeof PositionsApi.getDuplicateDefaultParameters, TData>, config?: AxiosRequestConfig) => {
+export const useGetDuplicateDefaultParameters = <TData>({ officeId, positionId }: { officeId: string, positionId: string }, options?: AppQueryOptions<typeof PositionsApi.getDuplicateDefaultParameters, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.getDuplicateDefaultParameters(officeId, positionId),
     queryFn: () => { 
     checkAcl(PositionsAcl.canUseGetDuplicateDefaultParameters({ officeId } ));
-    return PositionsApi.getDuplicateDefaultParameters(officeId, positionId, config) },
+    return PositionsApi.getDuplicateDefaultParameters(officeId, positionId) },
     ...options,
   });
 };
@@ -345,14 +344,14 @@ export const useGetDuplicateDefaultParameters = <TData>({ officeId, positionId }
  * @returns { UseMutationResult<CommonModels.PositionCoreResponseDto> } Position duplicated successfully
  * @statusCodes [201, 400, 401, 404]
  */
-export const useDuplicate = (options?: AppMutationOptions<typeof PositionsApi.duplicate, { officeId: string, positionId: string, data: PositionsModels.DuplicatePositionRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useDuplicate = (options?: AppMutationOptions<typeof PositionsApi.duplicate, { officeId: string, positionId: string, data: PositionsModels.DuplicatePositionRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, positionId, data }) => { 
       checkAcl(PositionsAcl.canUseDuplicate({ officeId } ));
-      return PositionsApi.duplicate(officeId, positionId, data, config)
+      return PositionsApi.duplicate(officeId, positionId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -374,14 +373,14 @@ export const useDuplicate = (options?: AppMutationOptions<typeof PositionsApi.du
  * @returns { UseMutationResult<CommonModels.PositionCoreResponseDto> } Position cancelled successfully
  * @statusCodes [200, 400, 401, 403, 404]
  */
-export const useCancel = (options?: AppMutationOptions<typeof PositionsApi.cancel, { officeId: string, positionId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCancel = (options?: AppMutationOptions<typeof PositionsApi.cancel, { officeId: string, positionId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, positionId }) => { 
       checkAcl(PositionsAcl.canUseCancel({ officeId } ));
-      return PositionsApi.cancel(officeId, positionId, config)
+      return PositionsApi.cancel(officeId, positionId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -403,14 +402,14 @@ export const useCancel = (options?: AppMutationOptions<typeof PositionsApi.cance
  * @returns { UseMutationResult<CommonModels.PositionCoreResponseDto> } Position reverted successfully
  * @statusCodes [200, 400, 401, 403, 404]
  */
-export const useRevertCancel = (options?: AppMutationOptions<typeof PositionsApi.revertCancel, { officeId: string, positionId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useRevertCancel = (options?: AppMutationOptions<typeof PositionsApi.revertCancel, { officeId: string, positionId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, positionId }) => { 
       checkAcl(PositionsAcl.canUseRevertCancel({ officeId } ));
-      return PositionsApi.revertCancel(officeId, positionId, config)
+      return PositionsApi.revertCancel(officeId, positionId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -433,14 +432,14 @@ export const useRevertCancel = (options?: AppMutationOptions<typeof PositionsApi
  * @returns { UseMutationResult<void> } 
  * @statusCodes [201, 401]
  */
-export const useLinkChild = (options?: AppMutationOptions<typeof PositionsApi.linkChild, { officeId: string, positionId: string, data: PositionsModels.LinkChildPositionsRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useLinkChild = (options?: AppMutationOptions<typeof PositionsApi.linkChild, { officeId: string, positionId: string, data: PositionsModels.LinkChildPositionsRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, positionId, data }) => { 
       checkAcl(PositionsAcl.canUseLinkChild({ officeId } ));
-      return PositionsApi.linkChild(officeId, positionId, data, config)
+      return PositionsApi.linkChild(officeId, positionId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -461,14 +460,14 @@ export const useLinkChild = (options?: AppMutationOptions<typeof PositionsApi.li
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
  */
-export const useUnlinkChild = (options?: AppMutationOptions<typeof PositionsApi.unlinkChild, { officeId: string, positionId: string, data: PositionsModels.UnlinkChildPositionsRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUnlinkChild = (options?: AppMutationOptions<typeof PositionsApi.unlinkChild, { officeId: string, positionId: string, data: PositionsModels.UnlinkChildPositionsRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, positionId, data }) => { 
       checkAcl(PositionsAcl.canUseUnlinkChild({ officeId } ));
-      return PositionsApi.unlinkChild(officeId, positionId, data, config)
+      return PositionsApi.unlinkChild(officeId, positionId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -491,14 +490,14 @@ export const useUnlinkChild = (options?: AppMutationOptions<typeof PositionsApi.
  * @returns { UseQueryResult<PositionsModels.ListChildResponse> } 
  * @statusCodes [200, 401]
  */
-export const useListChild = <TData>({ officeId, positionId, limit, page, cursor }: { officeId: string, positionId: string, limit: number, page?: number, cursor?: string }, options?: AppQueryOptions<typeof PositionsApi.listChild, TData>, config?: AxiosRequestConfig) => {
+export const useListChild = <TData>({ officeId, positionId, limit, page, cursor }: { officeId: string, positionId: string, limit: number, page?: number, cursor?: string }, options?: AppQueryOptions<typeof PositionsApi.listChild, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.listChild(officeId, positionId, limit, page, cursor),
     queryFn: () => { 
     checkAcl(PositionsAcl.canUseListChild({ officeId } ));
-    return PositionsApi.listChild(officeId, positionId, limit, page, cursor, config) },
+    return PositionsApi.listChild(officeId, positionId, limit, page, cursor) },
     ...options,
   });
 };
@@ -516,14 +515,14 @@ export const useListChild = <TData>({ officeId, positionId, limit, page, cursor 
  * @returns { UseInfiniteQueryResult<PositionsModels.ListChildResponse> } 
  * @statusCodes [200, 401]
  */
-export const useListChildInfinite = <TData>({ officeId, positionId, limit, cursor }: { officeId: string, positionId: string, limit: number, cursor?: string }, options?: AppInfiniteQueryOptions<typeof PositionsApi.listChild, TData>, config?: AxiosRequestConfig) => {
+export const useListChildInfinite = <TData>({ officeId, positionId, limit, cursor }: { officeId: string, positionId: string, limit: number, cursor?: string }, options?: AppInfiniteQueryOptions<typeof PositionsApi.listChild, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.listChildInfinite(officeId, positionId, limit, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(PositionsAcl.canUseListChild({ officeId } ));
-    return PositionsApi.listChild(officeId, positionId, limit, pageParam, cursor, config) },
+    return PositionsApi.listChild(officeId, positionId, limit, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;

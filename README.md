@@ -89,6 +89,10 @@ yarn openapi-codegen generate --config my-config.ts
   --axiosRequestConfig                Include Axios request config parameters in query hooks (default: false)
   --infiniteQueries                   Generate infinite queries for paginated API endpoints (default: false)
   --mutationEffects                   Add mutation effects options to mutation hooks (default: true)
+  --workspaceContext                  Allow generated hooks to resolve path/ACL params from OpenApiWorkspaceContext (default: false)
+  --inlineEndpoints                   Inline endpoint implementations into generated query files (default: false)
+  --inlineEndpointsExcludeModules     Comma-separated modules/tags to keep as separate API files while inlineEndpoints=true
+  --modelsOnly                        Generate only model files (default: false)
   --parseRequestParams                Add Zod parsing to API endpoints (default: true)
 
   --acl                               Generate ACL related files (default: true)
@@ -184,6 +188,39 @@ const config: OpenAPICodegenConfig = {
 };
 
 export default config;
+```
+
+### OpenApiWorkspaceContext (Path + ACL defaults)
+
+Enable `workspaceContext: true` in codegen config (or pass `--workspaceContext`) and wrap your app subtree with `OpenApiWorkspaceContext.Provider` if generated hooks frequently repeat workspace-scoped params (for example `officeId`).
+
+```tsx
+import { OpenApiWorkspaceContext } from "@povio/openapi-codegen-cli";
+// openapi-codegen.config.ts -> { workspaceContext: true }
+
+<OpenApiWorkspaceContext.Provider values={{ officeId: "office_123" }}>
+  <MyWorkspacePages />
+</OpenApiWorkspaceContext.Provider>;
+```
+
+Generated query/mutation hooks can then omit matching path/ACL params and resolve them from `OpenApiWorkspaceContext`.
+
+### Generation Modes
+
+You can control whether API endpoint files are emitted, inlined into query files, or skipped entirely.
+
+```ts
+import type { OpenAPICodegenConfig } from "@povio/openapi-codegen-cli";
+
+const config: OpenAPICodegenConfig = {
+  // 1) Default mode: separate *.api.ts files are generated
+  // 2) Inline mode: endpoint logic is generated inside *.queries.ts
+  // and can be used without separate api files:
+  // inlineEndpoints: true,
+  // inlineEndpointsExcludeModules: ["Users", "Billing"],
+  // 3) Models-only mode: generate only *.models.ts files
+  // modelsOnly: true,
+};
 ```
 
 ### Enums

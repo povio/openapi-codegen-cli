@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { useAclCheck } from "@/data/acl/useAclCheck";
@@ -28,14 +27,14 @@ export const keys = {
  * @returns { UseQueryResult<MasterDataModels.MasterDataItemsResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useFindAll = <TData>({ officeId, types, search }: { officeId: string, types: MasterDataModels.MasterDataFindAllTypesParam, search?: string }, options?: AppQueryOptions<typeof MasterDataApi.findAll, TData>, config?: AxiosRequestConfig) => {
+export const useFindAll = <TData>({ officeId, types, search }: { officeId: string, types: MasterDataModels.MasterDataFindAllTypesParam, search?: string }, options?: AppQueryOptions<typeof MasterDataApi.findAll, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.findAll(officeId, types, search),
     queryFn: () => { 
     checkAcl(MasterDataAcl.canUseFindAll());
-    return MasterDataApi.findAll(officeId, types, search, config) },
+    return MasterDataApi.findAll(officeId, types, search) },
     ...options,
   });
 };
@@ -54,14 +53,14 @@ export const useFindAll = <TData>({ officeId, types, search }: { officeId: strin
  * @returns { UseQueryResult<MasterDataModels.MasterDataPaginateResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginate = <TData>({ officeId, types, limit, search, page, cursor }: { officeId: string, types: MasterDataModels.MasterDataPaginateTypesParam, limit: number, search?: string, page?: number, cursor?: string }, options?: AppQueryOptions<typeof MasterDataApi.paginate, TData>, config?: AxiosRequestConfig) => {
+export const usePaginate = <TData>({ officeId, types, limit, search, page, cursor }: { officeId: string, types: MasterDataModels.MasterDataPaginateTypesParam, limit: number, search?: string, page?: number, cursor?: string }, options?: AppQueryOptions<typeof MasterDataApi.paginate, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.paginate(officeId, types, limit, search, page, cursor),
     queryFn: () => { 
     checkAcl(MasterDataAcl.canUsePaginate());
-    return MasterDataApi.paginate(officeId, types, limit, search, page, cursor, config) },
+    return MasterDataApi.paginate(officeId, types, limit, search, page, cursor) },
     ...options,
   });
 };
@@ -80,14 +79,14 @@ export const usePaginate = <TData>({ officeId, types, limit, search, page, curso
  * @returns { UseInfiniteQueryResult<MasterDataModels.MasterDataPaginateResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateInfinite = <TData>({ officeId, types, limit, search, cursor }: { officeId: string, types: MasterDataModels.MasterDataPaginateTypesParam, limit: number, search?: string, cursor?: string }, options?: AppInfiniteQueryOptions<typeof MasterDataApi.paginate, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateInfinite = <TData>({ officeId, types, limit, search, cursor }: { officeId: string, types: MasterDataModels.MasterDataPaginateTypesParam, limit: number, search?: string, cursor?: string }, options?: AppInfiniteQueryOptions<typeof MasterDataApi.paginate, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.paginateInfinite(officeId, types, limit, search, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(MasterDataAcl.canUsePaginate());
-    return MasterDataApi.paginate(officeId, types, limit, search, pageParam, cursor, config) },
+    return MasterDataApi.paginate(officeId, types, limit, search, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;

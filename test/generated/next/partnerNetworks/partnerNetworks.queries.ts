@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -33,14 +32,14 @@ export const keys = {
  * @returns { UseQueryResult<PartnerNetworksModels.PartnerNetworksPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: PartnerNetworksModels.PartnerNetworkLabelFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof PartnerNetworksApi.paginateLabels, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: PartnerNetworksModels.PartnerNetworkLabelFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof PartnerNetworksApi.paginateLabels, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.paginateLabels(limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(PartnerNetworksAcl.canUsePaginateLabels());
-    return PartnerNetworksApi.paginateLabels(limit, order, filter, page, cursor, config) },
+    return PartnerNetworksApi.paginateLabels(limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -58,14 +57,14 @@ export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }:
  * @returns { UseInfiniteQueryResult<PartnerNetworksModels.PartnerNetworksPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: PartnerNetworksModels.PartnerNetworkLabelFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof PartnerNetworksApi.paginateLabels, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: PartnerNetworksModels.PartnerNetworkLabelFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof PartnerNetworksApi.paginateLabels, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.paginateLabelsInfinite(limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(PartnerNetworksAcl.canUsePaginateLabels());
-    return PartnerNetworksApi.paginateLabels(limit, order, filter, pageParam, cursor, config) },
+    return PartnerNetworksApi.paginateLabels(limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -88,14 +87,14 @@ export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor 
  * @returns { UseQueryResult<PartnerNetworksModels.PartnerNetworksPaginateResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: PartnerNetworksModels.PartnerNetworkPaginationFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof PartnerNetworksApi.paginate, TData>, config?: AxiosRequestConfig) => {
+export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: PartnerNetworksModels.PartnerNetworkPaginationFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof PartnerNetworksApi.paginate, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.paginate(limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(PartnerNetworksAcl.canUsePaginate());
-    return PartnerNetworksApi.paginate(limit, order, filter, page, cursor, config) },
+    return PartnerNetworksApi.paginate(limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -113,14 +112,14 @@ export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { lim
  * @returns { UseInfiniteQueryResult<PartnerNetworksModels.PartnerNetworksPaginateResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: PartnerNetworksModels.PartnerNetworkPaginationFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof PartnerNetworksApi.paginate, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: PartnerNetworksModels.PartnerNetworkPaginationFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof PartnerNetworksApi.paginate, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.paginateInfinite(limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(PartnerNetworksAcl.canUsePaginate());
-    return PartnerNetworksApi.paginate(limit, order, filter, pageParam, cursor, config) },
+    return PartnerNetworksApi.paginate(limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -139,14 +138,14 @@ export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { l
  * @returns { UseMutationResult<PartnerNetworksModels.PartnerNetworkResponseDTO> } 
  * @statusCodes [201, 401]
  */
-export const useCreate = (options?: AppMutationOptions<typeof PartnerNetworksApi.create, { data: PartnerNetworksModels.CreatePartnerNetworkRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreate = (options?: AppMutationOptions<typeof PartnerNetworksApi.create, { data: PartnerNetworksModels.CreatePartnerNetworkRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ data }) => { 
       checkAcl(PartnerNetworksAcl.canUseCreate());
-      return PartnerNetworksApi.create(data, config)
+      return PartnerNetworksApi.create(data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -165,14 +164,14 @@ export const useCreate = (options?: AppMutationOptions<typeof PartnerNetworksApi
  * @returns { UseQueryResult<PartnerNetworksModels.PartnerNetworkResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useFindById = <TData>({ id }: { id: string }, options?: AppQueryOptions<typeof PartnerNetworksApi.findById, TData>, config?: AxiosRequestConfig) => {
+export const useFindById = <TData>({ id }: { id: string }, options?: AppQueryOptions<typeof PartnerNetworksApi.findById, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.findById(id),
     queryFn: () => { 
     checkAcl(PartnerNetworksAcl.canUseFindById());
-    return PartnerNetworksApi.findById(id, config) },
+    return PartnerNetworksApi.findById(id) },
     ...options,
   });
 };
@@ -187,14 +186,14 @@ export const useFindById = <TData>({ id }: { id: string }, options?: AppQueryOpt
  * @returns { UseMutationResult<PartnerNetworksModels.PartnerNetworkResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useUpdate = (options?: AppMutationOptions<typeof PartnerNetworksApi.update, { id: string, data: PartnerNetworksModels.UpdatePartnerNetworkRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdate = (options?: AppMutationOptions<typeof PartnerNetworksApi.update, { id: string, data: PartnerNetworksModels.UpdatePartnerNetworkRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ id, data }) => { 
       checkAcl(PartnerNetworksAcl.canUseUpdate());
-      return PartnerNetworksApi.update(id, data, config)
+      return PartnerNetworksApi.update(id, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -215,14 +214,14 @@ export const useUpdate = (options?: AppMutationOptions<typeof PartnerNetworksApi
  * @returns { UseMutationResult<PartnerNetworksModels.PartnerNetworkResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useArchive = (options?: AppMutationOptions<typeof PartnerNetworksApi.archive, { id: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useArchive = (options?: AppMutationOptions<typeof PartnerNetworksApi.archive, { id: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ id }) => { 
       checkAcl(PartnerNetworksAcl.canUseArchive());
-      return PartnerNetworksApi.archive(id, config)
+      return PartnerNetworksApi.archive(id)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -243,14 +242,14 @@ export const useArchive = (options?: AppMutationOptions<typeof PartnerNetworksAp
  * @returns { UseMutationResult<PartnerNetworksModels.PartnerNetworkResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useUnarchive = (options?: AppMutationOptions<typeof PartnerNetworksApi.unarchive, { id: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUnarchive = (options?: AppMutationOptions<typeof PartnerNetworksApi.unarchive, { id: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ id }) => { 
       checkAcl(PartnerNetworksAcl.canUseUnarchive());
-      return PartnerNetworksApi.unarchive(id, config)
+      return PartnerNetworksApi.unarchive(id)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

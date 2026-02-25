@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -26,14 +25,14 @@ export const keys = {
  * @returns { UseQueryResult<PositionInvolvedPartiesModels.FindByPositionIdResponse> } 
  * @statusCodes [200, 401]
  */
-export const useFindByPositionId = <TData>({ officeId, positionId }: { officeId: string, positionId: string }, options?: AppQueryOptions<typeof PositionInvolvedPartiesApi.findByPositionId, TData>, config?: AxiosRequestConfig) => {
+export const useFindByPositionId = <TData>({ officeId, positionId }: { officeId: string, positionId: string }, options?: AppQueryOptions<typeof PositionInvolvedPartiesApi.findByPositionId, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.findByPositionId(officeId, positionId),
     queryFn: () => { 
     checkAcl(PositionInvolvedPartiesAcl.canUseFindByPositionId({ officeId } ));
-    return PositionInvolvedPartiesApi.findByPositionId(officeId, positionId, config) },
+    return PositionInvolvedPartiesApi.findByPositionId(officeId, positionId) },
     ...options,
   });
 };
@@ -49,14 +48,14 @@ export const useFindByPositionId = <TData>({ officeId, positionId }: { officeId:
  * @returns { UseMutationResult<CommonModels.InvolvedPartyResponseDto> } 
  * @statusCodes [201, 401]
  */
-export const useCreate = (options?: AppMutationOptions<typeof PositionInvolvedPartiesApi.create, { officeId: string, positionId: string, data: CommonModels.CreateInvolvedPartyRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreate = (options?: AppMutationOptions<typeof PositionInvolvedPartiesApi.create, { officeId: string, positionId: string, data: CommonModels.CreateInvolvedPartyRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, positionId, data }) => { 
       checkAcl(PositionInvolvedPartiesAcl.canUseCreate({ officeId } ));
-      return PositionInvolvedPartiesApi.create(officeId, positionId, data, config)
+      return PositionInvolvedPartiesApi.create(officeId, positionId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -78,14 +77,14 @@ export const useCreate = (options?: AppMutationOptions<typeof PositionInvolvedPa
  * @returns { UseMutationResult<CommonModels.InvolvedPartyResponseDto> } 
  * @statusCodes [200, 401]
  */
-export const useUpdate = (options?: AppMutationOptions<typeof PositionInvolvedPartiesApi.update, { officeId: string, positionId: string, partyId: string, data: CommonModels.UpdateInvolvedPartyDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdate = (options?: AppMutationOptions<typeof PositionInvolvedPartiesApi.update, { officeId: string, positionId: string, partyId: string, data: CommonModels.UpdateInvolvedPartyDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, positionId, partyId, data }) => { 
       checkAcl(PositionInvolvedPartiesAcl.canUseUpdate({ officeId } ));
-      return PositionInvolvedPartiesApi.update(officeId, positionId, partyId, data, config)
+      return PositionInvolvedPartiesApi.update(officeId, positionId, partyId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -106,14 +105,14 @@ export const useUpdate = (options?: AppMutationOptions<typeof PositionInvolvedPa
  * @returns { UseMutationResult<void> } 
  * @statusCodes [204, 401]
  */
-export const useDeleteOfficesPositionsInvolvedPartiesByPartyId = (options?: AppMutationOptions<typeof PositionInvolvedPartiesApi.deleteOfficesPositionsInvolvedPartiesByPartyId, { officeId: string, positionId: string, partyId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useDeleteOfficesPositionsInvolvedPartiesByPartyId = (options?: AppMutationOptions<typeof PositionInvolvedPartiesApi.deleteOfficesPositionsInvolvedPartiesByPartyId, { officeId: string, positionId: string, partyId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, positionId, partyId }) => { 
       checkAcl(PositionInvolvedPartiesAcl.canUseDeleteOfficesPositionsInvolvedPartiesByPartyId({ officeId } ));
-      return PositionInvolvedPartiesApi.deleteOfficesPositionsInvolvedPartiesByPartyId(officeId, positionId, partyId, config)
+      return PositionInvolvedPartiesApi.deleteOfficesPositionsInvolvedPartiesByPartyId(officeId, positionId, partyId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

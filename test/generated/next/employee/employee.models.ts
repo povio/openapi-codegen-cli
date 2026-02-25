@@ -19,7 +19,7 @@ export namespace EmployeeModels {
  * @property { string } createdAt  
  * @property { string } updatedAt  
  */
-export const EmployeeResponseSchema = z.object({ id: z.string().describe("Employee ID"), email: z.email().describe("Email"), firstName: z.string().describe("First name"), lastName: z.string().describe("Last name"), locale: CommonModels.LocaleEnumSchema.nullish(), phone: z.string().describe("Phone number").nullish(), archived: z.boolean().describe("Archived").nullish(), primaryOfficeId: z.string().describe("Primary office id").nullish(), primaryOffice: CommonModels.EmployeeOfficeResponseSchema.describe("Primary office").nullish(), employments: z.array(CommonModels.EmploymentResponseSchema).readonly().describe("Employments").nullish(), roles: z.array(CommonModels.EmployeeRoleResponseSchema).readonly().describe("Global Roles").nullish(), createdAt: z.iso.datetime({ offset: true }), updatedAt: z.iso.datetime({ offset: true }) }).readonly();
+export const EmployeeResponseSchema = z.object({ id: z.string(), email: z.email(), firstName: z.string(), lastName: z.string(), locale: CommonModels.LocaleEnumSchema.nullish(), phone: z.string().nullish(), archived: z.boolean().nullish(), primaryOfficeId: z.string().nullish(), primaryOffice: CommonModels.EmployeeOfficeResponseSchema.nullish(), employments: z.array(CommonModels.EmploymentResponseSchema).nullish(), roles: z.array(CommonModels.EmployeeRoleResponseSchema).nullish(), createdAt: z.iso.datetime({ offset: true }), updatedAt: z.iso.datetime({ offset: true }) });
 export type EmployeeResponse = z.infer<typeof EmployeeResponseSchema>;
 
 /** 
@@ -32,7 +32,7 @@ export type EmployeeResponse = z.infer<typeof EmployeeResponseSchema>;
  * @property { string } primaryOfficeId Primary office ID 
  * @property { string } phone Phone number 
  */
-export const EmployeeCreateRequestSchema = z.object({ firstName: z.string().describe("First name"), lastName: z.string().describe("Last name"), email: z.email().describe("Email"), locale: CommonModels.LocaleEnumSchema.nullish(), primaryOfficeId: z.string().describe("Primary office ID").nullish(), phone: z.string().describe("Phone number").nullish() }).readonly();
+export const EmployeeCreateRequestSchema = z.object({ firstName: z.string(), lastName: z.string(), email: z.email(), locale: CommonModels.LocaleEnumSchema.nullish(), primaryOfficeId: z.string().nullish(), phone: z.string().nullish() });
 export type EmployeeCreateRequest = z.infer<typeof EmployeeCreateRequestSchema>;
 
 /** 
@@ -41,7 +41,7 @@ export type EmployeeCreateRequest = z.infer<typeof EmployeeCreateRequestSchema>;
  * @property { string } officeId  
  * @property { string[] } roleIds Array of office role IDs 
  */
-export const EmployeeOneStepCreateEmploymentRequestSchema = z.object({ officeId: z.string(), roleIds: z.array(z.string()).readonly().describe("Array of office role IDs").nullish() }).readonly();
+export const EmployeeOneStepCreateEmploymentRequestSchema = z.object({ officeId: z.string(), roleIds: z.array(z.string()).nullish() });
 export type EmployeeOneStepCreateEmploymentRequest = z.infer<typeof EmployeeOneStepCreateEmploymentRequestSchema>;
 
 /** 
@@ -56,7 +56,7 @@ export type EmployeeOneStepCreateEmploymentRequest = z.infer<typeof EmployeeOneS
  * @property { string } primaryOfficeId Primary office ID 
  * @property { EmployeeOneStepCreateEmploymentRequest[] } employments Employments. Min Items: `1` 
  */
-export const EmployeeOneStepCreateRequestSchema = z.object({ locale: CommonModels.LocaleEnumSchema.nullish(), firstName: z.string().describe("First name"), lastName: z.string().describe("Last name"), email: z.email().describe("Email"), phone: z.string().describe("Phone number").nullish(), roleIds: z.array(z.string()).readonly().describe("Array of global role IDs").nullish(), primaryOfficeId: z.string().describe("Primary office ID").nullish(), employments: z.array(EmployeeOneStepCreateEmploymentRequestSchema).readonly().min(1).describe("Employments") }).readonly();
+export const EmployeeOneStepCreateRequestSchema = z.object({ locale: CommonModels.LocaleEnumSchema.nullish(), firstName: z.string(), lastName: z.string(), email: z.email(), phone: z.string().nullish(), roleIds: z.array(z.string()).nullish(), primaryOfficeId: z.string().nullish(), employments: z.array(EmployeeOneStepCreateEmploymentRequestSchema).min(1) });
 export type EmployeeOneStepCreateRequest = z.infer<typeof EmployeeOneStepCreateRequestSchema>;
 
 /** 
@@ -68,7 +68,7 @@ export type EmployeeOneStepCreateRequest = z.infer<typeof EmployeeOneStepCreateR
  * @property { CommonModels.LocaleEnum } locale  
  * @property { string } primaryOfficeId  
  */
-export const EmployeeUpdateRequestSchema = z.object({ firstName: z.string().describe("First name"), lastName: z.string().describe("Last name"), phone: z.string().describe("Phone number of the employee"), locale: CommonModels.LocaleEnumSchema, primaryOfficeId: z.string() }).readonly();
+export const EmployeeUpdateRequestSchema = z.object({ firstName: z.string().nullable(), lastName: z.string().nullable(), phone: z.string().nullable(), locale: CommonModels.LocaleEnumSchema.nullable(), primaryOfficeId: z.string().nullable() }).partial();
 export type EmployeeUpdateRequest = z.infer<typeof EmployeeUpdateRequestSchema>;
 
 /** 
@@ -87,7 +87,7 @@ export type EmployeeUpdateRequest = z.infer<typeof EmployeeUpdateRequestSchema>;
  * @property { string } search Free text search multiple fields 
  * @property { string } officeRole Office role 
  */
-export const EmployeeFilterDtoSchema = z.object({ office: z.string().describe("Office ID (single select, offices the user has access to)"), roles: z.array(z.string()).readonly().describe("Role IDs (multiselect)"), primaryOfficeId: z.string().describe("Primary office id"), firstName: z.string().describe("First name"), lastName: z.string().describe("Last name"), email: z.string().describe("Email"), ids: z.array(z.string()).readonly().describe("Ids"), archived: z.boolean().describe("Archived\n set to true to only return archived employees\n does not return archived employees by default").default(false), search: z.string().describe("Free text search multiple fields"), officeRole: z.string().describe("Office role") }).readonly();
+export const EmployeeFilterDtoSchema = z.object({ office: z.string().nullable(), roles: z.array(z.string()).nullable(), primaryOfficeId: z.string().nullable(), firstName: z.string().nullable(), lastName: z.string().nullable(), email: z.string().nullable(), ids: z.array(z.string()).nullable(), archived: z.boolean().nullable().default(false), search: z.string().nullable(), officeRole: z.string().nullable() }).partial();
 export type EmployeeFilterDto = z.infer<typeof EmployeeFilterDtoSchema>;
 
 /** 
@@ -95,7 +95,7 @@ export type EmployeeFilterDto = z.infer<typeof EmployeeFilterDtoSchema>;
  * @type { object }
  * @property { string } search  
  */
-export const EmployeeLabelFilterDtoSchema = z.object({ search: z.string() }).readonly();
+export const EmployeeLabelFilterDtoSchema = z.object({ search: z.string().nullable() }).partial();
 export type EmployeeLabelFilterDto = z.infer<typeof EmployeeLabelFilterDtoSchema>;
 
 /** 
@@ -107,7 +107,7 @@ export type EmployeeLabelFilterDto = z.infer<typeof EmployeeLabelFilterDtoSchema
  * @property { string } description Description of the role 
  * @property { string[] } permissions Permissions associated with the role 
  */
-export const EmployeeRoleMemberResponseSchema = z.object({ roleId: z.string(), name: z.string().describe("Name of the role"), color: z.string().describe("Color associated with the role").nullish(), description: z.string().describe("Description of the role").nullish(), permissions: z.array(z.string()).readonly().describe("Permissions associated with the role") }).readonly();
+export const EmployeeRoleMemberResponseSchema = z.object({ roleId: z.string(), name: z.string(), color: z.string().nullish(), description: z.string().nullish(), permissions: z.array(z.string()) });
 export type EmployeeRoleMemberResponse = z.infer<typeof EmployeeRoleMemberResponseSchema>;
 
 /** 
@@ -115,7 +115,7 @@ export type EmployeeRoleMemberResponse = z.infer<typeof EmployeeRoleMemberRespon
  * @type { object }
  * @property { string[] } roleIds Array of role IDs 
  */
-export const EmployeeRoleMembershipsUpdateRequestSchema = z.object({ roleIds: z.array(z.string()).readonly().describe("Array of role IDs") }).readonly();
+export const EmployeeRoleMembershipsUpdateRequestSchema = z.object({ roleIds: z.array(z.string()) });
 export type EmployeeRoleMembershipsUpdateRequest = z.infer<typeof EmployeeRoleMembershipsUpdateRequestSchema>;
 
 /** 
@@ -138,7 +138,7 @@ export const EmployeePopulateField = EmployeePopulateFieldSchema.enum;
  * EmployeePaginatePopulateParamSchema 
  * @type { array }
  */
-export const EmployeePaginatePopulateParamSchema = z.array(EmployeePopulateFieldSchema).readonly().nullish();
+export const EmployeePaginatePopulateParamSchema = z.array(EmployeePopulateFieldSchema).nullish();
 export type EmployeePaginatePopulateParam = z.infer<typeof EmployeePaginatePopulateParamSchema>;
 
 /** 
@@ -151,14 +151,14 @@ export type EmployeePaginatePopulateParam = z.infer<typeof EmployeePaginatePopul
  * @property { number } totalItems Total available items 
  * @property { EmployeeResponse[] } items  
  */
-export const EmployeePaginateResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(EmployeeResponseSchema).readonly() }).readonly().shape });
+export const EmployeePaginateResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(EmployeeResponseSchema).nullable() }).partial().shape });
 export type EmployeePaginateResponse = z.infer<typeof EmployeePaginateResponseSchema>;
 
 /** 
  * EmployeeFindAllResponseSchema 
  * @type { array }
  */
-export const EmployeeFindAllResponseSchema = z.array(CommonModels.LabelResponseDTOSchema).readonly();
+export const EmployeeFindAllResponseSchema = z.array(CommonModels.LabelResponseDTOSchema);
 export type EmployeeFindAllResponse = z.infer<typeof EmployeeFindAllResponseSchema>;
 
 /** 
@@ -179,21 +179,21 @@ export const EmployeePaginateLabelsOrderParamEnum = EmployeePaginateLabelsOrderP
  * @property { number } totalItems Total available items 
  * @property { CommonModels.LabelResponseDTO[] } items  
  */
-export const EmployeePaginateLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).readonly() }).readonly().shape });
+export const EmployeePaginateLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).nullable() }).partial().shape });
 export type EmployeePaginateLabelsResponse = z.infer<typeof EmployeePaginateLabelsResponseSchema>;
 
 /** 
  * EmployeeGetPopulateParamSchema 
  * @type { array }
  */
-export const EmployeeGetPopulateParamSchema = z.array(EmployeePopulateFieldSchema).readonly().nullish();
+export const EmployeeGetPopulateParamSchema = z.array(EmployeePopulateFieldSchema).nullish();
 export type EmployeeGetPopulateParam = z.infer<typeof EmployeeGetPopulateParamSchema>;
 
 /** 
  * GetWithOfficePopulateParamSchema 
  * @type { array }
  */
-export const GetWithOfficePopulateParamSchema = z.array(EmployeePopulateFieldSchema).readonly().nullish();
+export const GetWithOfficePopulateParamSchema = z.array(EmployeePopulateFieldSchema).nullish();
 export type GetWithOfficePopulateParam = z.infer<typeof GetWithOfficePopulateParamSchema>;
 
 /** 
@@ -206,7 +206,7 @@ export type GetWithOfficePopulateParam = z.infer<typeof GetWithOfficePopulatePar
  * @property { number } totalItems Total available items 
  * @property { EmployeeRoleMemberResponse[] } items  
  */
-export const EmployeeListRolesResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(EmployeeRoleMemberResponseSchema).readonly() }).readonly().shape });
+export const EmployeeListRolesResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(EmployeeRoleMemberResponseSchema).nullable() }).partial().shape });
 export type EmployeeListRolesResponse = z.infer<typeof EmployeeListRolesResponseSchema>;
 
 /** 
@@ -219,7 +219,7 @@ export type EmployeeListRolesResponse = z.infer<typeof EmployeeListRolesResponse
  * @property { number } totalItems Total available items 
  * @property { EmployeeRoleMemberResponse[] } items  
  */
-export const EmployeeUpdateRolesResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(EmployeeRoleMemberResponseSchema).readonly() }).readonly().shape });
+export const EmployeeUpdateRolesResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(EmployeeRoleMemberResponseSchema).nullable() }).partial().shape });
 export type EmployeeUpdateRolesResponse = z.infer<typeof EmployeeUpdateRolesResponseSchema>;
 
 }

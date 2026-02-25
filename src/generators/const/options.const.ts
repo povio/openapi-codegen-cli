@@ -39,6 +39,8 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
     },
   },
   baseUrl: "",
+  modelsOnly: false,
+  standalone: false,
   // Zod options
   schemaSuffix: SCHEMA_SUFFIX,
   enumSuffix: ENUM_SUFFIX,
@@ -47,12 +49,16 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   replaceOptionalWithNullish: false,
   // Endpoints options
   restClientImportPath: "",
+  errorHandlingImportPath: "",
   removeOperationPrefixEndingWith: "Controller_",
   parseRequestParams: true,
+  inlineEndpoints: false,
+  inlineEndpointsExcludeModules: [],
   // Queries options
   queryTypesImportPath: PACKAGE_IMPORT_PATH,
   axiosRequestConfig: false,
   mutationEffects: true,
+  workspaceContext: false,
   // Infinite queries options
   infiniteQueries: false,
   infiniteQueryParamNames: {
@@ -67,6 +73,7 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   acl: true,
   checkAcl: true,
   abilityContextGenericAppAbilities: false,
+  abilityContextImportPath: "",
   // Builder Configs options
   builderConfigs: false,
   filterParamName: "filter",

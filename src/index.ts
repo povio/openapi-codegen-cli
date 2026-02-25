@@ -18,6 +18,7 @@ export type { AppQueryOptions, AppMutationOptions, AppInfiniteQueryOptions } fro
 export { OpenApiRouter } from "./lib/config/router.context";
 export { OpenApiQueryConfig } from "./lib/config/queryConfig.context";
 export type { InvalidationMap } from "./lib/config/queryConfig.context";
+export { OpenApiWorkspaceContext } from "./lib/config/workspace.context";
 
 // i18n resources (for consumer apps to merge into their i18n config)
 export { ns, resources } from "./lib/config/i18n";

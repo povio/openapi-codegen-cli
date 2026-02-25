@@ -8,7 +8,7 @@ export namespace WorkingDocumentsAmsInstructionsModels {
  * @property { string } id ID of the port 
  * @property { string } name Name of the port 
  */
-export const AMSInstructionsDocumentPortResponseDTOSchema = z.object({ id: z.string().describe("ID of the port"), name: z.string().describe("Name of the port") }).readonly();
+export const AMSInstructionsDocumentPortResponseDTOSchema = z.object({ id: z.string().nullable(), name: z.string().nullable() }).partial();
 export type AMSInstructionsDocumentPortResponseDTO = z.infer<typeof AMSInstructionsDocumentPortResponseDTOSchema>;
 
 /** 
@@ -17,7 +17,7 @@ export type AMSInstructionsDocumentPortResponseDTO = z.infer<typeof AMSInstructi
  * @property { string } id ID of the city 
  * @property { string } name Name of the city 
  */
-export const AMSInstructionsDocumentCityResponseDTOSchema = z.object({ id: z.string().describe("ID of the city"), name: z.string().describe("Name of the city") }).readonly();
+export const AMSInstructionsDocumentCityResponseDTOSchema = z.object({ id: z.string().nullable(), name: z.string().nullable() }).partial();
 export type AMSInstructionsDocumentCityResponseDTO = z.infer<typeof AMSInstructionsDocumentCityResponseDTOSchema>;
 
 /** 
@@ -26,7 +26,7 @@ export type AMSInstructionsDocumentCityResponseDTO = z.infer<typeof AMSInstructi
  * @property { string } id ID of the employee 
  * @property { string } name Name of the employee 
  */
-export const AMSInstructionsDocumentSignedByResponseDTOSchema = z.object({ id: z.string().describe("ID of the employee"), name: z.string().describe("Name of the employee") }).readonly();
+export const AMSInstructionsDocumentSignedByResponseDTOSchema = z.object({ id: z.string().nullable(), name: z.string().nullable() }).partial();
 export type AMSInstructionsDocumentSignedByResponseDTO = z.infer<typeof AMSInstructionsDocumentSignedByResponseDTOSchema>;
 
 /** 
@@ -36,7 +36,7 @@ export type AMSInstructionsDocumentSignedByResponseDTO = z.infer<typeof AMSInstr
  * @property { string } name Name of the business partner 
  * @property { string } address Address of the business partner 
  */
-export const AMSInstructionsDocumentBusinessPartnerResponseDTOSchema = z.object({ id: z.string().describe("ID of the business partner"), name: z.string().describe("Name of the business partner"), address: z.string().describe("Address of the business partner") }).readonly();
+export const AMSInstructionsDocumentBusinessPartnerResponseDTOSchema = z.object({ id: z.string().nullable(), name: z.string().nullable(), address: z.string().nullable() }).partial();
 export type AMSInstructionsDocumentBusinessPartnerResponseDTO = z.infer<typeof AMSInstructionsDocumentBusinessPartnerResponseDTOSchema>;
 
 /** 
@@ -51,7 +51,7 @@ export type AMSInstructionsDocumentBusinessPartnerResponseDTO = z.infer<typeof A
  * @property { string } seal1 Seal number 1 of the cargo 
  * @property { string } seal2 Seal number 2 of the cargo 
  */
-export const AMSInstructionsDocumentCargoDTOSchema = z.object({ caseMarks: z.string().describe("Case marks of the cargo"), containerNumber: z.string().describe("Container number of the cargo"), nrOfPackages: z.number().describe("Number of packages in the cargo"), description: z.string().describe("Description of the cargo"), weight: z.number().describe("Weight of the cargo"), volume: z.number().describe("Volume of the cargo"), seal1: z.string().describe("Seal number 1 of the cargo"), seal2: z.string().describe("Seal number 2 of the cargo") }).readonly();
+export const AMSInstructionsDocumentCargoDTOSchema = z.object({ caseMarks: z.string().nullable(), containerNumber: z.string().nullable(), nrOfPackages: z.number().nullable(), description: z.string().nullable(), weight: z.number().nullable(), volume: z.number().nullable(), seal1: z.string().nullable(), seal2: z.string().nullable() }).partial();
 export type AMSInstructionsDocumentCargoDTO = z.infer<typeof AMSInstructionsDocumentCargoDTOSchema>;
 
 /** 
@@ -96,7 +96,7 @@ export type AMSInstructionsDocumentCargoDTO = z.infer<typeof AMSInstructionsDocu
  * @property { string } createdAt Created at 
  * @property { string } updatedAt Updated at 
  */
-export const AMSInstructionsDocumentResponseDTOSchema = z.object({ id: z.string().describe("Unique identifier of the AMS Instructions document"), positionId: z.string().describe("Unique identifier of the position this document belongs to"), positionNumber: z.string().describe("Position number for reference").nullish(), name: z.string().describe("Name of the AMS Instructions document"), nameSuffix: z.string().describe("Suffix to be added to the document name").nullish(), defaultFileName: z.string(), date: z.iso.datetime({ offset: true }).describe("Date of the AMS Instructions document").nullish(), direction: CommonModels.DirectionEnumSchema.describe("Direction of the shipment (e.g., import/export)").nullish(), transportMode: CommonModels.TransportModeEnumSchema.describe("Mode of transport for the shipment").nullish(), versionNumber: z.number().describe("Version number of the document"), additionalAMSText: CommonModels.EditorContentResponseDtoSchema.describe("Additional AMS text").nullish(), principalName: z.string().describe("Principal name").nullish(), blNumber: z.string().describe("Bill of lading number").nullish(), vessel: z.string().describe("Vessel").nullish(), portOfLoading: AMSInstructionsDocumentPortResponseDTOSchema.describe("Port of loading").nullish(), placeOfDelivery: AMSInstructionsDocumentCityResponseDTOSchema.describe("Port of delivery").nullish(), portOfDischarge: AMSInstructionsDocumentPortResponseDTOSchema.describe("Port of discharge").nullish(), placeOfIssue: AMSInstructionsDocumentCityResponseDTOSchema.describe("Place of issue").nullish(), dateOfIssue: z.iso.datetime({ offset: true }).describe("Date of issue").nullish(), signedBy: AMSInstructionsDocumentSignedByResponseDTOSchema.describe("Signed by").nullish(), deliveryBusinessPartner: AMSInstructionsDocumentBusinessPartnerResponseDTOSchema.describe("Delivery business partner").nullish(), placeOfAcceptance: AMSInstructionsDocumentCityResponseDTOSchema.describe("Port of acceptance").nullish(), consignee: AMSInstructionsDocumentBusinessPartnerResponseDTOSchema.describe("Consignee").nullish(), shipper: AMSInstructionsDocumentBusinessPartnerResponseDTOSchema.describe("Shipper").nullish(), notify: AMSInstructionsDocumentBusinessPartnerResponseDTOSchema.describe("Notify party").nullish(), alsoNotify: AMSInstructionsDocumentBusinessPartnerResponseDTOSchema.describe("Also notify party").nullish(), applyTo: z.string().describe("Apply to").nullish(), suppressWeight: z.boolean().describe("Whether to suppress weight information").nullish(), suppressMeasurement: z.boolean().describe("Whether to suppress measurement information").nullish(), availableContainerNumbers: z.array(z.string()).readonly().describe("Available container numbers").nullish(), selectedContainerNumbers: z.array(z.string()).readonly().describe("Selected container numbers").nullish(), selectedContainerLabels: z.array(z.string()).readonly().describe("Selected container labels").nullish(), cargo: z.array(AMSInstructionsDocumentCargoDTOSchema).readonly().describe("Cargo information").nullish(), bodyRemarks: CommonModels.EditorContentResponseDtoSchema.describe("Body remarks").nullish(), footerRemarks: CommonModels.EditorContentResponseDtoSchema.describe("Footer remarks").nullish(), config: CommonModels.DocumentConfigDTOSchema.describe("Configuration settings for the document").nullish(), createdAt: z.iso.datetime({ offset: true }).describe("Created at").nullish(), updatedAt: z.iso.datetime({ offset: true }).describe("Updated at").nullish() }).readonly();
+export const AMSInstructionsDocumentResponseDTOSchema = z.object({ id: z.string(), positionId: z.string(), positionNumber: z.string().nullish(), name: z.string(), nameSuffix: z.string().nullish(), defaultFileName: z.string(), date: z.iso.datetime({ offset: true }).nullish(), direction: CommonModels.DirectionEnumSchema.nullish(), transportMode: CommonModels.TransportModeEnumSchema.nullish(), versionNumber: z.number(), additionalAMSText: CommonModels.EditorContentResponseDtoSchema.nullish(), principalName: z.string().nullish(), blNumber: z.string().nullish(), vessel: z.string().nullish(), portOfLoading: AMSInstructionsDocumentPortResponseDTOSchema.nullish(), placeOfDelivery: AMSInstructionsDocumentCityResponseDTOSchema.nullish(), portOfDischarge: AMSInstructionsDocumentPortResponseDTOSchema.nullish(), placeOfIssue: AMSInstructionsDocumentCityResponseDTOSchema.nullish(), dateOfIssue: z.iso.datetime({ offset: true }).nullish(), signedBy: AMSInstructionsDocumentSignedByResponseDTOSchema.nullish(), deliveryBusinessPartner: AMSInstructionsDocumentBusinessPartnerResponseDTOSchema.nullish(), placeOfAcceptance: AMSInstructionsDocumentCityResponseDTOSchema.nullish(), consignee: AMSInstructionsDocumentBusinessPartnerResponseDTOSchema.nullish(), shipper: AMSInstructionsDocumentBusinessPartnerResponseDTOSchema.nullish(), notify: AMSInstructionsDocumentBusinessPartnerResponseDTOSchema.nullish(), alsoNotify: AMSInstructionsDocumentBusinessPartnerResponseDTOSchema.nullish(), applyTo: z.string().nullish(), suppressWeight: z.boolean().nullish(), suppressMeasurement: z.boolean().nullish(), availableContainerNumbers: z.array(z.string()).nullish(), selectedContainerNumbers: z.array(z.string()).nullish(), selectedContainerLabels: z.array(z.string()).nullish(), cargo: z.array(AMSInstructionsDocumentCargoDTOSchema).nullish(), bodyRemarks: CommonModels.EditorContentResponseDtoSchema.nullish(), footerRemarks: CommonModels.EditorContentResponseDtoSchema.nullish(), config: CommonModels.DocumentConfigDTOSchema.nullish(), createdAt: z.iso.datetime({ offset: true }).nullish(), updatedAt: z.iso.datetime({ offset: true }).nullish() });
 export type AMSInstructionsDocumentResponseDTO = z.infer<typeof AMSInstructionsDocumentResponseDTOSchema>;
 
 /** 
@@ -105,7 +105,7 @@ export type AMSInstructionsDocumentResponseDTO = z.infer<typeof AMSInstructionsD
  * @property { string } id Business partner ID 
  * @property { string } address Business partner address 
  */
-export const UpdateAMSInstructionsDocumentBusinessPartnerRequestDTOSchema = z.object({ id: z.string().describe("Business partner ID"), address: z.string().describe("Business partner address") }).readonly();
+export const UpdateAMSInstructionsDocumentBusinessPartnerRequestDTOSchema = z.object({ id: z.string().nullable(), address: z.string().nullable() }).partial();
 export type UpdateAMSInstructionsDocumentBusinessPartnerRequestDTO = z.infer<typeof UpdateAMSInstructionsDocumentBusinessPartnerRequestDTOSchema>;
 
 /** 
@@ -136,7 +136,7 @@ export type UpdateAMSInstructionsDocumentBusinessPartnerRequestDTO = z.infer<typ
  * @property { CommonModels.EditorContentUpdateDto } footerRemarks Footer remarks 
  * @property { string } date Date of the AMS Instructions document 
  */
-export const UpdateAMSInstructionsDocumentRequestDTOSchema = z.object({ nameSuffix: z.string().describe("Document name suffix"), additionalAMSText: CommonModels.EditorContentUpdateDtoSchema.describe("Additional AMS text"), principalName: z.string().describe("Principal name"), blNumber: z.string().describe("Bill of lading number"), vessel: z.string().describe("Vessel"), portOfLoadingId: z.string().describe("Port of loading id"), placeOfDeliveryId: z.string().describe("Place of delivery id"), portOfDischargeId: z.string().describe("Port of discharge id"), placeOfIssueId: z.string().describe("Place of issue"), dateOfIssue: z.iso.datetime({ offset: true }).describe("Date of issue"), signedById: z.string().describe("Signed by employee ID"), deliveryBusinessPartner: UpdateAMSInstructionsDocumentBusinessPartnerRequestDTOSchema.describe("Delivery business partner"), placeOfAcceptanceId: z.string().describe("Port of acceptance"), consignee: UpdateAMSInstructionsDocumentBusinessPartnerRequestDTOSchema.describe("Consignee"), shipper: UpdateAMSInstructionsDocumentBusinessPartnerRequestDTOSchema.describe("Shipper"), notify: UpdateAMSInstructionsDocumentBusinessPartnerRequestDTOSchema.describe("Notify party"), alsoNotify: UpdateAMSInstructionsDocumentBusinessPartnerRequestDTOSchema.describe("Also notify party"), applyTo: z.string().describe("Apply to"), suppressWeight: z.boolean().describe("Whether to suppress weight information"), suppressMeasurement: z.boolean().describe("Whether to suppress measurement information"), selectedContainerNumbers: z.array(z.string()).readonly().describe("Selected container numbers"), bodyRemarks: CommonModels.EditorContentUpdateDtoSchema.describe("Body remarks"), footerRemarks: CommonModels.EditorContentUpdateDtoSchema.describe("Footer remarks"), date: z.iso.datetime({ offset: true }).describe("Date of the AMS Instructions document") }).readonly();
+export const UpdateAMSInstructionsDocumentRequestDTOSchema = z.object({ nameSuffix: z.string().nullable(), additionalAMSText: CommonModels.EditorContentUpdateDtoSchema.nullable(), principalName: z.string().nullable(), blNumber: z.string().nullable(), vessel: z.string().nullable(), portOfLoadingId: z.string().nullable(), placeOfDeliveryId: z.string().nullable(), portOfDischargeId: z.string().nullable(), placeOfIssueId: z.string().nullable(), dateOfIssue: z.iso.datetime({ offset: true }).nullable(), signedById: z.string().nullable(), deliveryBusinessPartner: UpdateAMSInstructionsDocumentBusinessPartnerRequestDTOSchema.nullable(), placeOfAcceptanceId: z.string().nullable(), consignee: UpdateAMSInstructionsDocumentBusinessPartnerRequestDTOSchema.nullable(), shipper: UpdateAMSInstructionsDocumentBusinessPartnerRequestDTOSchema.nullable(), notify: UpdateAMSInstructionsDocumentBusinessPartnerRequestDTOSchema.nullable(), alsoNotify: UpdateAMSInstructionsDocumentBusinessPartnerRequestDTOSchema.nullable(), applyTo: z.string().nullable(), suppressWeight: z.boolean().nullable(), suppressMeasurement: z.boolean().nullable(), selectedContainerNumbers: z.array(z.string()).nullable(), bodyRemarks: CommonModels.EditorContentUpdateDtoSchema.nullable(), footerRemarks: CommonModels.EditorContentUpdateDtoSchema.nullable(), date: z.iso.datetime({ offset: true }).nullable() }).partial();
 export type UpdateAMSInstructionsDocumentRequestDTO = z.infer<typeof UpdateAMSInstructionsDocumentRequestDTOSchema>;
 
 }

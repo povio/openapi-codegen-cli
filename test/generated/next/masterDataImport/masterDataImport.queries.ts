@@ -1,4 +1,4 @@
-import axios, { AxiosRequestConfig } from "axios";
+import axios, {  } from "axios";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -27,14 +27,14 @@ export const keys = {
  * @returns { UseMutationResult<MasterDataImportModels.MasterDataImportUploadResponseDto> } 
  * @statusCodes [201, 401]
  */
-export const useUpload = (options?: AppMutationOptions<typeof MasterDataImportApi.upload, { officeId: string, data: MasterDataImportModels.MasterDataImportUploadRequestDto, file?: File; abortController?: AbortController; onUploadProgress?: (progress: { loaded: number; total: number }) => void }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpload = (options?: AppMutationOptions<typeof MasterDataImportApi.upload, { officeId: string, data: MasterDataImportModels.MasterDataImportUploadRequestDto, file?: File; abortController?: AbortController; onUploadProgress?: (progress: { loaded: number; total: number }) => void }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: async ({ officeId, data, file, abortController, onUploadProgress }) => { 
       checkAcl(MasterDataImportAcl.canUseUpload({ officeId } ));
-      const uploadInstructions = await MasterDataImportApi.upload(officeId, data, config);
+      const uploadInstructions = await MasterDataImportApi.upload(officeId, data);
       
       if (file && uploadInstructions.url) {
         const method = (data?.method?.toLowerCase() ?? "put") as "put" | "post";
@@ -79,14 +79,14 @@ export const useUpload = (options?: AppMutationOptions<typeof MasterDataImportAp
  * @returns { UseMutationResult<MasterDataImportModels.MasterDataImportResponseDto> } 
  * @statusCodes [201, 401]
  */
-export const usePostOfficesMasterDataImportByOfficeId = (options?: AppMutationOptions<typeof MasterDataImportApi.postOfficesMasterDataImportByOfficeId, { officeId: string, data: MasterDataImportModels.MasterDataImportRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const usePostOfficesMasterDataImportByOfficeId = (options?: AppMutationOptions<typeof MasterDataImportApi.postOfficesMasterDataImportByOfficeId, { officeId: string, data: MasterDataImportModels.MasterDataImportRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, data }) => { 
       checkAcl(MasterDataImportAcl.canUsePostOfficesMasterDataImportByOfficeId({ officeId } ));
-      return MasterDataImportApi.postOfficesMasterDataImportByOfficeId(officeId, data, config)
+      return MasterDataImportApi.postOfficesMasterDataImportByOfficeId(officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -106,14 +106,14 @@ export const usePostOfficesMasterDataImportByOfficeId = (options?: AppMutationOp
  * @returns { UseQueryResult<MasterDataImportModels.ImportStatusResponseDto> } 
  * @statusCodes [200, 401]
  */
-export const useGetImportStatus = <TData>({ jobId, officeId }: { jobId: string, officeId: string }, options?: AppQueryOptions<typeof MasterDataImportApi.getImportStatus, TData>, config?: AxiosRequestConfig) => {
+export const useGetImportStatus = <TData>({ jobId, officeId }: { jobId: string, officeId: string }, options?: AppQueryOptions<typeof MasterDataImportApi.getImportStatus, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.getImportStatus(jobId, officeId),
     queryFn: () => { 
     checkAcl(MasterDataImportAcl.canUseGetImportStatus({ officeId } ));
-    return MasterDataImportApi.getImportStatus(jobId, officeId, config) },
+    return MasterDataImportApi.getImportStatus(jobId, officeId) },
     ...options,
   });
 };

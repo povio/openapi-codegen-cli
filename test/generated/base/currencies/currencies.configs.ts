@@ -6,147 +6,148 @@ import { CurrenciesQueries } from "./currencies.queries";
 import { CurrenciesAcl } from "./currencies.acl";
 
 export namespace CurrenciesConfigs {
-  export const currenciesConfig = {
+export const currenciesConfig = {
     meta: {
-      title: "Currencies",
+        title: "Currencies",
     },
     readAll: {
-      acl: CurrenciesAcl.canUseList,
-      schema: CurrenciesModels.CurrencyResponseDtoSchema,
-      paginated: CurrenciesQueries.useList,
-      infinite: CurrenciesQueries.useListInfinite,
-      filters: {
-        schema: CurrenciesModels.CurrencyPaginationFilterDtoSchema,
-        filterDefs: dynamicInputs({
-          schema: CurrenciesModels.CurrencyPaginationFilterDtoSchema,
-          options: {
-            inputs: {
-              officeId: true,
-              search: true,
-            },
-          },
-        }),
-      },
-      columns: dynamicColumns({
+        acl: CurrenciesAcl.canUseList,
         schema: CurrenciesModels.CurrencyResponseDtoSchema,
-        options: {
-          columns: {
-            isoCode: true,
-            name: true,
-            symbol: true,
-            alignment: true,
-            createdById: true,
-            createdBy: true,
-            createdAt: true,
-            updatedById: true,
-            updatedBy: true,
-            updatedAt: true,
-          },
-          sortable: CurrenciesModels.CurrenciesListOrderParamEnumSchema,
+        paginated: CurrenciesQueries.useList,
+        infinite: CurrenciesQueries.useListInfinite,
+        filters: {
+            schema: CurrenciesModels.CurrencyPaginationFilterDtoSchema,
+            filterDefs: dynamicInputs({
+  schema: CurrenciesModels.CurrencyPaginationFilterDtoSchema,
+  options: {
+    inputs: {
+      officeId: true,
+      search: true,
+    },
+  },
+})
         },
-      }),
+        columns: dynamicColumns({
+  schema: CurrenciesModels.CurrencyResponseDtoSchema,
+  options: {
+    columns: {
+      isoCode: true,
+      name: true,
+      symbol: true,
+      alignment: true,
+      createdById: true,
+      createdBy: true,
+      createdAt: true,
+      updatedById: true,
+      updatedBy: true,
+      updatedAt: true,
+    },
+    sortable: CurrenciesModels.CurrenciesListOrderParamEnumSchema,
+  },
+}),
     },
     read: {
-      acl: CurrenciesAcl.canUseGetCurrencyById,
-      schema: CurrenciesModels.CurrencyResponseDtoSchema,
-      query: CurrenciesQueries.useGetCurrencyById,
+        acl: CurrenciesAcl.canUseGetCurrencyById,
+        schema: CurrenciesModels.CurrencyResponseDtoSchema,
+        query: CurrenciesQueries.useGetCurrencyById,
     },
     create: {
-      acl: CurrenciesAcl.canUseCreateCurrency,
-      schema: CurrenciesModels.CreateCurrencyRequestDTOSchema,
-      mutation: CurrenciesQueries.useCreateCurrency,
-      inputDefs: dynamicInputs({
+        acl: CurrenciesAcl.canUseCreateCurrency,
         schema: CurrenciesModels.CreateCurrencyRequestDTOSchema,
-        options: {
-          inputs: {
-            isoCode: true,
-            name: true,
-            symbol: true,
-            alignment: true,
-          },
-        },
-      }),
+        mutation: CurrenciesQueries.useCreateCurrency,
+        inputDefs: dynamicInputs({
+  schema: CurrenciesModels.CreateCurrencyRequestDTOSchema,
+  options: {
+    inputs: {
+      isoCode: true,
+      name: true,
+      symbol: true,
+      alignment: true,
+    },
+  },
+})
     },
     update: {
-      acl: CurrenciesAcl.canUseUpdateCurrency,
-      schema: CurrenciesModels.UpdateCurrencyRequestDTOSchema,
-      mutation: CurrenciesQueries.useUpdateCurrency,
-      inputDefs: dynamicInputs({
+        acl: CurrenciesAcl.canUseUpdateCurrency,
         schema: CurrenciesModels.UpdateCurrencyRequestDTOSchema,
-        options: {
-          inputs: {
-            name: true,
-          },
-        },
-      }),
+        mutation: CurrenciesQueries.useUpdateCurrency,
+        inputDefs: dynamicInputs({
+  schema: CurrenciesModels.UpdateCurrencyRequestDTOSchema,
+  options: {
+    inputs: {
+      name: true,
     },
-  };
+  },
+})
+    },
+};
 
-  export const paginateConfig = {
+export const paginateConfig = {
     meta: {
-      title: "Paginate",
+        title: "Paginate",
     },
     readAll: {
-      acl: CurrenciesAcl.canUsePaginateCurrencyLabels,
-      schema: CommonModels.LabelResponseDTOSchema,
-      paginated: CurrenciesQueries.usePaginateCurrencyLabels,
-      infinite: CurrenciesQueries.usePaginateCurrencyLabelsInfinite,
-      filters: {
-        schema: CurrenciesModels.CurrencyPaginationFilterDtoSchema,
-        filterDefs: dynamicInputs({
-          schema: CurrenciesModels.CurrencyPaginationFilterDtoSchema,
-          options: {
-            inputs: {
-              officeId: true,
-              search: true,
-            },
-          },
-        }),
-      },
-      columns: dynamicColumns({
+        acl: CurrenciesAcl.canUsePaginateCurrencyLabels,
         schema: CommonModels.LabelResponseDTOSchema,
-        options: {
-          columns: {
-            id: true,
-            label: true,
-          },
-          sortable: CurrenciesModels.PaginateCurrencyLabelsOrderParamEnumSchema,
-        },
-      }),
+        paginated: CurrenciesQueries.usePaginateCurrencyLabels,
+        infinite: CurrenciesQueries.usePaginateCurrencyLabelsInfinite,
+        filters: {
+            schema: CurrenciesModels.CurrencyPaginationFilterDtoSchema,
+            filterDefs: dynamicInputs({
+  schema: CurrenciesModels.CurrencyPaginationFilterDtoSchema,
+  options: {
+    inputs: {
+      officeId: true,
+      search: true,
     },
-  };
+  },
+})
+        },
+        columns: dynamicColumns({
+  schema: CommonModels.LabelResponseDTOSchema,
+  options: {
+    columns: {
+      id: true,
+      label: true,
+    },
+    sortable: CurrenciesModels.PaginateCurrencyLabelsOrderParamEnumSchema,
+  },
+}),
+    },
+};
 
-  export const labelsPaginateConfig = {
+export const labelsPaginateConfig = {
     meta: {
-      title: "Labels Paginate",
+        title: "Labels Paginate",
     },
     readAll: {
-      acl: CurrenciesAcl.canUsePaginateCurrencyLabelsByOffice,
-      schema: CommonModels.LabelResponseDTOSchema,
-      paginated: CurrenciesQueries.usePaginateCurrencyLabelsByOffice,
-      infinite: CurrenciesQueries.usePaginateCurrencyLabelsByOfficeInfinite,
-      filters: {
-        schema: CurrenciesModels.CurrencyPaginationFilterDtoSchema,
-        filterDefs: dynamicInputs({
-          schema: CurrenciesModels.CurrencyPaginationFilterDtoSchema,
-          options: {
-            inputs: {
-              officeId: true,
-              search: true,
-            },
-          },
-        }),
-      },
-      columns: dynamicColumns({
+        acl: CurrenciesAcl.canUsePaginateCurrencyLabelsByOffice,
         schema: CommonModels.LabelResponseDTOSchema,
-        options: {
-          columns: {
-            id: true,
-            label: true,
-          },
-          sortable: CurrenciesModels.PaginateCurrencyLabelsByOfficeOrderParamEnumSchema,
-        },
-      }),
+        paginated: CurrenciesQueries.usePaginateCurrencyLabelsByOffice,
+        infinite: CurrenciesQueries.usePaginateCurrencyLabelsByOfficeInfinite,
+        filters: {
+            schema: CurrenciesModels.CurrencyPaginationFilterDtoSchema,
+            filterDefs: dynamicInputs({
+  schema: CurrenciesModels.CurrencyPaginationFilterDtoSchema,
+  options: {
+    inputs: {
+      officeId: true,
+      search: true,
     },
-  };
+  },
+})
+        },
+        columns: dynamicColumns({
+  schema: CommonModels.LabelResponseDTOSchema,
+  options: {
+    columns: {
+      id: true,
+      label: true,
+    },
+    sortable: CurrenciesModels.PaginateCurrencyLabelsByOfficeOrderParamEnumSchema,
+  },
+}),
+    },
+};
+
 }

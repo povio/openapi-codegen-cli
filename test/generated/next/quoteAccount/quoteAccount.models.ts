@@ -45,7 +45,7 @@ export const QuoteAccountItemTypeEnum = QuoteAccountItemTypeEnumSchema.enum;
  * @property { number } sellExchangeRate Sell exchange rate with up to 4 decimal places accuracy 
  * @property { number } profit Profit amount 
  */
-export const QuoteChargeDtoResponseSchema = z.object({ chargeType: z.object({ id: z.string(), name: z.string() }).readonly(), additionalText: z.string().describe("Additional text for the charge"), quantity: z.number().describe("Quantity of the charge").nullish(), buyRate: z.number().describe("Buy rate amount").nullish(), buyCurrencyCode: z.string().describe("Buy rate currency code"), buyVatRule: z.object({ id: z.string(), name: z.string(), matchcode: z.string(), printCode: z.string().nullish() }).readonly(), vendor: z.object({ id: z.string(), name: z.string(), matchCode: z.string(), label: z.string() }).readonly(), buyExchangeRate: z.number().describe("Buy exchange rate with up to 4 decimal places accuracy").nullish(), sellRate: z.number().describe("Sell rate amount").nullish(), sellCurrencyCode: z.string().describe("Sell rate currency code"), sellVatRule: z.object({ id: z.string(), name: z.string(), matchcode: z.string(), printCode: z.string().nullish() }).readonly(), customer: z.object({ id: z.string(), name: z.string(), matchCode: z.string(), label: z.string() }).readonly(), sellExchangeRate: z.number().describe("Sell exchange rate with up to 4 decimal places accuracy").nullish(), profit: z.number().describe("Profit amount").nullish() }).readonly();
+export const QuoteChargeDtoResponseSchema = z.object({ chargeType: z.object({ id: z.string(), name: z.string() }), additionalText: z.string(), quantity: z.number().nullish(), buyRate: z.number().nullish(), buyCurrencyCode: z.string(), buyVatRule: z.object({ id: z.string(), name: z.string(), matchcode: z.string(), printCode: z.string().nullish() }), vendor: z.object({ id: z.string(), name: z.string(), matchCode: z.string(), label: z.string() }), buyExchangeRate: z.number().nullish(), sellRate: z.number().nullish(), sellCurrencyCode: z.string(), sellVatRule: z.object({ id: z.string(), name: z.string(), matchcode: z.string(), printCode: z.string().nullish() }), customer: z.object({ id: z.string(), name: z.string(), matchCode: z.string(), label: z.string() }), sellExchangeRate: z.number().nullish(), profit: z.number().nullish() });
 export type QuoteChargeDtoResponse = z.infer<typeof QuoteChargeDtoResponseSchema>;
 
 /** 
@@ -53,7 +53,7 @@ export type QuoteChargeDtoResponse = z.infer<typeof QuoteChargeDtoResponseSchema
  * @type { object }
  * @property { string } content Text content 
  */
-export const QuoteTextDtoResponseSchema = z.object({ content: z.string().describe("Text content") }).readonly();
+export const QuoteTextDtoResponseSchema = z.object({ content: z.string() });
 export type QuoteTextDtoResponse = z.infer<typeof QuoteTextDtoResponseSchema>;
 
 /** 
@@ -65,7 +65,7 @@ export type QuoteTextDtoResponse = z.infer<typeof QuoteTextDtoResponseSchema>;
  * @property { QuoteChargeDtoResponse } charge Charge data if type is CHARGE 
  * @property { QuoteTextDtoResponse } text Text data if type is TEXT 
  */
-export const QuoteAccountItemDtoResponseSchema = z.object({ id: z.string().describe("Item ID"), type: QuoteAccountItemTypeEnumSchema.describe("Item type"), orderPosition: z.number().describe("Order position of the item"), charge: QuoteChargeDtoResponseSchema.describe("Charge data if type is CHARGE").nullish(), text: QuoteTextDtoResponseSchema.describe("Text data if type is TEXT").nullish() }).readonly();
+export const QuoteAccountItemDtoResponseSchema = z.object({ id: z.string(), type: QuoteAccountItemTypeEnumSchema, orderPosition: z.number(), charge: QuoteChargeDtoResponseSchema.nullish(), text: QuoteTextDtoResponseSchema.nullish() });
 export type QuoteAccountItemDtoResponse = z.infer<typeof QuoteAccountItemDtoResponseSchema>;
 
 /** 
@@ -87,7 +87,7 @@ export type QuoteAccountItemDtoResponse = z.infer<typeof QuoteAccountItemDtoResp
  * @property { number } totalsPerCurrency.[0].displayAmount  
  * @property { string } totalsPerCurrency.[0].displayCurrencyCode  
  */
-export const QuoteAccountResponseDtoSchema = z.object({ id: z.string().describe("Account ID"), quoteId: z.string().describe("Quote ID"), items: z.array(QuoteAccountItemDtoResponseSchema).readonly().describe("Account items"), totals: z.object({ totalBuyRates: z.number(), totalSellRates: z.number(), totalProfit: z.number(), displayAmount: z.number(), displayCurrencyCode: z.string() }).readonly().describe("Account totals"), totalsPerCurrency: z.array(z.object({ totalBuyRates: z.number(), totalSellRates: z.number(), totalProfit: z.number(), displayAmount: z.number(), displayCurrencyCode: z.string() }).readonly()).readonly().describe("Account totals per currency") }).readonly();
+export const QuoteAccountResponseDtoSchema = z.object({ id: z.string(), quoteId: z.string(), items: z.array(QuoteAccountItemDtoResponseSchema), totals: z.object({ totalBuyRates: z.number().nullable(), totalSellRates: z.number().nullable(), totalProfit: z.number().nullable(), displayAmount: z.number().nullable(), displayCurrencyCode: z.string().nullable() }).partial(), totalsPerCurrency: z.array(z.object({ totalBuyRates: z.number().nullable(), totalSellRates: z.number().nullable(), totalProfit: z.number().nullable(), displayAmount: z.number().nullable(), displayCurrencyCode: z.string().nullable() }).partial()) });
 export type QuoteAccountResponseDto = z.infer<typeof QuoteAccountResponseDtoSchema>;
 
 /** 
@@ -107,7 +107,7 @@ export type QuoteAccountResponseDto = z.infer<typeof QuoteAccountResponseDtoSche
  * @property { string } customerId Customer ID 
  * @property { number } sellExchangeRate Sell exchange rate with up to 4 decimal places accuracy 
  */
-export const CreateQuoteChargeDataDtoSchema = z.object({ chargeTypeId: z.string().describe("Charge type ID"), additionalText: z.string().describe("Additional text for the charge"), quantity: z.number().gte(1).describe("Quantity of the charge").default(1), buyRate: z.number().describe("Buy rate amount"), buyCurrencyCode: z.string().describe("Buy rate currency code").default("EUR"), buyVatRuleId: z.string().describe("Buy VAT rule ID"), vendorId: z.string().describe("Vendor ID"), buyExchangeRate: z.number().describe("Buy exchange rate with up to 4 decimal places accuracy"), sellRate: z.number().describe("Sell rate amount"), sellCurrencyCode: z.string().describe("Sell rate currency code").default("EUR"), sellVatRuleId: z.string().describe("Sell VAT rule ID"), customerId: z.string().describe("Customer ID"), sellExchangeRate: z.number().describe("Sell exchange rate with up to 4 decimal places accuracy") }).readonly();
+export const CreateQuoteChargeDataDtoSchema = z.object({ chargeTypeId: z.string().nullable(), additionalText: z.string().nullable(), quantity: z.number().gte(1).nullable().default(1), buyRate: z.number().nullable(), buyCurrencyCode: z.string().nullable().default("EUR"), buyVatRuleId: z.string().nullable(), vendorId: z.string().nullable(), buyExchangeRate: z.number().nullable(), sellRate: z.number().nullable(), sellCurrencyCode: z.string().nullable().default("EUR"), sellVatRuleId: z.string().nullable(), customerId: z.string().nullable(), sellExchangeRate: z.number().nullable() }).partial();
 export type CreateQuoteChargeDataDto = z.infer<typeof CreateQuoteChargeDataDtoSchema>;
 
 /** 
@@ -115,7 +115,7 @@ export type CreateQuoteChargeDataDto = z.infer<typeof CreateQuoteChargeDataDtoSc
  * @type { object }
  * @property { string } content Text content 
  */
-export const CreateQuoteTextDataDtoSchema = z.object({ content: z.string().describe("Text content") }).readonly();
+export const CreateQuoteTextDataDtoSchema = z.object({ content: z.string().nullable() }).partial();
 export type CreateQuoteTextDataDto = z.infer<typeof CreateQuoteTextDataDtoSchema>;
 
 /** 
@@ -126,7 +126,7 @@ export type CreateQuoteTextDataDto = z.infer<typeof CreateQuoteTextDataDtoSchema
  * @property { CreateQuoteChargeDataDto } charge Charge data if type is CHARGE 
  * @property { CreateQuoteTextDataDto } text Text data if type is TEXT 
  */
-export const CreateQuoteAccountItemRequestDtoSchema = z.object({ type: QuoteAccountItemTypeEnumSchema.describe("Item type"), orderPosition: z.number().describe("Order position of the item").nullish(), charge: CreateQuoteChargeDataDtoSchema.describe("Charge data if type is CHARGE").nullish(), text: CreateQuoteTextDataDtoSchema.describe("Text data if type is TEXT").nullish() }).readonly();
+export const CreateQuoteAccountItemRequestDtoSchema = z.object({ type: QuoteAccountItemTypeEnumSchema, orderPosition: z.number().nullish(), charge: CreateQuoteChargeDataDtoSchema.nullish(), text: CreateQuoteTextDataDtoSchema.nullish() });
 export type CreateQuoteAccountItemRequestDto = z.infer<typeof CreateQuoteAccountItemRequestDtoSchema>;
 
 /** 
@@ -146,7 +146,7 @@ export type CreateQuoteAccountItemRequestDto = z.infer<typeof CreateQuoteAccount
  * @property { string } customerId Customer ID 
  * @property { number } sellExchangeRate Sell exchange rate with up to 4 decimal places accuracy 
  */
-export const UpdateQuoteChargeDataDtoSchema = z.object({ chargeTypeId: z.string().describe("Charge type ID"), additionalText: z.string().describe("Additional text for the charge"), quantity: z.number().gte(1).describe("Quantity of the charge"), buyRate: z.number().describe("Buy rate amount").nullable(), buyCurrencyCode: z.string().describe("Buy rate currency code"), buyVatRuleId: z.string().describe("Buy VAT rule ID").nullable(), vendorId: z.string().describe("Vendor ID").nullable(), buyExchangeRate: z.number().describe("Buy exchange rate with up to 4 decimal places accuracy"), sellRate: z.number().describe("Sell rate amount").nullable(), sellCurrencyCode: z.string().describe("Sell rate currency code"), sellVatRuleId: z.string().describe("Sell VAT rule ID").nullable(), customerId: z.string().describe("Customer ID").nullable(), sellExchangeRate: z.number().describe("Sell exchange rate with up to 4 decimal places accuracy") }).readonly();
+export const UpdateQuoteChargeDataDtoSchema = z.object({ chargeTypeId: z.string().nullable(), additionalText: z.string().nullable(), quantity: z.number().gte(1).nullable(), buyRate: z.number().nullable(), buyCurrencyCode: z.string().nullable(), buyVatRuleId: z.string().nullable(), vendorId: z.string().nullable(), buyExchangeRate: z.number().nullable(), sellRate: z.number().nullable(), sellCurrencyCode: z.string().nullable(), sellVatRuleId: z.string().nullable(), customerId: z.string().nullable(), sellExchangeRate: z.number().nullable() }).partial();
 export type UpdateQuoteChargeDataDto = z.infer<typeof UpdateQuoteChargeDataDtoSchema>;
 
 /** 
@@ -154,7 +154,7 @@ export type UpdateQuoteChargeDataDto = z.infer<typeof UpdateQuoteChargeDataDtoSc
  * @type { object }
  * @property { string } content Text content 
  */
-export const UpdateQuoteTextDataDtoSchema = z.object({ content: z.string().describe("Text content") }).readonly();
+export const UpdateQuoteTextDataDtoSchema = z.object({ content: z.string().nullable() }).partial();
 export type UpdateQuoteTextDataDto = z.infer<typeof UpdateQuoteTextDataDtoSchema>;
 
 /** 
@@ -164,7 +164,7 @@ export type UpdateQuoteTextDataDto = z.infer<typeof UpdateQuoteTextDataDtoSchema
  * @property { UpdateQuoteChargeDataDto } charge Charge data if type is CHARGE 
  * @property { UpdateQuoteTextDataDto } text Text data if type is TEXT 
  */
-export const UpdateQuoteAccountItemRequestDtoSchema = z.object({ orderPosition: z.number().describe("Order position of the item"), charge: UpdateQuoteChargeDataDtoSchema.describe("Charge data if type is CHARGE"), text: UpdateQuoteTextDataDtoSchema.describe("Text data if type is TEXT") }).readonly();
+export const UpdateQuoteAccountItemRequestDtoSchema = z.object({ orderPosition: z.number().nullable(), charge: UpdateQuoteChargeDataDtoSchema.nullable(), text: UpdateQuoteTextDataDtoSchema.nullable() }).partial();
 export type UpdateQuoteAccountItemRequestDto = z.infer<typeof UpdateQuoteAccountItemRequestDtoSchema>;
 
 }

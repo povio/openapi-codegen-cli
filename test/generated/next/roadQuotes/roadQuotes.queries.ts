@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -26,14 +25,14 @@ export const keys = {
  * @returns { UseQueryResult<RoadQuotesModels.RoadQuoteResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useGet = <TData>({ officeId, quoteId }: { officeId: string, quoteId: string }, options?: AppQueryOptions<typeof RoadQuotesApi.get, TData>, config?: AxiosRequestConfig) => {
+export const useGet = <TData>({ officeId, quoteId }: { officeId: string, quoteId: string }, options?: AppQueryOptions<typeof RoadQuotesApi.get, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.get(officeId, quoteId),
     queryFn: () => { 
     checkAcl(RoadQuotesAcl.canUseGet({ officeId } ));
-    return RoadQuotesApi.get(officeId, quoteId, config) },
+    return RoadQuotesApi.get(officeId, quoteId) },
     ...options,
   });
 };
@@ -49,14 +48,14 @@ export const useGet = <TData>({ officeId, quoteId }: { officeId: string, quoteId
  * @returns { UseMutationResult<RoadQuotesModels.RoadQuoteResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useUpdate = (options?: AppMutationOptions<typeof RoadQuotesApi.update, { officeId: string, quoteId: string, data: RoadQuotesModels.UpdateRoadQuoteRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdate = (options?: AppMutationOptions<typeof RoadQuotesApi.update, { officeId: string, quoteId: string, data: RoadQuotesModels.UpdateRoadQuoteRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, quoteId, data }) => { 
       checkAcl(RoadQuotesAcl.canUseUpdate({ officeId } ));
-      return RoadQuotesApi.update(officeId, quoteId, data, config)
+      return RoadQuotesApi.update(officeId, quoteId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

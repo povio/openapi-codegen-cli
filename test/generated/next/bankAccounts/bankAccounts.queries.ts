@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { useAclCheck } from "@/data/acl/useAclCheck";
@@ -27,14 +26,14 @@ export const keys = {
  * @returns { UseQueryResult<BankAccountsModels.BankAccountsFindAllResponse> } 
  * @statusCodes [200, 401]
  */
-export const useFindAll = <TData>({ search, officeId }: { search?: string, officeId?: string }, options?: AppQueryOptions<typeof BankAccountsApi.findAll, TData>, config?: AxiosRequestConfig) => {
+export const useFindAll = <TData>({ search, officeId }: { search?: string, officeId?: string }, options?: AppQueryOptions<typeof BankAccountsApi.findAll, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.findAll(search, officeId),
     queryFn: () => { 
     checkAcl(BankAccountsAcl.canUseFindAll());
-    return BankAccountsApi.findAll(search, officeId, config) },
+    return BankAccountsApi.findAll(search, officeId) },
     ...options,
   });
 };
@@ -52,14 +51,14 @@ export const useFindAll = <TData>({ search, officeId }: { search?: string, offic
  * @returns { UseQueryResult<BankAccountsModels.BankAccountsPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: BankAccountsModels.BankAccountFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof BankAccountsApi.paginateLabels, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: BankAccountsModels.BankAccountFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof BankAccountsApi.paginateLabels, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.paginateLabels(limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(BankAccountsAcl.canUsePaginateLabels());
-    return BankAccountsApi.paginateLabels(limit, order, filter, page, cursor, config) },
+    return BankAccountsApi.paginateLabels(limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -77,14 +76,14 @@ export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }:
  * @returns { UseInfiniteQueryResult<BankAccountsModels.BankAccountsPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: BankAccountsModels.BankAccountFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof BankAccountsApi.paginateLabels, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: BankAccountsModels.BankAccountFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof BankAccountsApi.paginateLabels, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.paginateLabelsInfinite(limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(BankAccountsAcl.canUsePaginateLabels());
-    return BankAccountsApi.paginateLabels(limit, order, filter, pageParam, cursor, config) },
+    return BankAccountsApi.paginateLabels(limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;

@@ -6,36 +6,37 @@ import { BusinessPartnerContactsQueries } from "./businessPartnerContacts.querie
 import { BusinessPartnerContactsAcl } from "./businessPartnerContacts.acl";
 
 export namespace BusinessPartnerContactsConfigs {
-  export const paginateConfig = {
+export const paginateConfig = {
     meta: {
-      title: "Paginate",
+        title: "Paginate",
     },
     readAll: {
-      acl: BusinessPartnerContactsAcl.canUsePaginateContactLabels,
-      schema: CommonModels.LabelResponseDTOSchema,
-      paginated: BusinessPartnerContactsQueries.usePaginateContactLabels,
-      infinite: BusinessPartnerContactsQueries.usePaginateContactLabelsInfinite,
-      filters: {
-        schema: BusinessPartnerContactsModels.BusinessPartnerContactFilterDtoSchema,
-        filterDefs: dynamicInputs({
-          schema: BusinessPartnerContactsModels.BusinessPartnerContactFilterDtoSchema,
-          options: {
-            inputs: {
-              search: true,
-            },
-          },
-        }),
-      },
-      columns: dynamicColumns({
+        acl: BusinessPartnerContactsAcl.canUsePaginateContactLabels,
         schema: CommonModels.LabelResponseDTOSchema,
-        options: {
-          columns: {
-            id: true,
-            label: true,
-          },
-          sortable: BusinessPartnerContactsModels.PaginateContactLabelsOrderParamEnumSchema,
-        },
-      }),
+        paginated: BusinessPartnerContactsQueries.usePaginateContactLabels,
+        infinite: BusinessPartnerContactsQueries.usePaginateContactLabelsInfinite,
+        filters: {
+            schema: BusinessPartnerContactsModels.BusinessPartnerContactFilterDtoSchema,
+            filterDefs: dynamicInputs({
+  schema: BusinessPartnerContactsModels.BusinessPartnerContactFilterDtoSchema,
+  options: {
+    inputs: {
+      search: true,
     },
-  };
+  },
+})
+        },
+        columns: dynamicColumns({
+  schema: CommonModels.LabelResponseDTOSchema,
+  options: {
+    columns: {
+      id: true,
+      label: true,
+    },
+    sortable: BusinessPartnerContactsModels.PaginateContactLabelsOrderParamEnumSchema,
+  },
+}),
+    },
+};
+
 }

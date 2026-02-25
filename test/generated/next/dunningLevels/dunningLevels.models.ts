@@ -9,7 +9,7 @@ export namespace DunningLevelsModels {
  * @property { string } name  
  * @property { string } currencyNotation  
  */
-export const DunningLevelOfficeDTOSchema = z.object({ id: z.string(), name: z.string(), currencyNotation: z.string() }).readonly();
+export const DunningLevelOfficeDTOSchema = z.object({ id: z.string(), name: z.string(), currencyNotation: z.string() });
 export type DunningLevelOfficeDTO = z.infer<typeof DunningLevelOfficeDTOSchema>;
 
 /** 
@@ -18,7 +18,7 @@ export type DunningLevelOfficeDTO = z.infer<typeof DunningLevelOfficeDTOSchema>;
  * @property { string } id  
  * @property { string } name  
  */
-export const DunningLevelEmployeeDTOSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const DunningLevelEmployeeDTOSchema = z.object({ id: z.string(), name: z.string() });
 export type DunningLevelEmployeeDTO = z.infer<typeof DunningLevelEmployeeDTOSchema>;
 
 /** 
@@ -42,7 +42,7 @@ export type DunningLevelEmployeeDTO = z.infer<typeof DunningLevelEmployeeDTOSche
  * @property { CommonModels.EditorContentResponseDto } bodyRemarks  
  * @property { CommonModels.EditorContentResponseDto } footerRemarks  
  */
-export const DunningLevelResponseDTOSchema = z.object({ id: z.string(), level: z.number(), daysOverdue: z.number(), dunningFee: z.number(), interestRate: z.number().nullish(), usedInOfficeId: z.string(), usedInOffice: DunningLevelOfficeDTOSchema.nullish(), dunningSystem: CommonModels.DunningSystemReferenceDTOSchema.nullish(), createdById: z.string().nullish(), createdBy: DunningLevelEmployeeDTOSchema.nullish(), createdAt: z.iso.datetime({ offset: true }), updatedById: z.string().nullish(), updatedBy: DunningLevelEmployeeDTOSchema.nullish(), updatedAt: z.iso.datetime({ offset: true }), archived: z.boolean(), bodyRemarks: CommonModels.EditorContentResponseDtoSchema.nullish(), footerRemarks: CommonModels.EditorContentResponseDtoSchema.nullish() }).readonly();
+export const DunningLevelResponseDTOSchema = z.object({ id: z.string(), level: z.number(), daysOverdue: z.number(), dunningFee: z.number(), interestRate: z.number().nullish(), usedInOfficeId: z.string(), usedInOffice: DunningLevelOfficeDTOSchema.nullish(), dunningSystem: CommonModels.DunningSystemReferenceDTOSchema.nullish(), createdById: z.string().nullish(), createdBy: DunningLevelEmployeeDTOSchema.nullish(), createdAt: z.iso.datetime({ offset: true }), updatedById: z.string().nullish(), updatedBy: DunningLevelEmployeeDTOSchema.nullish(), updatedAt: z.iso.datetime({ offset: true }), archived: z.boolean(), bodyRemarks: CommonModels.EditorContentResponseDtoSchema.nullish(), footerRemarks: CommonModels.EditorContentResponseDtoSchema.nullish() });
 export type DunningLevelResponseDTO = z.infer<typeof DunningLevelResponseDTOSchema>;
 
 /** 
@@ -56,7 +56,7 @@ export type DunningLevelResponseDTO = z.infer<typeof DunningLevelResponseDTOSche
  * @property { CommonModels.EditorContentUpdateDto } bodyRemarks Body remarks 
  * @property { CommonModels.EditorContentUpdateDto } footerRemarks Footer remarks 
  */
-export const CreateDunningLevelRequestDTOSchema = z.object({ level: z.number().gte(1).describe("Dunning level number"), daysOverdue: z.number().gte(1).describe("Days overdue before this level applies"), dunningFee: z.number().gte(0).describe("Fee amount for this dunning level"), dunningSystemId: z.string().describe("Dunning system ID").nullish(), interestRate: z.number().gte(0).lte(100).nullish(), bodyRemarks: CommonModels.EditorContentUpdateDtoSchema.describe("Body remarks").nullish(), footerRemarks: CommonModels.EditorContentUpdateDtoSchema.describe("Footer remarks").nullish() }).readonly();
+export const CreateDunningLevelRequestDTOSchema = z.object({ level: z.number().gte(1), daysOverdue: z.number().gte(1), dunningFee: z.number().gte(0), dunningSystemId: z.string().nullish(), interestRate: z.number().gte(0).lte(100).nullish(), bodyRemarks: CommonModels.EditorContentUpdateDtoSchema.nullish(), footerRemarks: CommonModels.EditorContentUpdateDtoSchema.nullish() });
 export type CreateDunningLevelRequestDTO = z.infer<typeof CreateDunningLevelRequestDTOSchema>;
 
 /** 
@@ -70,7 +70,7 @@ export type CreateDunningLevelRequestDTO = z.infer<typeof CreateDunningLevelRequ
  * @property { CommonModels.EditorContentUpdateDto } bodyRemarks Body remarks 
  * @property { CommonModels.EditorContentUpdateDto } footerRemarks Footer remarks 
  */
-export const UpdateDunningLevelRequestDTOSchema = z.object({ level: z.number().gte(1).describe("Dunning level number"), daysOverdue: z.number().gte(1).describe("Days overdue before this level applies"), dunningFee: z.number().gte(0).describe("Fee amount for this dunning level"), interestRate: z.number().gte(0).lte(100), dunningSystemId: z.string().describe("Dunning system ID"), bodyRemarks: CommonModels.EditorContentUpdateDtoSchema.describe("Body remarks"), footerRemarks: CommonModels.EditorContentUpdateDtoSchema.describe("Footer remarks") }).readonly();
+export const UpdateDunningLevelRequestDTOSchema = z.object({ level: z.number().gte(1).nullable(), daysOverdue: z.number().gte(1).nullable(), dunningFee: z.number().gte(0).nullable(), interestRate: z.number().gte(0).lte(100).nullable(), dunningSystemId: z.string().nullable(), bodyRemarks: CommonModels.EditorContentUpdateDtoSchema.nullable(), footerRemarks: CommonModels.EditorContentUpdateDtoSchema.nullable() }).partial();
 export type UpdateDunningLevelRequestDTO = z.infer<typeof UpdateDunningLevelRequestDTOSchema>;
 
 /** 
@@ -78,7 +78,7 @@ export type UpdateDunningLevelRequestDTO = z.infer<typeof UpdateDunningLevelRequ
  * @type { object }
  * @property { string } search  
  */
-export const DunningLevelLabelFilterDtoSchema = z.object({ search: z.string() }).readonly();
+export const DunningLevelLabelFilterDtoSchema = z.object({ search: z.string().nullable() }).partial();
 export type DunningLevelLabelFilterDto = z.infer<typeof DunningLevelLabelFilterDtoSchema>;
 
 /** 
@@ -88,7 +88,7 @@ export type DunningLevelLabelFilterDto = z.infer<typeof DunningLevelLabelFilterD
  * @property { string } search Search to filter by 
  * @property { boolean } archived Filter by archived status 
  */
-export const DunningLevelFilterDtoSchema = z.object({ dunningSystemId: z.string().describe("Dunning system ID to filter by"), search: z.string().describe("Search to filter by"), archived: z.boolean().describe("Filter by archived status") }).readonly();
+export const DunningLevelFilterDtoSchema = z.object({ dunningSystemId: z.string().nullable(), search: z.string().nullable(), archived: z.boolean().nullable() }).partial();
 export type DunningLevelFilterDto = z.infer<typeof DunningLevelFilterDtoSchema>;
 
 /** 
@@ -109,7 +109,7 @@ export const DunningLevelsPaginateLabelsOrderParamEnum = DunningLevelsPaginateLa
  * @property { number } totalItems Total available items 
  * @property { CommonModels.LabelResponseDTO[] } items  
  */
-export const DunningLevelsPaginateLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).readonly() }).readonly().shape });
+export const DunningLevelsPaginateLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).nullable() }).partial().shape });
 export type DunningLevelsPaginateLabelsResponse = z.infer<typeof DunningLevelsPaginateLabelsResponseSchema>;
 
 /** 
@@ -130,7 +130,7 @@ export const DunningLevelsListOrderParamEnum = DunningLevelsListOrderParamEnumSc
  * @property { number } totalItems Total available items 
  * @property { DunningLevelResponseDTO[] } items  
  */
-export const DunningLevelsListResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(DunningLevelResponseDTOSchema).readonly() }).readonly().shape });
+export const DunningLevelsListResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(DunningLevelResponseDTOSchema).nullable() }).partial().shape });
 export type DunningLevelsListResponse = z.infer<typeof DunningLevelsListResponseSchema>;
 
 }

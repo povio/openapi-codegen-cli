@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -33,14 +32,14 @@ export const keys = {
  * @returns { UseQueryResult<HsCodesModels.HsCodesPaginateResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: HsCodesModels.HsCodePaginationFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof HsCodesApi.paginate, TData>, config?: AxiosRequestConfig) => {
+export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: HsCodesModels.HsCodePaginationFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof HsCodesApi.paginate, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.paginate(limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(HsCodesAcl.canUsePaginate());
-    return HsCodesApi.paginate(limit, order, filter, page, cursor, config) },
+    return HsCodesApi.paginate(limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -58,14 +57,14 @@ export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { lim
  * @returns { UseInfiniteQueryResult<HsCodesModels.HsCodesPaginateResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: HsCodesModels.HsCodePaginationFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof HsCodesApi.paginate, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: HsCodesModels.HsCodePaginationFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof HsCodesApi.paginate, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.paginateInfinite(limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(HsCodesAcl.canUsePaginate());
-    return HsCodesApi.paginate(limit, order, filter, pageParam, cursor, config) },
+    return HsCodesApi.paginate(limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -84,14 +83,14 @@ export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { l
  * @returns { UseMutationResult<HsCodesModels.HsCodeResponseDTO> } 
  * @statusCodes [201, 401]
  */
-export const useCreate = (options?: AppMutationOptions<typeof HsCodesApi.create, { data: HsCodesModels.CreateHsCodeRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreate = (options?: AppMutationOptions<typeof HsCodesApi.create, { data: HsCodesModels.CreateHsCodeRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ data }) => { 
       checkAcl(HsCodesAcl.canUseCreate());
-      return HsCodesApi.create(data, config)
+      return HsCodesApi.create(data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -114,14 +113,14 @@ export const useCreate = (options?: AppMutationOptions<typeof HsCodesApi.create,
  * @returns { UseQueryResult<HsCodesModels.HsCodesPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: HsCodesModels.HsCodeLabelFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof HsCodesApi.paginateLabels, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: HsCodesModels.HsCodeLabelFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof HsCodesApi.paginateLabels, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.paginateLabels(limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(HsCodesAcl.canUsePaginateLabels());
-    return HsCodesApi.paginateLabels(limit, order, filter, page, cursor, config) },
+    return HsCodesApi.paginateLabels(limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -139,14 +138,14 @@ export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }:
  * @returns { UseInfiniteQueryResult<HsCodesModels.HsCodesPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: HsCodesModels.HsCodeLabelFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof HsCodesApi.paginateLabels, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: HsCodesModels.HsCodeLabelFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof HsCodesApi.paginateLabels, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.paginateLabelsInfinite(limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(HsCodesAcl.canUsePaginateLabels());
-    return HsCodesApi.paginateLabels(limit, order, filter, pageParam, cursor, config) },
+    return HsCodesApi.paginateLabels(limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -165,14 +164,14 @@ export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor 
  * @returns { UseQueryResult<HsCodesModels.HsCodeResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useFindById = <TData>({ id }: { id: string }, options?: AppQueryOptions<typeof HsCodesApi.findById, TData>, config?: AxiosRequestConfig) => {
+export const useFindById = <TData>({ id }: { id: string }, options?: AppQueryOptions<typeof HsCodesApi.findById, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.findById(id),
     queryFn: () => { 
     checkAcl(HsCodesAcl.canUseFindById());
-    return HsCodesApi.findById(id, config) },
+    return HsCodesApi.findById(id) },
     ...options,
   });
 };
@@ -187,14 +186,14 @@ export const useFindById = <TData>({ id }: { id: string }, options?: AppQueryOpt
  * @returns { UseMutationResult<HsCodesModels.HsCodeResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useUpdate = (options?: AppMutationOptions<typeof HsCodesApi.update, { id: string, data: HsCodesModels.UpdateHsCodeRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdate = (options?: AppMutationOptions<typeof HsCodesApi.update, { id: string, data: HsCodesModels.UpdateHsCodeRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ id, data }) => { 
       checkAcl(HsCodesAcl.canUseUpdate());
-      return HsCodesApi.update(id, data, config)
+      return HsCodesApi.update(id, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -215,14 +214,14 @@ export const useUpdate = (options?: AppMutationOptions<typeof HsCodesApi.update,
  * @returns { UseMutationResult<HsCodesModels.HsCodeResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useArchive = (options?: AppMutationOptions<typeof HsCodesApi.archive, { id: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useArchive = (options?: AppMutationOptions<typeof HsCodesApi.archive, { id: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ id }) => { 
       checkAcl(HsCodesAcl.canUseArchive());
-      return HsCodesApi.archive(id, config)
+      return HsCodesApi.archive(id)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -243,14 +242,14 @@ export const useArchive = (options?: AppMutationOptions<typeof HsCodesApi.archiv
  * @returns { UseMutationResult<HsCodesModels.HsCodeResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useUnarchive = (options?: AppMutationOptions<typeof HsCodesApi.unarchive, { id: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUnarchive = (options?: AppMutationOptions<typeof HsCodesApi.unarchive, { id: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ id }) => { 
       checkAcl(HsCodesAcl.canUseUnarchive());
-      return HsCodesApi.unarchive(id, config)
+      return HsCodesApi.unarchive(id)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

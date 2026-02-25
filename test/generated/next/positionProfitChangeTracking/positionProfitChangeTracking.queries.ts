@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { useAclCheck } from "@/data/acl/useAclCheck";
@@ -32,14 +31,14 @@ export const keys = {
  * @returns { UseQueryResult<PositionProfitChangeTrackingModels.PositionProfitChangeTrackingFindProfitChangeGroupsResponse> } 
  * @statusCodes [200, 401]
  */
-export const useFindProfitChangeGroups = <TData>({ officeId, positionId, limit, order, filter, page, cursor }: { officeId: string, positionId: string, limit: number, order?: string, filter?: PositionProfitChangeTrackingModels.PositionProfitChangeTrackingFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof PositionProfitChangeTrackingApi.findProfitChangeGroups, TData>, config?: AxiosRequestConfig) => {
+export const useFindProfitChangeGroups = <TData>({ officeId, positionId, limit, order, filter, page, cursor }: { officeId: string, positionId: string, limit: number, order?: string, filter?: PositionProfitChangeTrackingModels.PositionProfitChangeTrackingFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof PositionProfitChangeTrackingApi.findProfitChangeGroups, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.findProfitChangeGroups(officeId, positionId, limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(PositionProfitChangeTrackingAcl.canUseFindProfitChangeGroups({ officeId, positionId } ));
-    return PositionProfitChangeTrackingApi.findProfitChangeGroups(officeId, positionId, limit, order, filter, page, cursor, config) },
+    return PositionProfitChangeTrackingApi.findProfitChangeGroups(officeId, positionId, limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -59,14 +58,14 @@ export const useFindProfitChangeGroups = <TData>({ officeId, positionId, limit, 
  * @returns { UseInfiniteQueryResult<PositionProfitChangeTrackingModels.PositionProfitChangeTrackingFindProfitChangeGroupsResponse> } 
  * @statusCodes [200, 401]
  */
-export const useFindProfitChangeGroupsInfinite = <TData>({ officeId, positionId, limit, order, filter, cursor }: { officeId: string, positionId: string, limit: number, order?: string, filter?: PositionProfitChangeTrackingModels.PositionProfitChangeTrackingFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof PositionProfitChangeTrackingApi.findProfitChangeGroups, TData>, config?: AxiosRequestConfig) => {
+export const useFindProfitChangeGroupsInfinite = <TData>({ officeId, positionId, limit, order, filter, cursor }: { officeId: string, positionId: string, limit: number, order?: string, filter?: PositionProfitChangeTrackingModels.PositionProfitChangeTrackingFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof PositionProfitChangeTrackingApi.findProfitChangeGroups, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.findProfitChangeGroupsInfinite(officeId, positionId, limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(PositionProfitChangeTrackingAcl.canUseFindProfitChangeGroups({ officeId, positionId } ));
-    return PositionProfitChangeTrackingApi.findProfitChangeGroups(officeId, positionId, limit, order, filter, pageParam, cursor, config) },
+    return PositionProfitChangeTrackingApi.findProfitChangeGroups(officeId, positionId, limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -87,14 +86,14 @@ export const useFindProfitChangeGroupsInfinite = <TData>({ officeId, positionId,
  * @returns { UseQueryResult<PositionProfitChangeTrackingModels.PositionAccountProfitChangeGroupDetailDto> } 
  * @statusCodes [200, 401]
  */
-export const useFindProfitChangeGroupDetail = <TData>({ groupId, officeId, positionId }: { groupId: string, officeId: string, positionId: string }, options?: AppQueryOptions<typeof PositionProfitChangeTrackingApi.findProfitChangeGroupDetail, TData>, config?: AxiosRequestConfig) => {
+export const useFindProfitChangeGroupDetail = <TData>({ groupId, officeId, positionId }: { groupId: string, officeId: string, positionId: string }, options?: AppQueryOptions<typeof PositionProfitChangeTrackingApi.findProfitChangeGroupDetail, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.findProfitChangeGroupDetail(groupId, officeId, positionId),
     queryFn: () => { 
     checkAcl(PositionProfitChangeTrackingAcl.canUseFindProfitChangeGroupDetail({ officeId, positionId } ));
-    return PositionProfitChangeTrackingApi.findProfitChangeGroupDetail(groupId, officeId, positionId, config) },
+    return PositionProfitChangeTrackingApi.findProfitChangeGroupDetail(groupId, officeId, positionId) },
     ...options,
   });
 };

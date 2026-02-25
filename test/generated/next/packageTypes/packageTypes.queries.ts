@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -33,14 +32,14 @@ export const keys = {
  * @returns { UseQueryResult<PackageTypesModels.PackageTypesPaginateResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: PackageTypesModels.PackageTypePaginationFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof PackageTypesApi.paginate, TData>, config?: AxiosRequestConfig) => {
+export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: PackageTypesModels.PackageTypePaginationFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof PackageTypesApi.paginate, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.paginate(limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(PackageTypesAcl.canUsePaginate());
-    return PackageTypesApi.paginate(limit, order, filter, page, cursor, config) },
+    return PackageTypesApi.paginate(limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -58,14 +57,14 @@ export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { lim
  * @returns { UseInfiniteQueryResult<PackageTypesModels.PackageTypesPaginateResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: PackageTypesModels.PackageTypePaginationFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof PackageTypesApi.paginate, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: PackageTypesModels.PackageTypePaginationFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof PackageTypesApi.paginate, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.paginateInfinite(limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(PackageTypesAcl.canUsePaginate());
-    return PackageTypesApi.paginate(limit, order, filter, pageParam, cursor, config) },
+    return PackageTypesApi.paginate(limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -84,14 +83,14 @@ export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { l
  * @returns { UseMutationResult<PackageTypesModels.PackageTypeResponseDTO> } 
  * @statusCodes [201, 401]
  */
-export const useCreate = (options?: AppMutationOptions<typeof PackageTypesApi.create, { data: PackageTypesModels.CreatePackageTypeRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreate = (options?: AppMutationOptions<typeof PackageTypesApi.create, { data: PackageTypesModels.CreatePackageTypeRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ data }) => { 
       checkAcl(PackageTypesAcl.canUseCreate());
-      return PackageTypesApi.create(data, config)
+      return PackageTypesApi.create(data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -114,14 +113,14 @@ export const useCreate = (options?: AppMutationOptions<typeof PackageTypesApi.cr
  * @returns { UseQueryResult<PackageTypesModels.PackageTypesPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: PackageTypesModels.PackageTypeLabelFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof PackageTypesApi.paginateLabels, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: PackageTypesModels.PackageTypeLabelFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof PackageTypesApi.paginateLabels, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.paginateLabels(limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(PackageTypesAcl.canUsePaginateLabels());
-    return PackageTypesApi.paginateLabels(limit, order, filter, page, cursor, config) },
+    return PackageTypesApi.paginateLabels(limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -139,14 +138,14 @@ export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }:
  * @returns { UseInfiniteQueryResult<PackageTypesModels.PackageTypesPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: PackageTypesModels.PackageTypeLabelFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof PackageTypesApi.paginateLabels, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: PackageTypesModels.PackageTypeLabelFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof PackageTypesApi.paginateLabels, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.paginateLabelsInfinite(limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(PackageTypesAcl.canUsePaginateLabels());
-    return PackageTypesApi.paginateLabels(limit, order, filter, pageParam, cursor, config) },
+    return PackageTypesApi.paginateLabels(limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -165,14 +164,14 @@ export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor 
  * @returns { UseQueryResult<PackageTypesModels.PackageTypeResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useFindById = <TData>({ id }: { id: string }, options?: AppQueryOptions<typeof PackageTypesApi.findById, TData>, config?: AxiosRequestConfig) => {
+export const useFindById = <TData>({ id }: { id: string }, options?: AppQueryOptions<typeof PackageTypesApi.findById, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.findById(id),
     queryFn: () => { 
     checkAcl(PackageTypesAcl.canUseFindById());
-    return PackageTypesApi.findById(id, config) },
+    return PackageTypesApi.findById(id) },
     ...options,
   });
 };
@@ -187,14 +186,14 @@ export const useFindById = <TData>({ id }: { id: string }, options?: AppQueryOpt
  * @returns { UseMutationResult<PackageTypesModels.PackageTypeResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useUpdate = (options?: AppMutationOptions<typeof PackageTypesApi.update, { id: string, data: PackageTypesModels.UpdatePackageTypeRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdate = (options?: AppMutationOptions<typeof PackageTypesApi.update, { id: string, data: PackageTypesModels.UpdatePackageTypeRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ id, data }) => { 
       checkAcl(PackageTypesAcl.canUseUpdate());
-      return PackageTypesApi.update(id, data, config)
+      return PackageTypesApi.update(id, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -215,14 +214,14 @@ export const useUpdate = (options?: AppMutationOptions<typeof PackageTypesApi.up
  * @returns { UseMutationResult<PackageTypesModels.PackageTypeResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useArchive = (options?: AppMutationOptions<typeof PackageTypesApi.archive, { id: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useArchive = (options?: AppMutationOptions<typeof PackageTypesApi.archive, { id: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ id }) => { 
       checkAcl(PackageTypesAcl.canUseArchive());
-      return PackageTypesApi.archive(id, config)
+      return PackageTypesApi.archive(id)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -243,14 +242,14 @@ export const useArchive = (options?: AppMutationOptions<typeof PackageTypesApi.a
  * @returns { UseMutationResult<PackageTypesModels.PackageTypeResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useUnarchive = (options?: AppMutationOptions<typeof PackageTypesApi.unarchive, { id: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUnarchive = (options?: AppMutationOptions<typeof PackageTypesApi.unarchive, { id: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ id }) => { 
       checkAcl(PackageTypesAcl.canUseUnarchive());
-      return PackageTypesApi.unarchive(id, config)
+      return PackageTypesApi.unarchive(id)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

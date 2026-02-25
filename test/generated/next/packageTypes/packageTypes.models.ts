@@ -16,7 +16,7 @@ export const PackageTypeCodeEnum = PackageTypeCodeEnumSchema.enum;
  * @property { string } id  
  * @property { string } name  
  */
-export const PackageTypeEmployeeDTOSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const PackageTypeEmployeeDTOSchema = z.object({ id: z.string(), name: z.string() });
 export type PackageTypeEmployeeDTO = z.infer<typeof PackageTypeEmployeeDTOSchema>;
 
 /** 
@@ -37,7 +37,7 @@ export type PackageTypeEmployeeDTO = z.infer<typeof PackageTypeEmployeeDTOSchema
  * @property { PackageTypeEmployeeDTO } updatedBy  
  * @property { string } updatedAt  
  */
-export const PackageTypeResponseDTOSchema = z.object({ id: z.string().describe("Unique identifier for the package type"), name: z.string().describe("Unique name for the package type"), length: z.number().describe("Length of the package type").nullish(), width: z.number().describe("Width of the package type").nullish(), height: z.number().describe("Height of the package type").nullish(), unit: z.string().describe("Measurement unit for dimensions"), archived: z.boolean().describe("Indicates if the package type is archived"), code: PackageTypeCodeEnumSchema.nullish(), createdById: z.string().nullish(), createdBy: PackageTypeEmployeeDTOSchema.nullish(), createdAt: z.iso.datetime({ offset: true }), updatedById: z.string().nullish(), updatedBy: PackageTypeEmployeeDTOSchema.nullish(), updatedAt: z.iso.datetime({ offset: true }) }).readonly();
+export const PackageTypeResponseDTOSchema = z.object({ id: z.string(), name: z.string(), length: z.number().nullish(), width: z.number().nullish(), height: z.number().nullish(), unit: z.string(), archived: z.boolean(), code: PackageTypeCodeEnumSchema.nullish(), createdById: z.string().nullish(), createdBy: PackageTypeEmployeeDTOSchema.nullish(), createdAt: z.iso.datetime({ offset: true }), updatedById: z.string().nullish(), updatedBy: PackageTypeEmployeeDTOSchema.nullish(), updatedAt: z.iso.datetime({ offset: true }) });
 export type PackageTypeResponseDTO = z.infer<typeof PackageTypeResponseDTOSchema>;
 
 /** 
@@ -50,7 +50,7 @@ export type PackageTypeResponseDTO = z.infer<typeof PackageTypeResponseDTOSchema
  * @property { string } unit Measurement unit for dimensions 
  * @property { PackageTypeCodeEnum } code  
  */
-export const CreatePackageTypeRequestDTOSchema = z.object({ name: z.string().describe("Unique name for the package type"), length: z.number().describe("Length of the package type").nullish(), width: z.number().describe("Width of the package type").nullish(), height: z.number().describe("Height of the package type").nullish(), unit: z.string().describe("Measurement unit for dimensions"), code: PackageTypeCodeEnumSchema.nullish() }).readonly();
+export const CreatePackageTypeRequestDTOSchema = z.object({ name: z.string(), length: z.number().nullish(), width: z.number().nullish(), height: z.number().nullish(), unit: z.string(), code: PackageTypeCodeEnumSchema.nullish() });
 export type CreatePackageTypeRequestDTO = z.infer<typeof CreatePackageTypeRequestDTOSchema>;
 
 /** 
@@ -63,7 +63,7 @@ export type CreatePackageTypeRequestDTO = z.infer<typeof CreatePackageTypeReques
  * @property { string } unit Updated measurement unit for dimensions 
  * @property { PackageTypeCodeEnum } code  
  */
-export const UpdatePackageTypeRequestDTOSchema = z.object({ name: z.string().describe("Updated name for package type"), length: z.number().describe("Updated length of the package type").nullable(), width: z.number().describe("Updated width of the package type").nullable(), height: z.number().describe("Updated height of the package type").nullable(), unit: z.string().describe("Updated measurement unit for dimensions"), code: PackageTypeCodeEnumSchema }).readonly();
+export const UpdatePackageTypeRequestDTOSchema = z.object({ name: z.string().nullable(), length: z.number().nullable(), width: z.number().nullable(), height: z.number().nullable(), unit: z.string().nullable(), code: PackageTypeCodeEnumSchema.nullable() }).partial();
 export type UpdatePackageTypeRequestDTO = z.infer<typeof UpdatePackageTypeRequestDTOSchema>;
 
 /** 
@@ -72,7 +72,7 @@ export type UpdatePackageTypeRequestDTO = z.infer<typeof UpdatePackageTypeReques
  * @property { boolean } archived Archived 
  * @property { string } search  
  */
-export const PackageTypePaginationFilterDtoSchema = z.object({ archived: z.boolean().describe("Archived"), search: z.string() }).readonly();
+export const PackageTypePaginationFilterDtoSchema = z.object({ archived: z.boolean().nullable(), search: z.string().nullable() }).partial();
 export type PackageTypePaginationFilterDto = z.infer<typeof PackageTypePaginationFilterDtoSchema>;
 
 /** 
@@ -80,7 +80,7 @@ export type PackageTypePaginationFilterDto = z.infer<typeof PackageTypePaginatio
  * @type { object }
  * @property { string } search  
  */
-export const PackageTypeLabelFilterDtoSchema = z.object({ search: z.string() }).readonly();
+export const PackageTypeLabelFilterDtoSchema = z.object({ search: z.string().nullable() }).partial();
 export type PackageTypeLabelFilterDto = z.infer<typeof PackageTypeLabelFilterDtoSchema>;
 
 /** 
@@ -101,7 +101,7 @@ export const PackageTypesPaginateOrderParamEnum = PackageTypesPaginateOrderParam
  * @property { number } totalItems Total available items 
  * @property { PackageTypeResponseDTO[] } items  
  */
-export const PackageTypesPaginateResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(PackageTypeResponseDTOSchema).readonly() }).readonly().shape });
+export const PackageTypesPaginateResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(PackageTypeResponseDTOSchema).nullable() }).partial().shape });
 export type PackageTypesPaginateResponse = z.infer<typeof PackageTypesPaginateResponseSchema>;
 
 /** 
@@ -122,7 +122,7 @@ export const PackageTypesPaginateLabelsOrderParamEnum = PackageTypesPaginateLabe
  * @property { number } totalItems Total available items 
  * @property { CommonModels.LabelResponseDTO[] } items  
  */
-export const PackageTypesPaginateLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).readonly() }).readonly().shape });
+export const PackageTypesPaginateLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).nullable() }).partial().shape });
 export type PackageTypesPaginateLabelsResponse = z.infer<typeof PackageTypesPaginateLabelsResponseSchema>;
 
 }

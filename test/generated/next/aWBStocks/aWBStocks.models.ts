@@ -9,7 +9,7 @@ export namespace AWBStocksModels {
  * @property { string } name Business partner name 
  * @property { string } carrierPrefix Carrier prefix (3 digits) 
  */
-export const AWBStockBusinessPartnerPreviewDTOSchema = z.object({ id: z.string().describe("Business partner ID"), name: z.string().describe("Business partner name"), carrierPrefix: z.string().describe("Carrier prefix (3 digits)") }).readonly();
+export const AWBStockBusinessPartnerPreviewDTOSchema = z.object({ id: z.string(), name: z.string(), carrierPrefix: z.string() });
 export type AWBStockBusinessPartnerPreviewDTO = z.infer<typeof AWBStockBusinessPartnerPreviewDTOSchema>;
 
 /** 
@@ -18,7 +18,7 @@ export type AWBStockBusinessPartnerPreviewDTO = z.infer<typeof AWBStockBusinessP
  * @property { string } id Employee ID 
  * @property { string } email Employee email 
  */
-export const AWBStockEmployeePreviewDTOSchema = z.object({ id: z.string().describe("Employee ID"), email: z.string().describe("Employee email") }).readonly();
+export const AWBStockEmployeePreviewDTOSchema = z.object({ id: z.string(), email: z.string() });
 export type AWBStockEmployeePreviewDTO = z.infer<typeof AWBStockEmployeePreviewDTOSchema>;
 
 /** 
@@ -39,7 +39,7 @@ export type AWBStockEmployeePreviewDTO = z.infer<typeof AWBStockEmployeePreviewD
  * @property { AWBStockEmployeePreviewDTO } updatedBy User who updated the stock 
  * @property { string } officeId Office ID 
  */
-export const AWBStockResponseDTOSchema = z.object({ id: z.string().describe("AWB stock ID"), carrier: AWBStockBusinessPartnerPreviewDTOSchema.describe("Carrier business partner"), startNumber: z.number().describe("Start number"), lastUsedNumber: z.number().describe("Last used number").nullish(), stock: z.number().describe("Stock size"), usedCodes: z.number().describe("Used codes count"), priority: z.number().describe("Priority"), archived: z.boolean().describe("Is archived"), comments: z.string().describe("Comments").nullish(), createdAt: z.iso.datetime({ offset: true }).describe("Created at"), updatedAt: z.iso.datetime({ offset: true }).describe("Updated at"), createdBy: AWBStockEmployeePreviewDTOSchema.describe("User who created the stock"), updatedBy: AWBStockEmployeePreviewDTOSchema.describe("User who updated the stock").nullish(), officeId: z.string().describe("Office ID") }).readonly();
+export const AWBStockResponseDTOSchema = z.object({ id: z.string(), carrier: AWBStockBusinessPartnerPreviewDTOSchema, startNumber: z.number(), lastUsedNumber: z.number().nullish(), stock: z.number(), usedCodes: z.number(), priority: z.number(), archived: z.boolean(), comments: z.string().nullish(), createdAt: z.iso.datetime({ offset: true }), updatedAt: z.iso.datetime({ offset: true }), createdBy: AWBStockEmployeePreviewDTOSchema, updatedBy: AWBStockEmployeePreviewDTOSchema.nullish(), officeId: z.string() });
 export type AWBStockResponseDTO = z.infer<typeof AWBStockResponseDTOSchema>;
 
 /** 
@@ -50,7 +50,7 @@ export type AWBStockResponseDTO = z.infer<typeof AWBStockResponseDTOSchema>;
  * @property { string } searchQuery  
  * @property { boolean } used  
  */
-export const AWBStockFilterDtoSchema = z.object({ archived: z.boolean(), carrierId: z.string(), searchQuery: z.string(), used: z.boolean() }).readonly();
+export const AWBStockFilterDtoSchema = z.object({ archived: z.boolean().nullable(), carrierId: z.string().nullable(), searchQuery: z.string().nullable(), used: z.boolean().nullable() }).partial();
 export type AWBStockFilterDto = z.infer<typeof AWBStockFilterDtoSchema>;
 
 /** 
@@ -63,7 +63,7 @@ export type AWBStockFilterDto = z.infer<typeof AWBStockFilterDtoSchema>;
  * @property { string } comments Comments 
  * @property { string } officeId Office ID 
  */
-export const CreateAWBStockRequestDTOSchema = z.object({ carrierId: z.string().describe("Carrier business partner ID"), startNumber: z.number().gte(0).describe("Start number"), stock: z.number().describe("Stock size"), priority: z.number().describe("Priority"), comments: z.string().describe("Comments").nullish(), officeId: z.string().describe("Office ID") }).readonly();
+export const CreateAWBStockRequestDTOSchema = z.object({ carrierId: z.string(), startNumber: z.number().gte(0), stock: z.number(), priority: z.number(), comments: z.string().nullish(), officeId: z.string() });
 export type CreateAWBStockRequestDTO = z.infer<typeof CreateAWBStockRequestDTOSchema>;
 
 /** 
@@ -71,7 +71,7 @@ export type CreateAWBStockRequestDTO = z.infer<typeof CreateAWBStockRequestDTOSc
  * @type { object }
  * @property { string } carrierId Carrier ID. Example: `e847c7dd-a364-4488-bed6-1e5878aff022` 
  */
-export const GenerateAWBNumberRequestDTOSchema = z.object({ carrierId: z.string().describe("Carrier ID") }).readonly();
+export const GenerateAWBNumberRequestDTOSchema = z.object({ carrierId: z.string() });
 export type GenerateAWBNumberRequestDTO = z.infer<typeof GenerateAWBNumberRequestDTOSchema>;
 
 /** 
@@ -79,7 +79,7 @@ export type GenerateAWBNumberRequestDTO = z.infer<typeof GenerateAWBNumberReques
  * @type { object }
  * @property { string } formattedAwbNumber Generated AWB number. Example: `123-45678901` 
  */
-export const GenerateAWBNumberResponseDTOSchema = z.object({ formattedAwbNumber: z.string().describe("Generated AWB number") }).readonly();
+export const GenerateAWBNumberResponseDTOSchema = z.object({ formattedAwbNumber: z.string() });
 export type GenerateAWBNumberResponseDTO = z.infer<typeof GenerateAWBNumberResponseDTOSchema>;
 
 /** 
@@ -87,7 +87,7 @@ export type GenerateAWBNumberResponseDTO = z.infer<typeof GenerateAWBNumberRespo
  * @type { object }
  * @property { string } comments Comments 
  */
-export const UpdateAWBStockRequestDTOSchema = z.object({ comments: z.string().describe("Comments") }).readonly();
+export const UpdateAWBStockRequestDTOSchema = z.object({ comments: z.string().nullable() }).partial();
 export type UpdateAWBStockRequestDTO = z.infer<typeof UpdateAWBStockRequestDTOSchema>;
 
 /** 
@@ -108,7 +108,7 @@ export const AWBStocksPaginateOrderParamEnum = AWBStocksPaginateOrderParamEnumSc
  * @property { number } totalItems Total available items 
  * @property { AWBStockResponseDTO[] } items  
  */
-export const AWBStocksPaginateResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(AWBStockResponseDTOSchema).readonly() }).readonly().shape });
+export const AWBStocksPaginateResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(AWBStockResponseDTOSchema).nullable() }).partial().shape });
 export type AWBStocksPaginateResponse = z.infer<typeof AWBStocksPaginateResponseSchema>;
 
 }

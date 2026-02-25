@@ -72,9 +72,8 @@ export const OfficePaymentTermsDateType = OfficePaymentTermsDateTypeSchema.enum;
  * @property { string } id  
  * @property { string } name  
  */
-export const FolderEmployeeDTOSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const FolderEmployeeDTOSchema = z.object({ id: z.string(), name: z.string() });
 export type FolderEmployeeDTO = z.infer<typeof FolderEmployeeDTOSchema>;
-
 
 /** 
  * FileResponseDTOSchema 
@@ -89,9 +88,8 @@ export type FolderEmployeeDTO = z.infer<typeof FolderEmployeeDTOSchema>;
  * @property { FolderEmployeeDTO } updatedBy  
  * @property { string } downloadUrl  
  */
-export const FileResponseDTOSchema = z.object({ id: z.string(), name: z.string(), archived: z.boolean(), isSystem: z.boolean(), createdAt: z.iso.datetime({ offset: true }), updatedAt: z.iso.datetime({ offset: true }), createdBy: CommonModels.FolderEmployeeDTOSchema, updatedBy: CommonModels.FolderEmployeeDTOSchema, downloadUrl: z.string().nullish() }).readonly();
+export const FileResponseDTOSchema = z.object({ id: z.string(), name: z.string(), archived: z.boolean(), isSystem: z.boolean(), createdAt: z.iso.datetime({ offset: true }), updatedAt: z.iso.datetime({ offset: true }), createdBy: CommonModels.FolderEmployeeDTOSchema, updatedBy: CommonModels.FolderEmployeeDTOSchema, downloadUrl: z.string().nullish() });
 export type FileResponseDTO = z.infer<typeof FileResponseDTOSchema>;
-
 
 /** 
  * EditorContentUpdateDtoSchema 
@@ -100,9 +98,8 @@ export type FileResponseDTO = z.infer<typeof FileResponseDTOSchema>;
  * @property { object } json  
  * @property { any } json.[key]  
  */
-export const EditorContentUpdateDtoSchema = z.object({ html: z.string(), json: z.object({}).catchall(z.any()).readonly() }).readonly();
+export const EditorContentUpdateDtoSchema = z.object({ html: z.string().nullable(), json: z.object({}).catchall(z.any()).nullable() }).partial();
 export type EditorContentUpdateDto = z.infer<typeof EditorContentUpdateDtoSchema>;
-
 
 /** 
  * RemarkBlockDTOSchema 
@@ -112,9 +109,8 @@ export type EditorContentUpdateDto = z.infer<typeof EditorContentUpdateDtoSchema
  * @property { number } position 1-based order in the rendered document. Minimum: `1` 
  * @property { EditorContentUpdateDto } content  
  */
-export const RemarkBlockDTOSchema = z.object({ id: z.string(), enabled: z.boolean(), position: z.number().gte(1).describe("1-based order in the rendered document"), content: CommonModels.EditorContentUpdateDtoSchema }).readonly();
+export const RemarkBlockDTOSchema = z.object({ id: z.string().nullable(), enabled: z.boolean().nullable(), position: z.number().gte(1).nullable(), content: CommonModels.EditorContentUpdateDtoSchema.nullable() }).partial();
 export type RemarkBlockDTO = z.infer<typeof RemarkBlockDTOSchema>;
-
 
 /** 
  * TitleBlockDTOSchema 
@@ -124,9 +120,8 @@ export type RemarkBlockDTO = z.infer<typeof RemarkBlockDTOSchema>;
  * @property { boolean } includePositionNumber  
  * @property { boolean } allowManualOverride  
  */
-export const TitleBlockDTOSchema = z.object({ enabled: z.boolean(), defaultTitle: z.string(), includePositionNumber: z.boolean(), allowManualOverride: z.boolean() }).readonly();
+export const TitleBlockDTOSchema = z.object({ enabled: z.boolean().nullable(), defaultTitle: z.string().nullable(), includePositionNumber: z.boolean().nullable(), allowManualOverride: z.boolean().nullable() }).partial();
 export type TitleBlockDTO = z.infer<typeof TitleBlockDTOSchema>;
-
 
 /** 
  * PositionInvolvedPartyTypeEnumSchema 
@@ -142,9 +137,8 @@ export const PositionInvolvedPartyTypeEnum = PositionInvolvedPartyTypeEnumSchema
  * @property { boolean } enabled  
  * @property { string } defaultRole  
  */
-export const ReceiverBlockDTOSchema = z.object({ enabled: z.boolean(), defaultRole: CommonModels.PositionInvolvedPartyTypeEnumSchema }).readonly();
+export const ReceiverBlockDTOSchema = z.object({ enabled: z.boolean().nullable(), defaultRole: CommonModels.PositionInvolvedPartyTypeEnumSchema.nullable() }).partial();
 export type ReceiverBlockDTO = z.infer<typeof ReceiverBlockDTOSchema>;
-
 
 /** 
  * OurInformationBlockDTOSchema 
@@ -158,9 +152,8 @@ export type ReceiverBlockDTO = z.infer<typeof ReceiverBlockDTOSchema>;
  * @property { boolean } showMasterBillOfLadingNumber  
  * @property { boolean } showHouseBillOfLadingNumber  
  */
-export const OurInformationBlockDTOSchema = z.object({ enabled: z.boolean(), showName: z.boolean(), showPhone: z.boolean(), showDate: z.boolean(), showBookingNumber: z.boolean(), showCustomerReference: z.boolean(), showMasterBillOfLadingNumber: z.boolean(), showHouseBillOfLadingNumber: z.boolean() }).readonly();
+export const OurInformationBlockDTOSchema = z.object({ enabled: z.boolean().nullable(), showName: z.boolean().nullable(), showPhone: z.boolean().nullable(), showDate: z.boolean().nullable(), showBookingNumber: z.boolean().nullable(), showCustomerReference: z.boolean().nullable(), showMasterBillOfLadingNumber: z.boolean().nullable(), showHouseBillOfLadingNumber: z.boolean().nullable() }).partial();
 export type OurInformationBlockDTO = z.infer<typeof OurInformationBlockDTOSchema>;
-
 
 /** 
  * RouteTableBlockDTOSchema 
@@ -175,9 +168,8 @@ export type OurInformationBlockDTO = z.infer<typeof OurInformationBlockDTOSchema
  * @property { boolean } showAddress  
  * @property { boolean } showProvider  
  */
-export const RouteTableBlockDTOSchema = z.object({ enabled: z.boolean(), position: z.number().gte(1).describe("1-based order in the rendered document"), showDate: z.boolean(), showLocation: z.boolean(), showType: z.boolean(), showReference: z.boolean(), showVesselVoyage: z.boolean(), showAddress: z.boolean(), showProvider: z.boolean() }).readonly();
+export const RouteTableBlockDTOSchema = z.object({ enabled: z.boolean().nullable(), position: z.number().gte(1).nullable(), showDate: z.boolean().nullable(), showLocation: z.boolean().nullable(), showType: z.boolean().nullable(), showReference: z.boolean().nullable(), showVesselVoyage: z.boolean().nullable(), showAddress: z.boolean().nullable(), showProvider: z.boolean().nullable() }).partial();
 export type RouteTableBlockDTO = z.infer<typeof RouteTableBlockDTOSchema>;
-
 
 /** 
  * CargoTableBlockDTOSchema 
@@ -185,9 +177,8 @@ export type RouteTableBlockDTO = z.infer<typeof RouteTableBlockDTOSchema>;
  * @property { boolean } enabled  
  * @property { number } position 1-based order in the rendered document. Minimum: `1` 
  */
-export const CargoTableBlockDTOSchema = z.object({ enabled: z.boolean(), position: z.number().gte(1).describe("1-based order in the rendered document") }).readonly();
+export const CargoTableBlockDTOSchema = z.object({ enabled: z.boolean().nullable(), position: z.number().gte(1).nullable() }).partial();
 export type CargoTableBlockDTO = z.infer<typeof CargoTableBlockDTOSchema>;
-
 
 /** 
  * CargoSummaryBlockDTOSchema 
@@ -195,9 +186,8 @@ export type CargoTableBlockDTO = z.infer<typeof CargoTableBlockDTOSchema>;
  * @property { boolean } enabled  
  * @property { number } position 1-based order in the rendered document. Minimum: `1` 
  */
-export const CargoSummaryBlockDTOSchema = z.object({ enabled: z.boolean(), position: z.number().gte(1).describe("1-based order in the rendered document") }).readonly();
+export const CargoSummaryBlockDTOSchema = z.object({ enabled: z.boolean().nullable(), position: z.number().gte(1).nullable() }).partial();
 export type CargoSummaryBlockDTO = z.infer<typeof CargoSummaryBlockDTOSchema>;
-
 
 /** 
  * FinanceTableBlockDTOSchema 
@@ -221,27 +211,24 @@ export type CargoSummaryBlockDTO = z.infer<typeof CargoSummaryBlockDTOSchema>;
  * @property { boolean } showSellRateExchangeRates  
  * @property { boolean } showTotal  
  */
-export const FinanceTableBlockDTOSchema = z.object({ enabled: z.boolean(), position: z.number().gte(1).describe("1-based order in the rendered document"), showOnlyForReceiver: z.boolean(), showVendor: z.boolean(), showBuyRate: z.boolean(), showCustomer: z.boolean(), showSellRate: z.boolean(), showGrid: z.boolean(), showCharges: z.boolean(), showAdditionalText: z.boolean(), showQuantity: z.boolean(), showProfit: z.boolean(), showTotalsByCurrency: z.boolean(), includeSubPositions: z.boolean().nullable(), subPositionTotals: z.boolean().nullable(), showBuyRateExchangeRates: z.boolean(), showSellRateExchangeRates: z.boolean(), showTotal: z.boolean() }).readonly();
+export const FinanceTableBlockDTOSchema = z.object({ enabled: z.boolean().nullable(), position: z.number().gte(1).nullable(), showOnlyForReceiver: z.boolean().nullable(), showVendor: z.boolean().nullable(), showBuyRate: z.boolean().nullable(), showCustomer: z.boolean().nullable(), showSellRate: z.boolean().nullable(), showGrid: z.boolean().nullable(), showCharges: z.boolean().nullable(), showAdditionalText: z.boolean().nullable(), showQuantity: z.boolean().nullable(), showProfit: z.boolean().nullable(), showTotalsByCurrency: z.boolean().nullable(), includeSubPositions: z.boolean().nullable(), subPositionTotals: z.boolean().nullable(), showBuyRateExchangeRates: z.boolean().nullable(), showSellRateExchangeRates: z.boolean().nullable(), showTotal: z.boolean().nullable() }).partial();
 export type FinanceTableBlockDTO = z.infer<typeof FinanceTableBlockDTOSchema>;
-
 
 /** 
  * FooterBlockDTOSchema 
  * @type { object }
  * @property { boolean } enabled  
  */
-export const FooterBlockDTOSchema = z.object({ enabled: z.boolean() }).readonly();
+export const FooterBlockDTOSchema = z.object({ enabled: z.boolean().nullable() }).partial();
 export type FooterBlockDTO = z.infer<typeof FooterBlockDTOSchema>;
-
 
 /** 
  * TermsBlockDTOSchema 
  * @type { object }
  * @property { boolean } enabled  
  */
-export const TermsBlockDTOSchema = z.object({ enabled: z.boolean() }).readonly();
+export const TermsBlockDTOSchema = z.object({ enabled: z.boolean().nullable() }).partial();
 export type TermsBlockDTO = z.infer<typeof TermsBlockDTOSchema>;
-
 
 /** 
  * CutOffDatesBlockDTOSchema 
@@ -253,9 +240,8 @@ export type TermsBlockDTO = z.infer<typeof TermsBlockDTOSchema>;
  * @property { boolean } customsAMS  
  * @property { boolean } vgmCustomer  
  */
-export const CutOffDatesBlockDTOSchema = z.object({ enabled: z.boolean(), position: z.number().gte(1).describe("1-based order in the rendered document"), billOfLadingFromCustomer: z.boolean(), billOfLadingToCarrier: z.boolean(), customsAMS: z.boolean(), vgmCustomer: z.boolean() }).readonly();
+export const CutOffDatesBlockDTOSchema = z.object({ enabled: z.boolean().nullable(), position: z.number().gte(1).nullable(), billOfLadingFromCustomer: z.boolean().nullable(), billOfLadingToCarrier: z.boolean().nullable(), customsAMS: z.boolean().nullable(), vgmCustomer: z.boolean().nullable() }).partial();
 export type CutOffDatesBlockDTO = z.infer<typeof CutOffDatesBlockDTOSchema>;
-
 
 /** 
  * TemplateBlocksResponseDTOSchema 
@@ -272,9 +258,8 @@ export type CutOffDatesBlockDTO = z.infer<typeof CutOffDatesBlockDTOSchema>;
  * @property { TermsBlockDTO } termsBlock  
  * @property { CutOffDatesBlockDTO } cutOffDatesBlock  
  */
-export const TemplateBlocksResponseDTOSchema = z.object({ titleBlock: CommonModels.TitleBlockDTOSchema, receiverBlock: CommonModels.ReceiverBlockDTOSchema, ourInformationBlock: CommonModels.OurInformationBlockDTOSchema, routeTableBlock: CommonModels.RouteTableBlockDTOSchema, cargoTableBlock: CommonModels.CargoTableBlockDTOSchema, cargoSummaryBlock: CommonModels.CargoSummaryBlockDTOSchema, financeTableBlock: CommonModels.FinanceTableBlockDTOSchema, remarkBlocks: z.array(CommonModels.RemarkBlockDTOSchema).readonly(), footerBlock: CommonModels.FooterBlockDTOSchema, termsBlock: CommonModels.TermsBlockDTOSchema, cutOffDatesBlock: CommonModels.CutOffDatesBlockDTOSchema }).readonly();
+export const TemplateBlocksResponseDTOSchema = z.object({ titleBlock: CommonModels.TitleBlockDTOSchema.nullable(), receiverBlock: CommonModels.ReceiverBlockDTOSchema.nullable(), ourInformationBlock: CommonModels.OurInformationBlockDTOSchema.nullable(), routeTableBlock: CommonModels.RouteTableBlockDTOSchema.nullable(), cargoTableBlock: CommonModels.CargoTableBlockDTOSchema.nullable(), cargoSummaryBlock: CommonModels.CargoSummaryBlockDTOSchema.nullable(), financeTableBlock: CommonModels.FinanceTableBlockDTOSchema.nullable(), remarkBlocks: z.array(CommonModels.RemarkBlockDTOSchema).nullable(), footerBlock: CommonModels.FooterBlockDTOSchema.nullable(), termsBlock: CommonModels.TermsBlockDTOSchema.nullable(), cutOffDatesBlock: CommonModels.CutOffDatesBlockDTOSchema.nullable() }).partial();
 export type TemplateBlocksResponseDTO = z.infer<typeof TemplateBlocksResponseDTOSchema>;
-
 
 /** 
  * RouteTableProviderDtoSchema 
@@ -282,9 +267,8 @@ export type TemplateBlocksResponseDTO = z.infer<typeof TemplateBlocksResponseDTO
  * @property { string } id Provider ID 
  * @property { string } name Provider name 
  */
-export const RouteTableProviderDtoSchema = z.object({ id: z.string().describe("Provider ID"), name: z.string().describe("Provider name") }).readonly();
+export const RouteTableProviderDtoSchema = z.object({ id: z.string().nullable(), name: z.string().nullable() }).partial();
 export type RouteTableProviderDto = z.infer<typeof RouteTableProviderDtoSchema>;
-
 
 /** 
  * RouteTablePointDtoSchema 
@@ -301,9 +285,8 @@ export type RouteTableProviderDto = z.infer<typeof RouteTableProviderDtoSchema>;
  * @property { string } voyage Voyage information 
  * @property { string } carrier Carrier name 
  */
-export const RouteTablePointDtoSchema = z.object({ id: z.string().describe("Route point ID"), type: z.string().describe("Route point type"), datetime: z.string().describe("Route point datetime").nullish(), secondaryDatetime: z.string().describe("Route point secondary datetime").nullish(), address: z.string().describe("Route point address").nullish(), name: z.string().describe("Route point address name").nullish(), reference: z.string().describe("Route point reference").nullish(), provider: CommonModels.RouteTableProviderDtoSchema.describe("Route point provider").nullish(), vessel: z.string().describe("Vessel information").nullish(), voyage: z.string().describe("Voyage information").nullish(), carrier: z.string().describe("Carrier name").nullish() }).readonly();
+export const RouteTablePointDtoSchema = z.object({ id: z.string(), type: z.string(), datetime: z.string().nullish(), secondaryDatetime: z.string().nullish(), address: z.string().nullish(), name: z.string().nullish(), reference: z.string().nullish(), provider: CommonModels.RouteTableProviderDtoSchema.nullish(), vessel: z.string().nullish(), voyage: z.string().nullish(), carrier: z.string().nullish() });
 export type RouteTablePointDto = z.infer<typeof RouteTablePointDtoSchema>;
-
 
 /** 
  * RouteTableBlockResponseDtoSchema 
@@ -321,9 +304,8 @@ export type RouteTablePointDto = z.infer<typeof RouteTablePointDtoSchema>;
  * @property { boolean } showGrid Show grid 
  * @property { boolean } suppressRoute Suppress route 
  */
-export const RouteTableBlockResponseDtoSchema = z.object({ selectedRouteId: z.string().describe("Selected route ID").nullish(), selectedRoutePointIds: z.array(z.string()).readonly().describe("Selected route point IDs"), showReference: z.boolean().describe("Show reference column"), showVesselVoyage: z.boolean().describe("Show vessel/voyage column"), showProvider: z.boolean().describe("Show provider column"), points: z.array(CommonModels.RouteTablePointDtoSchema).readonly().describe("Route points").nullish(), showAddress: z.boolean().describe("Show address").nullish(), showDates: z.boolean().describe("Show dates"), showType: z.boolean().describe("Show type"), showLocation: z.boolean().describe("Show location"), showGrid: z.boolean().describe("Show grid"), suppressRoute: z.boolean().describe("Suppress route") }).readonly();
+export const RouteTableBlockResponseDtoSchema = z.object({ selectedRouteId: z.string().nullish(), selectedRoutePointIds: z.array(z.string()), showReference: z.boolean(), showVesselVoyage: z.boolean(), showProvider: z.boolean(), points: z.array(CommonModels.RouteTablePointDtoSchema).nullish(), showAddress: z.boolean().nullish(), showDates: z.boolean(), showType: z.boolean(), showLocation: z.boolean(), showGrid: z.boolean(), suppressRoute: z.boolean() });
 export type RouteTableBlockResponseDto = z.infer<typeof RouteTableBlockResponseDtoSchema>;
-
 
 /** 
  * CargoSpecialtyDtoSchema 
@@ -334,9 +316,8 @@ export type RouteTableBlockResponseDto = z.infer<typeof RouteTableBlockResponseD
  * @property { number } temperatureFrom Temperature from (°C) for temperature-controlled specialty 
  * @property { number } temperatureUntil Temperature until (°C) for temperature-controlled specialty 
  */
-export const CargoSpecialtyDtoSchema = z.object({ name: CommonModels.PositionCargoPackageEnumSchema, unNumber: z.string().describe("UN number for hazardous specialty").nullish(), IMOClass: z.string().describe("IMO class for hazardous specialty").nullish(), temperatureFrom: z.number().describe("Temperature from (°C) for temperature-controlled specialty").nullish(), temperatureUntil: z.number().describe("Temperature until (°C) for temperature-controlled specialty").nullish() }).readonly();
+export const CargoSpecialtyDtoSchema = z.object({ name: CommonModels.PositionCargoPackageEnumSchema, unNumber: z.string().nullish(), IMOClass: z.string().nullish(), temperatureFrom: z.number().nullish(), temperatureUntil: z.number().nullish() });
 export type CargoSpecialtyDto = z.infer<typeof CargoSpecialtyDtoSchema>;
-
 
 /** 
  * CargoPackageDtoSchema 
@@ -356,9 +337,8 @@ export type CargoSpecialtyDto = z.infer<typeof CargoSpecialtyDtoSchema>;
  * @property { number } chargeableWeight Chargeable weight in kg 
  * @property { number } volumetricWeight Volumetric weight in kg 
  */
-export const CargoPackageDtoSchema = z.object({ id: z.string().describe("Package ID"), description: z.string().describe("Package description").nullish(), weight: z.string().describe("Weight").nullish(), hsCodes: z.string().describe("HS codes (numeric only)").nullish(), quantity: z.number().describe("Quantity").nullish(), width: z.number().describe("Width (cm)").nullish(), length: z.number().describe("Length (cm)").nullish(), height: z.number().describe("Height (cm)").nullish(), volume: z.number().describe("Total volume in m3 for this package group").nullish(), packageType: z.string().describe("Package type name").nullish(), caseMarks: z.string().describe("Case marks").nullish(), specialties: z.array(CommonModels.CargoSpecialtyDtoSchema).readonly().describe("Package specialties").nullish(), chargeableWeight: z.number().describe("Chargeable weight in kg").nullish(), volumetricWeight: z.number().describe("Volumetric weight in kg").nullish() }).readonly();
+export const CargoPackageDtoSchema = z.object({ id: z.string(), description: z.string().nullish(), weight: z.string().nullish(), hsCodes: z.string().nullish(), quantity: z.number().nullish(), width: z.number().nullish(), length: z.number().nullish(), height: z.number().nullish(), volume: z.number().nullish(), packageType: z.string().nullish(), caseMarks: z.string().nullish(), specialties: z.array(CommonModels.CargoSpecialtyDtoSchema).nullish(), chargeableWeight: z.number().nullish(), volumetricWeight: z.number().nullish() });
 export type CargoPackageDto = z.infer<typeof CargoPackageDtoSchema>;
-
 
 /** 
  * CargoItemRouteDtoSchema 
@@ -366,9 +346,8 @@ export type CargoPackageDto = z.infer<typeof CargoPackageDtoSchema>;
  * @property { string[] } selectedRoutePointIds Selected route point IDs 
  * @property { RouteTablePointDto[] } points Route points 
  */
-export const CargoItemRouteDtoSchema = z.object({ selectedRoutePointIds: z.array(z.string()).readonly().describe("Selected route point IDs"), points: z.array(CommonModels.RouteTablePointDtoSchema).readonly().describe("Route points").nullish() }).readonly();
+export const CargoItemRouteDtoSchema = z.object({ selectedRoutePointIds: z.array(z.string()), points: z.array(CommonModels.RouteTablePointDtoSchema).nullish() });
 export type CargoItemRouteDto = z.infer<typeof CargoItemRouteDtoSchema>;
-
 
 /** 
  * CargoItemDtoSchema 
@@ -387,9 +366,8 @@ export type CargoItemRouteDto = z.infer<typeof CargoItemRouteDtoSchema>;
  * @property { string[] } selectedPackageIds Selected cargo package IDs 
  * @property { CargoItemRouteDto } route Cargo route (when routes are split) 
  */
-export const CargoItemDtoSchema = z.object({ cargoId: z.string().describe("Cargo ID"), cargoType: z.string().describe("Cargo type"), containerNumber: z.string().describe("Container number").nullish(), seal1: z.string().describe("First seal (sea cargo only)").nullish(), seal2: z.string().describe("Second seal (sea cargo only)").nullish(), vgm: z.string().describe("Verified gross mass (VGM) for container, sea cargo only").nullish(), totalGrossWeight: z.number().describe("Total gross weight from cargo details").nullish(), totalVolume: z.number().describe("Total volume (m3) calculated from cargo packages").nullish(), chargeableWeight: z.number().describe("Chargeable weight in kg for transport unit").nullish(), volumetricWeight: z.number().describe("Volumetric weight in kg for transport unit").nullish(), packages: z.array(CommonModels.CargoPackageDtoSchema).readonly().describe("Cargo packages"), selectedPackageIds: z.array(z.string()).readonly().describe("Selected cargo package IDs"), route: CommonModels.CargoItemRouteDtoSchema.describe("Cargo route (when routes are split)").nullish() }).readonly();
+export const CargoItemDtoSchema = z.object({ cargoId: z.string(), cargoType: z.string(), containerNumber: z.string().nullish(), seal1: z.string().nullish(), seal2: z.string().nullish(), vgm: z.string().nullish(), totalGrossWeight: z.number().nullish(), totalVolume: z.number().nullish(), chargeableWeight: z.number().nullish(), volumetricWeight: z.number().nullish(), packages: z.array(CommonModels.CargoPackageDtoSchema), selectedPackageIds: z.array(z.string()), route: CommonModels.CargoItemRouteDtoSchema.nullish() });
 export type CargoItemDto = z.infer<typeof CargoItemDtoSchema>;
-
 
 /** 
  * CargoTableBlockDtoSchema 
@@ -421,9 +399,8 @@ export type CargoItemDto = z.infer<typeof CargoItemDtoSchema>;
  * @property { boolean } showTransportUnitSeal2 Show transport unit seal 2 
  * @property { CargoItemDto[] } items Cargo items 
  */
-export const CargoTableBlockDtoSchema = z.object({ selectedCargoIds: z.array(z.string()).readonly().describe("Selected cargo IDs").nullish(), suppressWeight: z.boolean().describe("Suppress weight column display").nullish(), showGrid: z.boolean().describe("Show grid borders in cargo table").nullish(), suppressVolume: z.boolean().describe("Suppress volume column display").nullish(), suppressSpecialities: z.boolean().describe("Suppress specialities column display").nullish(), suppressDimensions: z.boolean().describe("Suppress dimensions column display").nullish(), suppressPackageVolume: z.boolean().describe("Suppress package volume column display").nullish(), suppressPackageWeight: z.boolean().describe("Suppress package weight column display").nullish(), showGrandTotal: z.boolean().describe("Show grand total").nullish(), showTransportUnitTotal: z.boolean().describe("Show transport unit total").nullish(), showRoute: z.boolean().describe("Show route information (only applicable when routes are split)").nullish(), suppressCargo: z.boolean().describe("Suppress cargo table display").nullish(), showTransportUnitChargeableWeight: z.boolean().describe("Show chargeable weight for transport units").nullish(), showTransportUnitVolumetricWeight: z.boolean().describe("Show volumetric weight for transport units").nullish(), showPackageChargeableWeight: z.boolean().describe("Show chargeable weight for packages").nullish(), showPackageVolumetricWeight: z.boolean().describe("Show volumetric weight for packages").nullish(), showPackageHSCodes: z.boolean().describe("Show HS codes for packages").nullish(), showPackageType: z.boolean().describe("Show package type for packages").nullish(), showPackageQuantity: z.boolean().describe("Show quantity for packages").nullish(), showPackageDescription: z.boolean().describe("Show description for packages").nullish(), showPackageCaseMarks: z.boolean().describe("Show case marks for packages").nullish(), showTransportUnitNumber: z.boolean().describe("Show transport unit number").nullish(), showTransportUnitType: z.boolean().describe("Show transport unit type").nullish(), showTransportUnitSeal1: z.boolean().describe("Show transport unit seal 1").nullish(), showTransportUnitSeal2: z.boolean().describe("Show transport unit seal 2").nullish(), items: z.array(CommonModels.CargoItemDtoSchema).readonly().describe("Cargo items") }).readonly();
+export const CargoTableBlockDtoSchema = z.object({ selectedCargoIds: z.array(z.string()).nullish(), suppressWeight: z.boolean().nullish(), showGrid: z.boolean().nullish(), suppressVolume: z.boolean().nullish(), suppressSpecialities: z.boolean().nullish(), suppressDimensions: z.boolean().nullish(), suppressPackageVolume: z.boolean().nullish(), suppressPackageWeight: z.boolean().nullish(), showGrandTotal: z.boolean().nullish(), showTransportUnitTotal: z.boolean().nullish(), showRoute: z.boolean().nullish(), suppressCargo: z.boolean().nullish(), showTransportUnitChargeableWeight: z.boolean().nullish(), showTransportUnitVolumetricWeight: z.boolean().nullish(), showPackageChargeableWeight: z.boolean().nullish(), showPackageVolumetricWeight: z.boolean().nullish(), showPackageHSCodes: z.boolean().nullish(), showPackageType: z.boolean().nullish(), showPackageQuantity: z.boolean().nullish(), showPackageDescription: z.boolean().nullish(), showPackageCaseMarks: z.boolean().nullish(), showTransportUnitNumber: z.boolean().nullish(), showTransportUnitType: z.boolean().nullish(), showTransportUnitSeal1: z.boolean().nullish(), showTransportUnitSeal2: z.boolean().nullish(), items: z.array(CommonModels.CargoItemDtoSchema) });
 export type CargoTableBlockDto = z.infer<typeof CargoTableBlockDtoSchema>;
-
 
 /** 
  * SummaryCargoItemDtoSchema 
@@ -432,18 +409,16 @@ export type CargoTableBlockDto = z.infer<typeof CargoTableBlockDtoSchema>;
  * @property { number } quantity Count of cargos for this type 
  * @property { string } description Comma-joined transport unit numbers or custom description 
  */
-export const SummaryCargoItemDtoSchema = z.object({ transportUnitType: z.string().describe("Cargo type name (transport unit type)"), quantity: z.number().describe("Count of cargos for this type"), description: z.string().describe("Comma-joined transport unit numbers or custom description") }).readonly();
+export const SummaryCargoItemDtoSchema = z.object({ transportUnitType: z.string(), quantity: z.number(), description: z.string() });
 export type SummaryCargoItemDto = z.infer<typeof SummaryCargoItemDtoSchema>;
-
 
 /** 
  * SummaryCargoBlockResponseDtoSchema 
  * @type { object }
  * @property { SummaryCargoItemDto[] } items  
  */
-export const SummaryCargoBlockResponseDtoSchema = z.object({ items: z.array(CommonModels.SummaryCargoItemDtoSchema).readonly() }).readonly();
+export const SummaryCargoBlockResponseDtoSchema = z.object({ items: z.array(CommonModels.SummaryCargoItemDtoSchema) });
 export type SummaryCargoBlockResponseDto = z.infer<typeof SummaryCargoBlockResponseDtoSchema>;
-
 
 /** 
  * PositionAccountItemTypeEnumSchema 
@@ -471,9 +446,8 @@ export const PositionAccountItemTypeEnum = PositionAccountItemTypeEnumSchema.enu
  * @property { number } buyExchangeRate Buy exchange rate 
  * @property { number } quantity Quantity 
  */
-export const FinanceRowDtoSchema = z.object({ id: z.string().describe("Finance row ID"), type: CommonModels.PositionAccountItemTypeEnumSchema.describe("Item type"), chargeType: z.string().describe("Charge type").nullish(), additionalText: z.string().describe("Additional text").nullish(), text: z.string().describe("Text content").nullish(), buyAmount: z.number().describe("Buy amount").nullish(), buyCurrencyNotation: z.string().describe("Buy currency notation").nullish(), sellAmount: z.number().describe("Sell amount").nullish(), sellCurrencyNotation: z.string().describe("Sell currency notation").nullish(), buyBPName: z.string().describe("Buy business partner name").nullish(), sellBPName: z.string().describe("Sell business partner name").nullish(), sellExchangeRate: z.number().describe("Sell exchange rate").nullish(), buyExchangeRate: z.number().describe("Buy exchange rate").nullish(), quantity: z.number().describe("Quantity").nullish() }).readonly();
+export const FinanceRowDtoSchema = z.object({ id: z.string(), type: CommonModels.PositionAccountItemTypeEnumSchema, chargeType: z.string().nullish(), additionalText: z.string().nullish(), text: z.string().nullish(), buyAmount: z.number().nullish(), buyCurrencyNotation: z.string().nullish(), sellAmount: z.number().nullish(), sellCurrencyNotation: z.string().nullish(), buyBPName: z.string().nullish(), sellBPName: z.string().nullish(), sellExchangeRate: z.number().nullish(), buyExchangeRate: z.number().nullish(), quantity: z.number().nullish() });
 export type FinanceRowDto = z.infer<typeof FinanceRowDtoSchema>;
-
 
 /** 
  * FinanceTotalsDtoSchema 
@@ -483,9 +457,8 @@ export type FinanceRowDto = z.infer<typeof FinanceRowDtoSchema>;
  * @property { number } combinedTotal Combined total 
  * @property { string } currencyNotation Currency notation 
  */
-export const FinanceTotalsDtoSchema = z.object({ customerTotal: z.number().describe("Customer total"), vendorTotal: z.number().describe("Vendor total"), combinedTotal: z.number().describe("Combined total"), currencyNotation: z.string().describe("Currency notation") }).readonly();
+export const FinanceTotalsDtoSchema = z.object({ customerTotal: z.number().nullable(), vendorTotal: z.number().nullable(), combinedTotal: z.number().nullable(), currencyNotation: z.string().nullable() }).partial();
 export type FinanceTotalsDto = z.infer<typeof FinanceTotalsDtoSchema>;
-
 
 /** 
  * FinanceTotalsByCurrencyDtoSchema 
@@ -494,9 +467,8 @@ export type FinanceTotalsDto = z.infer<typeof FinanceTotalsDtoSchema>;
  * @property { number } vendorTotal Total for vendor side in this currency 
  * @property { number } customerTotal Total for customer side in this currency 
  */
-export const FinanceTotalsByCurrencyDtoSchema = z.object({ currencyNotation: z.string().describe("Currency notation"), vendorTotal: z.number().describe("Total for vendor side in this currency").nullish(), customerTotal: z.number().describe("Total for customer side in this currency").nullish() }).readonly();
+export const FinanceTotalsByCurrencyDtoSchema = z.object({ currencyNotation: z.string(), vendorTotal: z.number().nullish(), customerTotal: z.number().nullish() });
 export type FinanceTotalsByCurrencyDto = z.infer<typeof FinanceTotalsByCurrencyDtoSchema>;
-
 
 /** 
  * FinanceTablePositionDtoSchema 
@@ -508,9 +480,8 @@ export type FinanceTotalsByCurrencyDto = z.infer<typeof FinanceTotalsByCurrencyD
  * @property { string } positionNumber Position number 
  * @property { FinanceTotalsByCurrencyDto[] } totalsByCurrency Totals grouped by currency 
  */
-export const FinanceTablePositionDtoSchema = z.object({ rows: z.array(CommonModels.FinanceRowDtoSchema).readonly().describe("Finance rows"), totals: CommonModels.FinanceTotalsDtoSchema.describe("Finance totals"), selectedFinanceRowIds: z.array(z.string()).readonly().describe("Selected finance row IDs"), positionId: z.string().describe("Position ID"), positionNumber: z.string().describe("Position number"), totalsByCurrency: z.array(CommonModels.FinanceTotalsByCurrencyDtoSchema).readonly().describe("Totals grouped by currency") }).readonly();
+export const FinanceTablePositionDtoSchema = z.object({ rows: z.array(CommonModels.FinanceRowDtoSchema).nullable(), totals: CommonModels.FinanceTotalsDtoSchema.nullable(), selectedFinanceRowIds: z.array(z.string()).nullable(), positionId: z.string().nullable(), positionNumber: z.string().nullable(), totalsByCurrency: z.array(CommonModels.FinanceTotalsByCurrencyDtoSchema).nullable() }).partial();
 export type FinanceTablePositionDto = z.infer<typeof FinanceTablePositionDtoSchema>;
-
 
 /** 
  * FinanceTableBlockDtoSchema 
@@ -537,9 +508,8 @@ export type FinanceTablePositionDto = z.infer<typeof FinanceTablePositionDtoSche
  * @property { FinanceTotalsDto } totals Finance totals 
  * @property { FinanceTotalsByCurrencyDto[] } totalsByCurrency Totals grouped by currency 
  */
-export const FinanceTableBlockDtoSchema = z.object({ selectedBpId: z.string().describe("Selected business partner ID"), showVendor: z.boolean().describe("Show vendor"), showBuyRate: z.boolean().describe("Show buy rate"), showCustomer: z.boolean().describe("Show customer"), showSellRate: z.boolean().describe("Show sell rate"), showGrid: z.boolean().describe("Show grid"), showCharges: z.boolean().describe("Show charges"), showAdditionalText: z.boolean().describe("Show additional text"), showQuantity: z.boolean().describe("Show quantity"), showTotalsByCurrency: z.boolean().describe("Show totals grouped by currency"), suppressFinances: z.boolean().describe("Suppress finances from output"), suppressZeroLines: z.boolean().describe("Suppress rows where the amounts are zero"), showTotal: z.boolean().describe("Show total from output"), showProfit: z.boolean().describe("Show profit from output"), showBuyRateExchangeRates: z.boolean().describe("Show buy rate exchange rates from output"), showSellRateExchangeRates: z.boolean().describe("Show sell rate exchange rates from output"), includeSubPositions: z.boolean().describe("Include sub-positions").nullable(), subPositionTotals: z.boolean().describe("Show sub-position totals").nullable(), positions: z.array(CommonModels.FinanceTablePositionDtoSchema).readonly().describe("Finance positions"), totals: CommonModels.FinanceTotalsDtoSchema.describe("Finance totals"), totalsByCurrency: z.array(CommonModels.FinanceTotalsByCurrencyDtoSchema).readonly().describe("Totals grouped by currency") }).readonly();
+export const FinanceTableBlockDtoSchema = z.object({ selectedBpId: z.string().nullable(), showVendor: z.boolean().nullable(), showBuyRate: z.boolean().nullable(), showCustomer: z.boolean().nullable(), showSellRate: z.boolean().nullable(), showGrid: z.boolean().nullable(), showCharges: z.boolean().nullable(), showAdditionalText: z.boolean().nullable(), showQuantity: z.boolean().nullable(), showTotalsByCurrency: z.boolean().nullable(), suppressFinances: z.boolean().nullable(), suppressZeroLines: z.boolean().nullable(), showTotal: z.boolean().nullable(), showProfit: z.boolean().nullable(), showBuyRateExchangeRates: z.boolean().nullable(), showSellRateExchangeRates: z.boolean().nullable(), includeSubPositions: z.boolean().nullable(), subPositionTotals: z.boolean().nullable(), positions: z.array(CommonModels.FinanceTablePositionDtoSchema).nullable(), totals: CommonModels.FinanceTotalsDtoSchema.nullable(), totalsByCurrency: z.array(CommonModels.FinanceTotalsByCurrencyDtoSchema).nullable() }).partial();
 export type FinanceTableBlockDto = z.infer<typeof FinanceTableBlockDtoSchema>;
-
 
 /** 
  * RemarkBlockDtoSchema 
@@ -549,9 +519,8 @@ export type FinanceTableBlockDto = z.infer<typeof FinanceTableBlockDtoSchema>;
  * @property { EditorContentUpdateDto } content  
  * @property { boolean } enabled  
  */
-export const RemarkBlockDtoSchema = z.object({ id: z.string(), position: z.number().gte(1), content: CommonModels.EditorContentUpdateDtoSchema, enabled: z.boolean().nullish() }).readonly();
+export const RemarkBlockDtoSchema = z.object({ id: z.string(), position: z.number().gte(1), content: CommonModels.EditorContentUpdateDtoSchema, enabled: z.boolean().nullish() });
 export type RemarkBlockDto = z.infer<typeof RemarkBlockDtoSchema>;
-
 
 /** 
  * ConfigBlockDtoSchema 
@@ -561,18 +530,16 @@ export type RemarkBlockDto = z.infer<typeof RemarkBlockDtoSchema>;
  * @property { boolean } showWatermarkOnDocuments Show watermark on documents 
  * @property { LocaleEnum } locale  
  */
-export const ConfigBlockDtoSchema = z.object({ footerImageUrl: z.string().describe("Footer image URL"), headerImageUrl: z.string().describe("Header image URL"), showWatermarkOnDocuments: z.boolean().describe("Show watermark on documents"), locale: CommonModels.LocaleEnumSchema }).readonly();
+export const ConfigBlockDtoSchema = z.object({ footerImageUrl: z.string().nullable(), headerImageUrl: z.string().nullable(), showWatermarkOnDocuments: z.boolean().nullable(), locale: CommonModels.LocaleEnumSchema.nullable() }).partial();
 export type ConfigBlockDto = z.infer<typeof ConfigBlockDtoSchema>;
-
 
 /** 
  * TitleBlockUpdateDtoSchema 
  * @type { object }
  * @property { string } value Title value 
  */
-export const TitleBlockUpdateDtoSchema = z.object({ value: z.string().describe("Title value") }).readonly();
+export const TitleBlockUpdateDtoSchema = z.object({ value: z.string().nullable() }).partial();
 export type TitleBlockUpdateDto = z.infer<typeof TitleBlockUpdateDtoSchema>;
-
 
 /** 
  * ReceiverBlockUpdateDtoSchema 
@@ -580,9 +547,8 @@ export type TitleBlockUpdateDto = z.infer<typeof TitleBlockUpdateDtoSchema>;
  * @property { string } selectedBpId Receiver business partner ID 
  * @property { string } address Receiver address 
  */
-export const ReceiverBlockUpdateDtoSchema = z.object({ selectedBpId: z.string().describe("Receiver business partner ID"), address: z.string().describe("Receiver address") }).readonly();
+export const ReceiverBlockUpdateDtoSchema = z.object({ selectedBpId: z.string().nullable(), address: z.string().nullable() }).partial();
 export type ReceiverBlockUpdateDto = z.infer<typeof ReceiverBlockUpdateDtoSchema>;
-
 
 /** 
  * OurInformationBlockUpdateDtoSchema 
@@ -596,18 +562,16 @@ export type ReceiverBlockUpdateDto = z.infer<typeof ReceiverBlockUpdateDtoSchema
  * @property { string } houseBillOfLadingNumber House bill of lading number 
  * @property { string } positionNumber Position number 
  */
-export const OurInformationBlockUpdateDtoSchema = z.object({ name: z.string().describe("Name"), phone: z.string().describe("Phone number"), date: z.string().describe("Date"), bookingNumber: z.string().describe("Booking number"), customerReference: z.string().describe("Customer reference"), masterBillOfLadingNumber: z.string().describe("Master bill of lading number"), houseBillOfLadingNumber: z.string().describe("House bill of lading number"), positionNumber: z.string().describe("Position number") }).readonly();
+export const OurInformationBlockUpdateDtoSchema = z.object({ name: z.string().nullable(), phone: z.string().nullable(), date: z.string().nullable(), bookingNumber: z.string().nullable(), customerReference: z.string().nullable(), masterBillOfLadingNumber: z.string().nullable(), houseBillOfLadingNumber: z.string().nullable(), positionNumber: z.string().nullable() }).partial();
 export type OurInformationBlockUpdateDto = z.infer<typeof OurInformationBlockUpdateDtoSchema>;
-
 
 /** 
  * TermsBlockDtoSchema 
  * @type { object }
  * @property { string } termsImageUrl Terms image URL 
  */
-export const TermsBlockDtoSchema = z.object({ termsImageUrl: z.string().describe("Terms image URL") }).readonly();
+export const TermsBlockDtoSchema = z.object({ termsImageUrl: z.string().nullable() }).partial();
 export type TermsBlockDto = z.infer<typeof TermsBlockDtoSchema>;
-
 
 /** 
  * CutOffDatesBlockUpdateDtoSchema 
@@ -617,9 +581,8 @@ export type TermsBlockDto = z.infer<typeof TermsBlockDtoSchema>;
  * @property { string } customsAMS Customs AMS date 
  * @property { string } vgmCustomer VGM customer date 
  */
-export const CutOffDatesBlockUpdateDtoSchema = z.object({ billOfLadingFromCustomer: z.string().describe("Bill of lading from customer date"), billOfLadingToCarrier: z.string().describe("Bill of lading to carrier date"), customsAMS: z.string().describe("Customs AMS date"), vgmCustomer: z.string().describe("VGM customer date") }).readonly();
+export const CutOffDatesBlockUpdateDtoSchema = z.object({ billOfLadingFromCustomer: z.string().nullable(), billOfLadingToCarrier: z.string().nullable(), customsAMS: z.string().nullable(), vgmCustomer: z.string().nullable() }).partial();
 export type CutOffDatesBlockUpdateDto = z.infer<typeof CutOffDatesBlockUpdateDtoSchema>;
-
 
 /** 
  * TemplatedDocumentDataDtoSchema 
@@ -636,9 +599,8 @@ export type CutOffDatesBlockUpdateDto = z.infer<typeof CutOffDatesBlockUpdateDto
  * @property { ConfigBlockDto } config Config block data 
  * @property { CutOffDatesBlockUpdateDto } cutOffDates Cut off dates block data 
  */
-export const TemplatedDocumentDataDtoSchema = z.object({ title: CommonModels.TitleBlockUpdateDtoSchema.describe("Title block data"), receiver: CommonModels.ReceiverBlockUpdateDtoSchema.describe("Receiver block data"), ourInformation: CommonModels.OurInformationBlockUpdateDtoSchema.describe("Our information block data"), routeTable: CommonModels.RouteTableBlockResponseDtoSchema.describe("Route table block data"), cargoTable: CommonModels.CargoTableBlockDtoSchema.describe("Cargo table block data"), summaryCargo: CommonModels.SummaryCargoBlockResponseDtoSchema.describe("Summary cargo block data"), financeTable: CommonModels.FinanceTableBlockDtoSchema.describe("Finance table block data"), remarks: z.array(CommonModels.RemarkBlockDtoSchema).readonly().describe("Remark blocks"), terms: CommonModels.TermsBlockDtoSchema.describe("Terms block data"), config: CommonModels.ConfigBlockDtoSchema.describe("Config block data"), cutOffDates: CommonModels.CutOffDatesBlockUpdateDtoSchema.describe("Cut off dates block data") }).readonly();
+export const TemplatedDocumentDataDtoSchema = z.object({ title: CommonModels.TitleBlockUpdateDtoSchema.nullable(), receiver: CommonModels.ReceiverBlockUpdateDtoSchema.nullable(), ourInformation: CommonModels.OurInformationBlockUpdateDtoSchema.nullable(), routeTable: CommonModels.RouteTableBlockResponseDtoSchema.nullable(), cargoTable: CommonModels.CargoTableBlockDtoSchema.nullable(), summaryCargo: CommonModels.SummaryCargoBlockResponseDtoSchema.nullable(), financeTable: CommonModels.FinanceTableBlockDtoSchema.nullable(), remarks: z.array(CommonModels.RemarkBlockDtoSchema).nullable(), terms: CommonModels.TermsBlockDtoSchema.nullable(), config: CommonModels.ConfigBlockDtoSchema.nullable(), cutOffDates: CommonModels.CutOffDatesBlockUpdateDtoSchema.nullable() }).partial();
 export type TemplatedDocumentDataDto = z.infer<typeof TemplatedDocumentDataDtoSchema>;
-
 
 /** 
  * RouteTableUpdateBlockDtoSchema 
@@ -656,18 +618,16 @@ export type TemplatedDocumentDataDto = z.infer<typeof TemplatedDocumentDataDtoSc
  * @property { boolean } showGrid Show grid 
  * @property { boolean } suppressRoute Suppress route 
  */
-export const RouteTableUpdateBlockDtoSchema = z.object({ selectedRouteId: z.string().describe("Selected route ID"), selectedRoutePointIds: z.array(z.string()).readonly().describe("Selected route point IDs"), showReference: z.boolean().describe("Show reference column"), showVesselVoyage: z.boolean().describe("Show vessel/voyage column"), showProvider: z.boolean().describe("Show provider column"), points: z.array(CommonModels.RouteTablePointDtoSchema).readonly().describe("Route points"), showAddress: z.boolean().describe("Show address"), showDates: z.boolean().describe("Show dates"), showType: z.boolean().describe("Show type"), showLocation: z.boolean().describe("Show location"), showGrid: z.boolean().describe("Show grid"), suppressRoute: z.boolean().describe("Suppress route") }).readonly();
+export const RouteTableUpdateBlockDtoSchema = z.object({ selectedRouteId: z.string().nullable(), selectedRoutePointIds: z.array(z.string()).nullable(), showReference: z.boolean().nullable(), showVesselVoyage: z.boolean().nullable(), showProvider: z.boolean().nullable(), points: z.array(CommonModels.RouteTablePointDtoSchema).nullable(), showAddress: z.boolean().nullable(), showDates: z.boolean().nullable(), showType: z.boolean().nullable(), showLocation: z.boolean().nullable(), showGrid: z.boolean().nullable(), suppressRoute: z.boolean().nullable() }).partial();
 export type RouteTableUpdateBlockDto = z.infer<typeof RouteTableUpdateBlockDtoSchema>;
-
 
 /** 
  * CargoItemRouteUpdateDtoSchema 
  * @type { object }
  * @property { string[] } selectedRoutePointIds Selected route point IDs 
  */
-export const CargoItemRouteUpdateDtoSchema = z.object({ selectedRoutePointIds: z.array(z.string()).readonly().describe("Selected route point IDs") }).readonly();
+export const CargoItemRouteUpdateDtoSchema = z.object({ selectedRoutePointIds: z.array(z.string()) });
 export type CargoItemRouteUpdateDto = z.infer<typeof CargoItemRouteUpdateDtoSchema>;
-
 
 /** 
  * CargoItemUpdateDtoSchema 
@@ -676,9 +636,8 @@ export type CargoItemRouteUpdateDto = z.infer<typeof CargoItemRouteUpdateDtoSche
  * @property { string[] } selectedPackageIds Selected cargo package IDs 
  * @property { CargoItemRouteUpdateDto } route Cargo route (when routes are split) 
  */
-export const CargoItemUpdateDtoSchema = z.object({ cargoId: z.string().describe("Cargo ID to update packages for"), selectedPackageIds: z.array(z.string()).readonly().describe("Selected cargo package IDs"), route: CommonModels.CargoItemRouteUpdateDtoSchema.describe("Cargo route (when routes are split)") }).readonly();
+export const CargoItemUpdateDtoSchema = z.object({ cargoId: z.string().nullable(), selectedPackageIds: z.array(z.string()).nullable(), route: CommonModels.CargoItemRouteUpdateDtoSchema.nullable() }).partial();
 export type CargoItemUpdateDto = z.infer<typeof CargoItemUpdateDtoSchema>;
-
 
 /** 
  * CargoTableBlockUpdateDtoSchema 
@@ -710,9 +669,8 @@ export type CargoItemUpdateDto = z.infer<typeof CargoItemUpdateDtoSchema>;
  * @property { boolean } showTransportUnitSeal1 Show transport unit seal 1 
  * @property { boolean } showTransportUnitSeal2 Show transport unit seal 2 
  */
-export const CargoTableBlockUpdateDtoSchema = z.object({ selectedCargoIds: z.array(z.string()).readonly().describe("Selected cargo IDs"), items: z.array(CommonModels.CargoItemUpdateDtoSchema).readonly().describe("Cargo items for package updates"), suppressWeight: z.boolean().describe("Suppress weight column display"), showGrid: z.boolean().describe("Show grid borders in cargo table"), suppressVolume: z.boolean().describe("Suppress volume column display"), suppressSpecialities: z.boolean().describe("Suppress specialities column display"), suppressDimensions: z.boolean().describe("Suppress dimensions column display"), suppressPackageVolume: z.boolean().describe("Suppress package volume column display"), suppressPackageWeight: z.boolean().describe("Suppress package weight column display"), showRoute: z.boolean().describe("Show route information (only applicable when routes are split)").nullable(), showGrandTotal: z.boolean().describe("Show grand total"), showTransportUnitTotal: z.boolean().describe("Show transport unit total"), suppressCargo: z.boolean().describe("Suppress cargo table display"), showTransportUnitChargeableWeight: z.boolean().describe("Show chargeable weight for transport units"), showTransportUnitVolumetricWeight: z.boolean().describe("Show volumetric weight for transport units"), showPackageChargeableWeight: z.boolean().describe("Show chargeable weight for packages"), showPackageVolumetricWeight: z.boolean().describe("Show volumetric weight for packages"), showPackageHSCodes: z.boolean().describe("Show HS codes for packages"), showPackageType: z.boolean().describe("Show package type for packages"), showPackageQuantity: z.boolean().describe("Show quantity for packages"), showPackageDescription: z.boolean().describe("Show description for packages"), showPackageCaseMarks: z.boolean().describe("Show case marks for packages"), showTransportUnitNumber: z.boolean().describe("Show transport unit number"), showTransportUnitType: z.boolean().describe("Show transport unit type"), showTransportUnitSeal1: z.boolean().describe("Show transport unit seal 1"), showTransportUnitSeal2: z.boolean().describe("Show transport unit seal 2") }).readonly();
+export const CargoTableBlockUpdateDtoSchema = z.object({ selectedCargoIds: z.array(z.string()).nullable(), items: z.array(CommonModels.CargoItemUpdateDtoSchema).nullable(), suppressWeight: z.boolean().nullable(), showGrid: z.boolean().nullable(), suppressVolume: z.boolean().nullable(), suppressSpecialities: z.boolean().nullable(), suppressDimensions: z.boolean().nullable(), suppressPackageVolume: z.boolean().nullable(), suppressPackageWeight: z.boolean().nullable(), showRoute: z.boolean().nullable(), showGrandTotal: z.boolean().nullable(), showTransportUnitTotal: z.boolean().nullable(), suppressCargo: z.boolean().nullable(), showTransportUnitChargeableWeight: z.boolean().nullable(), showTransportUnitVolumetricWeight: z.boolean().nullable(), showPackageChargeableWeight: z.boolean().nullable(), showPackageVolumetricWeight: z.boolean().nullable(), showPackageHSCodes: z.boolean().nullable(), showPackageType: z.boolean().nullable(), showPackageQuantity: z.boolean().nullable(), showPackageDescription: z.boolean().nullable(), showPackageCaseMarks: z.boolean().nullable(), showTransportUnitNumber: z.boolean().nullable(), showTransportUnitType: z.boolean().nullable(), showTransportUnitSeal1: z.boolean().nullable(), showTransportUnitSeal2: z.boolean().nullable() }).partial();
 export type CargoTableBlockUpdateDto = z.infer<typeof CargoTableBlockUpdateDtoSchema>;
-
 
 /** 
  * SummaryCargoItemUpdateDtoSchema 
@@ -720,18 +678,16 @@ export type CargoTableBlockUpdateDto = z.infer<typeof CargoTableBlockUpdateDtoSc
  * @property { string } transportUnitType Cargo type name (transport unit type) 
  * @property { string } description Updated description for this cargo type 
  */
-export const SummaryCargoItemUpdateDtoSchema = z.object({ transportUnitType: z.string().describe("Cargo type name (transport unit type)"), description: z.string().describe("Updated description for this cargo type") }).readonly();
+export const SummaryCargoItemUpdateDtoSchema = z.object({ transportUnitType: z.string(), description: z.string() });
 export type SummaryCargoItemUpdateDto = z.infer<typeof SummaryCargoItemUpdateDtoSchema>;
-
 
 /** 
  * SummaryCargoBlockUpdateDtoSchema 
  * @type { object }
  * @property { SummaryCargoItemUpdateDto[] } items  
  */
-export const SummaryCargoBlockUpdateDtoSchema = z.object({ items: z.array(CommonModels.SummaryCargoItemUpdateDtoSchema).readonly() }).readonly();
+export const SummaryCargoBlockUpdateDtoSchema = z.object({ items: z.array(CommonModels.SummaryCargoItemUpdateDtoSchema) });
 export type SummaryCargoBlockUpdateDto = z.infer<typeof SummaryCargoBlockUpdateDtoSchema>;
-
 
 /** 
  * FinanceTablePositionUpdateDtoSchema 
@@ -739,9 +695,8 @@ export type SummaryCargoBlockUpdateDto = z.infer<typeof SummaryCargoBlockUpdateD
  * @property { string[] } selectedFinanceRowIds Selected finance row IDs 
  * @property { string } positionId Position ID 
  */
-export const FinanceTablePositionUpdateDtoSchema = z.object({ selectedFinanceRowIds: z.array(z.string()).readonly().describe("Selected finance row IDs"), positionId: z.string().describe("Position ID") }).readonly();
+export const FinanceTablePositionUpdateDtoSchema = z.object({ selectedFinanceRowIds: z.array(z.string()).nullable(), positionId: z.string().nullable() }).partial();
 export type FinanceTablePositionUpdateDto = z.infer<typeof FinanceTablePositionUpdateDtoSchema>;
-
 
 /** 
  * FinanceTableBlockUpdateDtoSchema 
@@ -766,9 +721,8 @@ export type FinanceTablePositionUpdateDto = z.infer<typeof FinanceTablePositionU
  * @property { boolean } subPositionTotals Show sub-position totals 
  * @property { FinanceTablePositionUpdateDto[] } positions Finance positions 
  */
-export const FinanceTableBlockUpdateDtoSchema = z.object({ selectedBpId: z.string().describe("Selected business partner ID"), showVendor: z.boolean().describe("Show vendor"), showBuyRate: z.boolean().describe("Show buy rate"), showCustomer: z.boolean().describe("Show customer"), showSellRate: z.boolean().describe("Show sell rate"), showGrid: z.boolean().describe("Show grid"), showCharges: z.boolean().describe("Show charges"), showAdditionalText: z.boolean().describe("Show additional text"), showQuantity: z.boolean().describe("Show quantity"), showTotalsByCurrency: z.boolean().describe("Show totals grouped by currency"), suppressFinances: z.boolean().describe("Suppress finances from output"), suppressZeroLines: z.boolean().describe("Suppress rows where the amounts are zero"), showTotal: z.boolean().describe("Show total from output"), showProfit: z.boolean().describe("Show profit from output"), showBuyRateExchangeRates: z.boolean().describe("Show buy rate exchange rates from output"), showSellRateExchangeRates: z.boolean().describe("Show sell rate exchange rates from output"), includeSubPositions: z.boolean().describe("Include sub-positions").nullable(), subPositionTotals: z.boolean().describe("Show sub-position totals").nullable(), positions: z.array(CommonModels.FinanceTablePositionUpdateDtoSchema).readonly().describe("Finance positions") }).readonly();
+export const FinanceTableBlockUpdateDtoSchema = z.object({ selectedBpId: z.string().nullable(), showVendor: z.boolean().nullable(), showBuyRate: z.boolean().nullable(), showCustomer: z.boolean().nullable(), showSellRate: z.boolean().nullable(), showGrid: z.boolean().nullable(), showCharges: z.boolean().nullable(), showAdditionalText: z.boolean().nullable(), showQuantity: z.boolean().nullable(), showTotalsByCurrency: z.boolean().nullable(), suppressFinances: z.boolean().nullable(), suppressZeroLines: z.boolean().nullable(), showTotal: z.boolean().nullable(), showProfit: z.boolean().nullable(), showBuyRateExchangeRates: z.boolean().nullable(), showSellRateExchangeRates: z.boolean().nullable(), includeSubPositions: z.boolean().nullable(), subPositionTotals: z.boolean().nullable(), positions: z.array(CommonModels.FinanceTablePositionUpdateDtoSchema).nullable() }).partial();
 export type FinanceTableBlockUpdateDto = z.infer<typeof FinanceTableBlockUpdateDtoSchema>;
-
 
 /** 
  * RemarkBlockUpdateDtoSchema 
@@ -778,9 +732,8 @@ export type FinanceTableBlockUpdateDto = z.infer<typeof FinanceTableBlockUpdateD
  * @property { EditorContentUpdateDto } content  
  * @property { boolean } enabled  
  */
-export const RemarkBlockUpdateDtoSchema = z.object({ id: z.string(), position: z.number().gte(1).nullish(), content: CommonModels.EditorContentUpdateDtoSchema.nullish(), enabled: z.boolean().nullish() }).readonly();
+export const RemarkBlockUpdateDtoSchema = z.object({ id: z.string(), position: z.number().gte(1).nullish(), content: CommonModels.EditorContentUpdateDtoSchema.nullish(), enabled: z.boolean().nullish() });
 export type RemarkBlockUpdateDto = z.infer<typeof RemarkBlockUpdateDtoSchema>;
-
 
 /** 
  * TemplatedDocumentDataUpdateDtoSchema 
@@ -795,9 +748,8 @@ export type RemarkBlockUpdateDto = z.infer<typeof RemarkBlockUpdateDtoSchema>;
  * @property { RemarkBlockUpdateDto[] } remarks Remark blocks 
  * @property { CutOffDatesBlockUpdateDto } cutOffDates Cut off dates block data 
  */
-export const TemplatedDocumentDataUpdateDtoSchema = z.object({ title: CommonModels.TitleBlockUpdateDtoSchema.describe("Title block data"), receiver: CommonModels.ReceiverBlockUpdateDtoSchema.describe("Receiver block data"), ourInformation: CommonModels.OurInformationBlockUpdateDtoSchema.describe("Our information block data"), routeTable: CommonModels.RouteTableUpdateBlockDtoSchema.describe("Route table block data"), cargoTable: CommonModels.CargoTableBlockUpdateDtoSchema.describe("Cargo table block data"), summaryCargo: CommonModels.SummaryCargoBlockUpdateDtoSchema.describe("Summary cargo block data"), financeTable: CommonModels.FinanceTableBlockUpdateDtoSchema.describe("Finance table block data"), remarks: z.array(CommonModels.RemarkBlockUpdateDtoSchema).readonly().describe("Remark blocks"), cutOffDates: CommonModels.CutOffDatesBlockUpdateDtoSchema.describe("Cut off dates block data") }).readonly();
+export const TemplatedDocumentDataUpdateDtoSchema = z.object({ title: CommonModels.TitleBlockUpdateDtoSchema.nullable(), receiver: CommonModels.ReceiverBlockUpdateDtoSchema.nullable(), ourInformation: CommonModels.OurInformationBlockUpdateDtoSchema.nullable(), routeTable: CommonModels.RouteTableUpdateBlockDtoSchema.nullable(), cargoTable: CommonModels.CargoTableBlockUpdateDtoSchema.nullable(), summaryCargo: CommonModels.SummaryCargoBlockUpdateDtoSchema.nullable(), financeTable: CommonModels.FinanceTableBlockUpdateDtoSchema.nullable(), remarks: z.array(CommonModels.RemarkBlockUpdateDtoSchema).nullable(), cutOffDates: CommonModels.CutOffDatesBlockUpdateDtoSchema.nullable() }).partial();
 export type TemplatedDocumentDataUpdateDto = z.infer<typeof TemplatedDocumentDataUpdateDtoSchema>;
-
 
 /** 
  * BusinessPartnerTypeSchema 
@@ -813,9 +765,8 @@ export const BusinessPartnerType = BusinessPartnerTypeSchema.enum;
  * @property { string } id  
  * @property { string } name  
  */
-export const BusinessPartnerAddressCityDtoSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const BusinessPartnerAddressCityDtoSchema = z.object({ id: z.string(), name: z.string() });
 export type BusinessPartnerAddressCityDto = z.infer<typeof BusinessPartnerAddressCityDtoSchema>;
-
 
 /** 
  * BusinessPartnerAddressCountryDtoSchema 
@@ -825,9 +776,8 @@ export type BusinessPartnerAddressCityDto = z.infer<typeof BusinessPartnerAddres
  * @property { string } isoCode2  
  * @property { string } isoCode3  
  */
-export const BusinessPartnerAddressCountryDtoSchema = z.object({ id: z.string(), name: z.string(), isoCode2: z.string(), isoCode3: z.string() }).readonly();
+export const BusinessPartnerAddressCountryDtoSchema = z.object({ id: z.string(), name: z.string(), isoCode2: z.string(), isoCode3: z.string() });
 export type BusinessPartnerAddressCountryDto = z.infer<typeof BusinessPartnerAddressCountryDtoSchema>;
-
 
 /** 
  * BusinessPartnerAddressResponseDTOSchema 
@@ -840,9 +790,8 @@ export type BusinessPartnerAddressCountryDto = z.infer<typeof BusinessPartnerAdd
  * @property { string } district District information 
  * @property { BusinessPartnerAddressCountryDto } country Country data 
  */
-export const BusinessPartnerAddressResponseDTOSchema = z.object({ id: z.string().describe("Unique identifier of the address"), street: z.string().describe("Street address"), secondaryStreet: z.string().describe("Secondary street information"), zip: z.string().describe("ZIP/Postal code"), city: CommonModels.BusinessPartnerAddressCityDtoSchema.describe("Country data"), district: z.string().describe("District information"), country: CommonModels.BusinessPartnerAddressCountryDtoSchema.describe("Country data") }).readonly();
+export const BusinessPartnerAddressResponseDTOSchema = z.object({ id: z.string(), street: z.string(), secondaryStreet: z.string(), zip: z.string(), city: CommonModels.BusinessPartnerAddressCityDtoSchema, district: z.string(), country: CommonModels.BusinessPartnerAddressCountryDtoSchema });
 export type BusinessPartnerAddressResponseDTO = z.infer<typeof BusinessPartnerAddressResponseDTOSchema>;
-
 
 /** 
  * EditorContentResponseDtoSchema 
@@ -851,9 +800,8 @@ export type BusinessPartnerAddressResponseDTO = z.infer<typeof BusinessPartnerAd
  * @property { object } json JSON content 
  * @property { any } json.[key]  
  */
-export const EditorContentResponseDtoSchema = z.object({ html: z.string().describe("HTML content"), json: z.object({}).catchall(z.any()).readonly().describe("JSON content") }).readonly();
+export const EditorContentResponseDtoSchema = z.object({ html: z.string().nullable(), json: z.object({}).catchall(z.any()).nullable() }).partial();
 export type EditorContentResponseDto = z.infer<typeof EditorContentResponseDtoSchema>;
-
 
 /** 
  * DunningSystemReferenceDTOSchema 
@@ -862,9 +810,8 @@ export type EditorContentResponseDto = z.infer<typeof EditorContentResponseDtoSc
  * @property { string } name  
  * @property { boolean } isDefault  
  */
-export const DunningSystemReferenceDTOSchema = z.object({ id: z.string(), name: z.string(), isDefault: z.boolean() }).readonly();
+export const DunningSystemReferenceDTOSchema = z.object({ id: z.string(), name: z.string(), isDefault: z.boolean() });
 export type DunningSystemReferenceDTO = z.infer<typeof DunningSystemReferenceDTOSchema>;
-
 
 /** 
  * TransportModeEnumSchema 
@@ -891,9 +838,8 @@ export const SeaRoutingEnum = SeaRoutingEnumSchema.enum;
  * @property { string } label  
  * @property { BusinessPartnerAddressResponseDTO } address Main address information 
  */
-export const InvolvedPartyBusinessPartnerResponseDTOSchema = z.object({ id: z.string(), name: z.string(), matchCode: z.string(), label: z.string(), address: CommonModels.BusinessPartnerAddressResponseDTOSchema.describe("Main address information").nullish() }).readonly();
+export const InvolvedPartyBusinessPartnerResponseDTOSchema = z.object({ id: z.string(), name: z.string(), matchCode: z.string(), label: z.string(), address: CommonModels.BusinessPartnerAddressResponseDTOSchema.nullish() });
 export type InvolvedPartyBusinessPartnerResponseDTO = z.infer<typeof InvolvedPartyBusinessPartnerResponseDTOSchema>;
-
 
 /** 
  * InvolvedPartyContactResponseDTOSchema 
@@ -901,9 +847,8 @@ export type InvolvedPartyBusinessPartnerResponseDTO = z.infer<typeof InvolvedPar
  * @property { string } id  
  * @property { string } name  
  */
-export const InvolvedPartyContactResponseDTOSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const InvolvedPartyContactResponseDTOSchema = z.object({ id: z.string(), name: z.string() });
 export type InvolvedPartyContactResponseDTO = z.infer<typeof InvolvedPartyContactResponseDTOSchema>;
-
 
 /** 
  * InvolvedPartyResponseDtoSchema 
@@ -914,18 +859,16 @@ export type InvolvedPartyContactResponseDTO = z.infer<typeof InvolvedPartyContac
  * @property { InvolvedPartyBusinessPartnerResponseDTO } businessPartner  
  * @property { InvolvedPartyContactResponseDTO } contact  
  */
-export const InvolvedPartyResponseDtoSchema = z.object({ id: z.string(), type: CommonModels.PositionInvolvedPartyTypeEnumSchema, reference: z.string().nullish(), businessPartner: CommonModels.InvolvedPartyBusinessPartnerResponseDTOSchema.nullish(), contact: CommonModels.InvolvedPartyContactResponseDTOSchema.nullish() }).readonly();
+export const InvolvedPartyResponseDtoSchema = z.object({ id: z.string(), type: CommonModels.PositionInvolvedPartyTypeEnumSchema, reference: z.string().nullish(), businessPartner: CommonModels.InvolvedPartyBusinessPartnerResponseDTOSchema.nullish(), contact: CommonModels.InvolvedPartyContactResponseDTOSchema.nullish() });
 export type InvolvedPartyResponseDto = z.infer<typeof InvolvedPartyResponseDtoSchema>;
-
 
 /** 
  * CreateInvolvedPartyRequestDtoSchema 
  * @type { object }
  * @property { PositionInvolvedPartyTypeEnum } type Type of the involved party to create 
  */
-export const CreateInvolvedPartyRequestDtoSchema = z.object({ type: CommonModels.PositionInvolvedPartyTypeEnumSchema.describe("Type of the involved party to create") }).readonly();
+export const CreateInvolvedPartyRequestDtoSchema = z.object({ type: CommonModels.PositionInvolvedPartyTypeEnumSchema });
 export type CreateInvolvedPartyRequestDto = z.infer<typeof CreateInvolvedPartyRequestDtoSchema>;
-
 
 /** 
  * RouteLocationTypeEnumSchema 
@@ -942,9 +885,8 @@ export const RouteLocationTypeEnum = RouteLocationTypeEnumSchema.enum;
  * @property { string } name  
  * @property { RouteLocationTypeEnum } type  
  */
-export const RoutePointLocationResponseDtoSchema = z.object({ id: z.string(), name: z.string(), type: CommonModels.RouteLocationTypeEnumSchema.nullable() }).readonly();
+export const RoutePointLocationResponseDtoSchema = z.object({ id: z.string(), name: z.string(), type: CommonModels.RouteLocationTypeEnumSchema.nullable() });
 export type RoutePointLocationResponseDto = z.infer<typeof RoutePointLocationResponseDtoSchema>;
-
 
 /** 
  * RoutePointTypeEnumSchema 
@@ -976,9 +918,8 @@ export const PositionRouteTransportModeEnum = PositionRouteTransportModeEnumSche
  * @property { string } id  
  * @property { string } name  
  */
-export const RoutePointProviderResponseDtoSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const RoutePointProviderResponseDtoSchema = z.object({ id: z.string(), name: z.string() });
 export type RoutePointProviderResponseDto = z.infer<typeof RoutePointProviderResponseDtoSchema>;
-
 
 /** 
  * RoutePointResponseDtoSchema 
@@ -999,9 +940,8 @@ export type RoutePointProviderResponseDto = z.infer<typeof RoutePointProviderRes
  * @property { string } voyage Voyage number (sea positions only) 
  * @property { string } carrier Carrier name (sea positions only) 
  */
-export const RoutePointResponseDtoSchema = z.object({ id: z.string(), type: CommonModels.RoutePointTypeEnumSchema, name: z.string(), sequenceNumber: z.number(), location: CommonModels.RoutePointLocationResponseDtoSchema.nullish(), estimatedTime: z.iso.datetime({ offset: true }).nullish(), secondaryEstimatedTime: z.iso.datetime({ offset: true }).describe("Secondary estimated time (sea positions only)").nullish(), reference: z.string().nullish(), secondaryReference: z.string().nullish(), incoterm: CommonModels.IncotermsEnumSchema.nullish(), transportMode: CommonModels.PositionRouteTransportModeEnumSchema.nullish(), provider: CommonModels.RoutePointProviderResponseDtoSchema.nullish(), vessel: z.string().describe("Vessel name (sea positions only)").nullish(), voyage: z.string().describe("Voyage number (sea positions only)").nullish(), carrier: z.string().describe("Carrier name (sea positions only)").nullish() }).readonly();
+export const RoutePointResponseDtoSchema = z.object({ id: z.string(), type: CommonModels.RoutePointTypeEnumSchema, name: z.string(), sequenceNumber: z.number(), location: CommonModels.RoutePointLocationResponseDtoSchema.nullish(), estimatedTime: z.iso.datetime({ offset: true }).nullish(), secondaryEstimatedTime: z.iso.datetime({ offset: true }).nullish(), reference: z.string().nullish(), secondaryReference: z.string().nullish(), incoterm: CommonModels.IncotermsEnumSchema.nullish(), transportMode: CommonModels.PositionRouteTransportModeEnumSchema.nullish(), provider: CommonModels.RoutePointProviderResponseDtoSchema.nullish(), vessel: z.string().nullish(), voyage: z.string().nullish(), carrier: z.string().nullish() });
 export type RoutePointResponseDto = z.infer<typeof RoutePointResponseDtoSchema>;
-
 
 /** 
  * RouteResponseDtoSchema 
@@ -1011,9 +951,8 @@ export type RoutePointResponseDto = z.infer<typeof RoutePointResponseDtoSchema>;
  * @property { string } cargoNumber Cargo number (sea positions only) 
  * @property { RoutePointResponseDto[] } points  
  */
-export const RouteResponseDtoSchema = z.object({ id: z.string(), cargoId: z.string().describe("Cargo ID (sea positions only)").nullish(), cargoNumber: z.string().describe("Cargo number (sea positions only)").nullish(), points: z.array(CommonModels.RoutePointResponseDtoSchema).readonly() }).readonly();
+export const RouteResponseDtoSchema = z.object({ id: z.string(), cargoId: z.string().nullish(), cargoNumber: z.string().nullish(), points: z.array(CommonModels.RoutePointResponseDtoSchema) });
 export type RouteResponseDto = z.infer<typeof RouteResponseDtoSchema>;
-
 
 /** 
  * RouteListResponseDtoSchema 
@@ -1021,18 +960,16 @@ export type RouteResponseDto = z.infer<typeof RouteResponseDtoSchema>;
  * @property { RouteResponseDto[] } routes  
  * @property { boolean } splitRoute Whether the position routes are split by cargo (sea positions only) 
  */
-export const RouteListResponseDtoSchema = z.object({ routes: z.array(CommonModels.RouteResponseDtoSchema).readonly(), splitRoute: z.boolean().describe("Whether the position routes are split by cargo (sea positions only)") }).readonly();
+export const RouteListResponseDtoSchema = z.object({ routes: z.array(CommonModels.RouteResponseDtoSchema), splitRoute: z.boolean() });
 export type RouteListResponseDto = z.infer<typeof RouteListResponseDtoSchema>;
-
 
 /** 
  * CreateRoutePointRequestDtoSchema 
  * @type { object }
  * @property { RoutePointTypeEnum } type  
  */
-export const CreateRoutePointRequestDtoSchema = z.object({ type: CommonModels.RoutePointTypeEnumSchema }).readonly();
+export const CreateRoutePointRequestDtoSchema = z.object({ type: CommonModels.RoutePointTypeEnumSchema });
 export type CreateRoutePointRequestDto = z.infer<typeof CreateRoutePointRequestDtoSchema>;
-
 
 /** 
  * UpdateRoutePointRequestDtoSchema 
@@ -1050,9 +987,8 @@ export type CreateRoutePointRequestDto = z.infer<typeof CreateRoutePointRequestD
  * @property { string } voyage Voyage number (sea positions only) 
  * @property { string } carrier Carrier name (sea positions only) 
  */
-export const UpdateRoutePointRequestDtoSchema = z.object({ locationId: z.string().describe("Location ID for the route point").nullable(), locationType: CommonModels.RouteLocationTypeEnumSchema.describe("Type of location").nullable(), estimatedTime: z.iso.datetime({ offset: true }).describe("Updated estimated time for the route point"), secondaryEstimatedTime: z.iso.datetime({ offset: true }).describe("Secondary estimated time for the route point (sea positions only)"), reference: z.string().describe("Reference for the route point"), secondaryReference: z.string().describe("Secondary reference for the route point"), incoterm: CommonModels.IncotermsEnumSchema, transportMode: CommonModels.PositionRouteTransportModeEnumSchema, providerId: z.string(), vessel: z.string().describe("Vessel name (sea positions only)"), voyage: z.string().describe("Voyage number (sea positions only)"), carrier: z.string().describe("Carrier name (sea positions only)") }).readonly();
+export const UpdateRoutePointRequestDtoSchema = z.object({ locationId: z.string().nullable(), locationType: CommonModels.RouteLocationTypeEnumSchema.nullable(), estimatedTime: z.iso.datetime({ offset: true }).nullable(), secondaryEstimatedTime: z.iso.datetime({ offset: true }).nullable(), reference: z.string().nullable(), secondaryReference: z.string().nullable(), incoterm: CommonModels.IncotermsEnumSchema.nullable(), transportMode: CommonModels.PositionRouteTransportModeEnumSchema.nullable(), providerId: z.string().nullable(), vessel: z.string().nullable(), voyage: z.string().nullable(), carrier: z.string().nullable() }).partial();
 export type UpdateRoutePointRequestDto = z.infer<typeof UpdateRoutePointRequestDtoSchema>;
-
 
 /** 
  * PositionChargeDtoResponseSchema 
@@ -1093,18 +1029,16 @@ export type UpdateRoutePointRequestDto = z.infer<typeof UpdateRoutePointRequestD
  * @property { number } profit Profit amount 
  * @property { string } profitCurrencyCode Profit currency code 
  */
-export const PositionChargeDtoResponseSchema = z.object({ chargeType: z.object({ id: z.string(), name: z.string() }).readonly().nullish(), additionalText: z.string().describe("Additional text for the charge"), quantity: z.number().describe("Quantity of the charge").nullish(), buyRate: z.number().describe("Buy rate amount").nullish(), buyCurrencyCode: z.string().describe("Buy rate currency code"), buyVatRule: z.object({ id: z.string(), name: z.string(), matchcode: z.string() }).readonly().nullish(), vendor: z.object({ id: z.string(), name: z.string(), matchCode: z.string(), label: z.string(), debtorId: z.string().nullish(), creditorId: z.string().nullish() }).readonly().nullish(), buyExchangeRate: z.number().describe("Buy exchange rate with up to 4 decimal places accuracy").nullish(), sellRate: z.number().describe("Sell rate amount").nullish(), sellCurrencyCode: z.string().describe("Sell rate currency code"), sellVatRule: z.object({ id: z.string(), name: z.string(), matchcode: z.string() }).readonly().nullish(), customer: z.object({ id: z.string(), name: z.string(), matchCode: z.string(), label: z.string(), debtorId: z.string().nullish(), creditorId: z.string().nullish() }).readonly().nullish(), sellExchangeRate: z.number().describe("Sell exchange rate with up to 4 decimal places accuracy").nullish(), profit: z.number().describe("Profit amount").nullish(), profitCurrencyCode: z.string().describe("Profit currency code").nullish() }).readonly();
+export const PositionChargeDtoResponseSchema = z.object({ chargeType: z.object({ id: z.string(), name: z.string() }).nullish(), additionalText: z.string(), quantity: z.number().nullish(), buyRate: z.number().nullish(), buyCurrencyCode: z.string(), buyVatRule: z.object({ id: z.string(), name: z.string(), matchcode: z.string() }).nullish(), vendor: z.object({ id: z.string(), name: z.string(), matchCode: z.string(), label: z.string(), debtorId: z.string().nullish(), creditorId: z.string().nullish() }).nullish(), buyExchangeRate: z.number().nullish(), sellRate: z.number().nullish(), sellCurrencyCode: z.string(), sellVatRule: z.object({ id: z.string(), name: z.string(), matchcode: z.string() }).nullish(), customer: z.object({ id: z.string(), name: z.string(), matchCode: z.string(), label: z.string(), debtorId: z.string().nullish(), creditorId: z.string().nullish() }).nullish(), sellExchangeRate: z.number().nullish(), profit: z.number().nullish(), profitCurrencyCode: z.string().nullish() });
 export type PositionChargeDtoResponse = z.infer<typeof PositionChargeDtoResponseSchema>;
-
 
 /** 
  * PositionTextDtoResponseSchema 
  * @type { object }
  * @property { string } content Text content 
  */
-export const PositionTextDtoResponseSchema = z.object({ content: z.string().describe("Text content") }).readonly();
+export const PositionTextDtoResponseSchema = z.object({ content: z.string() });
 export type PositionTextDtoResponse = z.infer<typeof PositionTextDtoResponseSchema>;
-
 
 /** 
  * PositionAccountItemDtoResponseSchema 
@@ -1119,9 +1053,8 @@ export type PositionTextDtoResponse = z.infer<typeof PositionTextDtoResponseSche
  * @property { string } createdAt Created at 
  * @property { string } updatedAt Updated at 
  */
-export const PositionAccountItemDtoResponseSchema = z.object({ id: z.string().describe("Item ID"), outgoingInvoiceId: z.string().nullish(), registeredInvoiceId: z.string().nullish(), type: CommonModels.PositionAccountItemTypeEnumSchema.describe("Item type"), orderPosition: z.number().describe("Order position of the item"), charge: CommonModels.PositionChargeDtoResponseSchema.describe("Charge data if type is CHARGE").nullish(), text: CommonModels.PositionTextDtoResponseSchema.describe("Text data if type is TEXT").nullish(), createdAt: z.iso.datetime({ offset: true }).describe("Created at"), updatedAt: z.iso.datetime({ offset: true }).describe("Updated at") }).readonly();
+export const PositionAccountItemDtoResponseSchema = z.object({ id: z.string(), outgoingInvoiceId: z.string().nullish(), registeredInvoiceId: z.string().nullish(), type: CommonModels.PositionAccountItemTypeEnumSchema, orderPosition: z.number(), charge: CommonModels.PositionChargeDtoResponseSchema.nullish(), text: CommonModels.PositionTextDtoResponseSchema.nullish(), createdAt: z.iso.datetime({ offset: true }), updatedAt: z.iso.datetime({ offset: true }) });
 export type PositionAccountItemDtoResponse = z.infer<typeof PositionAccountItemDtoResponseSchema>;
-
 
 /** 
  * UserPreviewDtoSchema 
@@ -1129,9 +1062,8 @@ export type PositionAccountItemDtoResponse = z.infer<typeof PositionAccountItemD
  * @property { string } userId  
  * @property { string } name  
  */
-export const UserPreviewDtoSchema = z.object({ userId: z.string(), name: z.string() }).readonly();
+export const UserPreviewDtoSchema = z.object({ userId: z.string(), name: z.string() });
 export type UserPreviewDto = z.infer<typeof UserPreviewDtoSchema>;
-
 
 /** 
  * HBLDocumentConfigDtoSchema 
@@ -1142,9 +1074,8 @@ export type UserPreviewDto = z.infer<typeof UserPreviewDtoSchema>;
  * @property { string } signatureImageUrl Signature image URL 
  * @property { boolean } hasSignatureImage Whether office has a signature image configured 
  */
-export const HBLDocumentConfigDtoSchema = z.object({ footerImageUrl: z.string().describe("Footer image URL"), headerImageUrl: z.string().describe("Header image URL"), blTermsAndConditionsImageUrl: z.string().describe("BL terms and conditions image URL"), signatureImageUrl: z.string().describe("Signature image URL"), hasSignatureImage: z.boolean().describe("Whether office has a signature image configured") }).readonly();
+export const HBLDocumentConfigDtoSchema = z.object({ footerImageUrl: z.string().nullable(), headerImageUrl: z.string().nullable(), blTermsAndConditionsImageUrl: z.string().nullable(), signatureImageUrl: z.string().nullable(), hasSignatureImage: z.boolean().nullable() }).partial();
 export type HBLDocumentConfigDto = z.infer<typeof HBLDocumentConfigDtoSchema>;
-
 
 /** 
  * DirectionEnumSchema 
@@ -1181,9 +1112,8 @@ export const HazardousPackingGroupEnum = HazardousPackingGroupEnumSchema.enum;
  * @property { string } emergencyPhone  
  * @property { string } emergencySchedule  
  */
-export const PositionCargoPackageHazardousSpecialtyResponseDTOSchema = z.object({ totalLength: z.number(), totalWidth: z.number(), temperature: z.number(), unNumber: z.string(), IMOClass: z.string(), shippingName: z.string(), technicalName: z.string(), packagingGroup: CommonModels.HazardousPackingGroupEnumSchema, netWeight: z.number(), flashpoint: z.number(), properties: z.array(CommonModels.HazardousSpecialtyEnumSchema).readonly(), acceptanceNumber: z.string(), medGuide: z.string(), emergencyPhone: z.string(), emergencySchedule: z.string() }).readonly();
+export const PositionCargoPackageHazardousSpecialtyResponseDTOSchema = z.object({ totalLength: z.number().nullable(), totalWidth: z.number().nullable(), temperature: z.number().nullable(), unNumber: z.string().nullable(), IMOClass: z.string().nullable(), shippingName: z.string().nullable(), technicalName: z.string().nullable(), packagingGroup: CommonModels.HazardousPackingGroupEnumSchema.nullable(), netWeight: z.number().nullable(), flashpoint: z.number().nullable(), properties: z.array(CommonModels.HazardousSpecialtyEnumSchema).nullable(), acceptanceNumber: z.string().nullable(), medGuide: z.string().nullable(), emergencyPhone: z.string().nullable(), emergencySchedule: z.string().nullable() }).partial();
 export type PositionCargoPackageHazardousSpecialtyResponseDTO = z.infer<typeof PositionCargoPackageHazardousSpecialtyResponseDTOSchema>;
-
 
 /** 
  * PositionCargoPackageTypeResponseDTOSchema 
@@ -1191,9 +1121,8 @@ export type PositionCargoPackageHazardousSpecialtyResponseDTO = z.infer<typeof P
  * @property { string } id  
  * @property { string } name  
  */
-export const PositionCargoPackageTypeResponseDTOSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const PositionCargoPackageTypeResponseDTOSchema = z.object({ id: z.string(), name: z.string() });
 export type PositionCargoPackageTypeResponseDTO = z.infer<typeof PositionCargoPackageTypeResponseDTOSchema>;
-
 
 /** 
  * HsCodeLabelDtoSchema 
@@ -1201,9 +1130,8 @@ export type PositionCargoPackageTypeResponseDTO = z.infer<typeof PositionCargoPa
  * @property { string } id  
  * @property { string } label  
  */
-export const HsCodeLabelDtoSchema = z.object({ id: z.string(), label: z.string() }).readonly();
+export const HsCodeLabelDtoSchema = z.object({ id: z.string(), label: z.string() });
 export type HsCodeLabelDto = z.infer<typeof HsCodeLabelDtoSchema>;
-
 
 /** 
  * PositionCargoPackageTemperatureControlledSpecialtyResponseDtoSchema 
@@ -1211,9 +1139,8 @@ export type HsCodeLabelDto = z.infer<typeof HsCodeLabelDtoSchema>;
  * @property { number } temperatureFrom  
  * @property { number } temperatureUntil  
  */
-export const PositionCargoPackageTemperatureControlledSpecialtyResponseDtoSchema = z.object({ temperatureFrom: z.number(), temperatureUntil: z.number() }).readonly();
+export const PositionCargoPackageTemperatureControlledSpecialtyResponseDtoSchema = z.object({ temperatureFrom: z.number().nullable(), temperatureUntil: z.number().nullable() }).partial();
 export type PositionCargoPackageTemperatureControlledSpecialtyResponseDto = z.infer<typeof PositionCargoPackageTemperatureControlledSpecialtyResponseDtoSchema>;
-
 
 /** 
  * PositionCargoSourcePackageResponseDTOSchema 
@@ -1222,9 +1149,8 @@ export type PositionCargoPackageTemperatureControlledSpecialtyResponseDto = z.in
  * @property { string } positionId  
  * @property { string } positionNumber  
  */
-export const PositionCargoSourcePackageResponseDTOSchema = z.object({ id: z.string(), positionId: z.string(), positionNumber: z.string() }).readonly();
+export const PositionCargoSourcePackageResponseDTOSchema = z.object({ id: z.string(), positionId: z.string(), positionNumber: z.string() });
 export type PositionCargoSourcePackageResponseDTO = z.infer<typeof PositionCargoSourcePackageResponseDTOSchema>;
-
 
 /** 
  * PositionCargoPackageResponseDTOSchema 
@@ -1264,9 +1190,8 @@ export type PositionCargoSourcePackageResponseDTO = z.infer<typeof PositionCargo
  * @property { string } importCustomsReleaseNumber Import customs release number 
  * @property { string } portCustomsNumber Port customs number 
  */
-export const PositionCargoPackageResponseDTOSchema = z.object({ id: z.string(), cargoId: z.string(), rootFolderId: z.string().nullish(), quantity: z.number().nullish(), packageTypeId: z.string().nullish(), packageType: CommonModels.PositionCargoPackageTypeResponseDTOSchema.nullish(), length: z.number().nullish(), width: z.number().nullish(), height: z.number().nullish(), netWeight: z.number().nullish(), grossWeight: z.number().nullish(), chargeableWeight: z.number().nullish(), note: z.string().nullish(), name: z.string().nullish(), orderNumber: z.number().nullish(), volume: z.number().nullish(), volumetricWeight: z.number().nullish(), caseMarks: z.string().nullish(), description: z.string().nullish(), hsCodes: z.array(z.string()).readonly().nullish(), hsCodeLabels: z.array(CommonModels.HsCodeLabelDtoSchema).readonly().describe("HS code details").nullish(), customsRemarks: z.string().nullish(), loadMeter: z.number().nullish(), specialties: z.array(CommonModels.PositionCargoPackageEnumSchema).readonly(), hazardousSpecialty: CommonModels.PositionCargoPackageHazardousSpecialtyResponseDTOSchema.nullish(), temperatureControlledSpecialty: CommonModels.PositionCargoPackageTemperatureControlledSpecialtyResponseDtoSchema.nullish(), sourcePackage: CommonModels.PositionCargoSourcePackageResponseDTOSchema.nullish(), createdAt: z.iso.datetime({ offset: true }), updatedAt: z.iso.datetime({ offset: true }), mrn: z.string().describe("MRN (Movement Reference Number)").nullish(), exportPortFilling: z.string().describe("Export port filling").nullish(), customsReleased: z.boolean().describe("Customs released status").nullish(), importCustomsReleaseNumber: z.string().describe("Import customs release number").nullish(), portCustomsNumber: z.string().describe("Port customs number").nullish() }).readonly();
+export const PositionCargoPackageResponseDTOSchema = z.object({ id: z.string(), cargoId: z.string(), rootFolderId: z.string().nullish(), quantity: z.number().nullish(), packageTypeId: z.string().nullish(), packageType: CommonModels.PositionCargoPackageTypeResponseDTOSchema.nullish(), length: z.number().nullish(), width: z.number().nullish(), height: z.number().nullish(), netWeight: z.number().nullish(), grossWeight: z.number().nullish(), chargeableWeight: z.number().nullish(), note: z.string().nullish(), name: z.string().nullish(), orderNumber: z.number().nullish(), volume: z.number().nullish(), volumetricWeight: z.number().nullish(), caseMarks: z.string().nullish(), description: z.string().nullish(), hsCodes: z.array(z.string()).nullish(), hsCodeLabels: z.array(CommonModels.HsCodeLabelDtoSchema).nullish(), customsRemarks: z.string().nullish(), loadMeter: z.number().nullish(), specialties: z.array(CommonModels.PositionCargoPackageEnumSchema), hazardousSpecialty: CommonModels.PositionCargoPackageHazardousSpecialtyResponseDTOSchema.nullish(), temperatureControlledSpecialty: CommonModels.PositionCargoPackageTemperatureControlledSpecialtyResponseDtoSchema.nullish(), sourcePackage: CommonModels.PositionCargoSourcePackageResponseDTOSchema.nullish(), createdAt: z.iso.datetime({ offset: true }), updatedAt: z.iso.datetime({ offset: true }), mrn: z.string().nullish(), exportPortFilling: z.string().nullish(), customsReleased: z.boolean().nullish(), importCustomsReleaseNumber: z.string().nullish(), portCustomsNumber: z.string().nullish() });
 export type PositionCargoPackageResponseDTO = z.infer<typeof PositionCargoPackageResponseDTOSchema>;
-
 
 /** 
  * PackageTotalsDtoSchema 
@@ -1277,9 +1202,8 @@ export type PositionCargoPackageResponseDTO = z.infer<typeof PositionCargoPackag
  * @property { number } chargeableWeight  
  * @property { number } loadMeter  
  */
-export const PackageTotalsDtoSchema = z.object({ quantity: z.number(), weightPerPiece: z.number(), volume: z.number(), chargeableWeight: z.number().nullish(), loadMeter: z.number().nullish() }).readonly();
+export const PackageTotalsDtoSchema = z.object({ quantity: z.number(), weightPerPiece: z.number(), volume: z.number(), chargeableWeight: z.number().nullish(), loadMeter: z.number().nullish() });
 export type PackageTotalsDto = z.infer<typeof PackageTotalsDtoSchema>;
-
 
 /** 
  * PackageSpecialtyTotalsResponseDtoSchema 
@@ -1292,9 +1216,8 @@ export type PackageTotalsDto = z.infer<typeof PackageTotalsDtoSchema>;
  * @property { PackageTotalsDto } oversized  
  * @property { PackageTotalsDto } total  
  */
-export const PackageSpecialtyTotalsResponseDtoSchema = z.object({ noSpecialties: CommonModels.PackageTotalsDtoSchema, hazardous: CommonModels.PackageTotalsDtoSchema, nonStackable: CommonModels.PackageTotalsDtoSchema, temperatureControlled: CommonModels.PackageTotalsDtoSchema, diplomatic: CommonModels.PackageTotalsDtoSchema, oversized: CommonModels.PackageTotalsDtoSchema, total: CommonModels.PackageTotalsDtoSchema }).readonly();
+export const PackageSpecialtyTotalsResponseDtoSchema = z.object({ noSpecialties: CommonModels.PackageTotalsDtoSchema, hazardous: CommonModels.PackageTotalsDtoSchema, nonStackable: CommonModels.PackageTotalsDtoSchema, temperatureControlled: CommonModels.PackageTotalsDtoSchema, diplomatic: CommonModels.PackageTotalsDtoSchema, oversized: CommonModels.PackageTotalsDtoSchema, total: CommonModels.PackageTotalsDtoSchema });
 export type PackageSpecialtyTotalsResponseDto = z.infer<typeof PackageSpecialtyTotalsResponseDtoSchema>;
-
 
 /** 
  * PositionCargoCargoTypeResponseDTOSchema 
@@ -1303,9 +1226,8 @@ export type PackageSpecialtyTotalsResponseDto = z.infer<typeof PackageSpecialtyT
  * @property { string } name Cargo type name. Example: `Electronics` 
  * @property { string } shortName Cargo type short name. Example: `ELEC` 
  */
-export const PositionCargoCargoTypeResponseDTOSchema = z.object({ id: z.string().describe("Cargo type ID"), name: z.string().describe("Cargo type name"), shortName: z.string().describe("Cargo type short name").nullish() }).readonly();
+export const PositionCargoCargoTypeResponseDTOSchema = z.object({ id: z.string(), name: z.string(), shortName: z.string().nullish() });
 export type PositionCargoCargoTypeResponseDTO = z.infer<typeof PositionCargoCargoTypeResponseDTOSchema>;
-
 
 /** 
  * PositionCargoResponseDTOSchema 
@@ -1342,9 +1264,8 @@ export type PositionCargoCargoTypeResponseDTO = z.infer<typeof PositionCargoCarg
  * @property { number } completeWeight  
  * @property { PackageSpecialtyTotalsResponseDto } packageTotals  
  */
-export const PositionCargoResponseDTOSchema = z.object({ id: z.string().describe("Cargo ID"), positionId: z.string().describe("Position ID this cargo belongs to").nullish(), quoteId: z.string().describe("Quote ID this cargo belongs to").nullish(), rootFolderId: z.string().describe("Folder id bound to this cargo").nullish(), cargoType: CommonModels.PositionCargoCargoTypeResponseDTOSchema.describe("Cargo type").nullish(), autoCalculateTotals: z.boolean(), autoCalculateRates: z.boolean(), autoCalculateVgm: z.boolean(), transportUnitNumber: z.string().nullish(), seal1: z.string().nullish(), seal2: z.string().nullish(), rateOptions: z.string().nullish(), rateClass: z.string().nullish(), textForCustoms: z.string().nullish(), totalVolume: z.number().nullish(), totalGrossWeight: z.number().nullish(), totalNetWeight: z.number().nullish(), totalVolumetricWeight: z.number().nullish(), totalChargeableWeight: z.number().nullish(), totalLoadMeter: z.number().nullish(), ratePerKg: z.number().nullish(), totalRate: z.number().nullish(), tare: z.number().nullish(), vgm: z.number().nullish(), hsCodeLabels: z.array(CommonModels.HsCodeLabelDtoSchema).readonly().describe("HS code details").nullish(), note: z.string().nullish(), packages: z.array(CommonModels.PositionCargoPackageResponseDTOSchema).readonly().describe("Packages for the cargo").nullish(), createdAt: z.iso.datetime({ offset: true }).describe("Creation date"), updatedAt: z.iso.datetime({ offset: true }).describe("Last update date"), completeWeight: z.number().nullish(), packageTotals: CommonModels.PackageSpecialtyTotalsResponseDtoSchema.nullish() }).readonly();
+export const PositionCargoResponseDTOSchema = z.object({ id: z.string(), positionId: z.string().nullish(), quoteId: z.string().nullish(), rootFolderId: z.string().nullish(), cargoType: CommonModels.PositionCargoCargoTypeResponseDTOSchema.nullish(), autoCalculateTotals: z.boolean(), autoCalculateRates: z.boolean(), autoCalculateVgm: z.boolean(), transportUnitNumber: z.string().nullish(), seal1: z.string().nullish(), seal2: z.string().nullish(), rateOptions: z.string().nullish(), rateClass: z.string().nullish(), textForCustoms: z.string().nullish(), totalVolume: z.number().nullish(), totalGrossWeight: z.number().nullish(), totalNetWeight: z.number().nullish(), totalVolumetricWeight: z.number().nullish(), totalChargeableWeight: z.number().nullish(), totalLoadMeter: z.number().nullish(), ratePerKg: z.number().nullish(), totalRate: z.number().nullish(), tare: z.number().nullish(), vgm: z.number().nullish(), hsCodeLabels: z.array(CommonModels.HsCodeLabelDtoSchema).nullish(), note: z.string().nullish(), packages: z.array(CommonModels.PositionCargoPackageResponseDTOSchema).nullish(), createdAt: z.iso.datetime({ offset: true }), updatedAt: z.iso.datetime({ offset: true }), completeWeight: z.number().nullish(), packageTotals: CommonModels.PackageSpecialtyTotalsResponseDtoSchema.nullish() });
 export type PositionCargoResponseDTO = z.infer<typeof PositionCargoResponseDTOSchema>;
-
 
 /** 
  * HazardousSpecialtyDTOSchema 
@@ -1365,9 +1286,8 @@ export type PositionCargoResponseDTO = z.infer<typeof PositionCargoResponseDTOSc
  * @property { string } emergencyPhone Emergency phone 
  * @property { string } emergencySchedule Emergency schedule 
  */
-export const HazardousSpecialtyDTOSchema = z.object({ totalLength: z.number().describe("Total length"), totalWidth: z.number().describe("Total width"), temperature: z.number().describe("Temperature"), unNumber: z.string().describe("UN number"), IMOClass: z.string().describe("IMOClass"), shippingName: z.string().describe("Shipping name"), technicalName: z.string().describe("Technical name"), packagingGroup: CommonModels.HazardousPackingGroupEnumSchema.describe("Packaging"), netWeight: z.number().describe("Net weight"), flashpoint: z.number().describe("Flashpoint"), properties: z.array(CommonModels.HazardousSpecialtyEnumSchema).readonly().describe("Properties"), acceptanceNumber: z.string().describe("Acceptance number"), medGuide: z.string().describe("Medical guide"), emergencyPhone: z.string().describe("Emergency phone"), emergencySchedule: z.string().describe("Emergency schedule") }).readonly();
+export const HazardousSpecialtyDTOSchema = z.object({ totalLength: z.number().nullable(), totalWidth: z.number().nullable(), temperature: z.number().nullable(), unNumber: z.string().nullable(), IMOClass: z.string().nullable(), shippingName: z.string().nullable(), technicalName: z.string().nullable(), packagingGroup: CommonModels.HazardousPackingGroupEnumSchema.nullable(), netWeight: z.number().nullable(), flashpoint: z.number().nullable(), properties: z.array(CommonModels.HazardousSpecialtyEnumSchema).nullable(), acceptanceNumber: z.string().nullable(), medGuide: z.string().nullable(), emergencyPhone: z.string().nullable(), emergencySchedule: z.string().nullable() }).partial();
 export type HazardousSpecialtyDTO = z.infer<typeof HazardousSpecialtyDTOSchema>;
-
 
 /** 
  * TemperatureControlledSpecialtyDtoSchema 
@@ -1375,9 +1295,8 @@ export type HazardousSpecialtyDTO = z.infer<typeof HazardousSpecialtyDTOSchema>;
  * @property { number } temperatureFrom  
  * @property { number } temperatureUntil  
  */
-export const TemperatureControlledSpecialtyDtoSchema = z.object({ temperatureFrom: z.number(), temperatureUntil: z.number() }).readonly();
+export const TemperatureControlledSpecialtyDtoSchema = z.object({ temperatureFrom: z.number().nullable(), temperatureUntil: z.number().nullable() }).partial();
 export type TemperatureControlledSpecialtyDto = z.infer<typeof TemperatureControlledSpecialtyDtoSchema>;
-
 
 /** 
  * CreatePositionCargoPackageDTOSchema 
@@ -1407,9 +1326,8 @@ export type TemperatureControlledSpecialtyDto = z.infer<typeof TemperatureContro
  * @property { string } importCustomsReleaseNumber Import customs release number 
  * @property { string } portCustomsNumber Port customs number 
  */
-export const CreatePositionCargoPackageDTOSchema = z.object({ quantity: z.number().describe("Package quantity"), packageTypeId: z.string().describe("Package type ID"), length: z.number().describe("Package length"), width: z.number().describe("Package width"), height: z.number().describe("Package height"), netWeight: z.number().describe("Package net weight"), grossWeight: z.number().describe("Package gross weight"), loadMeter: z.number().describe("Package load meter"), chargeableWeight: z.number().describe("Package chargeable weight"), volume: z.number().describe("Package volume"), volumetricWeight: z.number().describe("Package volumetric weight"), caseMarks: z.string().describe("Package case marks"), note: z.string().describe("Package note"), description: z.string().describe("Package description"), hsCodes: z.array(z.string()).readonly().describe("Package HS codes"), customsRemarks: z.string().describe("Text for customs"), specialties: z.array(CommonModels.PositionCargoPackageEnumSchema).readonly(), hazardousSpecialty: CommonModels.HazardousSpecialtyDTOSchema, temperatureControlledSpecialty: CommonModels.TemperatureControlledSpecialtyDtoSchema, mrn: z.string().describe("MRN (Movement Reference Number)"), exportPortFilling: z.string().describe("Export port filling"), customsReleased: z.boolean().describe("Customs released status"), importCustomsReleaseNumber: z.string().describe("Import customs release number"), portCustomsNumber: z.string().describe("Port customs number") }).readonly();
+export const CreatePositionCargoPackageDTOSchema = z.object({ quantity: z.number().nullable(), packageTypeId: z.string().nullable(), length: z.number().nullable(), width: z.number().nullable(), height: z.number().nullable(), netWeight: z.number().nullable(), grossWeight: z.number().nullable(), loadMeter: z.number().nullable(), chargeableWeight: z.number().nullable(), volume: z.number().nullable(), volumetricWeight: z.number().nullable(), caseMarks: z.string().nullable(), note: z.string().nullable(), description: z.string().nullable(), hsCodes: z.array(z.string()).nullable(), customsRemarks: z.string().nullable(), specialties: z.array(CommonModels.PositionCargoPackageEnumSchema).nullable(), hazardousSpecialty: CommonModels.HazardousSpecialtyDTOSchema.nullable(), temperatureControlledSpecialty: CommonModels.TemperatureControlledSpecialtyDtoSchema.nullable(), mrn: z.string().nullable(), exportPortFilling: z.string().nullable(), customsReleased: z.boolean().nullable(), importCustomsReleaseNumber: z.string().nullable(), portCustomsNumber: z.string().nullable() }).partial();
 export type CreatePositionCargoPackageDTO = z.infer<typeof CreatePositionCargoPackageDTOSchema>;
-
 
 /** 
  * UpdatePositionCargoPackageDTOSchema 
@@ -1440,9 +1358,8 @@ export type CreatePositionCargoPackageDTO = z.infer<typeof CreatePositionCargoPa
  * @property { string } importCustomsReleaseNumber Import customs release number 
  * @property { string } portCustomsNumber Port customs number 
  */
-export const UpdatePositionCargoPackageDTOSchema = z.object({ quantity: z.number().describe("Package quantity").nullable(), packageTypeId: z.string().describe("Package type ID").nullable(), length: z.number().describe("Package length").nullable(), width: z.number().describe("Package width").nullable(), height: z.number().describe("Package height").nullable(), netWeight: z.number().describe("Package net weight").nullable(), grossWeight: z.number().describe("Package gross weight").nullable(), chargeableWeight: z.number().describe("Package chargeable weight").nullable(), note: z.string().describe("Package case marks").nullable(), volume: z.number().describe("Package volume").nullable(), volumetricWeight: z.number().describe("Package volumetric weight").nullable(), orderNumber: z.number().describe("Package order number"), caseMarks: z.string().describe("Package case marks").nullable(), description: z.string().describe("Package description").nullable(), hsCodes: z.array(z.string()).readonly().describe("Package HS codes"), customsRemarks: z.string().describe("Text for customs").nullable(), loadMeter: z.number().describe("Load meter").nullable(), specialties: z.array(CommonModels.PositionCargoPackageEnumSchema).readonly().describe("Package specialties"), hazardousSpecialty: CommonModels.HazardousSpecialtyDTOSchema.describe("Hazardous specialty details"), temperatureControlledSpecialty: CommonModels.TemperatureControlledSpecialtyDtoSchema, mrn: z.string().describe("MRN (Movement Reference Number)").nullable(), exportPortFilling: z.string().describe("Export port filling").nullable(), customsReleased: z.boolean().describe("Customs released status").nullable(), importCustomsReleaseNumber: z.string().describe("Import customs release number").nullable(), portCustomsNumber: z.string().describe("Port customs number").nullable() }).readonly();
+export const UpdatePositionCargoPackageDTOSchema = z.object({ quantity: z.number().nullable(), packageTypeId: z.string().nullable(), length: z.number().nullable(), width: z.number().nullable(), height: z.number().nullable(), netWeight: z.number().nullable(), grossWeight: z.number().nullable(), chargeableWeight: z.number().nullable(), note: z.string().nullable(), volume: z.number().nullable(), volumetricWeight: z.number().nullable(), orderNumber: z.number().nullable(), caseMarks: z.string().nullable(), description: z.string().nullable(), hsCodes: z.array(z.string()).nullable(), customsRemarks: z.string().nullable(), loadMeter: z.number().nullable(), specialties: z.array(CommonModels.PositionCargoPackageEnumSchema).nullable(), hazardousSpecialty: CommonModels.HazardousSpecialtyDTOSchema.nullable(), temperatureControlledSpecialty: CommonModels.TemperatureControlledSpecialtyDtoSchema.nullable(), mrn: z.string().nullable(), exportPortFilling: z.string().nullable(), customsReleased: z.boolean().nullable(), importCustomsReleaseNumber: z.string().nullable(), portCustomsNumber: z.string().nullable() }).partial();
 export type UpdatePositionCargoPackageDTO = z.infer<typeof UpdatePositionCargoPackageDTOSchema>;
-
 
 /** 
  * QuantityOfOriginalBlDocumentsEnumSchema 
@@ -1474,9 +1391,8 @@ export const ChargePaymentEnum = ChargePaymentEnumSchema.enum;
  * @property { string } footerImageUrl Footer image URL 
  * @property { string } headerImageUrl Header image URL 
  */
-export const DocumentConfigDTOSchema = z.object({ footerImageUrl: z.string().describe("Footer image URL"), headerImageUrl: z.string().describe("Header image URL") }).readonly();
+export const DocumentConfigDTOSchema = z.object({ footerImageUrl: z.string().nullable(), headerImageUrl: z.string().nullable() }).partial();
 export type DocumentConfigDTO = z.infer<typeof DocumentConfigDTOSchema>;
-
 
 /** 
  * EmployeeRoleContextSchema 
@@ -1496,9 +1412,8 @@ export const EmployeeRoleContext = EmployeeRoleContextSchema.enum;
  * @property { string } context Role context 
  * @property { string[] } permissions Permissions associated with the role 
  */
-export const EmployeeRoleResponseSchema = z.object({ id: z.string().describe("Unique identifier of the role"), name: z.string().describe("Name of the role"), color: z.string().describe("Color associated with the role").nullish(), description: z.string().describe("Description of the role").nullish(), context: CommonModels.EmployeeRoleContextSchema.describe("Role context").nullish(), permissions: z.array(z.string()).readonly().describe("Permissions associated with the role") }).readonly();
+export const EmployeeRoleResponseSchema = z.object({ id: z.string(), name: z.string(), color: z.string().nullish(), description: z.string().nullish(), context: CommonModels.EmployeeRoleContextSchema.nullish(), permissions: z.array(z.string()) });
 export type EmployeeRoleResponse = z.infer<typeof EmployeeRoleResponseSchema>;
-
 
 /** 
  * EmploymentEmployeeResponseSchema 
@@ -1511,9 +1426,8 @@ export type EmployeeRoleResponse = z.infer<typeof EmployeeRoleResponseSchema>;
  * @property { boolean } archived Archived 
  * @property { EmployeeRoleResponse[] } roles Global Roles 
  */
-export const EmploymentEmployeeResponseSchema = z.object({ id: z.string().describe("Employee ID"), email: z.email().describe("Email"), firstName: z.string().describe("First name"), lastName: z.string().describe("Last name"), phone: z.string().describe("Phone number").nullish(), archived: z.boolean().describe("Archived").nullish(), roles: z.array(CommonModels.EmployeeRoleResponseSchema).readonly().describe("Global Roles").nullish() }).readonly();
+export const EmploymentEmployeeResponseSchema = z.object({ id: z.string(), email: z.email(), firstName: z.string(), lastName: z.string(), phone: z.string().nullish(), archived: z.boolean().nullish(), roles: z.array(CommonModels.EmployeeRoleResponseSchema).nullish() });
 export type EmploymentEmployeeResponse = z.infer<typeof EmploymentEmployeeResponseSchema>;
-
 
 /** 
  * EmployeeOfficeResponseSchema 
@@ -1521,9 +1435,8 @@ export type EmploymentEmployeeResponse = z.infer<typeof EmploymentEmployeeRespon
  * @property { string } id  
  * @property { string } name  
  */
-export const EmployeeOfficeResponseSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const EmployeeOfficeResponseSchema = z.object({ id: z.string(), name: z.string() });
 export type EmployeeOfficeResponse = z.infer<typeof EmployeeOfficeResponseSchema>;
-
 
 /** 
  * EmploymentResponseSchema 
@@ -1537,9 +1450,8 @@ export type EmployeeOfficeResponse = z.infer<typeof EmployeeOfficeResponseSchema
  * @property { string } costCenter  
  * @property { EmployeeRoleResponse[] } roles Employment Roles 
  */
-export const EmploymentResponseSchema = z.object({ id: z.string(), officeId: z.string(), office: CommonModels.EmployeeOfficeResponseSchema.nullish(), employeeId: z.string(), employee: CommonModels.EmploymentEmployeeResponseSchema.nullish(), archived: z.boolean(), costCenter: z.string().nullish(), roles: z.array(CommonModels.EmployeeRoleResponseSchema).readonly().describe("Employment Roles").nullish() }).readonly();
+export const EmploymentResponseSchema = z.object({ id: z.string(), officeId: z.string(), office: CommonModels.EmployeeOfficeResponseSchema.nullish(), employeeId: z.string(), employee: CommonModels.EmploymentEmployeeResponseSchema.nullish(), archived: z.boolean(), costCenter: z.string().nullish(), roles: z.array(CommonModels.EmployeeRoleResponseSchema).nullish() });
 export type EmploymentResponse = z.infer<typeof EmploymentResponseSchema>;
-
 
 /** 
  * LoadTypeEnumSchema 
@@ -1563,9 +1475,8 @@ export const ServiceTypeEnum = ServiceTypeEnumSchema.enum;
  * @property { string } start  
  * @property { string } end  
  */
-export const DateRangeDtoSchema = z.object({ start: z.iso.datetime({ offset: true }), end: z.iso.datetime({ offset: true }) }).readonly();
+export const DateRangeDtoSchema = z.object({ start: z.iso.datetime({ offset: true }).nullable(), end: z.iso.datetime({ offset: true }).nullable() }).partial();
 export type DateRangeDto = z.infer<typeof DateRangeDtoSchema>;
-
 
 /** 
  * BusinessPartnerLabelResponseDTOSchema 
@@ -1574,9 +1485,8 @@ export type DateRangeDto = z.infer<typeof DateRangeDtoSchema>;
  * @property { string } label  
  * @property { BusinessPartnerType[] } types Array of business partner types 
  */
-export const BusinessPartnerLabelResponseDTOSchema = z.object({ id: z.string(), label: z.string(), types: z.array(CommonModels.BusinessPartnerTypeSchema).readonly().describe("Array of business partner types") }).readonly();
+export const BusinessPartnerLabelResponseDTOSchema = z.object({ id: z.string(), label: z.string(), types: z.array(CommonModels.BusinessPartnerTypeSchema) });
 export type BusinessPartnerLabelResponseDTO = z.infer<typeof BusinessPartnerLabelResponseDTOSchema>;
-
 
 /** 
  * SectionEnumSchema 
@@ -1666,9 +1576,8 @@ export const InvoiceStatusEnum = InvoiceStatusEnumSchema.enum;
  * @property { string } creditorId Filter invoices by creditor ID (substring match) 
  * @property { string } debtorId Filter invoices by debtor ID (substring match) 
  */
-export const OfficeInvoiceFilterDtoSchema = z.object({ search: z.string(), issuingDate: CommonModels.DateRangeDtoSchema, serviceDate: CommonModels.DateRangeDtoSchema, invoiceDirection: z.array(CommonModels.InvoiceDirectionEnumSchema).readonly(), invoiceType: z.array(CommonModels.InvoiceTypeEnumSchema).readonly(), collective: z.array(CommonModels.BooleanFilterEnumSchema).readonly(), amountMin: z.number(), amountMax: z.number(), currencyNotation: z.array(z.string()).readonly(), vatRule: z.array(z.string()).readonly(), dueDate: CommonModels.DateRangeDtoSchema, status: z.array(CommonModels.InvoiceStatusEnumSchema).readonly(), receiver: z.array(z.string()).readonly().describe("Filter by invoice receiver/customer IDs (UUID)"), receiverCountry: z.array(z.string()).readonly().describe("Filter by invoice receiver/customer country IDs"), salesRep: z.array(z.string()).readonly().describe("Filter by sales rep id"), positionNumbersString: z.string(), positionNumbers: z.array(z.string()).readonly(), invoiceNumbersString: z.string(), invoiceNumbers: z.array(z.string()).readonly(), bookkeepingExportStatus: z.array(CommonModels.BooleanFilterEnumSchema).readonly(), dunningBlock: z.array(CommonModels.BooleanFilterEnumSchema).readonly(), invoiceInReview: z.array(CommonModels.BooleanFilterEnumSchema).readonly(), isInvoiceOk: z.array(CommonModels.BooleanFilterEnumSchema).readonly(), isVatOk: z.array(CommonModels.BooleanFilterEnumSchema).readonly(), invoiceNumberMin: z.number(), invoiceNumberMax: z.number(), internalNumberMin: z.number(), internalNumberMax: z.number(), externalSystemId: z.string().describe("Filter invoices by position external system ID (substring match)"), hblNumber: z.string().describe("Filter invoices by HBL/HAWB (substring match)"), mblNumber: z.string().describe("Filter invoices by MBL/MAWB (substring match)"), bookingNumber: z.string().describe("Filter invoices by booking number (substring match)"), vessel: z.string().describe("Filter invoices by vessel name (substring match)"), voyage: z.string().describe("Filter invoices by voyage number (substring match)"), creditorId: z.string().describe("Filter invoices by creditor ID (substring match)"), debtorId: z.string().describe("Filter invoices by debtor ID (substring match)") }).readonly();
+export const OfficeInvoiceFilterDtoSchema = z.object({ search: z.string().nullable(), issuingDate: CommonModels.DateRangeDtoSchema.nullable(), serviceDate: CommonModels.DateRangeDtoSchema.nullable(), invoiceDirection: z.array(CommonModels.InvoiceDirectionEnumSchema).nullable(), invoiceType: z.array(CommonModels.InvoiceTypeEnumSchema).nullable(), collective: z.array(CommonModels.BooleanFilterEnumSchema).nullable(), amountMin: z.number().nullable(), amountMax: z.number().nullable(), currencyNotation: z.array(z.string()).nullable(), vatRule: z.array(z.string()).nullable(), dueDate: CommonModels.DateRangeDtoSchema.nullable(), status: z.array(CommonModels.InvoiceStatusEnumSchema).nullable(), receiver: z.array(z.string()).nullable(), receiverCountry: z.array(z.string()).nullable(), salesRep: z.array(z.string()).nullable(), positionNumbersString: z.string().nullable(), positionNumbers: z.array(z.string()).nullable(), invoiceNumbersString: z.string().nullable(), invoiceNumbers: z.array(z.string()).nullable(), bookkeepingExportStatus: z.array(CommonModels.BooleanFilterEnumSchema).nullable(), dunningBlock: z.array(CommonModels.BooleanFilterEnumSchema).nullable(), invoiceInReview: z.array(CommonModels.BooleanFilterEnumSchema).nullable(), isInvoiceOk: z.array(CommonModels.BooleanFilterEnumSchema).nullable(), isVatOk: z.array(CommonModels.BooleanFilterEnumSchema).nullable(), invoiceNumberMin: z.number().nullable(), invoiceNumberMax: z.number().nullable(), internalNumberMin: z.number().nullable(), internalNumberMax: z.number().nullable(), externalSystemId: z.string().nullable(), hblNumber: z.string().nullable(), mblNumber: z.string().nullable(), bookingNumber: z.string().nullable(), vessel: z.string().nullable(), voyage: z.string().nullable(), creditorId: z.string().nullable(), debtorId: z.string().nullable() }).partial();
 export type OfficeInvoiceFilterDto = z.infer<typeof OfficeInvoiceFilterDtoSchema>;
-
 
 /** 
  * PositionStatusEnumSchema 
@@ -1684,9 +1593,8 @@ export const PositionStatusEnum = PositionStatusEnumSchema.enum;
  * @property { string } id  
  * @property { string } name  
  */
-export const PositionCustomerDtoSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const PositionCustomerDtoSchema = z.object({ id: z.string(), name: z.string() });
 export type PositionCustomerDto = z.infer<typeof PositionCustomerDtoSchema>;
-
 
 /** 
  * PositionQuoteDtoSchema 
@@ -1694,9 +1602,8 @@ export type PositionCustomerDto = z.infer<typeof PositionCustomerDtoSchema>;
  * @property { string } id  
  * @property { string } number  
  */
-export const PositionQuoteDtoSchema = z.object({ id: z.string(), number: z.string() }).readonly();
+export const PositionQuoteDtoSchema = z.object({ id: z.string(), number: z.string() });
 export type PositionQuoteDto = z.infer<typeof PositionQuoteDtoSchema>;
-
 
 /** 
  * ParentPositionDtoSchema 
@@ -1704,9 +1611,8 @@ export type PositionQuoteDto = z.infer<typeof PositionQuoteDtoSchema>;
  * @property { string } id  
  * @property { string } number  
  */
-export const ParentPositionDtoSchema = z.object({ id: z.string(), number: z.string() }).readonly();
+export const ParentPositionDtoSchema = z.object({ id: z.string(), number: z.string() });
 export type ParentPositionDto = z.infer<typeof ParentPositionDtoSchema>;
-
 
 /** 
  * PositionTypeEnumSchema 
@@ -1722,9 +1628,8 @@ export const PositionTypeEnum = PositionTypeEnumSchema.enum;
  * @property { string } id  
  * @property { string } name  
  */
-export const PositionProjectLiteDtoSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const PositionProjectLiteDtoSchema = z.object({ id: z.string(), name: z.string() });
 export type PositionProjectLiteDto = z.infer<typeof PositionProjectLiteDtoSchema>;
-
 
 /** 
  * EmployeeDtoSchema 
@@ -1732,9 +1637,8 @@ export type PositionProjectLiteDto = z.infer<typeof PositionProjectLiteDtoSchema
  * @property { string } id  
  * @property { string } name  
  */
-export const EmployeeDtoSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const EmployeeDtoSchema = z.object({ id: z.string(), name: z.string() });
 export type EmployeeDto = z.infer<typeof EmployeeDtoSchema>;
-
 
 /** 
  * PositionCoreResponseDtoSchema 
@@ -1784,9 +1688,8 @@ export type EmployeeDto = z.infer<typeof EmployeeDtoSchema>;
  * @property { EditorContentResponseDto } notes Notes 
  * @property { number } volumetricWeightModifier Volumetric weight modifier 
  */
-export const PositionCoreResponseDtoSchema = z.object({ id: z.string(), rootFolderId: z.string().nullish(), externalSystemId: z.string().nullish(), inttraTypeOfMove: CommonModels.MovementTypeEnumSchema.nullish(), customer: CommonModels.PositionCustomerDtoSchema.nullish(), isCancelled: z.boolean(), owningOfficeId: z.string(), originOfficeId: z.string().nullish(), quote: CommonModels.PositionQuoteDtoSchema.nullish(), number: z.string(), section: CommonModels.SectionEnumSchema, direction: CommonModels.DirectionEnumSchema, transportMode: CommonModels.TransportModeEnumSchema, statusDate: z.iso.datetime({ offset: true }), serviceDate: z.iso.datetime({ offset: true }).nullish(), dateOfDeparture: z.iso.datetime({ offset: true }).nullish(), dateOfArrival: z.iso.datetime({ offset: true }).nullish(), status: CommonModels.PositionStatusEnumSchema.nullish(), loadType: CommonModels.LoadTypeEnumSchema.nullish(), incoterms: CommonModels.IncotermsEnumSchema.nullish(), secondIncoterms: CommonModels.IncotermsEnumSchema.nullish(), serviceType: CommonModels.ServiceTypeEnumSchema.nullish(), parentPosition: CommonModels.ParentPositionDtoSchema.nullish(), buyRateReference: z.string().nullish(), frequency: CommonModels.FrequencyEnumSchema.nullish(), positionType: CommonModels.PositionTypeEnumSchema.nullish(), isParentPosition: z.boolean(), hasParentPosition: z.boolean().nullish(), hasChildPositions: z.boolean().nullish(), projectLite: CommonModels.PositionProjectLiteDtoSchema.nullish(), isExcludedFromStatistics: z.boolean(), salesRep: CommonModels.EmployeeDtoSchema.nullish(), fillingCompany: z.string().nullish(), sellingContract: z.string().nullish(), fillingScacCode: z.string().nullish(), serviceValidity: z.iso.datetime({ offset: true }).nullish(), ratesValidity: z.iso.datetime({ offset: true }).nullish(), responsibleEmployee: CommonModels.EmployeeDtoSchema.nullish(), receivedByEmployee: CommonModels.EmployeeDtoSchema.nullish(), team: z.string().nullish(), createdAt: z.iso.datetime({ offset: true }), updatedAt: z.iso.datetime({ offset: true }), notes: CommonModels.EditorContentResponseDtoSchema.describe("Notes").nullish(), volumetricWeightModifier: z.number().describe("Volumetric weight modifier").nullish() }).readonly();
+export const PositionCoreResponseDtoSchema = z.object({ id: z.string(), rootFolderId: z.string().nullish(), externalSystemId: z.string().nullish(), inttraTypeOfMove: CommonModels.MovementTypeEnumSchema.nullish(), customer: CommonModels.PositionCustomerDtoSchema.nullish(), isCancelled: z.boolean(), owningOfficeId: z.string(), originOfficeId: z.string().nullish(), quote: CommonModels.PositionQuoteDtoSchema.nullish(), number: z.string(), section: CommonModels.SectionEnumSchema, direction: CommonModels.DirectionEnumSchema, transportMode: CommonModels.TransportModeEnumSchema, statusDate: z.iso.datetime({ offset: true }), serviceDate: z.iso.datetime({ offset: true }).nullish(), dateOfDeparture: z.iso.datetime({ offset: true }).nullish(), dateOfArrival: z.iso.datetime({ offset: true }).nullish(), status: CommonModels.PositionStatusEnumSchema.nullish(), loadType: CommonModels.LoadTypeEnumSchema.nullish(), incoterms: CommonModels.IncotermsEnumSchema.nullish(), secondIncoterms: CommonModels.IncotermsEnumSchema.nullish(), serviceType: CommonModels.ServiceTypeEnumSchema.nullish(), parentPosition: CommonModels.ParentPositionDtoSchema.nullish(), buyRateReference: z.string().nullish(), frequency: CommonModels.FrequencyEnumSchema.nullish(), positionType: CommonModels.PositionTypeEnumSchema.nullish(), isParentPosition: z.boolean(), hasParentPosition: z.boolean().nullish(), hasChildPositions: z.boolean().nullish(), projectLite: CommonModels.PositionProjectLiteDtoSchema.nullish(), isExcludedFromStatistics: z.boolean(), salesRep: CommonModels.EmployeeDtoSchema.nullish(), fillingCompany: z.string().nullish(), sellingContract: z.string().nullish(), fillingScacCode: z.string().nullish(), serviceValidity: z.iso.datetime({ offset: true }).nullish(), ratesValidity: z.iso.datetime({ offset: true }).nullish(), responsibleEmployee: CommonModels.EmployeeDtoSchema.nullish(), receivedByEmployee: CommonModels.EmployeeDtoSchema.nullish(), team: z.string().nullish(), createdAt: z.iso.datetime({ offset: true }), updatedAt: z.iso.datetime({ offset: true }), notes: CommonModels.EditorContentResponseDtoSchema.nullish(), volumetricWeightModifier: z.number().nullish() });
 export type PositionCoreResponseDto = z.infer<typeof PositionCoreResponseDtoSchema>;
-
 
 /** 
  * VesselDtoSchema 
@@ -1795,9 +1698,8 @@ export type PositionCoreResponseDto = z.infer<typeof PositionCoreResponseDtoSche
  * @property { number } imo  
  * @property { number } mmsi  
  */
-export const VesselDtoSchema = z.object({ name: z.string(), imo: z.number().nullish(), mmsi: z.number().nullish() }).readonly();
+export const VesselDtoSchema = z.object({ name: z.string(), imo: z.number().nullish(), mmsi: z.number().nullish() });
 export type VesselDto = z.infer<typeof VesselDtoSchema>;
-
 
 /** 
  * StatusResponseDtoSchema 
@@ -1806,9 +1708,8 @@ export type VesselDto = z.infer<typeof VesselDtoSchema>;
  * @property { string } message Message 
  * @property { string } code Alphanumeric code of the message type 
  */
-export const StatusResponseDtoSchema = z.object({ status: z.string().describe("Status"), message: z.string().describe("Message"), code: z.string().describe("Alphanumeric code of the message type") }).readonly();
+export const StatusResponseDtoSchema = z.object({ status: z.string(), message: z.string(), code: z.string() });
 export type StatusResponseDto = z.infer<typeof StatusResponseDtoSchema>;
-
 
 /** 
  * PaginationDtoSchema 
@@ -1820,9 +1721,8 @@ export type StatusResponseDto = z.infer<typeof StatusResponseDtoSchema>;
  * @property { number } limit Items per response 
  * @property { number } totalItems Total available items 
  */
-export const PaginationDtoSchema = z.object({ items: z.array(z.string()).readonly().describe("Items"), page: z.number().describe("1-indexed page number to begin from").nullish(), cursor: z.string().describe("ID of item to start after").nullish(), nextCursor: z.string().describe("Cursor for next set of items").nullish(), limit: z.number().describe("Items per response"), totalItems: z.number().describe("Total available items") }).readonly();
+export const PaginationDtoSchema = z.object({ items: z.array(z.string()), page: z.number().nullish(), cursor: z.string().nullish(), nextCursor: z.string().nullish(), limit: z.number(), totalItems: z.number() });
 export type PaginationDto = z.infer<typeof PaginationDtoSchema>;
-
 
 /** 
  * LabelResponseDTOSchema 
@@ -1830,9 +1730,8 @@ export type PaginationDto = z.infer<typeof PaginationDtoSchema>;
  * @property { string } id  
  * @property { string } label  
  */
-export const LabelResponseDTOSchema = z.object({ id: z.string(), label: z.string() }).readonly();
+export const LabelResponseDTOSchema = z.object({ id: z.string(), label: z.string() });
 export type LabelResponseDTO = z.infer<typeof LabelResponseDTOSchema>;
-
 
 /** 
  * GenerateWorkingDocumentRequestDtoSchema 
@@ -1840,9 +1739,8 @@ export type LabelResponseDTO = z.infer<typeof LabelResponseDTOSchema>;
  * @property { string } issuedAt  
  * @property { string } fileName  
  */
-export const GenerateWorkingDocumentRequestDtoSchema = z.object({ issuedAt: z.iso.datetime({ offset: true }).nullish(), fileName: z.string() }).readonly();
+export const GenerateWorkingDocumentRequestDtoSchema = z.object({ issuedAt: z.iso.datetime({ offset: true }).nullish(), fileName: z.string() });
 export type GenerateWorkingDocumentRequestDto = z.infer<typeof GenerateWorkingDocumentRequestDtoSchema>;
-
 
 /** 
  * UpdateInvolvedPartyDtoSchema 
@@ -1851,27 +1749,24 @@ export type GenerateWorkingDocumentRequestDto = z.infer<typeof GenerateWorkingDo
  * @property { string } businessPartnerId  
  * @property { string } contactId  
  */
-export const UpdateInvolvedPartyDtoSchema = z.object({ reference: z.string(), businessPartnerId: z.string(), contactId: z.string() }).readonly();
+export const UpdateInvolvedPartyDtoSchema = z.object({ reference: z.string().nullable(), businessPartnerId: z.string().nullable(), contactId: z.string().nullable() }).partial();
 export type UpdateInvolvedPartyDto = z.infer<typeof UpdateInvolvedPartyDtoSchema>;
-
 
 /** 
  * MergeRoutesRequestDtoSchema 
  * @type { object }
  * @property { string } sourceCargoId Source cargo ID to merge from (sea positions only) 
  */
-export const MergeRoutesRequestDtoSchema = z.object({ sourceCargoId: z.string().describe("Source cargo ID to merge from (sea positions only)").nullable() }).readonly();
+export const MergeRoutesRequestDtoSchema = z.object({ sourceCargoId: z.string().nullable() });
 export type MergeRoutesRequestDto = z.infer<typeof MergeRoutesRequestDtoSchema>;
-
 
 /** 
  * CopyRouteRequestDtoSchema 
  * @type { object }
  * @property { string } targetCargoId Target cargo ID to copy to (sea positions only) 
  */
-export const CopyRouteRequestDtoSchema = z.object({ targetCargoId: z.string().describe("Target cargo ID to copy to (sea positions only)").nullable() }).readonly();
+export const CopyRouteRequestDtoSchema = z.object({ targetCargoId: z.string().nullable() });
 export type CopyRouteRequestDto = z.infer<typeof CopyRouteRequestDtoSchema>;
-
 
 /** 
  * CargoSummaryResponseDTOSchema 
@@ -1879,9 +1774,8 @@ export type CopyRouteRequestDto = z.infer<typeof CopyRouteRequestDtoSchema>;
  * @property { string } transportUnitTypeName Transport unit type name (e.g., "40' DRY", "20'") 
  * @property { number } quantity Total quantity of this transport unit type 
  */
-export const CargoSummaryResponseDTOSchema = z.object({ transportUnitTypeName: z.string().describe("Transport unit type name (e.g., "40' DRY", "20'")"), quantity: z.number().describe("Total quantity of this transport unit type") }).readonly();
+export const CargoSummaryResponseDTOSchema = z.object({ transportUnitTypeName: z.string(), quantity: z.number() });
 export type CargoSummaryResponseDTO = z.infer<typeof CargoSummaryResponseDTOSchema>;
-
 
 /** 
  * CreatePositionCargoDTOSchema 
@@ -1908,9 +1802,8 @@ export type CargoSummaryResponseDTO = z.infer<typeof CargoSummaryResponseDTOSche
  * @property { boolean } autoCalculateRates  
  * @property { boolean } autoCalculateVgm  
  */
-export const CreatePositionCargoDTOSchema = z.object({ cargoTypeId: z.string().describe("Cargo type ID"), note: z.string(), autoCalculateTotals: z.boolean(), transportUnitNumber: z.string().nullable(), seal1: z.string().nullable(), seal2: z.string().nullable(), totalVolume: z.number().nullable(), totalGrossWeight: z.number().nullable(), totalNetWeight: z.number().nullable(), totalVolumetricWeight: z.number().nullable(), totalChargeableWeight: z.number().nullable(), totalLoadMeter: z.number().nullable(), rateOptions: CommonModels.RateOptionsEnumSchema.nullable(), rateClass: CommonModels.RateClassEnumSchema.nullable(), ratePerKg: z.number().nullable(), totalRate: z.number().nullable(), textForCustoms: z.string().nullable(), tare: z.number().nullable(), vgm: z.number().nullable(), autoCalculateRates: z.boolean(), autoCalculateVgm: z.boolean() }).readonly();
+export const CreatePositionCargoDTOSchema = z.object({ cargoTypeId: z.string().nullable(), note: z.string().nullable(), autoCalculateTotals: z.boolean().nullable(), transportUnitNumber: z.string().nullable(), seal1: z.string().nullable(), seal2: z.string().nullable(), totalVolume: z.number().nullable(), totalGrossWeight: z.number().nullable(), totalNetWeight: z.number().nullable(), totalVolumetricWeight: z.number().nullable(), totalChargeableWeight: z.number().nullable(), totalLoadMeter: z.number().nullable(), rateOptions: CommonModels.RateOptionsEnumSchema.nullable(), rateClass: CommonModels.RateClassEnumSchema.nullable(), ratePerKg: z.number().nullable(), totalRate: z.number().nullable(), textForCustoms: z.string().nullable(), tare: z.number().nullable(), vgm: z.number().nullable(), autoCalculateRates: z.boolean().nullable(), autoCalculateVgm: z.boolean().nullable() }).partial();
 export type CreatePositionCargoDTO = z.infer<typeof CreatePositionCargoDTOSchema>;
-
 
 /** 
  * UpdatePositionCargoDTOSchema 
@@ -1937,18 +1830,16 @@ export type CreatePositionCargoDTO = z.infer<typeof CreatePositionCargoDTOSchema
  * @property { boolean } autoCalculateRates  
  * @property { boolean } autoCalculateVgm  
  */
-export const UpdatePositionCargoDTOSchema = z.object({ cargoTypeId: z.string().describe("Cargo type ID"), note: z.string(), autoCalculateTotals: z.boolean(), transportUnitNumber: z.string().nullable(), seal1: z.string().nullable(), seal2: z.string().nullable(), totalVolume: z.number().nullable(), totalGrossWeight: z.number().nullable(), totalNetWeight: z.number().nullable(), totalVolumetricWeight: z.number().nullable(), totalChargeableWeight: z.number().nullable(), totalLoadMeter: z.number().nullable(), rateOptions: CommonModels.RateOptionsEnumSchema.nullable(), rateClass: CommonModels.RateClassEnumSchema.nullable(), ratePerKg: z.number().nullable(), totalRate: z.number().nullable(), textForCustoms: z.string().nullable(), tare: z.number().nullable(), vgm: z.number().nullable(), autoCalculateRates: z.boolean(), autoCalculateVgm: z.boolean() }).readonly();
+export const UpdatePositionCargoDTOSchema = z.object({ cargoTypeId: z.string().nullable(), note: z.string().nullable(), autoCalculateTotals: z.boolean().nullable(), transportUnitNumber: z.string().nullable(), seal1: z.string().nullable(), seal2: z.string().nullable(), totalVolume: z.number().nullable(), totalGrossWeight: z.number().nullable(), totalNetWeight: z.number().nullable(), totalVolumetricWeight: z.number().nullable(), totalChargeableWeight: z.number().nullable(), totalLoadMeter: z.number().nullable(), rateOptions: CommonModels.RateOptionsEnumSchema.nullable(), rateClass: CommonModels.RateClassEnumSchema.nullable(), ratePerKg: z.number().nullable(), totalRate: z.number().nullable(), textForCustoms: z.string().nullable(), tare: z.number().nullable(), vgm: z.number().nullable(), autoCalculateRates: z.boolean().nullable(), autoCalculateVgm: z.boolean().nullable() }).partial();
 export type UpdatePositionCargoDTO = z.infer<typeof UpdatePositionCargoDTOSchema>;
-
 
 /** 
  * MovePositionCargoPackageRequestDTOSchema 
  * @type { object }
  * @property { string } targetCargoId Target cargo ID to move the package to 
  */
-export const MovePositionCargoPackageRequestDTOSchema = z.object({ targetCargoId: z.string().describe("Target cargo ID to move the package to") }).readonly();
+export const MovePositionCargoPackageRequestDTOSchema = z.object({ targetCargoId: z.string() });
 export type MovePositionCargoPackageRequestDTO = z.infer<typeof MovePositionCargoPackageRequestDTOSchema>;
-
 
 /** 
  * PositionCargoPaginationOrderFieldSchema 

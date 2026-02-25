@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -26,12 +25,11 @@ export const keys = {
  * @returns { UseQueryResult<DunningAccountStatementModels.AccountStatementPdfPayloadDTO> } 
  * @statusCodes [200, 401]
  */
-export const useDataGenFake = <TData>(options?: AppQueryOptions<typeof DunningAccountStatementApi.dataGenFake, TData>, config?: AxiosRequestConfig) => {
+export const useDataGenFake = <TData>(options?: AppQueryOptions<typeof DunningAccountStatementApi.dataGenFake, TData>) => {
   
   return useQuery({
     queryKey: keys.dataGenFake(),
-    queryFn: () => 
-    DunningAccountStatementApi.dataGenFake(config),
+    queryFn: DunningAccountStatementApi.dataGenFake,
     ...options,
   });
 };
@@ -50,14 +48,14 @@ export const useDataGenFake = <TData>(options?: AppQueryOptions<typeof DunningAc
  * @returns { UseQueryResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
  */
-export const useGenerateAccountStatement = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: CommonModels.OfficeInvoiceFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof DunningAccountStatementApi.generateAccountStatement, TData>, config?: AxiosRequestConfig) => {
+export const useGenerateAccountStatement = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: CommonModels.OfficeInvoiceFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof DunningAccountStatementApi.generateAccountStatement, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.generateAccountStatement(officeId, limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(DunningAccountStatementAcl.canUseGenerateAccountStatement({ officeId } ));
-    return DunningAccountStatementApi.generateAccountStatement(officeId, limit, order, filter, page, cursor, config) },
+    return DunningAccountStatementApi.generateAccountStatement(officeId, limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -76,14 +74,14 @@ export const useGenerateAccountStatement = <TData>({ officeId, limit, order, fil
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
  */
-export const useGenerateAccountStatementMutation = (options?: AppMutationOptions<typeof DunningAccountStatementApi.generateAccountStatement, { officeId: string, limit: number, order?: string, filter?: CommonModels.OfficeInvoiceFilterDto, page?: number, cursor?: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useGenerateAccountStatementMutation = (options?: AppMutationOptions<typeof DunningAccountStatementApi.generateAccountStatement, { officeId: string, limit: number, order?: string, filter?: CommonModels.OfficeInvoiceFilterDto, page?: number, cursor?: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, limit, order, filter, page, cursor }) => { 
       checkAcl(DunningAccountStatementAcl.canUseGenerateAccountStatement({ officeId } ));
-      return DunningAccountStatementApi.generateAccountStatement(officeId, limit, order, filter, page, cursor, config)
+      return DunningAccountStatementApi.generateAccountStatement(officeId, limit, order, filter, page, cursor)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -109,14 +107,14 @@ export const useGenerateAccountStatementMutation = (options?: AppMutationOptions
  * @returns { UseInfiniteQueryResult<z.instanceof(Blob)> } 
  * @statusCodes [200, 401]
  */
-export const useGenerateAccountStatementInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: CommonModels.OfficeInvoiceFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof DunningAccountStatementApi.generateAccountStatement, TData>, config?: AxiosRequestConfig) => {
+export const useGenerateAccountStatementInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: CommonModels.OfficeInvoiceFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof DunningAccountStatementApi.generateAccountStatement, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.generateAccountStatementInfinite(officeId, limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(DunningAccountStatementAcl.canUseGenerateAccountStatement({ officeId } ));
-    return DunningAccountStatementApi.generateAccountStatement(officeId, limit, order, filter, pageParam, cursor, config) },
+    return DunningAccountStatementApi.generateAccountStatement(officeId, limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -136,14 +134,14 @@ export const useGenerateAccountStatementInfinite = <TData>({ officeId, limit, or
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 201, 401]
  */
-export const useGetAccountStatementEml = (options?: AppMutationOptions<typeof DunningAccountStatementApi.getAccountStatementEml, { officeId: string, data: DunningAccountStatementModels.OfficeInvoiceListQueryDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useGetAccountStatementEml = (options?: AppMutationOptions<typeof DunningAccountStatementApi.getAccountStatementEml, { officeId: string, data: DunningAccountStatementModels.OfficeInvoiceListQueryDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, data }) => { 
       checkAcl(DunningAccountStatementAcl.canUseGetAccountStatementEml({ officeId } ));
-      return DunningAccountStatementApi.getAccountStatementEml(officeId, data, config)
+      return DunningAccountStatementApi.getAccountStatementEml(officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -25,12 +24,12 @@ export const keys = {
  * @returns { UseQueryResult<FoldersModels.FolderTreeResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useGetTree = <TData>({ officeId, folderId }: { officeId: string, folderId: string }, options?: AppQueryOptions<typeof FoldersApi.getTree, TData>, config?: AxiosRequestConfig) => {
+export const useGetTree = <TData>({ officeId, folderId }: { officeId: string, folderId: string }, options?: AppQueryOptions<typeof FoldersApi.getTree, TData>) => {
   
   return useQuery({
     queryKey: keys.getTree(officeId, folderId),
     queryFn: () => 
-    FoldersApi.getTree(officeId, folderId, config),
+    FoldersApi.getTree(officeId, folderId),
     ...options,
   });
 };
@@ -49,12 +48,12 @@ export const useGetTree = <TData>({ officeId, folderId }: { officeId: string, fo
  * @returns { UseQueryResult<FoldersModels.FolderResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useGetContent = <TData>({ officeId, folderId, limit, order, filter, page, cursor }: { officeId: string, folderId: string, limit: number, order?: FoldersModels.GetContentOrderParam, filter?: FoldersModels.FolderContentFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof FoldersApi.getContent, TData>, config?: AxiosRequestConfig) => {
+export const useGetContent = <TData>({ officeId, folderId, limit, order, filter, page, cursor }: { officeId: string, folderId: string, limit: number, order?: FoldersModels.GetContentOrderParam, filter?: FoldersModels.FolderContentFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof FoldersApi.getContent, TData>) => {
   
   return useQuery({
     queryKey: keys.getContent(officeId, folderId, limit, order, filter, page, cursor),
     queryFn: () => 
-    FoldersApi.getContent(officeId, folderId, limit, order, filter, page, cursor, config),
+    FoldersApi.getContent(officeId, folderId, limit, order, filter, page, cursor),
     ...options,
   });
 };
@@ -73,12 +72,12 @@ export const useGetContent = <TData>({ officeId, folderId, limit, order, filter,
  * @returns { UseInfiniteQueryResult<FoldersModels.FolderResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useGetContentInfinite = <TData>({ officeId, folderId, limit, order, filter, cursor }: { officeId: string, folderId: string, limit: number, order?: FoldersModels.GetContentOrderParam, filter?: FoldersModels.FolderContentFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof FoldersApi.getContent, TData>, config?: AxiosRequestConfig) => {
+export const useGetContentInfinite = <TData>({ officeId, folderId, limit, order, filter, cursor }: { officeId: string, folderId: string, limit: number, order?: FoldersModels.GetContentOrderParam, filter?: FoldersModels.FolderContentFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof FoldersApi.getContent, TData>) => {
 
   return useInfiniteQuery({
     queryKey: keys.getContentInfinite(officeId, folderId, limit, order, filter, cursor),
     queryFn: ({ pageParam }) => 
-    FoldersApi.getContent(officeId, folderId, limit, order, filter, pageParam, cursor, config),
+    FoldersApi.getContent(officeId, folderId, limit, order, filter, pageParam, cursor),
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -98,12 +97,12 @@ export const useGetContentInfinite = <TData>({ officeId, folderId, limit, order,
  * @returns { UseMutationResult<FoldersModels.FolderResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useRename = (options?: AppMutationOptions<typeof FoldersApi.rename, { officeId: string, folderId: string, data: FoldersModels.RenameFolderRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useRename = (options?: AppMutationOptions<typeof FoldersApi.rename, { officeId: string, folderId: string, data: FoldersModels.RenameFolderRequestDTO }> & MutationEffectsOptions) => {
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, folderId, data }) => 
-      FoldersApi.rename(officeId, folderId, data, config)
+      FoldersApi.rename(officeId, folderId, data)
 ,
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -122,12 +121,12 @@ export const useRename = (options?: AppMutationOptions<typeof FoldersApi.rename,
  * @returns { UseMutationResult<void> } 
  * @statusCodes [204, 401]
  */
-export const useDeleteFolder = (options?: AppMutationOptions<typeof FoldersApi.deleteFolder, { officeId: string, folderId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useDeleteFolder = (options?: AppMutationOptions<typeof FoldersApi.deleteFolder, { officeId: string, folderId: string }> & MutationEffectsOptions) => {
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, folderId }) => 
-      FoldersApi.deleteFolder(officeId, folderId, config)
+      FoldersApi.deleteFolder(officeId, folderId)
 ,
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -146,12 +145,12 @@ export const useDeleteFolder = (options?: AppMutationOptions<typeof FoldersApi.d
  * @returns { UseMutationResult<FoldersModels.FolderResponseDTO> } 
  * @statusCodes [201, 401]
  */
-export const useCreate = (options?: AppMutationOptions<typeof FoldersApi.create, { officeId: string, data: FoldersModels.CreateFolderRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreate = (options?: AppMutationOptions<typeof FoldersApi.create, { officeId: string, data: FoldersModels.CreateFolderRequestDTO }> & MutationEffectsOptions) => {
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, data }) => 
-      FoldersApi.create(officeId, data, config)
+      FoldersApi.create(officeId, data)
 ,
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -170,12 +169,12 @@ export const useCreate = (options?: AppMutationOptions<typeof FoldersApi.create,
  * @returns { UseMutationResult<void> } 
  * @statusCodes [204, 401]
  */
-export const useMove = (options?: AppMutationOptions<typeof FoldersApi.move, { officeId: string, data: FoldersModels.MoveFoldersRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useMove = (options?: AppMutationOptions<typeof FoldersApi.move, { officeId: string, data: FoldersModels.MoveFoldersRequestDTO }> & MutationEffectsOptions) => {
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, data }) => 
-      FoldersApi.move(officeId, data, config)
+      FoldersApi.move(officeId, data)
 ,
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

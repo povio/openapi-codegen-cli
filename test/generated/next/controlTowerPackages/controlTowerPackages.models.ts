@@ -19,7 +19,7 @@ export namespace ControlTowerPackagesModels {
  * @property { string } journeyTo  
  * @property { CommonModels.VesselDto } vessel  
  */
-export const PackageListItemDtoSchema = z.object({ packageNumber: z.string(), bookingId: z.string(), id: z.string(), ets: z.iso.datetime({ offset: true }).nullable(), eta: z.iso.datetime({ offset: true }).nullable(), supplierName: z.string().nullable(), supplierAddress: z.string().nullable(), lastEvent: z.string().nullable(), lastEventLocation: z.string().nullable(), lastEventDate: z.iso.datetime({ offset: true }).nullable(), journeyFrom: z.string().nullable(), journeyTo: z.string().nullable(), vessel: CommonModels.VesselDtoSchema.nullable() }).readonly();
+export const PackageListItemDtoSchema = z.object({ packageNumber: z.string(), bookingId: z.string(), id: z.string(), ets: z.iso.datetime({ offset: true }).nullable(), eta: z.iso.datetime({ offset: true }).nullable(), supplierName: z.string().nullable(), supplierAddress: z.string().nullable(), lastEvent: z.string().nullable(), lastEventLocation: z.string().nullable(), lastEventDate: z.iso.datetime({ offset: true }).nullable(), journeyFrom: z.string().nullable(), journeyTo: z.string().nullable(), vessel: CommonModels.VesselDtoSchema.nullable() });
 export type PackageListItemDto = z.infer<typeof PackageListItemDtoSchema>;
 
 /** 
@@ -27,7 +27,7 @@ export type PackageListItemDto = z.infer<typeof PackageListItemDtoSchema>;
  * @type { object }
  * @property { string } search Min Length: `1` 
  */
-export const PackageFilterDtoSchema = z.object({ search: z.string().min(1) }).readonly();
+export const PackageFilterDtoSchema = z.object({ search: z.string().min(1).nullable() }).partial();
 export type PackageFilterDto = z.infer<typeof PackageFilterDtoSchema>;
 
 /** 
@@ -48,7 +48,7 @@ export const ControlTowerPackagesFindAllOrderParamEnum = ControlTowerPackagesFin
  * @property { number } totalItems Total available items 
  * @property { PackageListItemDto[] } items  
  */
-export const ControlTowerPackagesFindAllResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(PackageListItemDtoSchema).readonly() }).readonly().shape });
+export const ControlTowerPackagesFindAllResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(PackageListItemDtoSchema).nullable() }).partial().shape });
 export type ControlTowerPackagesFindAllResponse = z.infer<typeof ControlTowerPackagesFindAllResponseSchema>;
 
 }

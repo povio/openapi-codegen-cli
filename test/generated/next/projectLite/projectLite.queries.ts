@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -30,14 +29,14 @@ export const keys = {
  * @returns { UseMutationResult<ProjectLiteModels.ProjectLiteResponseDTO> } 
  * @statusCodes [201, 401]
  */
-export const useCreate = (options?: AppMutationOptions<typeof ProjectLiteApi.create, { officeId: string, data: ProjectLiteModels.CreateProjectLiteRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreate = (options?: AppMutationOptions<typeof ProjectLiteApi.create, { officeId: string, data: ProjectLiteModels.CreateProjectLiteRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, data }) => { 
       checkAcl(ProjectLiteAcl.canUseCreate({ officeId } ));
-      return ProjectLiteApi.create(officeId, data, config)
+      return ProjectLiteApi.create(officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -61,14 +60,14 @@ export const useCreate = (options?: AppMutationOptions<typeof ProjectLiteApi.cre
  * @returns { UseQueryResult<ProjectLiteModels.ProjectLitePaginateResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginate = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: ProjectLiteModels.ProjectLiteFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof ProjectLiteApi.paginate, TData>, config?: AxiosRequestConfig) => {
+export const usePaginate = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: ProjectLiteModels.ProjectLiteFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof ProjectLiteApi.paginate, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.paginate(officeId, limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(ProjectLiteAcl.canUsePaginate({ officeId } ));
-    return ProjectLiteApi.paginate(officeId, limit, order, filter, page, cursor, config) },
+    return ProjectLiteApi.paginate(officeId, limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -87,14 +86,14 @@ export const usePaginate = <TData>({ officeId, limit, order, filter, page, curso
  * @returns { UseInfiniteQueryResult<ProjectLiteModels.ProjectLitePaginateResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: ProjectLiteModels.ProjectLiteFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof ProjectLiteApi.paginate, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: ProjectLiteModels.ProjectLiteFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof ProjectLiteApi.paginate, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.paginateInfinite(officeId, limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(ProjectLiteAcl.canUsePaginate({ officeId } ));
-    return ProjectLiteApi.paginate(officeId, limit, order, filter, pageParam, cursor, config) },
+    return ProjectLiteApi.paginate(officeId, limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -118,14 +117,14 @@ export const usePaginateInfinite = <TData>({ officeId, limit, order, filter, cur
  * @returns { UseQueryResult<ProjectLiteModels.PaginateProjectLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateProjectLabels = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: ProjectLiteModels.ProjectLiteFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof ProjectLiteApi.paginateProjectLabels, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateProjectLabels = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: ProjectLiteModels.ProjectLiteFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof ProjectLiteApi.paginateProjectLabels, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.paginateProjectLabels(officeId, limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(ProjectLiteAcl.canUsePaginateProjectLabels({ officeId } ));
-    return ProjectLiteApi.paginateProjectLabels(officeId, limit, order, filter, page, cursor, config) },
+    return ProjectLiteApi.paginateProjectLabels(officeId, limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -144,14 +143,14 @@ export const usePaginateProjectLabels = <TData>({ officeId, limit, order, filter
  * @returns { UseInfiniteQueryResult<ProjectLiteModels.PaginateProjectLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateProjectLabelsInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: ProjectLiteModels.ProjectLiteFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof ProjectLiteApi.paginateProjectLabels, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateProjectLabelsInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: ProjectLiteModels.ProjectLiteFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof ProjectLiteApi.paginateProjectLabels, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.paginateProjectLabelsInfinite(officeId, limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(ProjectLiteAcl.canUsePaginateProjectLabels({ officeId } ));
-    return ProjectLiteApi.paginateProjectLabels(officeId, limit, order, filter, pageParam, cursor, config) },
+    return ProjectLiteApi.paginateProjectLabels(officeId, limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -171,14 +170,14 @@ export const usePaginateProjectLabelsInfinite = <TData>({ officeId, limit, order
  * @returns { UseQueryResult<ProjectLiteModels.ProjectLiteResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useFindById = <TData>({ id, officeId }: { id: string, officeId: string }, options?: AppQueryOptions<typeof ProjectLiteApi.findById, TData>, config?: AxiosRequestConfig) => {
+export const useFindById = <TData>({ id, officeId }: { id: string, officeId: string }, options?: AppQueryOptions<typeof ProjectLiteApi.findById, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.findById(id, officeId),
     queryFn: () => { 
     checkAcl(ProjectLiteAcl.canUseFindById({ officeId } ));
-    return ProjectLiteApi.findById(id, officeId, config) },
+    return ProjectLiteApi.findById(id, officeId) },
     ...options,
   });
 };
@@ -194,14 +193,14 @@ export const useFindById = <TData>({ id, officeId }: { id: string, officeId: str
  * @returns { UseMutationResult<ProjectLiteModels.ProjectLiteResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useUpdate = (options?: AppMutationOptions<typeof ProjectLiteApi.update, { id: string, officeId: string, data: ProjectLiteModels.UpdateProjectLiteRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdate = (options?: AppMutationOptions<typeof ProjectLiteApi.update, { id: string, officeId: string, data: ProjectLiteModels.UpdateProjectLiteRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ id, officeId, data }) => { 
       checkAcl(ProjectLiteAcl.canUseUpdate({ officeId } ));
-      return ProjectLiteApi.update(id, officeId, data, config)
+      return ProjectLiteApi.update(id, officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -223,14 +222,14 @@ export const useUpdate = (options?: AppMutationOptions<typeof ProjectLiteApi.upd
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
  */
-export const useArchive = (options?: AppMutationOptions<typeof ProjectLiteApi.archive, { id: string, officeId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useArchive = (options?: AppMutationOptions<typeof ProjectLiteApi.archive, { id: string, officeId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ id, officeId }) => { 
       checkAcl(ProjectLiteAcl.canUseArchive({ officeId } ));
-      return ProjectLiteApi.archive(id, officeId, config)
+      return ProjectLiteApi.archive(id, officeId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -250,14 +249,14 @@ export const useArchive = (options?: AppMutationOptions<typeof ProjectLiteApi.ar
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
  */
-export const useUnarchive = (options?: AppMutationOptions<typeof ProjectLiteApi.unarchive, { id: string, officeId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUnarchive = (options?: AppMutationOptions<typeof ProjectLiteApi.unarchive, { id: string, officeId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ id, officeId }) => { 
       checkAcl(ProjectLiteAcl.canUseUnarchive({ officeId } ));
-      return ProjectLiteApi.unarchive(id, officeId, config)
+      return ProjectLiteApi.unarchive(id, officeId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

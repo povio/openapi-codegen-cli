@@ -20,7 +20,7 @@ export const VatRuleTypeEnum = VatRuleTypeEnumSchema.enum;
  * @property { boolean } archived Filter by archived status 
  * @property { string } search Search to filter by 
  */
-export const VatRuleFilterDtoSchema = z.object({ matchcode: z.string().describe("Matchcode to filter by"), name: z.string().describe("Name to filter by"), type: VatRuleTypeEnumSchema, officeId: z.string().describe("Office ID to filter by"), archived: z.boolean().describe("Filter by archived status"), search: z.string().describe("Search to filter by") }).readonly();
+export const VatRuleFilterDtoSchema = z.object({ matchcode: z.string().nullable(), name: z.string().nullable(), type: VatRuleTypeEnumSchema.nullable(), officeId: z.string().nullable(), archived: z.boolean().nullable(), search: z.string().nullable() }).partial();
 export type VatRuleFilterDto = z.infer<typeof VatRuleFilterDtoSchema>;
 
 /** 
@@ -29,7 +29,7 @@ export type VatRuleFilterDto = z.infer<typeof VatRuleFilterDtoSchema>;
  * @property { string } id  
  * @property { string } name  
  */
-export const VatRuleEmployeeDTOSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const VatRuleEmployeeDTOSchema = z.object({ id: z.string(), name: z.string() });
 export type VatRuleEmployeeDTO = z.infer<typeof VatRuleEmployeeDTOSchema>;
 
 /** 
@@ -38,7 +38,7 @@ export type VatRuleEmployeeDTO = z.infer<typeof VatRuleEmployeeDTOSchema>;
  * @property { string } id  
  * @property { string } name  
  */
-export const VatRuleOfficeDTOSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const VatRuleOfficeDTOSchema = z.object({ id: z.string(), name: z.string() });
 export type VatRuleOfficeDTO = z.infer<typeof VatRuleOfficeDTOSchema>;
 
 /** 
@@ -64,7 +64,7 @@ export type VatRuleOfficeDTO = z.infer<typeof VatRuleOfficeDTOSchema>;
  * @property { string } bookkeepingId  
  * @property { string } bookkeepingTargetAccountNumber  
  */
-export const VatRuleResponseDTOSchema = z.object({ id: z.string(), matchcode: z.string(), name: z.string(), vatPercentage: z.number(), vatNumber: z.number().describe("VAT rule reference number").nullish(), noTax: z.boolean().nullish(), type: VatRuleTypeEnumSchema, archived: z.boolean(), isReverseCharge: z.boolean(), createdById: z.string().nullish(), createdBy: VatRuleEmployeeDTOSchema.nullish(), createdAt: z.iso.datetime({ offset: true }), updatedById: z.string().nullish(), updatedBy: VatRuleEmployeeDTOSchema.nullish(), updatedAt: z.iso.datetime({ offset: true }), officeId: z.string(), office: VatRuleOfficeDTOSchema.nullish(), bookkeepingId: z.string().nullish(), bookkeepingTargetAccountNumber: z.string().nullish() }).readonly();
+export const VatRuleResponseDTOSchema = z.object({ id: z.string(), matchcode: z.string(), name: z.string(), vatPercentage: z.number(), vatNumber: z.number().nullish(), noTax: z.boolean().nullish(), type: VatRuleTypeEnumSchema, archived: z.boolean(), isReverseCharge: z.boolean(), createdById: z.string().nullish(), createdBy: VatRuleEmployeeDTOSchema.nullish(), createdAt: z.iso.datetime({ offset: true }), updatedById: z.string().nullish(), updatedBy: VatRuleEmployeeDTOSchema.nullish(), updatedAt: z.iso.datetime({ offset: true }), officeId: z.string(), office: VatRuleOfficeDTOSchema.nullish(), bookkeepingId: z.string().nullish(), bookkeepingTargetAccountNumber: z.string().nullish() });
 export type VatRuleResponseDTO = z.infer<typeof VatRuleResponseDTOSchema>;
 
 /** 
@@ -81,7 +81,7 @@ export type VatRuleResponseDTO = z.infer<typeof VatRuleResponseDTOSchema>;
  * @property { string } bookkeepingId Bookkeeping ID 
  * @property { string } bookkeepingTargetAccountNumber Bookkeeping target account number 
  */
-export const CreateVatRuleRequestDTOSchema = z.object({ matchcode: z.string().describe("Unique matchcode for the VAT rule"), name: z.string().describe("Name of the VAT rule"), noTax: z.boolean().nullish(), vatPercentage: z.number().gte(0).lte(100).describe("VAT percentage (0-100)"), vatNumber: z.number().describe("VAT rule reference number").nullish(), type: VatRuleTypeEnumSchema.describe("Type of VAT rule"), officeId: z.string().describe("Office ID"), isReverseCharge: z.boolean().describe("Is reverse charge VAT rule").nullish(), bookkeepingId: z.string().describe("Bookkeeping ID").nullish(), bookkeepingTargetAccountNumber: z.string().describe("Bookkeeping target account number").nullish() }).readonly();
+export const CreateVatRuleRequestDTOSchema = z.object({ matchcode: z.string(), name: z.string(), noTax: z.boolean().nullish(), vatPercentage: z.number().gte(0).lte(100), vatNumber: z.number().nullish(), type: VatRuleTypeEnumSchema, officeId: z.string(), isReverseCharge: z.boolean().nullish(), bookkeepingId: z.string().nullish(), bookkeepingTargetAccountNumber: z.string().nullish() });
 export type CreateVatRuleRequestDTO = z.infer<typeof CreateVatRuleRequestDTOSchema>;
 
 /** 
@@ -98,7 +98,7 @@ export type CreateVatRuleRequestDTO = z.infer<typeof CreateVatRuleRequestDTOSche
  * @property { string } bookkeepingId Bookkeeping ID 
  * @property { string } bookkeepingTargetAccountNumber Bookkeeping target account number 
  */
-export const UpdateVatRuleRequestDTOSchema = z.object({ matchcode: z.string().describe("Unique matchcode for the VAT rule"), name: z.string().describe("Name of the VAT rule"), noTax: z.boolean(), vatPercentage: z.number().gte(0).lte(100).describe("VAT percentage (0-100)"), vatNumber: z.number().gte(0).describe("VAT rule reference number").nullable(), type: VatRuleTypeEnumSchema.describe("Type of VAT rule"), officeId: z.string().describe("Office ID"), isReverseCharge: z.boolean().describe("Is reverse charge VAT rule"), bookkeepingId: z.string().describe("Bookkeeping ID").nullable(), bookkeepingTargetAccountNumber: z.string().describe("Bookkeeping target account number").nullable() }).readonly();
+export const UpdateVatRuleRequestDTOSchema = z.object({ matchcode: z.string().nullable(), name: z.string().nullable(), noTax: z.boolean().nullable(), vatPercentage: z.number().gte(0).lte(100).nullable(), vatNumber: z.number().gte(0).nullable(), type: VatRuleTypeEnumSchema.nullable(), officeId: z.string().nullable(), isReverseCharge: z.boolean().nullable(), bookkeepingId: z.string().nullable(), bookkeepingTargetAccountNumber: z.string().nullable() }).partial();
 export type UpdateVatRuleRequestDTO = z.infer<typeof UpdateVatRuleRequestDTOSchema>;
 
 /** 
@@ -119,7 +119,7 @@ export const VatRulesPaginateLabelsOrderParamEnum = VatRulesPaginateLabelsOrderP
  * @property { number } totalItems Total available items 
  * @property { CommonModels.LabelResponseDTO[] } items  
  */
-export const VatRulesPaginateLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).readonly() }).readonly().shape });
+export const VatRulesPaginateLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).nullable() }).partial().shape });
 export type VatRulesPaginateLabelsResponse = z.infer<typeof VatRulesPaginateLabelsResponseSchema>;
 
 /** 
@@ -140,7 +140,7 @@ export const VatRulesListOrderParamEnum = VatRulesListOrderParamEnumSchema.enum;
  * @property { number } totalItems Total available items 
  * @property { VatRuleResponseDTO[] } items  
  */
-export const VatRulesListResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(VatRuleResponseDTOSchema).readonly() }).readonly().shape });
+export const VatRulesListResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(VatRuleResponseDTOSchema).nullable() }).partial().shape });
 export type VatRulesListResponse = z.infer<typeof VatRulesListResponseSchema>;
 
 }

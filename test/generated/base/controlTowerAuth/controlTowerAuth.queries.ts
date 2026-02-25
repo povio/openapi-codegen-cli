@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -7,58 +6,54 @@ import { ControlTowerAuthModels } from "./controlTowerAuth.models";
 import { ControlTowerAuthApi } from "./controlTowerAuth.api";
 
 export namespace ControlTowerAuthQueries {
-  export const moduleName = QueryModule.ControlTowerAuth;
+export const moduleName = QueryModule.ControlTowerAuth;
 
-  /**
-   * Mutation `useLogin`
-   * @description Returns an access token to authenticate for protected endpoints
-   * @param { ControlTowerAuthModels.LoginRequestDto } mutation.data Body parameter
-   * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
-   * @returns { UseMutationResult<ControlTowerAuthModels.LoginResponseDto> }
-   * @statusCodes [200, 400, 401]
-   */
-  export const useLogin = (
-    options?: AppMutationOptions<typeof ControlTowerAuthApi.login, { data: ControlTowerAuthModels.LoginRequestDto }> &
-      MutationEffectsOptions,
-    config?: AxiosRequestConfig,
-  ) => {
-    const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
-    return useMutation({
-      mutationFn: ({ data }) => ControlTowerAuthApi.login(data, config),
-      ...options,
-      onSuccess: async (resData, variables, onMutateResult, context) => {
-        await runMutationEffects(resData, variables, options);
-        options?.onSuccess?.(resData, variables, onMutateResult, context);
-      },
-    });
-  };
 
-  /**
-   * Mutation `useResetPassword`
-   * @description Resets the password for the requesting user
-   * @param { ControlTowerAuthModels.PasswordResetDto } mutation.data Body parameter
-   * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
-   * @returns { UseMutationResult<ControlTowerAuthModels.LoginResponseDto> }
-   * @statusCodes [200, 400, 401]
-   */
-  export const useResetPassword = (
-    options?: AppMutationOptions<
-      typeof ControlTowerAuthApi.resetPassword,
-      { data: ControlTowerAuthModels.PasswordResetDto }
-    > &
-      MutationEffectsOptions,
-    config?: AxiosRequestConfig,
-  ) => {
-    const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
+/** 
+ * Mutation `useLogin`
+ * @description Returns an access token to authenticate for protected endpoints
+ * @param { ControlTowerAuthModels.LoginRequestDto } mutation.data Body parameter
+ * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
+ * @returns { UseMutationResult<ControlTowerAuthModels.LoginResponseDto> } 
+ * @statusCodes [200, 400, 401]
+ */
+export const useLogin = (options?: AppMutationOptions<typeof ControlTowerAuthApi.login, { data: ControlTowerAuthModels.LoginRequestDto }> & MutationEffectsOptions) => {
+  const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
-    return useMutation({
-      mutationFn: ({ data }) => ControlTowerAuthApi.resetPassword(data, config),
-      ...options,
-      onSuccess: async (resData, variables, onMutateResult, context) => {
-        await runMutationEffects(resData, variables, options);
-        options?.onSuccess?.(resData, variables, onMutateResult, context);
-      },
-    });
-  };
+  return useMutation({
+    mutationFn: ({ data }) => 
+      ControlTowerAuthApi.login(data)
+,
+    ...options,
+    onSuccess: async (resData, variables, onMutateResult, context) => {
+      await runMutationEffects(resData, variables, options);
+      options?.onSuccess?.(resData, variables, onMutateResult, context);
+    },
+  });
+};
+
+/** 
+ * Mutation `useResetPassword`
+ * @description Resets the password for the requesting user
+ * @param { ControlTowerAuthModels.PasswordResetDto } mutation.data Body parameter
+ * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
+ * @returns { UseMutationResult<ControlTowerAuthModels.LoginResponseDto> } 
+ * @statusCodes [200, 400, 401]
+ */
+export const useResetPassword = (options?: AppMutationOptions<typeof ControlTowerAuthApi.resetPassword, { data: ControlTowerAuthModels.PasswordResetDto }> & MutationEffectsOptions) => {
+  const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
+
+  return useMutation({
+    mutationFn: ({ data }) => 
+      ControlTowerAuthApi.resetPassword(data)
+,
+    ...options,
+    onSuccess: async (resData, variables, onMutateResult, context) => {
+      await runMutationEffects(resData, variables, options);
+      options?.onSuccess?.(resData, variables, onMutateResult, context);
+    },
+  });
+};
+
 }

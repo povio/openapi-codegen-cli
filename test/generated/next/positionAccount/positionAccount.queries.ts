@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { useAclCheck } from "@/data/acl/useAclCheck";
@@ -24,14 +23,14 @@ export const keys = {
  * @returns { UseQueryResult<PositionAccountModels.PositionAccountResponseDto> } 
  * @statusCodes [200, 401]
  */
-export const useGet = <TData>({ positionId, officeId }: { positionId: string, officeId: string }, options?: AppQueryOptions<typeof PositionAccountApi.get, TData>, config?: AxiosRequestConfig) => {
+export const useGet = <TData>({ positionId, officeId }: { positionId: string, officeId: string }, options?: AppQueryOptions<typeof PositionAccountApi.get, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.get(positionId, officeId),
     queryFn: () => { 
     checkAcl(PositionAccountAcl.canUseGet({ officeId } ));
-    return PositionAccountApi.get(positionId, officeId, config) },
+    return PositionAccountApi.get(positionId, officeId) },
     ...options,
   });
 };

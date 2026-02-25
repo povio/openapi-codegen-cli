@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -30,14 +29,14 @@ export const keys = {
  * @returns { UseMutationResult<ChecklistItemsModels.ChecklistItemResponseDTO> } 
  * @statusCodes [201, 401]
  */
-export const useCreate = (options?: AppMutationOptions<typeof ChecklistItemsApi.create, { officeId: string, data: ChecklistItemsModels.CreateChecklistItemRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreate = (options?: AppMutationOptions<typeof ChecklistItemsApi.create, { officeId: string, data: ChecklistItemsModels.CreateChecklistItemRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, data }) => { 
       checkAcl(ChecklistItemsAcl.canUseCreate({ officeId } ));
-      return ChecklistItemsApi.create(officeId, data, config)
+      return ChecklistItemsApi.create(officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -61,14 +60,14 @@ export const useCreate = (options?: AppMutationOptions<typeof ChecklistItemsApi.
  * @returns { UseQueryResult<ChecklistItemsModels.ChecklistItemsPaginateResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginate = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: ChecklistItemsModels.ChecklistItemFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof ChecklistItemsApi.paginate, TData>, config?: AxiosRequestConfig) => {
+export const usePaginate = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: ChecklistItemsModels.ChecklistItemFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof ChecklistItemsApi.paginate, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.paginate(officeId, limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(ChecklistItemsAcl.canUsePaginate({ officeId } ));
-    return ChecklistItemsApi.paginate(officeId, limit, order, filter, page, cursor, config) },
+    return ChecklistItemsApi.paginate(officeId, limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -87,14 +86,14 @@ export const usePaginate = <TData>({ officeId, limit, order, filter, page, curso
  * @returns { UseInfiniteQueryResult<ChecklistItemsModels.ChecklistItemsPaginateResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: ChecklistItemsModels.ChecklistItemFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof ChecklistItemsApi.paginate, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: ChecklistItemsModels.ChecklistItemFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof ChecklistItemsApi.paginate, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.paginateInfinite(officeId, limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(ChecklistItemsAcl.canUsePaginate({ officeId } ));
-    return ChecklistItemsApi.paginate(officeId, limit, order, filter, pageParam, cursor, config) },
+    return ChecklistItemsApi.paginate(officeId, limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -118,14 +117,14 @@ export const usePaginateInfinite = <TData>({ officeId, limit, order, filter, cur
  * @returns { UseQueryResult<ChecklistItemsModels.ChecklistItemsPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateLabels = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: ChecklistItemsModels.ChecklistItemLabelFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof ChecklistItemsApi.paginateLabels, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateLabels = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: ChecklistItemsModels.ChecklistItemLabelFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof ChecklistItemsApi.paginateLabels, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.paginateLabels(officeId, limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(ChecklistItemsAcl.canUsePaginateLabels({ officeId } ));
-    return ChecklistItemsApi.paginateLabels(officeId, limit, order, filter, page, cursor, config) },
+    return ChecklistItemsApi.paginateLabels(officeId, limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -144,14 +143,14 @@ export const usePaginateLabels = <TData>({ officeId, limit, order, filter, page,
  * @returns { UseInfiniteQueryResult<ChecklistItemsModels.ChecklistItemsPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateLabelsInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: ChecklistItemsModels.ChecklistItemLabelFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof ChecklistItemsApi.paginateLabels, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateLabelsInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: ChecklistItemsModels.ChecklistItemLabelFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof ChecklistItemsApi.paginateLabels, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.paginateLabelsInfinite(officeId, limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(ChecklistItemsAcl.canUsePaginateLabels({ officeId } ));
-    return ChecklistItemsApi.paginateLabels(officeId, limit, order, filter, pageParam, cursor, config) },
+    return ChecklistItemsApi.paginateLabels(officeId, limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -171,14 +170,14 @@ export const usePaginateLabelsInfinite = <TData>({ officeId, limit, order, filte
  * @returns { UseQueryResult<ChecklistItemsModels.ChecklistItemResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useFindById = <TData>({ id, officeId }: { id: string, officeId: string }, options?: AppQueryOptions<typeof ChecklistItemsApi.findById, TData>, config?: AxiosRequestConfig) => {
+export const useFindById = <TData>({ id, officeId }: { id: string, officeId: string }, options?: AppQueryOptions<typeof ChecklistItemsApi.findById, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.findById(id, officeId),
     queryFn: () => { 
     checkAcl(ChecklistItemsAcl.canUseFindById({ officeId } ));
-    return ChecklistItemsApi.findById(id, officeId, config) },
+    return ChecklistItemsApi.findById(id, officeId) },
     ...options,
   });
 };
@@ -194,14 +193,14 @@ export const useFindById = <TData>({ id, officeId }: { id: string, officeId: str
  * @returns { UseMutationResult<ChecklistItemsModels.ChecklistItemResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useUpdate = (options?: AppMutationOptions<typeof ChecklistItemsApi.update, { id: string, officeId: string, data: ChecklistItemsModels.UpdateChecklistItemRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdate = (options?: AppMutationOptions<typeof ChecklistItemsApi.update, { id: string, officeId: string, data: ChecklistItemsModels.UpdateChecklistItemRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ id, officeId, data }) => { 
       checkAcl(ChecklistItemsAcl.canUseUpdate({ officeId } ));
-      return ChecklistItemsApi.update(id, officeId, data, config)
+      return ChecklistItemsApi.update(id, officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -223,14 +222,14 @@ export const useUpdate = (options?: AppMutationOptions<typeof ChecklistItemsApi.
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
  */
-export const useArchive = (options?: AppMutationOptions<typeof ChecklistItemsApi.archive, { id: string, officeId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useArchive = (options?: AppMutationOptions<typeof ChecklistItemsApi.archive, { id: string, officeId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ id, officeId }) => { 
       checkAcl(ChecklistItemsAcl.canUseArchive({ officeId } ));
-      return ChecklistItemsApi.archive(id, officeId, config)
+      return ChecklistItemsApi.archive(id, officeId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -250,14 +249,14 @@ export const useArchive = (options?: AppMutationOptions<typeof ChecklistItemsApi
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
  */
-export const useUnarchive = (options?: AppMutationOptions<typeof ChecklistItemsApi.unarchive, { id: string, officeId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUnarchive = (options?: AppMutationOptions<typeof ChecklistItemsApi.unarchive, { id: string, officeId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ id, officeId }) => { 
       checkAcl(ChecklistItemsAcl.canUseUnarchive({ officeId } ));
-      return ChecklistItemsApi.unarchive(id, officeId, config)
+      return ChecklistItemsApi.unarchive(id, officeId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

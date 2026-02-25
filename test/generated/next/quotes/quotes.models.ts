@@ -20,7 +20,7 @@ export const QuoteStatusEnum = QuoteStatusEnumSchema.enum;
  * @property { string } phone The phone number of the customer 
  * @property { string } email The email of the customer 
  */
-export const QuoteCustomerResponseDtoSchema = z.object({ id: z.string().describe("Unique identifier of the customer"), name: z.string(), matchCode: z.string(), label: z.string(), phone: z.string().describe("The phone number of the customer").nullish(), email: z.string().describe("The email of the customer").nullish() }).readonly();
+export const QuoteCustomerResponseDtoSchema = z.object({ id: z.string(), name: z.string(), matchCode: z.string(), label: z.string(), phone: z.string().nullish(), email: z.string().nullish() });
 export type QuoteCustomerResponseDto = z.infer<typeof QuoteCustomerResponseDtoSchema>;
 
 /** 
@@ -31,7 +31,7 @@ export type QuoteCustomerResponseDto = z.infer<typeof QuoteCustomerResponseDtoSc
  * @property { string } matchCode  
  * @property { string } label Display label (name or match code depending on office settings) 
  */
-export const QuoteNamedReferenceResponseDtoSchema = z.object({ id: z.string().describe("Unique identifier of the entity").nullable(), name: z.string().describe("Name of the entity").nullable(), matchCode: z.string().nullable(), label: z.string().describe("Display label (name or match code depending on office settings)").nullable() }).readonly();
+export const QuoteNamedReferenceResponseDtoSchema = z.object({ id: z.string().nullable(), name: z.string().nullable(), matchCode: z.string().nullable(), label: z.string().nullable() }).partial();
 export type QuoteNamedReferenceResponseDto = z.infer<typeof QuoteNamedReferenceResponseDtoSchema>;
 
 /** 
@@ -70,7 +70,7 @@ export type QuoteNamedReferenceResponseDto = z.infer<typeof QuoteNamedReferenceR
  * @property { string } arrivalDate Arrival date 
  * @property { CommonModels.SeaRoutingEnum } routing Sea routing type 
  */
-export const QuotePreviewResponseDTOSchema = z.object({ id: z.string().describe("Unique identifier of the quote"), transportMode: CommonModels.TransportModeEnumSchema.describe("Transport mode"), statusDate: z.iso.datetime({ offset: true }).describe("The date of the quote status").nullable(), createdAt: z.iso.datetime({ offset: true }).describe("The date when the quote was created"), number: z.string().describe("The quote number"), status: QuoteStatusEnumSchema.describe("Status of the quote"), direction: CommonModels.DirectionEnumSchema.describe("Direction of the quote"), loadType: CommonModels.LoadTypeEnumSchema.describe("Load type").nullish(), customer: QuoteCustomerResponseDtoSchema.describe("The customer information"), customerReference: z.string().describe("Customer reference number").nullish(), consignee: QuoteNamedReferenceResponseDtoSchema.describe("Consignee information").nullish(), consigneeReference: z.string().describe("Consignee reference number").nullish(), carrier: QuoteNamedReferenceResponseDtoSchema.describe("The carrier").nullish(), carrierReference: z.string().describe("Carrier reference number").nullish(), employee: QuoteNamedReferenceResponseDtoSchema.describe("Responsible employee").nullish(), origin: QuoteNamedReferenceResponseDtoSchema.describe("Origin location"), destination: QuoteNamedReferenceResponseDtoSchema.describe("Destination location"), portOfLoading: QuoteNamedReferenceResponseDtoSchema.describe("Port of loading").nullish(), dischargePort: QuoteNamedReferenceResponseDtoSchema.describe("Discharge port").nullish(), bookingNumber: z.string().describe("Booking reference number").nullish(), vessel: z.string().describe("Vessel name").nullish(), voyage: z.string().describe("Voyage number").nullish(), vesselCarrier: z.string().describe("Carrier name from route point (sea positions only)").nullish(), equipment: z.string().describe("Equipment summary (e.g., \"2x20DC, 1x40HC\")").nullish(), serviceType: CommonModels.ServiceTypeEnumSchema.describe("Service type").nullish(), currency: z.string().describe("Currency code").nullish(), profit: z.number().describe("Total profit").nullish(), margin: z.number().describe("Profit margin percentage").nullish(), numberOfConvertedPositions: z.number().describe("Number of positions converted from this quote"), departureDate: z.iso.datetime({ offset: true }).describe("Departure date").nullish(), arrivalDate: z.iso.datetime({ offset: true }).describe("Arrival date").nullish(), routing: CommonModels.SeaRoutingEnumSchema.describe("Sea routing type").nullish() }).readonly();
+export const QuotePreviewResponseDTOSchema = z.object({ id: z.string(), transportMode: CommonModels.TransportModeEnumSchema, statusDate: z.iso.datetime({ offset: true }).nullable(), createdAt: z.iso.datetime({ offset: true }), number: z.string(), status: QuoteStatusEnumSchema, direction: CommonModels.DirectionEnumSchema, loadType: CommonModels.LoadTypeEnumSchema.nullish(), customer: QuoteCustomerResponseDtoSchema, customerReference: z.string().nullish(), consignee: QuoteNamedReferenceResponseDtoSchema.nullish(), consigneeReference: z.string().nullish(), carrier: QuoteNamedReferenceResponseDtoSchema.nullish(), carrierReference: z.string().nullish(), employee: QuoteNamedReferenceResponseDtoSchema.nullish(), origin: QuoteNamedReferenceResponseDtoSchema, destination: QuoteNamedReferenceResponseDtoSchema, portOfLoading: QuoteNamedReferenceResponseDtoSchema.nullish(), dischargePort: QuoteNamedReferenceResponseDtoSchema.nullish(), bookingNumber: z.string().nullish(), vessel: z.string().nullish(), voyage: z.string().nullish(), vesselCarrier: z.string().nullish(), equipment: z.string().nullish(), serviceType: CommonModels.ServiceTypeEnumSchema.nullish(), currency: z.string().nullish(), profit: z.number().nullish(), margin: z.number().nullish(), numberOfConvertedPositions: z.number(), departureDate: z.iso.datetime({ offset: true }).nullish(), arrivalDate: z.iso.datetime({ offset: true }).nullish(), routing: CommonModels.SeaRoutingEnumSchema.nullish() });
 export type QuotePreviewResponseDTO = z.infer<typeof QuotePreviewResponseDTOSchema>;
 
 /** 
@@ -92,7 +92,7 @@ export type QuotePreviewResponseDTO = z.infer<typeof QuotePreviewResponseDTOSche
  * @property { string } searchQuery  
  * @property { string[] } customer  
  */
-export const QuoteFilterDtoSchema = z.object({ statusDate: CommonModels.DateRangeDtoSchema, transportMode: CommonModels.TransportModeEnumSchema, status: z.array(QuoteStatusEnumSchema).readonly(), direction: CommonModels.DirectionEnumSchema, loadType: CommonModels.LoadTypeEnumSchema, serviceType: CommonModels.ServiceTypeEnumSchema, carrierId: z.array(z.string()).readonly().describe("Filter quotes by carrier IDs"), consigneeId: z.array(z.string()).readonly().describe("Filter quotes by consignee IDs"), employee: z.array(z.string()).readonly().describe("Filter quotes by employee IDs"), routing: CommonModels.SeaRoutingEnumSchema, number: z.string().describe("Filter quotes by quote number"), createdAt: CommonModels.DateRangeDtoSchema, vesselCarrier: z.string().describe("Filter quotes by carrier name from route point"), searchQuery: z.string(), customer: z.array(z.string()).readonly() }).readonly();
+export const QuoteFilterDtoSchema = z.object({ statusDate: CommonModels.DateRangeDtoSchema.nullable(), transportMode: CommonModels.TransportModeEnumSchema.nullable(), status: z.array(QuoteStatusEnumSchema).nullable(), direction: CommonModels.DirectionEnumSchema.nullable(), loadType: CommonModels.LoadTypeEnumSchema.nullable(), serviceType: CommonModels.ServiceTypeEnumSchema.nullable(), carrierId: z.array(z.string()).nullable(), consigneeId: z.array(z.string()).nullable(), employee: z.array(z.string()).nullable(), routing: CommonModels.SeaRoutingEnumSchema.nullable(), number: z.string().nullable(), createdAt: CommonModels.DateRangeDtoSchema.nullable(), vesselCarrier: z.string().nullable(), searchQuery: z.string().nullable(), customer: z.array(z.string()).nullable() }).partial();
 export type QuoteFilterDto = z.infer<typeof QuoteFilterDtoSchema>;
 
 /** 
@@ -105,7 +105,7 @@ export type QuoteFilterDto = z.infer<typeof QuoteFilterDtoSchema>;
  * @property { string } searchQuery  
  * @property { string[] } customer  
  */
-export const QuoteExportFilterDtoSchema = z.object({ statusDate: CommonModels.DateRangeDtoSchema, transportMode: CommonModels.TransportModeEnumSchema, status: z.array(QuoteStatusEnumSchema).readonly(), direction: CommonModels.DirectionEnumSchema, searchQuery: z.string(), customer: z.array(z.string()).readonly() }).readonly();
+export const QuoteExportFilterDtoSchema = z.object({ statusDate: CommonModels.DateRangeDtoSchema.nullable(), transportMode: CommonModels.TransportModeEnumSchema.nullable(), status: z.array(QuoteStatusEnumSchema).nullable(), direction: CommonModels.DirectionEnumSchema.nullable(), searchQuery: z.string().nullable(), customer: z.array(z.string()).nullable() }).partial();
 export type QuoteExportFilterDto = z.infer<typeof QuoteExportFilterDtoSchema>;
 
 /** 
@@ -123,7 +123,7 @@ export const QuoteExportColumn = QuoteExportColumnSchema.enum;
  * @property { string[] } order  
  * @property { QuoteExportFilterDto } filter  
  */
-export const QuoteExportRequestDtoSchema = z.object({ columns: z.array(QuoteExportColumnSchema).readonly().min(1), order: z.array(z.string()).readonly(), filter: QuoteExportFilterDtoSchema }).readonly();
+export const QuoteExportRequestDtoSchema = z.object({ columns: z.array(QuoteExportColumnSchema).min(1).nullable(), order: z.array(z.string()).nullable(), filter: QuoteExportFilterDtoSchema.nullable() }).partial();
 export type QuoteExportRequestDto = z.infer<typeof QuoteExportRequestDtoSchema>;
 
 /** 
@@ -136,7 +136,7 @@ export type QuoteExportRequestDto = z.infer<typeof QuoteExportRequestDtoSchema>;
  * @property { CommonModels.ServiceTypeEnum } serviceType The service type for the quote 
  * @property { string } customerBusinessPartnerId The ID of the business partner that is the customer 
  */
-export const CreateQuoteRequestDTOSchema = z.object({ section: CommonModels.SectionEnumSchema.describe("The section of the quote"), direction: CommonModels.DirectionEnumSchema.describe("The direction of the quote"), transportMode: CommonModels.TransportModeEnumSchema.describe("The mode of transport for the quote"), loadType: CommonModels.LoadTypeEnumSchema.describe("The load type for the quote"), serviceType: CommonModels.ServiceTypeEnumSchema.describe("The service type for the quote"), customerBusinessPartnerId: z.string().describe("The ID of the business partner that is the customer") }).readonly();
+export const CreateQuoteRequestDTOSchema = z.object({ section: CommonModels.SectionEnumSchema, direction: CommonModels.DirectionEnumSchema, transportMode: CommonModels.TransportModeEnumSchema, loadType: CommonModels.LoadTypeEnumSchema, serviceType: CommonModels.ServiceTypeEnumSchema, customerBusinessPartnerId: z.string() });
 export type CreateQuoteRequestDTO = z.infer<typeof CreateQuoteRequestDTOSchema>;
 
 /** 
@@ -145,7 +145,7 @@ export type CreateQuoteRequestDTO = z.infer<typeof CreateQuoteRequestDTOSchema>;
  * @property { string } id  
  * @property { string } name  
  */
-export const QuoteCustomerDtoSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const QuoteCustomerDtoSchema = z.object({ id: z.string(), name: z.string() });
 export type QuoteCustomerDto = z.infer<typeof QuoteCustomerDtoSchema>;
 
 /** 
@@ -154,7 +154,7 @@ export type QuoteCustomerDto = z.infer<typeof QuoteCustomerDtoSchema>;
  * @property { string } id Unique identifier of the employee 
  * @property { string } name Name of the employee 
  */
-export const QuoteEmployeeResponseDTOSchema = z.object({ id: z.string().describe("Unique identifier of the employee"), name: z.string().describe("Name of the employee") }).readonly();
+export const QuoteEmployeeResponseDTOSchema = z.object({ id: z.string(), name: z.string() });
 export type QuoteEmployeeResponseDTO = z.infer<typeof QuoteEmployeeResponseDTOSchema>;
 
 /** 
@@ -179,7 +179,7 @@ export const QuoteTypeEnum = QuoteTypeEnumSchema.enum;
  * @property { string } positionId  
  * @property { string } positionNumber  
  */
-export const QuoteConvertedPositionDtoSchema = z.object({ positionId: z.string(), positionNumber: z.string() }).readonly();
+export const QuoteConvertedPositionDtoSchema = z.object({ positionId: z.string(), positionNumber: z.string() });
 export type QuoteConvertedPositionDto = z.infer<typeof QuoteConvertedPositionDtoSchema>;
 
 /** 
@@ -218,7 +218,7 @@ export type QuoteConvertedPositionDto = z.infer<typeof QuoteConvertedPositionDto
  * @property { CommonModels.LoadTypeEnum } loadType Load type of quote 
  * @property { number } volumetricWeightModifier Volumetric weight modifier 
  */
-export const QuoteCoreResponseDTOSchema = z.object({ id: z.string().describe("Unique identifier of the quote"), rootFolderId: z.string().describe("Root folder identifier bound to this quote").nullish(), customer: QuoteCustomerDtoSchema.nullish(), status: QuoteStatusEnumSchema.describe("Current status of the quote"), responsibleEmployeeId: z.string().describe("Unique identifier of the responsible employee").nullish(), receivedByEmployeeId: z.string().describe("Unique identifier of the employee receiving the quote").nullish(), serviceType: CommonModels.ServiceTypeEnumSchema.nullish(), salesRepId: z.string().describe("Unique identifier of the sales rep").nullish(), responsibleEmployee: QuoteEmployeeResponseDTOSchema.describe("The responsible employee").nullish(), receivedByEmployee: QuoteEmployeeResponseDTOSchema.describe("The employee who received the quote").nullish(), owningOfficeId: z.string().describe("ID of the office owning the quote"), name: z.string().describe("Name of the quote"), number: z.string().describe("Quote number"), section: CommonModels.SectionEnumSchema.describe("Section of the quote"), direction: CommonModels.DirectionEnumSchema.describe("Direction of the quote"), transportMode: CommonModels.TransportModeEnumSchema.describe("Mode of transport"), statusDate: z.iso.datetime({ offset: true }).describe("Date of the quote status"), cargoType: CargoTypeEnumSchema.describe("Type of cargo").nullish(), incoterms: CommonModels.IncotermsEnumSchema.describe("Incoterms for the quote").nullish(), secondIncoterms: CommonModels.IncotermsEnumSchema.describe("Second incoterms for the quote").nullish(), buyRateReference: z.string().describe("Reference for buy rate").nullish(), frequency: CommonModels.FrequencyEnumSchema.describe("Frequency of the quote").nullish(), transitDurationInDays: z.string().describe("Transit duration in days").nullish(), quoteType: QuoteTypeEnumSchema.describe("Type of quote").nullish(), defaultCurrencyId: z.string().describe("Default currency").nullish(), salesRep: QuoteEmployeeResponseDTOSchema.describe("The sales rep for the quote").nullish(), team: z.string().describe("Team").nullish(), createdAt: z.iso.datetime({ offset: true }), updatedAt: z.iso.datetime({ offset: true }), convertedPositions: z.array(QuoteConvertedPositionDtoSchema).readonly().describe("Positions converted from this quote").default([]), loadType: CommonModels.LoadTypeEnumSchema.describe("Load type of quote").nullish(), volumetricWeightModifier: z.number().describe("Volumetric weight modifier").nullish() }).readonly();
+export const QuoteCoreResponseDTOSchema = z.object({ id: z.string(), rootFolderId: z.string().nullish(), customer: QuoteCustomerDtoSchema.nullish(), status: QuoteStatusEnumSchema, responsibleEmployeeId: z.string().nullish(), receivedByEmployeeId: z.string().nullish(), serviceType: CommonModels.ServiceTypeEnumSchema.nullish(), salesRepId: z.string().nullish(), responsibleEmployee: QuoteEmployeeResponseDTOSchema.nullish(), receivedByEmployee: QuoteEmployeeResponseDTOSchema.nullish(), owningOfficeId: z.string(), name: z.string(), number: z.string(), section: CommonModels.SectionEnumSchema, direction: CommonModels.DirectionEnumSchema, transportMode: CommonModels.TransportModeEnumSchema, statusDate: z.iso.datetime({ offset: true }), cargoType: CargoTypeEnumSchema.nullish(), incoterms: CommonModels.IncotermsEnumSchema.nullish(), secondIncoterms: CommonModels.IncotermsEnumSchema.nullish(), buyRateReference: z.string().nullish(), frequency: CommonModels.FrequencyEnumSchema.nullish(), transitDurationInDays: z.string().nullish(), quoteType: QuoteTypeEnumSchema.nullish(), defaultCurrencyId: z.string().nullish(), salesRep: QuoteEmployeeResponseDTOSchema.nullish(), team: z.string().nullish(), createdAt: z.iso.datetime({ offset: true }), updatedAt: z.iso.datetime({ offset: true }), convertedPositions: z.array(QuoteConvertedPositionDtoSchema).default([]), loadType: CommonModels.LoadTypeEnumSchema.nullish(), volumetricWeightModifier: z.number().nullish() });
 export type QuoteCoreResponseDTO = z.infer<typeof QuoteCoreResponseDTOSchema>;
 
 /** 
@@ -242,7 +242,7 @@ export type QuoteCoreResponseDTO = z.infer<typeof QuoteCoreResponseDTOSchema>;
  * @property { string } team The team responsible for the quote 
  * @property { number } volumetricWeightModifier Volumetric weight modifier 
  */
-export const UpdateQuoteRequestDTOSchema = z.object({ number: z.string().describe("The quote number"), statusDate: z.iso.datetime({ offset: true }).describe("The date of the quote status"), cargoType: CargoTypeEnumSchema.describe("The type of cargo for the quote"), loadType: CommonModels.LoadTypeEnumSchema.describe("The load type for the quote"), incoterms: CommonModels.IncotermsEnumSchema.describe("The incoterms for the quote"), secondIncoterms: CommonModels.IncotermsEnumSchema.describe("The second incoterms for the quote"), serviceType: CommonModels.ServiceTypeEnumSchema.describe("The type of service for the quote"), buyRateReference: z.string().describe("The reference for the buy rate"), frequency: CommonModels.FrequencyEnumSchema.describe("The frequency of the quote"), transitDurationInDays: z.string().describe("The transit duration in days").nullable(), quoteType: QuoteTypeEnumSchema.describe("The type of quote"), defaultCurrencyId: z.string().describe("The default currency for the quote"), salesRepId: z.string().describe("The sales representative for the quote"), responsibleEmployeeId: z.string().describe("The responsible employee for the quote"), receivedByEmployeeId: z.string().describe("The employee who receieved the quote"), team: z.string().describe("The team responsible for the quote"), volumetricWeightModifier: z.number().describe("Volumetric weight modifier") }).readonly();
+export const UpdateQuoteRequestDTOSchema = z.object({ number: z.string().nullable(), statusDate: z.iso.datetime({ offset: true }).nullable(), cargoType: CargoTypeEnumSchema.nullable(), loadType: CommonModels.LoadTypeEnumSchema.nullable(), incoterms: CommonModels.IncotermsEnumSchema.nullable(), secondIncoterms: CommonModels.IncotermsEnumSchema.nullable(), serviceType: CommonModels.ServiceTypeEnumSchema.nullable(), buyRateReference: z.string().nullable(), frequency: CommonModels.FrequencyEnumSchema.nullable(), transitDurationInDays: z.string().nullable(), quoteType: QuoteTypeEnumSchema.nullable(), defaultCurrencyId: z.string().nullable(), salesRepId: z.string().nullable(), responsibleEmployeeId: z.string().nullable(), receivedByEmployeeId: z.string().nullable(), team: z.string().nullable(), volumetricWeightModifier: z.number().nullable() }).partial();
 export type UpdateQuoteRequestDTO = z.infer<typeof UpdateQuoteRequestDTOSchema>;
 
 /** 
@@ -258,7 +258,7 @@ export const QuoteSectionEnum = QuoteSectionEnumSchema.enum;
  * @type { object }
  * @property { QuoteSectionEnum[] } sections The sections to duplicate. Min Items: `1` 
  */
-export const DuplicateQuoteRequestDtoSchema = z.object({ sections: z.array(QuoteSectionEnumSchema).readonly().min(1).describe("The sections to duplicate") }).readonly();
+export const DuplicateQuoteRequestDtoSchema = z.object({ sections: z.array(QuoteSectionEnumSchema).min(1) });
 export type DuplicateQuoteRequestDto = z.infer<typeof DuplicateQuoteRequestDtoSchema>;
 
 /** 
@@ -273,7 +273,7 @@ export type DuplicateQuoteRequestDto = z.infer<typeof DuplicateQuoteRequestDtoSc
  * @property { number } limit Items per response 
  * @property { number } totalItems Total available items 
  */
-export const QuoteListResponseDtoSchema = z.object({ items: z.array(z.string()).readonly().describe("Items"), totalProfit: z.number(), profitPerQuote: z.number(), page: z.number().describe("1-indexed page number to begin from").nullish(), cursor: z.string().describe("ID of item to start after").nullish(), nextCursor: z.string().describe("Cursor for next set of items").nullish(), limit: z.number().describe("Items per response"), totalItems: z.number().describe("Total available items") }).readonly();
+export const QuoteListResponseDtoSchema = z.object({ items: z.array(z.string()), totalProfit: z.number(), profitPerQuote: z.number(), page: z.number().nullish(), cursor: z.string().nullish(), nextCursor: z.string().nullish(), limit: z.number(), totalItems: z.number() });
 export type QuoteListResponseDto = z.infer<typeof QuoteListResponseDtoSchema>;
 
 /** 
@@ -296,7 +296,7 @@ export const QuotesPaginateOrderParamEnum = QuotesPaginateOrderParamEnumSchema.e
  * @property { number } totalItems Total available items 
  * @property { QuotePreviewResponseDTO[] } items  
  */
-export const QuotesPaginateResponseSchema = z.object({ ...QuoteListResponseDtoSchema.shape, ...z.object({ items: z.array(QuotePreviewResponseDTOSchema).readonly() }).readonly().shape });
+export const QuotesPaginateResponseSchema = z.object({ ...QuoteListResponseDtoSchema.shape, ...z.object({ items: z.array(QuotePreviewResponseDTOSchema).nullable() }).partial().shape });
 export type QuotesPaginateResponse = z.infer<typeof QuotesPaginateResponseSchema>;
 
 /** 
@@ -309,14 +309,14 @@ export type QuotesPaginateResponse = z.infer<typeof QuotesPaginateResponseSchema
  * @property { number } totalItems Total available items 
  * @property { CommonModels.BusinessPartnerLabelResponseDTO[] } items  
  */
-export const QuotesListAvailablePartnersForResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.BusinessPartnerLabelResponseDTOSchema).readonly() }).readonly().shape });
+export const QuotesListAvailablePartnersForResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.BusinessPartnerLabelResponseDTOSchema).nullable() }).partial().shape });
 export type QuotesListAvailablePartnersForResponse = z.infer<typeof QuotesListAvailablePartnersForResponseSchema>;
 
 /** 
  * GetInvolvedPartiesResponseSchema 
  * @type { array }
  */
-export const GetInvolvedPartiesResponseSchema = z.array(CommonModels.InvolvedPartyResponseDtoSchema).readonly();
+export const GetInvolvedPartiesResponseSchema = z.array(CommonModels.InvolvedPartyResponseDtoSchema);
 export type GetInvolvedPartiesResponse = z.infer<typeof GetInvolvedPartiesResponseSchema>;
 
 }

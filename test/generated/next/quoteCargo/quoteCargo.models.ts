@@ -5,9 +5,8 @@ export namespace QuoteCargoModels {
 /** 
  * ListCargosByQuoteIdOrderParamSchema 
  * @type { array }
- * @description Order fields. Prefix with - for descending order. Example: -createdAt,updatedAt
  */
-export const ListCargosByQuoteIdOrderParamSchema = z.array(CommonModels.PositionCargoPaginationOrderFieldSchema).readonly().describe("Order fields. Prefix with - for descending order. Example: -createdAt,updatedAt").nullish();
+export const ListCargosByQuoteIdOrderParamSchema = z.array(CommonModels.PositionCargoPaginationOrderFieldSchema).nullish();
 export type ListCargosByQuoteIdOrderParam = z.infer<typeof ListCargosByQuoteIdOrderParamSchema>;
 
 /** 
@@ -20,28 +19,28 @@ export type ListCargosByQuoteIdOrderParam = z.infer<typeof ListCargosByQuoteIdOr
  * @property { number } totalItems Total available items 
  * @property { CommonModels.PositionCargoResponseDTO[] } items  
  */
-export const ListCargosByQuoteIdResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.PositionCargoResponseDTOSchema).readonly() }).readonly().shape });
+export const ListCargosByQuoteIdResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.PositionCargoResponseDTOSchema).nullable() }).partial().shape });
 export type ListCargosByQuoteIdResponse = z.infer<typeof ListCargosByQuoteIdResponseSchema>;
 
 /** 
  * QuoteCargoListCargoLabelsResponseSchema 
  * @type { array }
  */
-export const QuoteCargoListCargoLabelsResponseSchema = z.array(CommonModels.LabelResponseDTOSchema).readonly();
+export const QuoteCargoListCargoLabelsResponseSchema = z.array(CommonModels.LabelResponseDTOSchema);
 export type QuoteCargoListCargoLabelsResponse = z.infer<typeof QuoteCargoListCargoLabelsResponseSchema>;
 
 /** 
  * QuoteCargoGetCargoSummaryResponseSchema 
  * @type { array }
  */
-export const QuoteCargoGetCargoSummaryResponseSchema = z.array(CommonModels.CargoSummaryResponseDTOSchema).readonly();
+export const QuoteCargoGetCargoSummaryResponseSchema = z.array(CommonModels.CargoSummaryResponseDTOSchema);
 export type QuoteCargoGetCargoSummaryResponse = z.infer<typeof QuoteCargoGetCargoSummaryResponseSchema>;
 
 /** 
  * QuoteCargoCreateBulkCargosResponseSchema 
  * @type { array }
  */
-export const QuoteCargoCreateBulkCargosResponseSchema = z.array(CommonModels.PositionCargoResponseDTOSchema).readonly();
+export const QuoteCargoCreateBulkCargosResponseSchema = z.array(CommonModels.PositionCargoResponseDTOSchema);
 export type QuoteCargoCreateBulkCargosResponse = z.infer<typeof QuoteCargoCreateBulkCargosResponseSchema>;
 
 }

@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -28,14 +27,14 @@ export const keys = {
  * @returns { UseMutationResult<WorkingDocumentsTemplatedDocumentModels.TemplatedDocumentResponseDto> } 
  * @statusCodes [201, 401]
  */
-export const useCreate = (options?: AppMutationOptions<typeof WorkingDocumentsTemplatedDocumentApi.create, { positionId: string, officeId: string, data: WorkingDocumentsTemplatedDocumentModels.CreateTemplatedDocumentRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreate = (options?: AppMutationOptions<typeof WorkingDocumentsTemplatedDocumentApi.create, { positionId: string, officeId: string, data: WorkingDocumentsTemplatedDocumentModels.CreateTemplatedDocumentRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, officeId, data }) => { 
       checkAcl(WorkingDocumentsTemplatedDocumentAcl.canUseCreate({ officeId } ));
-      return WorkingDocumentsTemplatedDocumentApi.create(positionId, officeId, data, config)
+      return WorkingDocumentsTemplatedDocumentApi.create(positionId, officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -56,14 +55,14 @@ export const useCreate = (options?: AppMutationOptions<typeof WorkingDocumentsTe
  * @returns { UseQueryResult<WorkingDocumentsTemplatedDocumentModels.TemplatedDocumentResponseDto> } 
  * @statusCodes [200, 401]
  */
-export const useGetTemplatedDocument = <TData>({ officeId, positionId, templatedDocumentId }: { officeId: string, positionId: string, templatedDocumentId: string }, options?: AppQueryOptions<typeof WorkingDocumentsTemplatedDocumentApi.getTemplatedDocument, TData>, config?: AxiosRequestConfig) => {
+export const useGetTemplatedDocument = <TData>({ officeId, positionId, templatedDocumentId }: { officeId: string, positionId: string, templatedDocumentId: string }, options?: AppQueryOptions<typeof WorkingDocumentsTemplatedDocumentApi.getTemplatedDocument, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.getTemplatedDocument(officeId, positionId, templatedDocumentId),
     queryFn: () => { 
     checkAcl(WorkingDocumentsTemplatedDocumentAcl.canUseGetTemplatedDocument({ officeId } ));
-    return WorkingDocumentsTemplatedDocumentApi.getTemplatedDocument(officeId, positionId, templatedDocumentId, config) },
+    return WorkingDocumentsTemplatedDocumentApi.getTemplatedDocument(officeId, positionId, templatedDocumentId) },
     ...options,
   });
 };
@@ -80,14 +79,14 @@ export const useGetTemplatedDocument = <TData>({ officeId, positionId, templated
  * @returns { UseMutationResult<WorkingDocumentsTemplatedDocumentModels.TemplatedDocumentResponseDto> } 
  * @statusCodes [200, 401]
  */
-export const useUpdateTemplatedDocument = (options?: AppMutationOptions<typeof WorkingDocumentsTemplatedDocumentApi.updateTemplatedDocument, { officeId: string, positionId: string, templatedDocumentId: string, data: WorkingDocumentsTemplatedDocumentModels.UpdateTemplatedDocumentRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdateTemplatedDocument = (options?: AppMutationOptions<typeof WorkingDocumentsTemplatedDocumentApi.updateTemplatedDocument, { officeId: string, positionId: string, templatedDocumentId: string, data: WorkingDocumentsTemplatedDocumentModels.UpdateTemplatedDocumentRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, positionId, templatedDocumentId, data }) => { 
       checkAcl(WorkingDocumentsTemplatedDocumentAcl.canUseUpdateTemplatedDocument({ officeId } ));
-      return WorkingDocumentsTemplatedDocumentApi.updateTemplatedDocument(officeId, positionId, templatedDocumentId, data, config)
+      return WorkingDocumentsTemplatedDocumentApi.updateTemplatedDocument(officeId, positionId, templatedDocumentId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -110,14 +109,14 @@ export const useUpdateTemplatedDocument = (options?: AppMutationOptions<typeof W
  * @returns { UseMutationResult<void> } Templated document deleted
  * @statusCodes [204, 401, 404]
  */
-export const useDeleteTemplatedDocument = (options?: AppMutationOptions<typeof WorkingDocumentsTemplatedDocumentApi.deleteTemplatedDocument, { positionId: string, templatedDocumentId: string, officeId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useDeleteTemplatedDocument = (options?: AppMutationOptions<typeof WorkingDocumentsTemplatedDocumentApi.deleteTemplatedDocument, { positionId: string, templatedDocumentId: string, officeId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, templatedDocumentId, officeId }) => { 
       checkAcl(WorkingDocumentsTemplatedDocumentAcl.canUseDeleteTemplatedDocument({ officeId } ));
-      return WorkingDocumentsTemplatedDocumentApi.deleteTemplatedDocument(positionId, templatedDocumentId, officeId, config)
+      return WorkingDocumentsTemplatedDocumentApi.deleteTemplatedDocument(positionId, templatedDocumentId, officeId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -139,14 +138,14 @@ export const useDeleteTemplatedDocument = (options?: AppMutationOptions<typeof W
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 201, 401]
  */
-export const usePreviewTemplatedDocument = (options?: AppMutationOptions<typeof WorkingDocumentsTemplatedDocumentApi.previewTemplatedDocument, { officeId: string, positionId: string, templatedDocumentId: string, data: WorkingDocumentsTemplatedDocumentModels.GenerateWorkingDocumentPreviewRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const usePreviewTemplatedDocument = (options?: AppMutationOptions<typeof WorkingDocumentsTemplatedDocumentApi.previewTemplatedDocument, { officeId: string, positionId: string, templatedDocumentId: string, data: WorkingDocumentsTemplatedDocumentModels.GenerateWorkingDocumentPreviewRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, positionId, templatedDocumentId, data }) => { 
       checkAcl(WorkingDocumentsTemplatedDocumentAcl.canUsePreviewTemplatedDocument({ officeId } ));
-      return WorkingDocumentsTemplatedDocumentApi.previewTemplatedDocument(officeId, positionId, templatedDocumentId, data, config)
+      return WorkingDocumentsTemplatedDocumentApi.previewTemplatedDocument(officeId, positionId, templatedDocumentId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -168,14 +167,14 @@ export const usePreviewTemplatedDocument = (options?: AppMutationOptions<typeof 
  * @returns { UseMutationResult<void> } 
  * @statusCodes [201, 401]
  */
-export const useIssueTemplatedDocument = (options?: AppMutationOptions<typeof WorkingDocumentsTemplatedDocumentApi.issueTemplatedDocument, { officeId: string, positionId: string, templatedDocumentId: string, data: CommonModels.GenerateWorkingDocumentRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useIssueTemplatedDocument = (options?: AppMutationOptions<typeof WorkingDocumentsTemplatedDocumentApi.issueTemplatedDocument, { officeId: string, positionId: string, templatedDocumentId: string, data: CommonModels.GenerateWorkingDocumentRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, positionId, templatedDocumentId, data }) => { 
       checkAcl(WorkingDocumentsTemplatedDocumentAcl.canUseIssueTemplatedDocument({ officeId } ));
-      return WorkingDocumentsTemplatedDocumentApi.issueTemplatedDocument(officeId, positionId, templatedDocumentId, data, config)
+      return WorkingDocumentsTemplatedDocumentApi.issueTemplatedDocument(officeId, positionId, templatedDocumentId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -197,14 +196,14 @@ export const useIssueTemplatedDocument = (options?: AppMutationOptions<typeof Wo
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
  */
-export const useGenerateDocumentEml = (options?: AppMutationOptions<typeof WorkingDocumentsTemplatedDocumentApi.generateDocumentEml, { officeId: string, positionId: string, templatedDocumentId: string, data: CommonModels.GenerateWorkingDocumentRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useGenerateDocumentEml = (options?: AppMutationOptions<typeof WorkingDocumentsTemplatedDocumentApi.generateDocumentEml, { officeId: string, positionId: string, templatedDocumentId: string, data: CommonModels.GenerateWorkingDocumentRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, positionId, templatedDocumentId, data }) => { 
       checkAcl(WorkingDocumentsTemplatedDocumentAcl.canUseGenerateDocumentEml({ officeId } ));
-      return WorkingDocumentsTemplatedDocumentApi.generateDocumentEml(officeId, positionId, templatedDocumentId, data, config)
+      return WorkingDocumentsTemplatedDocumentApi.generateDocumentEml(officeId, positionId, templatedDocumentId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

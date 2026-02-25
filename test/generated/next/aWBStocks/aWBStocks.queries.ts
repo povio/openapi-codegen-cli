@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -32,14 +31,14 @@ export const keys = {
  * @returns { UseQueryResult<AWBStocksModels.AWBStocksPaginateResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginate = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: AWBStocksModels.AWBStockFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof AWBStocksApi.paginate, TData>, config?: AxiosRequestConfig) => {
+export const usePaginate = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: AWBStocksModels.AWBStockFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof AWBStocksApi.paginate, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.paginate(officeId, limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(AWBStocksAcl.canUsePaginate({ officeId } ));
-    return AWBStocksApi.paginate(officeId, limit, order, filter, page, cursor, config) },
+    return AWBStocksApi.paginate(officeId, limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -58,14 +57,14 @@ export const usePaginate = <TData>({ officeId, limit, order, filter, page, curso
  * @returns { UseInfiniteQueryResult<AWBStocksModels.AWBStocksPaginateResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: AWBStocksModels.AWBStockFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof AWBStocksApi.paginate, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: AWBStocksModels.AWBStockFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof AWBStocksApi.paginate, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.paginateInfinite(officeId, limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(AWBStocksAcl.canUsePaginate({ officeId } ));
-    return AWBStocksApi.paginate(officeId, limit, order, filter, pageParam, cursor, config) },
+    return AWBStocksApi.paginate(officeId, limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -85,14 +84,14 @@ export const usePaginateInfinite = <TData>({ officeId, limit, order, filter, cur
  * @returns { UseMutationResult<AWBStocksModels.AWBStockResponseDTO> } 
  * @statusCodes [201, 401]
  */
-export const useCreate = (options?: AppMutationOptions<typeof AWBStocksApi.create, { officeId: string, data: AWBStocksModels.CreateAWBStockRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreate = (options?: AppMutationOptions<typeof AWBStocksApi.create, { officeId: string, data: AWBStocksModels.CreateAWBStockRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, data }) => { 
       checkAcl(AWBStocksAcl.canUseCreate({ officeId } ));
-      return AWBStocksApi.create(officeId, data, config)
+      return AWBStocksApi.create(officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -112,14 +111,14 @@ export const useCreate = (options?: AppMutationOptions<typeof AWBStocksApi.creat
  * @returns { UseQueryResult<AWBStocksModels.AWBStockResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useFindById = <TData>({ stockId, officeId }: { stockId: string, officeId: string }, options?: AppQueryOptions<typeof AWBStocksApi.findById, TData>, config?: AxiosRequestConfig) => {
+export const useFindById = <TData>({ stockId, officeId }: { stockId: string, officeId: string }, options?: AppQueryOptions<typeof AWBStocksApi.findById, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.findById(stockId, officeId),
     queryFn: () => { 
     checkAcl(AWBStocksAcl.canUseFindById({ officeId } ));
-    return AWBStocksApi.findById(stockId, officeId, config) },
+    return AWBStocksApi.findById(stockId, officeId) },
     ...options,
   });
 };
@@ -135,14 +134,14 @@ export const useFindById = <TData>({ stockId, officeId }: { stockId: string, off
  * @returns { UseMutationResult<AWBStocksModels.AWBStockResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useUpdate = (options?: AppMutationOptions<typeof AWBStocksApi.update, { stockId: string, officeId: string, data: AWBStocksModels.UpdateAWBStockRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdate = (options?: AppMutationOptions<typeof AWBStocksApi.update, { stockId: string, officeId: string, data: AWBStocksModels.UpdateAWBStockRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ stockId, officeId, data }) => { 
       checkAcl(AWBStocksAcl.canUseUpdate({ officeId } ));
-      return AWBStocksApi.update(stockId, officeId, data, config)
+      return AWBStocksApi.update(stockId, officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -164,14 +163,14 @@ export const useUpdate = (options?: AppMutationOptions<typeof AWBStocksApi.updat
  * @returns { UseMutationResult<AWBStocksModels.AWBStockResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useArchive = (options?: AppMutationOptions<typeof AWBStocksApi.archive, { stockId: string, officeId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useArchive = (options?: AppMutationOptions<typeof AWBStocksApi.archive, { stockId: string, officeId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ stockId, officeId }) => { 
       checkAcl(AWBStocksAcl.canUseArchive({ officeId } ));
-      return AWBStocksApi.archive(stockId, officeId, config)
+      return AWBStocksApi.archive(stockId, officeId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -193,14 +192,14 @@ export const useArchive = (options?: AppMutationOptions<typeof AWBStocksApi.arch
  * @returns { UseMutationResult<AWBStocksModels.AWBStockResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useUnarchive = (options?: AppMutationOptions<typeof AWBStocksApi.unarchive, { stockId: string, officeId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUnarchive = (options?: AppMutationOptions<typeof AWBStocksApi.unarchive, { stockId: string, officeId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ stockId, officeId }) => { 
       checkAcl(AWBStocksAcl.canUseUnarchive({ officeId } ));
-      return AWBStocksApi.unarchive(stockId, officeId, config)
+      return AWBStocksApi.unarchive(stockId, officeId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -222,14 +221,14 @@ export const useUnarchive = (options?: AppMutationOptions<typeof AWBStocksApi.un
  * @returns { UseMutationResult<AWBStocksModels.GenerateAWBNumberResponseDTO> } 
  * @statusCodes [201, 401]
  */
-export const useGenerateNextNumber = (options?: AppMutationOptions<typeof AWBStocksApi.generateNextNumber, { officeId: string, data: AWBStocksModels.GenerateAWBNumberRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useGenerateNextNumber = (options?: AppMutationOptions<typeof AWBStocksApi.generateNextNumber, { officeId: string, data: AWBStocksModels.GenerateAWBNumberRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, data }) => { 
       checkAcl(AWBStocksAcl.canUseGenerateNextNumber({ officeId } ));
-      return AWBStocksApi.generateNextNumber(officeId, data, config)
+      return AWBStocksApi.generateNextNumber(officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

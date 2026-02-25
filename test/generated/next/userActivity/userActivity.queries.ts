@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { AppQueryOptions } from "@povio/openapi-codegen-cli";
@@ -23,12 +22,12 @@ export const keys = {
  * @returns { UseQueryResult<UserActivityModels.UserActivityResponseDto> } 
  * @statusCodes [200, 401]
  */
-export const useGet = <TData>({ officeId, entityType, entityId, activeThresholdMinutes }: { officeId: string, entityType: string, entityId: string, activeThresholdMinutes?: number }, options?: AppQueryOptions<typeof UserActivityApi.get, TData>, config?: AxiosRequestConfig) => {
+export const useGet = <TData>({ officeId, entityType, entityId, activeThresholdMinutes }: { officeId: string, entityType: string, entityId: string, activeThresholdMinutes?: number }, options?: AppQueryOptions<typeof UserActivityApi.get, TData>) => {
   
   return useQuery({
     queryKey: keys.get(officeId, entityType, entityId, activeThresholdMinutes),
     queryFn: () => 
-    UserActivityApi.get(officeId, entityType, entityId, activeThresholdMinutes, config),
+    UserActivityApi.get(officeId, entityType, entityId, activeThresholdMinutes),
     ...options,
   });
 };

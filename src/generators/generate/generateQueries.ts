@@ -1,11 +1,18 @@
 import { ACL_CHECK_HOOK } from "@/generators/const/acl.const";
-import { MUTATION_EFFECTS, QUERY_MODULE_ENUM, QUERY_OPTIONS_TYPES } from "@/generators/const/deps.const";
+import {
+  APP_REST_CLIENT_NAME,
+  MUTATION_EFFECTS,
+  QUERY_MODULE_ENUM,
+  QUERY_OPTIONS_TYPES,
+  ZOD_EXTENDED,
+} from "@/generators/const/deps.const";
 import {
   AXIOS_DEFAULT_IMPORT_NAME,
   AXIOS_IMPORT,
   AXIOS_REQUEST_CONFIG_NAME,
   AXIOS_REQUEST_CONFIG_TYPE,
 } from "@/generators/const/endpoints.const";
+import { PACKAGE_IMPORT_PATH } from "@/generators/const/package.const";
 import { QUERIES_MODULE_NAME, QUERY_HOOKS, QUERY_IMPORT } from "@/generators/const/queries.const";
 import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
 import { Endpoint, EndpointParameter } from "@/generators/types/endpoint";
@@ -18,9 +25,14 @@ import {
   hasAbilityConditions,
 } from "@/generators/utils/generate/generate.acl.utils";
 import {
+  getEndpointBody,
+  getEndpointConfig,
   getEndpointName,
+  getEndpointPath,
+  hasEndpointConfig,
   getImportedEndpointName,
   mapEndpointParamsToFunctionParams,
+  requiresBody,
 } from "@/generators/utils/generate/generate.endpoints.utils";
 import { getSchemaDescriptions } from "@/generators/utils/generate/generate.openapi.utils";
 import {
@@ -30,17 +42,25 @@ import {
 } from "@/generators/utils/generate/generate.imports.utils";
 import { getInfiniteQueryName, getQueryName } from "@/generators/utils/generate/generate.query.utils";
 import {
+  getAppRestClientImportPath,
   getAclCheckImportPath,
   getMutationEffectsImportPath,
   getQueryModulesImportPath,
   getQueryTypesImportPath,
+  getZodExtendedImportPath,
 } from "@/generators/utils/generate/generate.utils";
-import { getImportedZodSchemaInferedTypeName } from "@/generators/utils/generate/generate.zod.utils";
+import {
+  getImportedZodSchemaInferedTypeName,
+  getImportedZodSchemaName,
+} from "@/generators/utils/generate/generate.zod.utils";
+import { ZOD_IMPORT } from "@/generators/const/zod.const";
 import { getNamespaceName } from "@/generators/utils/namespace.utils";
 import { isSchemaObject } from "@/generators/utils/openapi-schema.utils";
 import { isParamMediaTypeAllowed } from "@/generators/utils/openapi.utils";
 import { getDestructuredVariables, isInfiniteQuery, isMutation, isQuery } from "@/generators/utils/query.utils";
+import { shouldInlineEndpointsForTag } from "@/generators/utils/tag.utils";
 import { isNamedZodSchema } from "@/generators/utils/zod-schema.utils";
+import { invalidVariableNameCharactersToCamel } from "@/generators/utils/js.utils";
 
 const endpointParamMappingCache = new WeakMap<
   SchemaResolver,
@@ -49,6 +69,7 @@ const endpointParamMappingCache = new WeakMap<
 
 export function generateQueries(params: GenerateTypeParams) {
   const { resolver, data, tag } = params;
+  const inlineEndpoints = shouldInlineEndpointsForTag(tag, resolver.options);
   const endpoints = data.get(tag)?.endpoints;
   if (!endpoints || endpoints.length === 0) {
     return;
@@ -104,18 +125,49 @@ export function generateQueries(params: GenerateTypeParams) {
     from: getQueryTypesImportPath(resolver.options),
   };
 
+  const hasWorkspaceContext =
+    resolver.options.workspaceContext &&
+    endpoints.some((endpoint) => getWorkspaceParamNames(resolver, endpoint).length > 0);
+  const workspaceContextImport: Import = {
+    bindings: ["OpenApiWorkspaceContext"],
+    from: PACKAGE_IMPORT_PATH,
+  };
+
   const endpointParams = endpoints.flatMap((endpoint) => endpoint.parameters) as EndpointParameter[];
+  const endpointParamsParseSchemas = endpointParams
+    .filter((param) => !["Path", "Header"].includes(param.type))
+    .map((param) => param.parameterSortingEnumSchemaName ?? param.zodSchema);
+  const endpointResponseSchemas = endpoints.map((endpoint) => endpoint.response);
+  const endpointRuntimeSchemas = getUniqueArray([
+    ...endpointResponseSchemas,
+    ...(resolver.options.parseRequestParams ? endpointParamsParseSchemas : []),
+  ]);
+  const hasZodImport = inlineEndpoints && endpointRuntimeSchemas.some((schema) => !isNamedZodSchema(schema));
+  const hasZodExtendedImport =
+    inlineEndpoints && resolver.options.parseRequestParams && endpointParamsParseSchemas.length > 0;
+  const appRestClientImport: Import = {
+    bindings: [APP_REST_CLIENT_NAME],
+    from: getAppRestClientImportPath(resolver.options),
+  };
+  const zodExtendedImport: Import = {
+    bindings: [ZOD_EXTENDED.namespace],
+    from: getZodExtendedImportPath(resolver.options),
+  };
+
   const modelsImports = getModelsImports({
     resolver,
     tag,
+    zodSchemas: inlineEndpoints ? endpointRuntimeSchemas.filter(isNamedZodSchema) : [],
     zodSchemasAsTypes: getUniqueArray(endpointParams.map((param) => param.zodSchema).filter(isNamedZodSchema)),
   });
 
-  const endpointsImports = getEndpointsImports({
-    tag,
-    endpoints,
-    options: resolver.options,
-  });
+  const endpointsImports = inlineEndpoints
+    ? []
+    : getEndpointsImports({
+        tag,
+        endpoints,
+        options: resolver.options,
+      });
 
   const aclImports = getAclImports({
     tag,
@@ -128,6 +180,15 @@ export function generateQueries(params: GenerateTypeParams) {
 
   if (hasAxiosImport) {
     lines.push(renderImport(axiosImport));
+  }
+  if (inlineEndpoints) {
+    lines.push(renderImport(appRestClientImport));
+    if (hasZodImport) {
+      lines.push(renderImport(ZOD_IMPORT));
+    }
+    if (hasZodExtendedImport) {
+      lines.push(renderImport(zodExtendedImport));
+    }
   }
   lines.push(renderImport(queryImport));
   if (hasMutationEffects) {
@@ -143,6 +204,9 @@ export function generateQueries(params: GenerateTypeParams) {
     }
   }
   lines.push(renderImport(queryTypesImport));
+  if (hasWorkspaceContext) {
+    lines.push(renderImport(workspaceContextImport));
+  }
   for (const modelsImport of modelsImports) {
     lines.push(renderImport(modelsImport));
   }
@@ -153,6 +217,11 @@ export function generateQueries(params: GenerateTypeParams) {
 
   if (resolver.options.tsNamespaces) {
     lines.push(`export namespace ${namespace} {`);
+  }
+
+  if (inlineEndpoints) {
+    lines.push(...renderInlineEndpoints({ resolver, endpoints }));
+    lines.push("");
   }
 
   lines.push(
@@ -166,7 +235,7 @@ export function generateQueries(params: GenerateTypeParams) {
   for (const endpoint of endpoints) {
     const endpointInfo = endpointGroups.infoByEndpoint.get(endpoint);
     if (endpointInfo?.query) {
-      lines.push(renderQuery({ resolver, endpoint }));
+      lines.push(renderQuery({ resolver, endpoint, inlineEndpoints }));
       lines.push("");
     }
     if (endpointInfo?.mutation) {
@@ -174,13 +243,14 @@ export function generateQueries(params: GenerateTypeParams) {
         renderMutation({
           resolver,
           endpoint,
+          inlineEndpoints,
           precomputed: endpointGroups.mutationDataByEndpoint.get(endpoint),
         }),
       );
       lines.push("");
     }
     if (endpointInfo?.infiniteQuery) {
-      lines.push(renderInfiniteQuery({ resolver, endpoint }));
+      lines.push(renderInfiniteQuery({ resolver, endpoint, inlineEndpoints }));
       lines.push("");
     }
   }
@@ -246,9 +316,10 @@ function renderEndpointArgs(
   resolver: SchemaResolver,
   endpoint: Endpoint,
   options: Parameters<typeof mapEndpointParamsToFunctionParams>[2],
+  replacements?: Record<string, string>,
 ) {
   return getEndpointParamMapping(resolver, endpoint, options)
-    .map((param) => param.name)
+    .map((param) => replacements?.[param.name] ?? param.name)
     .join(", ");
 }
 
@@ -284,12 +355,66 @@ function renderEndpointParamDescription(endpointParam: ReturnType<typeof mapEndp
   return strs.join(". ");
 }
 
-function renderAclCheckCall(resolver: SchemaResolver, endpoint: Endpoint) {
-  const checkParams = getAbilityConditionsTypes(endpoint)?.map((condition) => condition.name);
-  const paramNames = new Set(endpoint.parameters.map((param) => param.name));
+function getWorkspaceParamNames(resolver: SchemaResolver, endpoint: Endpoint) {
+  const endpointParams = getEndpointParamMapping(resolver, endpoint, {});
+  const endpointParamNames = new Set(endpointParams.map((param) => param.name));
+  const workspaceParamNames = endpointParams.filter((param) => param.paramType === "Path").map((param) => param.name);
+
+  const aclParamNames = (getAbilityConditionsTypes(endpoint) ?? [])
+    .map((condition) => invalidVariableNameCharactersToCamel(condition.name))
+    .filter((name) => endpointParamNames.has(name));
+
+  return getUniqueArray([...workspaceParamNames, ...aclParamNames]);
+}
+
+function getWorkspaceParamReplacements(resolver: SchemaResolver, endpoint: Endpoint) {
+  return Object.fromEntries(
+    getWorkspaceParamNames(resolver, endpoint).map((name) => [name, `${name}FromWorkspace`]),
+  ) as Record<string, string>;
+}
+
+function renderWorkspaceParamResolutions({
+  replacements,
+  indent,
+}: {
+  replacements: Record<string, string>;
+  indent: string;
+}) {
+  const workspaceParamNames = Object.keys(replacements);
+  if (workspaceParamNames.length === 0) {
+    return [];
+  }
+
+  const lines = [`${indent}const workspaceContext = OpenApiWorkspaceContext.useContext();`];
+  for (const paramName of workspaceParamNames) {
+    lines.push(
+      `${indent}const ${replacements[paramName]} = OpenApiWorkspaceContext.resolveParam(workspaceContext, "${paramName}", ${paramName});`,
+    );
+  }
+  return lines;
+}
+
+function renderAclCheckCall(
+  resolver: SchemaResolver,
+  endpoint: Endpoint,
+  replacements?: Record<string, string>,
+  indent = "",
+) {
+  const checkParams = getAbilityConditionsTypes(endpoint)?.map((condition) =>
+    invalidVariableNameCharactersToCamel(condition.name),
+  );
+  const paramNames = new Set(endpoint.parameters.map((param) => invalidVariableNameCharactersToCamel(param.name)));
   const hasAllCheckParams = checkParams?.every((param) => paramNames.has(param));
-  const args = hasAbilityConditions(endpoint) && hasAllCheckParams ? `{ ${(checkParams ?? []).join(", ")} } ` : "";
-  return `checkAcl(${getImportedAbilityFunctionName(endpoint, resolver.options)}(${args}));`;
+  const args =
+    hasAbilityConditions(endpoint) && hasAllCheckParams
+      ? `{ ${(checkParams ?? [])
+          .map((param) => {
+            const resolvedParam = replacements?.[param] ?? param;
+            return resolvedParam === param ? param : `${param}: ${resolvedParam}`;
+          })
+          .join(", ")} } `
+      : "";
+  return `${indent}checkAcl(${getImportedAbilityFunctionName(endpoint, resolver.options)}(${args}));`;
 }
 
 function addAsteriskAfterNewLine(str: string) {
@@ -401,14 +526,114 @@ function renderQueryKeys({ resolver, queryEndpoints }: { resolver: SchemaResolve
   return lines.join("\n");
 }
 
-function renderQuery({ resolver, endpoint }: { resolver: SchemaResolver; endpoint: Endpoint }) {
+function renderInlineEndpoints({ resolver, endpoints }: { resolver: SchemaResolver; endpoints: Endpoint[] }) {
+  const lines: string[] = [];
+  for (const endpoint of endpoints) {
+    const endpointParams = renderEndpointParams(resolver, endpoint, {});
+    const endpointBody = getEndpointBody(endpoint);
+    const hasUndefinedEndpointBody = requiresBody(endpoint) && !endpointBody && hasEndpointConfig(endpoint, resolver);
+    const endpointConfig = renderInlineEndpointConfig(resolver, endpoint);
+
+    lines.push(
+      `const ${getEndpointName(endpoint)} = (${endpointParams}${resolver.options.axiosRequestConfig ? `${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => {`,
+    );
+    lines.push(`  return ${APP_REST_CLIENT_NAME}.${endpoint.method}(`);
+    lines.push(`    { resSchema: ${getImportedZodSchemaName(resolver, endpoint.response)} },`);
+    lines.push(`    \`${getEndpointPath(endpoint)}\`,`);
+
+    if (endpointBody) {
+      lines.push(
+        `    ${resolver.options.parseRequestParams ? renderInlineEndpointParamParse(resolver, endpointBody, endpointBody.name) : endpointBody.name},`,
+      );
+    } else if (hasUndefinedEndpointBody) {
+      lines.push("    undefined,");
+    }
+
+    lines.push(`    ${endpointConfig}`);
+    lines.push("  );");
+    lines.push("};");
+    lines.push("");
+  }
+  return lines;
+}
+
+function renderInlineEndpointParamParse(resolver: SchemaResolver, param: EndpointParameter, paramName: string) {
+  const addOptional =
+    !(param.parameterObject ?? param.bodyObject)?.required &&
+    (Boolean(param.parameterSortingEnumSchemaName) || isNamedZodSchema(param.zodSchema));
+  const schemaValue = param.parameterSortingEnumSchemaName
+    ? `${ZOD_EXTENDED.namespace}.${ZOD_EXTENDED.exports.sortExp}(${getImportedZodSchemaName(
+        resolver,
+        param.parameterSortingEnumSchemaName,
+      )})${addOptional ? ".optional()" : ""}`
+    : `${getImportedZodSchemaName(resolver, param.zodSchema)}${addOptional ? ".optional()" : ""}`;
+  const queryArgs = param.type === "Query" ? `, { type: "query", name: "${paramName}" }` : "";
+  return `${ZOD_EXTENDED.namespace}.${ZOD_EXTENDED.exports.parse}(${schemaValue}, ${paramName}${queryArgs})`;
+}
+
+function renderInlineEndpointConfig(resolver: SchemaResolver, endpoint: Endpoint) {
+  const endpointConfig = getEndpointConfig(endpoint);
+  const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
+  if (Object.keys(endpointConfig).length === 0) {
+    return hasAxiosRequestConfig ? AXIOS_REQUEST_CONFIG_NAME : "";
+  }
+
+  const lines: string[] = [];
+  lines.push("{");
+  if (hasAxiosRequestConfig) {
+    lines.push(`      ...${AXIOS_REQUEST_CONFIG_NAME},`);
+  }
+  if (endpointConfig.params) {
+    lines.push("      params: {");
+    for (const param of endpointConfig.params) {
+      const value = resolver.options.parseRequestParams
+        ? renderInlineEndpointParamParse(resolver, param, param.value)
+        : param.value;
+      lines.push(`        ${param.name}: ${value},`);
+    }
+    lines.push("      },");
+  }
+  if (endpointConfig.headers) {
+    lines.push("      headers: {");
+    for (const [key, value] of Object.entries(endpointConfig.headers)) {
+      lines.push(`        '${key}': ${value},`);
+    }
+    lines.push("      },");
+  }
+  if (endpoint.response === "z.instanceof(Blob)") {
+    lines.push('      responseType: "blob",');
+  }
+  if (endpoint.mediaDownload) {
+    lines.push("      rawResponse: true,");
+  }
+  lines.push("    }");
+  return lines.join("\n");
+}
+
+function renderQuery({
+  resolver,
+  endpoint,
+  inlineEndpoints,
+}: {
+  resolver: SchemaResolver;
+  endpoint: Endpoint;
+  inlineEndpoints: boolean;
+}) {
   const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
   const hasAclCheck = resolver.options.checkAcl && endpoint.acl;
+  const workspaceParamReplacements = resolver.options.workspaceContext
+    ? getWorkspaceParamReplacements(resolver, endpoint)
+    : {};
   const endpointArgs = renderEndpointArgs(resolver, endpoint, {});
-  const endpointParams = renderEndpointParams(resolver, endpoint, {});
+  const resolvedEndpointArgs = renderEndpointArgs(resolver, endpoint, {}, workspaceParamReplacements);
+  const endpointParams = renderEndpointParams(resolver, endpoint, {
+    optionalPathParams: resolver.options.workspaceContext,
+  });
   const hasQueryFn = endpointArgs.length > 0 || hasAxiosRequestConfig || hasAclCheck;
-  const hasQueryFnBody = Boolean(hasAclCheck);
-  const importedEndpoint = getImportedEndpointName(endpoint, resolver.options);
+  const hasQueryFnBody = Boolean(hasAclCheck) || Object.keys(workspaceParamReplacements).length > 0;
+  const importedEndpoint = inlineEndpoints
+    ? getEndpointName(endpoint)
+    : getImportedEndpointName(endpoint, resolver.options);
 
   const lines: string[] = [];
   lines.push(renderQueryJsDocs({ resolver, endpoint, mode: "query" }));
@@ -418,16 +643,17 @@ function renderQuery({ resolver, endpoint }: { resolver: SchemaResolver; endpoin
   if (hasAclCheck) {
     lines.push(`  const { checkAcl } = ${ACL_CHECK_HOOK}();`);
   }
+  lines.push(...renderWorkspaceParamResolutions({ replacements: workspaceParamReplacements, indent: "  " }));
   lines.push("  ");
   lines.push(`  return ${QUERY_HOOKS.query}({`);
-  lines.push(`    queryKey: keys.${getEndpointName(endpoint)}(${endpointArgs}),`);
+  lines.push(`    queryKey: keys.${getEndpointName(endpoint)}(${resolvedEndpointArgs}),`);
   if (hasQueryFn) {
     lines.push(`    queryFn: () => ${hasQueryFnBody ? "{ " : ""}`);
     if (hasAclCheck) {
-      lines.push(`    ${renderAclCheckCall(resolver, endpoint)}`);
+      lines.push(renderAclCheckCall(resolver, endpoint, workspaceParamReplacements, "    "));
     }
     lines.push(
-      `    ${hasQueryFnBody ? "return " : ""}${importedEndpoint}(${endpointArgs}${hasAxiosRequestConfig ? `${endpointArgs ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}` : ""})${hasQueryFnBody ? " }" : ""},`,
+      `    ${hasQueryFnBody ? "return " : ""}${importedEndpoint}(${resolvedEndpointArgs}${hasAxiosRequestConfig ? `${resolvedEndpointArgs ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}` : ""})${hasQueryFnBody ? " }" : ""},`,
     );
   } else {
     lines.push(`    queryFn: ${importedEndpoint},`);
@@ -441,24 +667,35 @@ function renderQuery({ resolver, endpoint }: { resolver: SchemaResolver; endpoin
 function renderMutation({
   resolver,
   endpoint,
+  inlineEndpoints,
   precomputed,
 }: {
   resolver: SchemaResolver;
   endpoint: Endpoint;
+  inlineEndpoints: boolean;
   precomputed?: { updateQueryEndpoints: Endpoint[]; destructuredVariables: string[] };
 }) {
   const hasAclCheck = resolver.options.checkAcl && endpoint.acl;
   const hasMutationEffects = resolver.options.mutationEffects;
   const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
-  const endpointParams = renderEndpointParams(resolver, endpoint, { includeFileParam: true });
+  const workspaceParamReplacements = resolver.options.workspaceContext
+    ? getWorkspaceParamReplacements(resolver, endpoint)
+    : {};
+  const endpointParams = renderEndpointParams(resolver, endpoint, {
+    includeFileParam: true,
+    optionalPathParams: resolver.options.workspaceContext,
+  });
   const endpointArgs = renderEndpointArgs(resolver, endpoint, {});
+  const resolvedEndpointArgs = renderEndpointArgs(resolver, endpoint, {}, workspaceParamReplacements);
   const destructuredMutationArgs = renderEndpointArgs(resolver, endpoint, { includeFileParam: true });
-  const importedEndpoint = getImportedEndpointName(endpoint, resolver.options);
+  const endpointFunction = inlineEndpoints
+    ? getEndpointName(endpoint)
+    : getImportedEndpointName(endpoint, resolver.options);
 
   const updateQueryEndpoints = precomputed?.updateQueryEndpoints ?? [];
   const destructuredVariables =
     precomputed?.destructuredVariables ?? getDestructuredVariables(resolver, endpoint, updateQueryEndpoints);
-  const hasMutationFnBody = endpoint.mediaUpload || hasAclCheck;
+  const hasMutationFnBody = endpoint.mediaUpload || hasAclCheck || Object.keys(workspaceParamReplacements).length > 0;
 
   const mutationVariablesType = endpoint.mediaUpload
     ? `${endpointParams}${endpointParams ? "; " : ""}abortController?: AbortController; onUploadProgress?: (progress: { loaded: number; total: number }) => void`
@@ -467,10 +704,13 @@ function renderMutation({
   const lines: string[] = [];
   lines.push(renderQueryJsDocs({ resolver, endpoint, mode: "mutation" }));
   lines.push(
-    `export const ${getQueryName(endpoint, true)} = (options?: AppMutationOptions<typeof ${importedEndpoint}, { ${mutationVariablesType} }>${hasMutationEffects ? ` & ${MUTATION_EFFECTS.optionsType}` : ""}${hasAxiosRequestConfig ? `, ${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => {`,
+    `export const ${getQueryName(endpoint, true)} = (options?: AppMutationOptions<typeof ${endpointFunction}, { ${mutationVariablesType} }>${hasMutationEffects ? ` & ${MUTATION_EFFECTS.optionsType}` : ""}${hasAxiosRequestConfig ? `, ${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => {`,
   );
   if (hasAclCheck) {
     lines.push(`  const { checkAcl } = ${ACL_CHECK_HOOK}();`);
+  }
+  if (Object.keys(workspaceParamReplacements).length > 0) {
+    lines.push("  const workspaceContext = OpenApiWorkspaceContext.useContext();");
   }
   if (hasMutationEffects) {
     lines.push(`  const { runMutationEffects } = useMutationEffects({ currentModule: ${QUERIES_MODULE_NAME} });`);
@@ -484,12 +724,17 @@ function renderMutation({
   lines.push(
     `    mutationFn: ${endpoint.mediaUpload ? "async " : ""}(${mutationFnArg}) => ${hasMutationFnBody ? "{ " : ""}`,
   );
+  for (const [paramName, resolvedParamName] of Object.entries(workspaceParamReplacements)) {
+    lines.push(
+      `      const ${resolvedParamName} = OpenApiWorkspaceContext.resolveParam(workspaceContext, "${paramName}", ${paramName});`,
+    );
+  }
   if (hasAclCheck) {
-    lines.push(`      ${renderAclCheckCall(resolver, endpoint)}`);
+    lines.push(renderAclCheckCall(resolver, endpoint, workspaceParamReplacements, "      "));
   }
   if (endpoint.mediaUpload) {
     lines.push(
-      `      const uploadInstructions = await ${importedEndpoint}(${endpointArgs}${hasAxiosRequestConfig ? `${endpointArgs ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}` : ""});`,
+      `      const uploadInstructions = await ${endpointFunction}(${resolvedEndpointArgs}${hasAxiosRequestConfig ? `${resolvedEndpointArgs ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}` : ""});`,
     );
     lines.push("      ");
     lines.push("      if (file && uploadInstructions.url) {");
@@ -520,7 +765,7 @@ function renderMutation({
     lines.push("      return uploadInstructions;");
   } else {
     lines.push(
-      `      ${hasMutationFnBody ? "return " : ""}${importedEndpoint}(${endpointArgs}${hasAxiosRequestConfig ? `${endpointArgs ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}` : ""})`,
+      `      ${hasMutationFnBody ? "return " : ""}${endpointFunction}(${resolvedEndpointArgs}${hasAxiosRequestConfig ? `${resolvedEndpointArgs ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}` : ""})`,
     );
   }
   if (hasMutationFnBody) {
@@ -536,13 +781,23 @@ function renderMutation({
       if (destructuredVariables.length > 0) {
         lines.push(`      const { ${destructuredVariables.join(", ")} } = variables;`);
       }
+      for (const [paramName, resolvedParamName] of Object.entries(workspaceParamReplacements)) {
+        lines.push(
+          `      const ${resolvedParamName} = OpenApiWorkspaceContext.resolveParam(workspaceContext, "${paramName}", ${paramName});`,
+        );
+      }
       lines.push(
         `      const updateKeys = [${updateQueryEndpoints
           .map(
             (e) =>
-              `keys.${getEndpointName(e)}(${renderEndpointArgs(resolver, e, {
-                includeOnlyRequiredParams: true,
-              })})`,
+              `keys.${getEndpointName(e)}(${renderEndpointArgs(
+                resolver,
+                e,
+                {
+                  includeOnlyRequiredParams: true,
+                },
+                workspaceParamReplacements,
+              )})`,
           )
           .join(", ")}];`,
       );
@@ -573,7 +828,9 @@ function groupEndpoints(endpoints: Endpoint[], resolver: SchemaResolver) {
   for (const endpoint of endpoints) {
     const query = isQuery(endpoint);
     const mutation = isMutation(endpoint);
-    const infiniteQuery = resolver.options.infiniteQueries && query && isInfiniteQuery(endpoint, resolver.options);
+    const infiniteQuery = Boolean(
+      resolver.options.infiniteQueries && query && isInfiniteQuery(endpoint, resolver.options),
+    );
 
     if (query) {
       queryEndpoints.push(endpoint);
@@ -616,32 +873,61 @@ function groupEndpoints(endpoints: Endpoint[], resolver: SchemaResolver) {
   };
 }
 
-function renderInfiniteQuery({ resolver, endpoint }: { resolver: SchemaResolver; endpoint: Endpoint }) {
+function renderInfiniteQuery({
+  resolver,
+  endpoint,
+  inlineEndpoints,
+}: {
+  resolver: SchemaResolver;
+  endpoint: Endpoint;
+  inlineEndpoints: boolean;
+}) {
   const hasAclCheck = resolver.options.checkAcl && endpoint.acl;
   const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
-  const endpointParams = renderEndpointParams(resolver, endpoint, { excludePageParam: true });
+  const workspaceParamReplacements = resolver.options.workspaceContext
+    ? getWorkspaceParamReplacements(resolver, endpoint)
+    : {};
+  const endpointParams = renderEndpointParams(resolver, endpoint, {
+    excludePageParam: true,
+    optionalPathParams: resolver.options.workspaceContext,
+  });
   const endpointArgsWithoutPage = renderEndpointArgs(resolver, endpoint, { excludePageParam: true });
+  const resolvedEndpointArgsWithoutPage = renderEndpointArgs(
+    resolver,
+    endpoint,
+    { excludePageParam: true },
+    workspaceParamReplacements,
+  );
   const endpointArgsWithPage = renderEndpointArgs(resolver, endpoint, { replacePageParam: true });
-  const importedEndpoint = getImportedEndpointName(endpoint, resolver.options);
-  const hasQueryFnBody = Boolean(hasAclCheck);
+  const resolvedEndpointArgsWithPage = renderEndpointArgs(
+    resolver,
+    endpoint,
+    { replacePageParam: true },
+    workspaceParamReplacements,
+  );
+  const endpointFunction = inlineEndpoints
+    ? getEndpointName(endpoint)
+    : getImportedEndpointName(endpoint, resolver.options);
+  const hasQueryFnBody = Boolean(hasAclCheck) || Object.keys(workspaceParamReplacements).length > 0;
 
   const lines: string[] = [];
   lines.push(renderQueryJsDocs({ resolver, endpoint, mode: "infiniteQuery" }));
   lines.push(
-    `export const ${getInfiniteQueryName(endpoint)} = <TData>(${endpointParams ? `{ ${endpointArgsWithoutPage} }: { ${endpointParams} }, ` : ""}options?: AppInfiniteQueryOptions<typeof ${importedEndpoint}, TData>${hasAxiosRequestConfig ? `, ${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => {`,
+    `export const ${getInfiniteQueryName(endpoint)} = <TData>(${endpointParams ? `{ ${endpointArgsWithoutPage} }: { ${endpointParams} }, ` : ""}options?: AppInfiniteQueryOptions<typeof ${endpointFunction}, TData>${hasAxiosRequestConfig ? `, ${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => {`,
   );
   if (hasAclCheck) {
     lines.push(`  const { checkAcl } = ${ACL_CHECK_HOOK}();`);
   }
+  lines.push(...renderWorkspaceParamResolutions({ replacements: workspaceParamReplacements, indent: "  " }));
   lines.push("");
   lines.push(`  return ${QUERY_HOOKS.infiniteQuery}({`);
-  lines.push(`    queryKey: keys.${getEndpointName(endpoint)}Infinite(${endpointArgsWithoutPage}),`);
+  lines.push(`    queryKey: keys.${getEndpointName(endpoint)}Infinite(${resolvedEndpointArgsWithoutPage}),`);
   lines.push(`    queryFn: ({ pageParam }) => ${hasQueryFnBody ? "{ " : ""}`);
   if (hasAclCheck) {
-    lines.push(`    ${renderAclCheckCall(resolver, endpoint)}`);
+    lines.push(renderAclCheckCall(resolver, endpoint, workspaceParamReplacements, "    "));
   }
   lines.push(
-    `    ${hasQueryFnBody ? "return " : ""}${importedEndpoint}(${endpointArgsWithPage}${hasAxiosRequestConfig ? `, ${AXIOS_REQUEST_CONFIG_NAME}` : ""})${hasQueryFnBody ? " }" : ""},`,
+    `    ${hasQueryFnBody ? "return " : ""}${endpointFunction}(${resolvedEndpointArgsWithPage}${hasAxiosRequestConfig ? `, ${AXIOS_REQUEST_CONFIG_NAME}` : ""})${hasQueryFnBody ? " }" : ""},`,
   );
   lines.push("    initialPageParam: 1,");
   lines.push(

@@ -1,16 +1,14 @@
 import { AppRestClient } from "@/data/app-rest-client";
-import { AxiosRequestConfig } from "axios";
 import { z } from "zod";
 import { ZodExtended } from "@/data/zod.extended";
 import { ControlTowerCalendarModels } from "./controlTowerCalendar.models";
 
 export namespace ControlTowerCalendarApi {
-export const getCalendar = (from: string, to: string, type: ControlTowerCalendarModels.CalendarTypeEnum, search?: string, poNumbers?: ControlTowerCalendarModels.GetCalendarPoNumbersParam, containerNumbers?: ControlTowerCalendarModels.GetCalendarContainerNumbersParam, bookingNumbers?: ControlTowerCalendarModels.GetCalendarBookingNumbersParam, config?: AxiosRequestConfig) => {
+export const getCalendar = (from: string, to: string, type: ControlTowerCalendarModels.CalendarTypeEnum, search?: string, poNumbers?: ControlTowerCalendarModels.GetCalendarPoNumbersParam, containerNumbers?: ControlTowerCalendarModels.GetCalendarContainerNumbersParam, bookingNumbers?: ControlTowerCalendarModels.GetCalendarBookingNumbersParam, ) => {
     return AppRestClient.get(
         { resSchema: ControlTowerCalendarModels.CalendarResponseDtoSchema },
         `/calendar`,
         {
-            ...config,
             params: {
                 from: ZodExtended.parse(z.iso.datetime({ offset: true }), from, { type: "query", name: "from" }),
                 to: ZodExtended.parse(z.iso.datetime({ offset: true }), to, { type: "query", name: "to" }),

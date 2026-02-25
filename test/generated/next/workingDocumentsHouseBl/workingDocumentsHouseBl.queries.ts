@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -29,14 +28,14 @@ export const keys = {
  * @returns { UseMutationResult<WorkingDocumentsHouseBlModels.HouseBlDocumentResponseDTO> } 
  * @statusCodes [201, 401]
  */
-export const useCreate = (options?: AppMutationOptions<typeof WorkingDocumentsHouseBlApi.create, { positionId: string, officeId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreate = (options?: AppMutationOptions<typeof WorkingDocumentsHouseBlApi.create, { positionId: string, officeId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, officeId }) => { 
       checkAcl(WorkingDocumentsHouseBlAcl.canUseCreate({ officeId } ));
-      return WorkingDocumentsHouseBlApi.create(positionId, officeId, config)
+      return WorkingDocumentsHouseBlApi.create(positionId, officeId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -57,14 +56,14 @@ export const useCreate = (options?: AppMutationOptions<typeof WorkingDocumentsHo
  * @returns { UseQueryResult<WorkingDocumentsHouseBlModels.HouseBlDocumentResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useGetHouseBlData = <TData>({ positionId, houseBlId, officeId }: { positionId: string, houseBlId: string, officeId: string }, options?: AppQueryOptions<typeof WorkingDocumentsHouseBlApi.getHouseBlData, TData>, config?: AxiosRequestConfig) => {
+export const useGetHouseBlData = <TData>({ positionId, houseBlId, officeId }: { positionId: string, houseBlId: string, officeId: string }, options?: AppQueryOptions<typeof WorkingDocumentsHouseBlApi.getHouseBlData, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.getHouseBlData(positionId, houseBlId, officeId),
     queryFn: () => { 
     checkAcl(WorkingDocumentsHouseBlAcl.canUseGetHouseBlData({ officeId } ));
-    return WorkingDocumentsHouseBlApi.getHouseBlData(positionId, houseBlId, officeId, config) },
+    return WorkingDocumentsHouseBlApi.getHouseBlData(positionId, houseBlId, officeId) },
     ...options,
   });
 };
@@ -81,14 +80,14 @@ export const useGetHouseBlData = <TData>({ positionId, houseBlId, officeId }: { 
  * @returns { UseMutationResult<WorkingDocumentsHouseBlModels.HouseBlDocumentResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useUpdateHouseBlData = (options?: AppMutationOptions<typeof WorkingDocumentsHouseBlApi.updateHouseBlData, { positionId: string, houseBlId: string, officeId: string, data: WorkingDocumentsHouseBlModels.UpdateHouseBlDocumentRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdateHouseBlData = (options?: AppMutationOptions<typeof WorkingDocumentsHouseBlApi.updateHouseBlData, { positionId: string, houseBlId: string, officeId: string, data: WorkingDocumentsHouseBlModels.UpdateHouseBlDocumentRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, houseBlId, officeId, data }) => { 
       checkAcl(WorkingDocumentsHouseBlAcl.canUseUpdateHouseBlData({ officeId } ));
-      return WorkingDocumentsHouseBlApi.updateHouseBlData(positionId, houseBlId, officeId, data, config)
+      return WorkingDocumentsHouseBlApi.updateHouseBlData(positionId, houseBlId, officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -111,14 +110,14 @@ export const useUpdateHouseBlData = (options?: AppMutationOptions<typeof Working
  * @returns { UseMutationResult<void> } House BL document deleted
  * @statusCodes [204, 401, 404]
  */
-export const useDeleteHouseBl = (options?: AppMutationOptions<typeof WorkingDocumentsHouseBlApi.deleteHouseBl, { positionId: string, houseBlId: string, officeId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useDeleteHouseBl = (options?: AppMutationOptions<typeof WorkingDocumentsHouseBlApi.deleteHouseBl, { positionId: string, houseBlId: string, officeId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, houseBlId, officeId }) => { 
       checkAcl(WorkingDocumentsHouseBlAcl.canUseDeleteHouseBl({ officeId } ));
-      return WorkingDocumentsHouseBlApi.deleteHouseBl(positionId, houseBlId, officeId, config)
+      return WorkingDocumentsHouseBlApi.deleteHouseBl(positionId, houseBlId, officeId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -139,14 +138,14 @@ export const useDeleteHouseBl = (options?: AppMutationOptions<typeof WorkingDocu
  * @returns { UseQueryResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
  */
-export const usePreviewHouseBl = <TData>({ positionId, houseBlId, officeId }: { positionId: string, houseBlId: string, officeId: string }, options?: AppQueryOptions<typeof WorkingDocumentsHouseBlApi.previewHouseBl, TData>, config?: AxiosRequestConfig) => {
+export const usePreviewHouseBl = <TData>({ positionId, houseBlId, officeId }: { positionId: string, houseBlId: string, officeId: string }, options?: AppQueryOptions<typeof WorkingDocumentsHouseBlApi.previewHouseBl, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.previewHouseBl(positionId, houseBlId, officeId),
     queryFn: () => { 
     checkAcl(WorkingDocumentsHouseBlAcl.canUsePreviewHouseBl({ officeId } ));
-    return WorkingDocumentsHouseBlApi.previewHouseBl(positionId, houseBlId, officeId, config) },
+    return WorkingDocumentsHouseBlApi.previewHouseBl(positionId, houseBlId, officeId) },
     ...options,
   });
 };
@@ -162,14 +161,14 @@ export const usePreviewHouseBl = <TData>({ positionId, houseBlId, officeId }: { 
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
  */
-export const usePreviewHouseBlMutation = (options?: AppMutationOptions<typeof WorkingDocumentsHouseBlApi.previewHouseBl, { positionId: string, houseBlId: string, officeId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const usePreviewHouseBlMutation = (options?: AppMutationOptions<typeof WorkingDocumentsHouseBlApi.previewHouseBl, { positionId: string, houseBlId: string, officeId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, houseBlId, officeId }) => { 
       checkAcl(WorkingDocumentsHouseBlAcl.canUsePreviewHouseBl({ officeId } ));
-      return WorkingDocumentsHouseBlApi.previewHouseBl(positionId, houseBlId, officeId, config)
+      return WorkingDocumentsHouseBlApi.previewHouseBl(positionId, houseBlId, officeId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -192,14 +191,14 @@ export const usePreviewHouseBlMutation = (options?: AppMutationOptions<typeof Wo
  * @returns { UseQueryResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
  */
-export const usePreviewHouseBlEml = <TData>({ positionId, houseBlId, officeId }: { positionId: string, houseBlId: string, officeId: string }, options?: AppQueryOptions<typeof WorkingDocumentsHouseBlApi.previewHouseBlEml, TData>, config?: AxiosRequestConfig) => {
+export const usePreviewHouseBlEml = <TData>({ positionId, houseBlId, officeId }: { positionId: string, houseBlId: string, officeId: string }, options?: AppQueryOptions<typeof WorkingDocumentsHouseBlApi.previewHouseBlEml, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.previewHouseBlEml(positionId, houseBlId, officeId),
     queryFn: () => { 
     checkAcl(WorkingDocumentsHouseBlAcl.canUsePreviewHouseBlEml({ officeId } ));
-    return WorkingDocumentsHouseBlApi.previewHouseBlEml(positionId, houseBlId, officeId, config) },
+    return WorkingDocumentsHouseBlApi.previewHouseBlEml(positionId, houseBlId, officeId) },
     ...options,
   });
 };
@@ -215,14 +214,14 @@ export const usePreviewHouseBlEml = <TData>({ positionId, houseBlId, officeId }:
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
  */
-export const usePreviewHouseBlEmlMutation = (options?: AppMutationOptions<typeof WorkingDocumentsHouseBlApi.previewHouseBlEml, { positionId: string, houseBlId: string, officeId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const usePreviewHouseBlEmlMutation = (options?: AppMutationOptions<typeof WorkingDocumentsHouseBlApi.previewHouseBlEml, { positionId: string, houseBlId: string, officeId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, houseBlId, officeId }) => { 
       checkAcl(WorkingDocumentsHouseBlAcl.canUsePreviewHouseBlEml({ officeId } ));
-      return WorkingDocumentsHouseBlApi.previewHouseBlEml(positionId, houseBlId, officeId, config)
+      return WorkingDocumentsHouseBlApi.previewHouseBlEml(positionId, houseBlId, officeId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -246,14 +245,14 @@ export const usePreviewHouseBlEmlMutation = (options?: AppMutationOptions<typeof
  * @returns { UseMutationResult<void> } 
  * @statusCodes [201, 401]
  */
-export const useGenerateHouseBl = (options?: AppMutationOptions<typeof WorkingDocumentsHouseBlApi.generateHouseBl, { positionId: string, houseBlId: string, officeId: string, data: CommonModels.GenerateWorkingDocumentRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useGenerateHouseBl = (options?: AppMutationOptions<typeof WorkingDocumentsHouseBlApi.generateHouseBl, { positionId: string, houseBlId: string, officeId: string, data: CommonModels.GenerateWorkingDocumentRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, houseBlId, officeId, data }) => { 
       checkAcl(WorkingDocumentsHouseBlAcl.canUseGenerateHouseBl({ officeId } ));
-      return WorkingDocumentsHouseBlApi.generateHouseBl(positionId, houseBlId, officeId, data, config)
+      return WorkingDocumentsHouseBlApi.generateHouseBl(positionId, houseBlId, officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -275,14 +274,14 @@ export const useGenerateHouseBl = (options?: AppMutationOptions<typeof WorkingDo
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
  */
-export const useGenerateDocumentEml = (options?: AppMutationOptions<typeof WorkingDocumentsHouseBlApi.generateDocumentEml, { positionId: string, houseBlId: string, officeId: string, data: CommonModels.GenerateWorkingDocumentRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useGenerateDocumentEml = (options?: AppMutationOptions<typeof WorkingDocumentsHouseBlApi.generateDocumentEml, { positionId: string, houseBlId: string, officeId: string, data: CommonModels.GenerateWorkingDocumentRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, houseBlId, officeId, data }) => { 
       checkAcl(WorkingDocumentsHouseBlAcl.canUseGenerateDocumentEml({ officeId } ));
-      return WorkingDocumentsHouseBlApi.generateDocumentEml(positionId, houseBlId, officeId, data, config)
+      return WorkingDocumentsHouseBlApi.generateDocumentEml(positionId, houseBlId, officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

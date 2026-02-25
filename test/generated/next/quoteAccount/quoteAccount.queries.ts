@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -26,14 +25,14 @@ export const keys = {
  * @returns { UseQueryResult<QuoteAccountModels.QuoteAccountResponseDto> } 
  * @statusCodes [200, 401]
  */
-export const useGet = <TData>({ quoteId, officeId }: { quoteId: string, officeId: string }, options?: AppQueryOptions<typeof QuoteAccountApi.get, TData>, config?: AxiosRequestConfig) => {
+export const useGet = <TData>({ quoteId, officeId }: { quoteId: string, officeId: string }, options?: AppQueryOptions<typeof QuoteAccountApi.get, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.get(quoteId, officeId),
     queryFn: () => { 
     checkAcl(QuoteAccountAcl.canUseGet({ officeId } ));
-    return QuoteAccountApi.get(quoteId, officeId, config) },
+    return QuoteAccountApi.get(quoteId, officeId) },
     ...options,
   });
 };
@@ -49,14 +48,14 @@ export const useGet = <TData>({ quoteId, officeId }: { quoteId: string, officeId
  * @returns { UseMutationResult<QuoteAccountModels.QuoteAccountItemDtoResponse> } 
  * @statusCodes [201, 401]
  */
-export const useCreateItem = (options?: AppMutationOptions<typeof QuoteAccountApi.createItem, { quoteId: string, officeId: string, data: QuoteAccountModels.CreateQuoteAccountItemRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreateItem = (options?: AppMutationOptions<typeof QuoteAccountApi.createItem, { quoteId: string, officeId: string, data: QuoteAccountModels.CreateQuoteAccountItemRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ quoteId, officeId, data }) => { 
       checkAcl(QuoteAccountAcl.canUseCreateItem({ officeId } ));
-      return QuoteAccountApi.createItem(quoteId, officeId, data, config)
+      return QuoteAccountApi.createItem(quoteId, officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -77,14 +76,14 @@ export const useCreateItem = (options?: AppMutationOptions<typeof QuoteAccountAp
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
  */
-export const useDeleteItem = (options?: AppMutationOptions<typeof QuoteAccountApi.deleteItem, { quoteId: string, itemId: string, officeId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useDeleteItem = (options?: AppMutationOptions<typeof QuoteAccountApi.deleteItem, { quoteId: string, itemId: string, officeId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ quoteId, itemId, officeId }) => { 
       checkAcl(QuoteAccountAcl.canUseDeleteItem({ officeId } ));
-      return QuoteAccountApi.deleteItem(quoteId, itemId, officeId, config)
+      return QuoteAccountApi.deleteItem(quoteId, itemId, officeId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -106,14 +105,14 @@ export const useDeleteItem = (options?: AppMutationOptions<typeof QuoteAccountAp
  * @returns { UseMutationResult<QuoteAccountModels.QuoteAccountItemDtoResponse> } 
  * @statusCodes [200, 401]
  */
-export const useUpdateItem = (options?: AppMutationOptions<typeof QuoteAccountApi.updateItem, { quoteId: string, itemId: string, officeId: string, data: QuoteAccountModels.UpdateQuoteAccountItemRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdateItem = (options?: AppMutationOptions<typeof QuoteAccountApi.updateItem, { quoteId: string, itemId: string, officeId: string, data: QuoteAccountModels.UpdateQuoteAccountItemRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ quoteId, itemId, officeId, data }) => { 
       checkAcl(QuoteAccountAcl.canUseUpdateItem({ officeId } ));
-      return QuoteAccountApi.updateItem(quoteId, itemId, officeId, data, config)
+      return QuoteAccountApi.updateItem(quoteId, itemId, officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -134,14 +133,14 @@ export const useUpdateItem = (options?: AppMutationOptions<typeof QuoteAccountAp
  * @returns { UseMutationResult<QuoteAccountModels.QuoteAccountItemDtoResponse> } 
  * @statusCodes [201, 401]
  */
-export const useDuplicateItem = (options?: AppMutationOptions<typeof QuoteAccountApi.duplicateItem, { quoteId: string, itemId: string, officeId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useDuplicateItem = (options?: AppMutationOptions<typeof QuoteAccountApi.duplicateItem, { quoteId: string, itemId: string, officeId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ quoteId, itemId, officeId }) => { 
       checkAcl(QuoteAccountAcl.canUseDuplicateItem({ officeId } ));
-      return QuoteAccountApi.duplicateItem(quoteId, itemId, officeId, config)
+      return QuoteAccountApi.duplicateItem(quoteId, itemId, officeId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

@@ -8,7 +8,7 @@ export namespace IntegrationChannelsModels {
  * @property { string } id  
  * @property { string } name  
  */
-export const IntegrationChannelBusinessPartnerResponseDtoSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const IntegrationChannelBusinessPartnerResponseDtoSchema = z.object({ id: z.string(), name: z.string() });
 export type IntegrationChannelBusinessPartnerResponseDto = z.infer<typeof IntegrationChannelBusinessPartnerResponseDtoSchema>;
 
 /** 
@@ -17,7 +17,7 @@ export type IntegrationChannelBusinessPartnerResponseDto = z.infer<typeof Integr
  * @property { string } id  
  * @property { string } name  
  */
-export const IntegrationChannelEmployeeResponseDtoSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const IntegrationChannelEmployeeResponseDtoSchema = z.object({ id: z.string(), name: z.string() });
 export type IntegrationChannelEmployeeResponseDto = z.infer<typeof IntegrationChannelEmployeeResponseDtoSchema>;
 
 /** 
@@ -44,7 +44,7 @@ export type IntegrationChannelEmployeeResponseDto = z.infer<typeof IntegrationCh
  * @property { string } updatedById  
  * @property { IntegrationChannelEmployeeResponseDto } updatedBy  
  */
-export const IntegrationChannelResponseDtoSchema = z.object({ id: z.string(), officeId: z.string(), businessPartnerId: z.string(), businessPartner: IntegrationChannelBusinessPartnerResponseDtoSchema, employeeId: z.string(), name: z.string(), archived: z.boolean(), sftpHost: z.string(), sftpPort: z.number(), sftpUsername: z.string(), inboundPath: z.string(), outboundPath: z.string(), pollingFrequencyMinutes: z.number(), lastPolledAt: z.iso.datetime({ offset: true }).nullish(), createdAt: z.iso.datetime({ offset: true }), createdById: z.string(), createdBy: IntegrationChannelEmployeeResponseDtoSchema, updatedAt: z.iso.datetime({ offset: true }), updatedById: z.string(), updatedBy: IntegrationChannelEmployeeResponseDtoSchema }).readonly();
+export const IntegrationChannelResponseDtoSchema = z.object({ id: z.string(), officeId: z.string(), businessPartnerId: z.string(), businessPartner: IntegrationChannelBusinessPartnerResponseDtoSchema, employeeId: z.string(), name: z.string(), archived: z.boolean(), sftpHost: z.string(), sftpPort: z.number(), sftpUsername: z.string(), inboundPath: z.string(), outboundPath: z.string(), pollingFrequencyMinutes: z.number(), lastPolledAt: z.iso.datetime({ offset: true }).nullish(), createdAt: z.iso.datetime({ offset: true }), createdById: z.string(), createdBy: IntegrationChannelEmployeeResponseDtoSchema, updatedAt: z.iso.datetime({ offset: true }), updatedById: z.string(), updatedBy: IntegrationChannelEmployeeResponseDtoSchema });
 export type IntegrationChannelResponseDto = z.infer<typeof IntegrationChannelResponseDtoSchema>;
 
 /** 
@@ -79,7 +79,7 @@ export const IntegrationMessageStatusEnum = IntegrationMessageStatusEnumSchema.e
  * @property { IntegrationMessageStatusEnum } status  
  * @property { string } search  
  */
-export const IntegrationMessageFilterDtoSchema = z.object({ direction: IntegrationMessageDirectionEnumSchema, format: IntegrationMessageFormatEnumSchema, status: IntegrationMessageStatusEnumSchema, search: z.string() }).readonly();
+export const IntegrationMessageFilterDtoSchema = z.object({ direction: IntegrationMessageDirectionEnumSchema.nullable(), format: IntegrationMessageFormatEnumSchema.nullable(), status: IntegrationMessageStatusEnumSchema.nullable(), search: z.string().nullable() }).partial();
 export type IntegrationMessageFilterDto = z.infer<typeof IntegrationMessageFilterDtoSchema>;
 
 /** 
@@ -87,7 +87,7 @@ export type IntegrationMessageFilterDto = z.infer<typeof IntegrationMessageFilte
  * @type { object }
  * @property { string } search  
  */
-export const IntegrationChannelFilterDtoSchema = z.object({ search: z.string() }).readonly();
+export const IntegrationChannelFilterDtoSchema = z.object({ search: z.string().nullable() }).partial();
 export type IntegrationChannelFilterDto = z.infer<typeof IntegrationChannelFilterDtoSchema>;
 
 /** 
@@ -104,7 +104,7 @@ export type IntegrationChannelFilterDto = z.infer<typeof IntegrationChannelFilte
  * @property { string } outboundPath  
  * @property { number } pollingFrequencyMinutes Minimum: `1` 
  */
-export const CreateIntegrationChannelRequestDtoSchema = z.object({ businessPartnerId: z.string(), employeeId: z.string(), name: z.string(), sftpHost: z.string(), sftpPort: z.number().gte(1).lte(65535), sftpUsername: z.string(), sftpPassword: z.string(), inboundPath: z.string(), outboundPath: z.string(), pollingFrequencyMinutes: z.number().gte(1) }).readonly();
+export const CreateIntegrationChannelRequestDtoSchema = z.object({ businessPartnerId: z.string(), employeeId: z.string(), name: z.string(), sftpHost: z.string(), sftpPort: z.number().gte(1).lte(65535), sftpUsername: z.string(), sftpPassword: z.string(), inboundPath: z.string(), outboundPath: z.string(), pollingFrequencyMinutes: z.number().gte(1) });
 export type CreateIntegrationChannelRequestDto = z.infer<typeof CreateIntegrationChannelRequestDtoSchema>;
 
 /** 
@@ -121,7 +121,7 @@ export type CreateIntegrationChannelRequestDto = z.infer<typeof CreateIntegratio
  * @property { string } outboundPath  
  * @property { number } pollingFrequencyMinutes Minimum: `1` 
  */
-export const UpdateIntegrationChannelRequestDtoSchema = z.object({ businessPartnerId: z.string(), employeeId: z.string(), name: z.string(), sftpHost: z.string(), sftpPort: z.number().gte(1).lte(65535), sftpUsername: z.string(), sftpPassword: z.string(), inboundPath: z.string(), outboundPath: z.string(), pollingFrequencyMinutes: z.number().gte(1) }).readonly();
+export const UpdateIntegrationChannelRequestDtoSchema = z.object({ businessPartnerId: z.string().nullable(), employeeId: z.string().nullable(), name: z.string().nullable(), sftpHost: z.string().nullable(), sftpPort: z.number().gte(1).lte(65535).nullable(), sftpUsername: z.string().nullable(), sftpPassword: z.string().nullable(), inboundPath: z.string().nullable(), outboundPath: z.string().nullable(), pollingFrequencyMinutes: z.number().gte(1).nullable() }).partial();
 export type UpdateIntegrationChannelRequestDto = z.infer<typeof UpdateIntegrationChannelRequestDtoSchema>;
 
 /** 
@@ -129,7 +129,7 @@ export type UpdateIntegrationChannelRequestDto = z.infer<typeof UpdateIntegratio
  * @type { object }
  * @property { boolean } success  
  */
-export const TestConnectionResponseDtoSchema = z.object({ success: z.boolean() }).readonly();
+export const TestConnectionResponseDtoSchema = z.object({ success: z.boolean() });
 export type TestConnectionResponseDto = z.infer<typeof TestConnectionResponseDtoSchema>;
 
 /** 
@@ -149,7 +149,7 @@ export type TestConnectionResponseDto = z.infer<typeof TestConnectionResponseDto
  * @property { string } sentAt  
  * @property { string } createdAt  
  */
-export const IntegrationMessageResponseDtoSchema = z.object({ id: z.string(), integrationChannelId: z.string(), positionId: z.string().nullish(), positionNumber: z.string().nullish(), direction: z.string(), format: z.string(), status: z.string(), rawContent: z.string(), fileName: z.string(), errorMessage: z.string().nullish(), processedAt: z.iso.datetime({ offset: true }).nullish(), sentAt: z.iso.datetime({ offset: true }).nullish(), createdAt: z.iso.datetime({ offset: true }) }).readonly();
+export const IntegrationMessageResponseDtoSchema = z.object({ id: z.string(), integrationChannelId: z.string(), positionId: z.string().nullish(), positionNumber: z.string().nullish(), direction: z.string(), format: z.string(), status: z.string(), rawContent: z.string(), fileName: z.string(), errorMessage: z.string().nullish(), processedAt: z.iso.datetime({ offset: true }).nullish(), sentAt: z.iso.datetime({ offset: true }).nullish(), createdAt: z.iso.datetime({ offset: true }) });
 export type IntegrationMessageResponseDto = z.infer<typeof IntegrationMessageResponseDtoSchema>;
 
 /** 
@@ -170,7 +170,7 @@ export const IntegrationChannelsListOrderParamEnum = IntegrationChannelsListOrde
  * @property { number } totalItems Total available items 
  * @property { IntegrationChannelResponseDto[] } items  
  */
-export const IntegrationChannelsListResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(IntegrationChannelResponseDtoSchema).readonly() }).readonly().shape });
+export const IntegrationChannelsListResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(IntegrationChannelResponseDtoSchema).nullable() }).partial().shape });
 export type IntegrationChannelsListResponse = z.infer<typeof IntegrationChannelsListResponseSchema>;
 
 /** 
@@ -191,7 +191,7 @@ export const ListMessagesOrderParamEnum = ListMessagesOrderParamEnumSchema.enum;
  * @property { number } totalItems Total available items 
  * @property { IntegrationMessageResponseDto[] } items  
  */
-export const ListMessagesResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(IntegrationMessageResponseDtoSchema).readonly() }).readonly().shape });
+export const ListMessagesResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(IntegrationMessageResponseDtoSchema).nullable() }).partial().shape });
 export type ListMessagesResponse = z.infer<typeof ListMessagesResponseSchema>;
 
 }

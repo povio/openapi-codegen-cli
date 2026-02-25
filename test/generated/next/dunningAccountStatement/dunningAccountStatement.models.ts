@@ -13,7 +13,7 @@ export namespace DunningAccountStatementModels {
  * @property { number } outstandingAmount  
  * @property { string } currencyNotation  
  */
-export const AccountStatementPdfPayloadInvoiceDtoSchema = z.object({ number: z.string(), issuingDate: z.iso.datetime({ offset: true }), dueDate: z.iso.datetime({ offset: true }), dueDays: z.number(), invoiceAmount: z.number(), outstandingAmount: z.number(), currencyNotation: z.string() }).readonly();
+export const AccountStatementPdfPayloadInvoiceDtoSchema = z.object({ number: z.string(), issuingDate: z.iso.datetime({ offset: true }), dueDate: z.iso.datetime({ offset: true }), dueDays: z.number(), invoiceAmount: z.number(), outstandingAmount: z.number(), currencyNotation: z.string() });
 export type AccountStatementPdfPayloadInvoiceDto = z.infer<typeof AccountStatementPdfPayloadInvoiceDtoSchema>;
 
 /** 
@@ -24,7 +24,7 @@ export type AccountStatementPdfPayloadInvoiceDto = z.infer<typeof AccountStateme
  * @property { AccountStatementPdfPayloadInvoiceDto[] } invoices  
  * @property { number } totalOutstandingAmount  
  */
-export const AccountStatementInvoicesByCurrencyAndDirectionDtoSchema = z.object({ direction: CommonModels.InvoiceDirectionEnumSchema, currency: z.string(), invoices: z.array(AccountStatementPdfPayloadInvoiceDtoSchema).readonly(), totalOutstandingAmount: z.number() }).readonly();
+export const AccountStatementInvoicesByCurrencyAndDirectionDtoSchema = z.object({ direction: CommonModels.InvoiceDirectionEnumSchema, currency: z.string(), invoices: z.array(AccountStatementPdfPayloadInvoiceDtoSchema), totalOutstandingAmount: z.number() });
 export type AccountStatementInvoicesByCurrencyAndDirectionDto = z.infer<typeof AccountStatementInvoicesByCurrencyAndDirectionDtoSchema>;
 
 /** 
@@ -34,7 +34,7 @@ export type AccountStatementInvoicesByCurrencyAndDirectionDto = z.infer<typeof A
  * @property { string } address  
  * @property { string } referenceNumber  
  */
-export const AccountStatementPdfPayloadBusinessPartnerDtoSchema = z.object({ name: z.string(), address: z.string().nullish(), referenceNumber: z.string().nullish() }).readonly();
+export const AccountStatementPdfPayloadBusinessPartnerDtoSchema = z.object({ name: z.string(), address: z.string().nullish(), referenceNumber: z.string().nullish() });
 export type AccountStatementPdfPayloadBusinessPartnerDto = z.infer<typeof AccountStatementPdfPayloadBusinessPartnerDtoSchema>;
 
 /** 
@@ -45,7 +45,7 @@ export type AccountStatementPdfPayloadBusinessPartnerDto = z.infer<typeof Accoun
  * @property { string } bankName  
  * @property { string } swiftBic  
  */
-export const AccountStatementPdfPayloadBankAccountDtoSchema = z.object({ displayValue: z.string(), iban: z.string(), bankName: z.string(), swiftBic: z.string() }).readonly();
+export const AccountStatementPdfPayloadBankAccountDtoSchema = z.object({ displayValue: z.string(), iban: z.string(), bankName: z.string(), swiftBic: z.string() });
 export type AccountStatementPdfPayloadBankAccountDto = z.infer<typeof AccountStatementPdfPayloadBankAccountDtoSchema>;
 
 /** 
@@ -57,7 +57,7 @@ export type AccountStatementPdfPayloadBankAccountDto = z.infer<typeof AccountSta
  * @property { string } employeeName  
  * @property { CommonModels.ConfigBlockDto } config  
  */
-export const AccountStatementPdfPayloadDTOSchema = z.object({ businessPartner: AccountStatementPdfPayloadBusinessPartnerDtoSchema, invoicesByCurrencyAndDirection: z.array(AccountStatementInvoicesByCurrencyAndDirectionDtoSchema).readonly(), bankAccount: AccountStatementPdfPayloadBankAccountDtoSchema, employeeName: z.string().nullable(), config: CommonModels.ConfigBlockDtoSchema }).readonly();
+export const AccountStatementPdfPayloadDTOSchema = z.object({ businessPartner: AccountStatementPdfPayloadBusinessPartnerDtoSchema, invoicesByCurrencyAndDirection: z.array(AccountStatementInvoicesByCurrencyAndDirectionDtoSchema), bankAccount: AccountStatementPdfPayloadBankAccountDtoSchema, employeeName: z.string().nullable(), config: CommonModels.ConfigBlockDtoSchema });
 export type AccountStatementPdfPayloadDTO = z.infer<typeof AccountStatementPdfPayloadDTOSchema>;
 
 /** 
@@ -69,7 +69,7 @@ export type AccountStatementPdfPayloadDTO = z.infer<typeof AccountStatementPdfPa
  * @property { number } page 1-indexed page number to begin from 
  * @property { string } cursor ID of item to start after 
  */
-export const OfficeInvoiceListQueryDtoSchema = z.object({ order: z.string().describe("Order by fields (comma separated with +/- prefix): invoiceNumber, issuingDate, invoiceType, amount, netAmount, currencyNotation, dueDate, status, paidOn, serviceDate, internalNumber, positionNumber, invoiceDirection, receiver, receiverCountry, paidAmount, totalVat, dunningBlock, invoiceInReview, isInvoiceOk, isVatOk, comments, salesRepName, isExportedToBookkeeping, createdAt, customerReferenceOverride, externalSystemId").nullish(), filter: CommonModels.OfficeInvoiceFilterDtoSchema.nullish(), limit: z.number().gte(1).lte(100).describe("Items per response").default(20), page: z.number().describe("1-indexed page number to begin from").nullish(), cursor: z.string().describe("ID of item to start after").nullish() }).readonly();
+export const OfficeInvoiceListQueryDtoSchema = z.object({ order: z.string().nullish(), filter: CommonModels.OfficeInvoiceFilterDtoSchema.nullish(), limit: z.number().gte(1).lte(100).default(20), page: z.number().nullish(), cursor: z.string().nullish() });
 export type OfficeInvoiceListQueryDto = z.infer<typeof OfficeInvoiceListQueryDtoSchema>;
 
 /** 

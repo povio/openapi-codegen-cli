@@ -11,7 +11,7 @@ export namespace EmployeePermissionsModels {
  * @property { string } description  
  * @property { string } context Scope where this rule is applied 
  */
-export const EmployeePermissionResponseSchema = z.object({ id: z.string().describe("Employee Permission unique identifier"), label: z.string(), group: z.string(), description: z.string().nullish(), context: CommonModels.EmployeeRoleContextSchema.describe("Scope where this rule is applied") }).readonly();
+export const EmployeePermissionResponseSchema = z.object({ id: z.string(), label: z.string(), group: z.string(), description: z.string().nullish(), context: CommonModels.EmployeeRoleContextSchema });
 export type EmployeePermissionResponse = z.infer<typeof EmployeePermissionResponseSchema>;
 
 /** 
@@ -20,7 +20,7 @@ export type EmployeePermissionResponse = z.infer<typeof EmployeePermissionRespon
  * @property { string } context Role context 
  * @property { string[] } ids Ids 
  */
-export const EmployeePermissionFilterDtoSchema = z.object({ context: CommonModels.EmployeeRoleContextSchema.describe("Role context"), ids: z.array(z.string()).readonly().describe("Ids") }).readonly();
+export const EmployeePermissionFilterDtoSchema = z.object({ context: CommonModels.EmployeeRoleContextSchema.nullable(), ids: z.array(z.string()).nullable() }).partial();
 export type EmployeePermissionFilterDto = z.infer<typeof EmployeePermissionFilterDtoSchema>;
 
 /** 
@@ -41,14 +41,14 @@ export const EmployeePermissionsPaginatePermissionsOrderParamEnum = EmployeePerm
  * @property { number } totalItems Total available items 
  * @property { EmployeePermissionResponse[] } items  
  */
-export const EmployeePermissionsPaginatePermissionsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(EmployeePermissionResponseSchema).readonly() }).readonly().shape });
+export const EmployeePermissionsPaginatePermissionsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(EmployeePermissionResponseSchema).nullable() }).partial().shape });
 export type EmployeePermissionsPaginatePermissionsResponse = z.infer<typeof EmployeePermissionsPaginatePermissionsResponseSchema>;
 
 /** 
  * EmployeePermissionsFindAllResponseSchema 
  * @type { array }
  */
-export const EmployeePermissionsFindAllResponseSchema = z.array(CommonModels.LabelResponseDTOSchema).readonly();
+export const EmployeePermissionsFindAllResponseSchema = z.array(CommonModels.LabelResponseDTOSchema);
 export type EmployeePermissionsFindAllResponse = z.infer<typeof EmployeePermissionsFindAllResponseSchema>;
 
 }

@@ -8,7 +8,7 @@ export namespace CountriesModels {
  * @property { string } id  
  * @property { string } name  
  */
-export const CountryEmployeeDTOSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const CountryEmployeeDTOSchema = z.object({ id: z.string(), name: z.string() });
 export type CountryEmployeeDTO = z.infer<typeof CountryEmployeeDTOSchema>;
 
 /** 
@@ -26,7 +26,7 @@ export type CountryEmployeeDTO = z.infer<typeof CountryEmployeeDTOSchema>;
  * @property { CountryEmployeeDTO } updatedBy  
  * @property { string } updatedAt  
  */
-export const CountryResponseDTOSchema = z.object({ id: z.string().describe("Unique identifier of the country"), name: z.string().describe("Name of the country"), isoCode2: z.string().describe("ISO 2-letter code"), isoCode3: z.string().describe("ISO 3-letter code"), currencyNotation: z.string().describe("Currency notation"), createdById: z.string().nullish(), createdBy: CountryEmployeeDTOSchema.nullish(), createdAt: z.iso.datetime({ offset: true }), updatedById: z.string().nullish(), updatedBy: CountryEmployeeDTOSchema.nullish(), updatedAt: z.iso.datetime({ offset: true }) }).readonly();
+export const CountryResponseDTOSchema = z.object({ id: z.string(), name: z.string(), isoCode2: z.string(), isoCode3: z.string(), currencyNotation: z.string(), createdById: z.string().nullish(), createdBy: CountryEmployeeDTOSchema.nullish(), createdAt: z.iso.datetime({ offset: true }), updatedById: z.string().nullish(), updatedBy: CountryEmployeeDTOSchema.nullish(), updatedAt: z.iso.datetime({ offset: true }) });
 export type CountryResponseDTO = z.infer<typeof CountryResponseDTOSchema>;
 
 /** 
@@ -34,7 +34,7 @@ export type CountryResponseDTO = z.infer<typeof CountryResponseDTOSchema>;
  * @type { object }
  * @property { string } search  
  */
-export const CountryPaginationFilterDtoSchema = z.object({ search: z.string() }).readonly();
+export const CountryPaginationFilterDtoSchema = z.object({ search: z.string().nullable() }).partial();
 export type CountryPaginationFilterDto = z.infer<typeof CountryPaginationFilterDtoSchema>;
 
 /** 
@@ -55,7 +55,7 @@ export const CountriesPaginateOrderParamEnum = CountriesPaginateOrderParamEnumSc
  * @property { number } totalItems Total available items 
  * @property { CountryResponseDTO[] } items  
  */
-export const CountriesPaginateResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CountryResponseDTOSchema).readonly() }).readonly().shape });
+export const CountriesPaginateResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CountryResponseDTOSchema).nullable() }).partial().shape });
 export type CountriesPaginateResponse = z.infer<typeof CountriesPaginateResponseSchema>;
 
 /** 
@@ -76,7 +76,7 @@ export const PaginateCountryLabelsOrderParamEnum = PaginateCountryLabelsOrderPar
  * @property { number } totalItems Total available items 
  * @property { CommonModels.LabelResponseDTO[] } items  
  */
-export const PaginateCountryLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).readonly() }).readonly().shape });
+export const PaginateCountryLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).nullable() }).partial().shape });
 export type PaginateCountryLabelsResponse = z.infer<typeof PaginateCountryLabelsResponseSchema>;
 
 }

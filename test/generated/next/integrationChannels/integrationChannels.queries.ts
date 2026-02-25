@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -34,14 +33,14 @@ export const keys = {
  * @returns { UseQueryResult<IntegrationChannelsModels.IntegrationChannelsListResponse> } 
  * @statusCodes [200, 401]
  */
-export const useList = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: IntegrationChannelsModels.IntegrationChannelFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof IntegrationChannelsApi.list, TData>, config?: AxiosRequestConfig) => {
+export const useList = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: IntegrationChannelsModels.IntegrationChannelFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof IntegrationChannelsApi.list, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.list(officeId, limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(IntegrationChannelsAcl.canUseList({ officeId } ));
-    return IntegrationChannelsApi.list(officeId, limit, order, filter, page, cursor, config) },
+    return IntegrationChannelsApi.list(officeId, limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -60,14 +59,14 @@ export const useList = <TData>({ officeId, limit, order, filter, page, cursor }:
  * @returns { UseInfiniteQueryResult<IntegrationChannelsModels.IntegrationChannelsListResponse> } 
  * @statusCodes [200, 401]
  */
-export const useListInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: IntegrationChannelsModels.IntegrationChannelFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof IntegrationChannelsApi.list, TData>, config?: AxiosRequestConfig) => {
+export const useListInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: IntegrationChannelsModels.IntegrationChannelFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof IntegrationChannelsApi.list, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.listInfinite(officeId, limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(IntegrationChannelsAcl.canUseList({ officeId } ));
-    return IntegrationChannelsApi.list(officeId, limit, order, filter, pageParam, cursor, config) },
+    return IntegrationChannelsApi.list(officeId, limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -87,14 +86,14 @@ export const useListInfinite = <TData>({ officeId, limit, order, filter, cursor 
  * @returns { UseMutationResult<IntegrationChannelsModels.IntegrationChannelResponseDto> } 
  * @statusCodes [201, 401]
  */
-export const useCreate = (options?: AppMutationOptions<typeof IntegrationChannelsApi.create, { officeId: string, data: IntegrationChannelsModels.CreateIntegrationChannelRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreate = (options?: AppMutationOptions<typeof IntegrationChannelsApi.create, { officeId: string, data: IntegrationChannelsModels.CreateIntegrationChannelRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, data }) => { 
       checkAcl(IntegrationChannelsAcl.canUseCreate({ officeId } ));
-      return IntegrationChannelsApi.create(officeId, data, config)
+      return IntegrationChannelsApi.create(officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -114,14 +113,14 @@ export const useCreate = (options?: AppMutationOptions<typeof IntegrationChannel
  * @returns { UseQueryResult<IntegrationChannelsModels.IntegrationChannelResponseDto> } 
  * @statusCodes [200, 401]
  */
-export const useFindById = <TData>({ officeId, id }: { officeId: string, id: string }, options?: AppQueryOptions<typeof IntegrationChannelsApi.findById, TData>, config?: AxiosRequestConfig) => {
+export const useFindById = <TData>({ officeId, id }: { officeId: string, id: string }, options?: AppQueryOptions<typeof IntegrationChannelsApi.findById, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.findById(officeId, id),
     queryFn: () => { 
     checkAcl(IntegrationChannelsAcl.canUseFindById({ officeId } ));
-    return IntegrationChannelsApi.findById(officeId, id, config) },
+    return IntegrationChannelsApi.findById(officeId, id) },
     ...options,
   });
 };
@@ -137,14 +136,14 @@ export const useFindById = <TData>({ officeId, id }: { officeId: string, id: str
  * @returns { UseMutationResult<IntegrationChannelsModels.IntegrationChannelResponseDto> } 
  * @statusCodes [200, 401]
  */
-export const useUpdate = (options?: AppMutationOptions<typeof IntegrationChannelsApi.update, { officeId: string, id: string, data: IntegrationChannelsModels.UpdateIntegrationChannelRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdate = (options?: AppMutationOptions<typeof IntegrationChannelsApi.update, { officeId: string, id: string, data: IntegrationChannelsModels.UpdateIntegrationChannelRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, id, data }) => { 
       checkAcl(IntegrationChannelsAcl.canUseUpdate({ officeId } ));
-      return IntegrationChannelsApi.update(officeId, id, data, config)
+      return IntegrationChannelsApi.update(officeId, id, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -166,14 +165,14 @@ export const useUpdate = (options?: AppMutationOptions<typeof IntegrationChannel
  * @returns { UseMutationResult<IntegrationChannelsModels.IntegrationChannelResponseDto> } 
  * @statusCodes [200, 401]
  */
-export const useArchive = (options?: AppMutationOptions<typeof IntegrationChannelsApi.archive, { officeId: string, id: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useArchive = (options?: AppMutationOptions<typeof IntegrationChannelsApi.archive, { officeId: string, id: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, id }) => { 
       checkAcl(IntegrationChannelsAcl.canUseArchive({ officeId } ));
-      return IntegrationChannelsApi.archive(officeId, id, config)
+      return IntegrationChannelsApi.archive(officeId, id)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -195,14 +194,14 @@ export const useArchive = (options?: AppMutationOptions<typeof IntegrationChanne
  * @returns { UseMutationResult<IntegrationChannelsModels.IntegrationChannelResponseDto> } 
  * @statusCodes [200, 401]
  */
-export const useUnarchive = (options?: AppMutationOptions<typeof IntegrationChannelsApi.unarchive, { officeId: string, id: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUnarchive = (options?: AppMutationOptions<typeof IntegrationChannelsApi.unarchive, { officeId: string, id: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, id }) => { 
       checkAcl(IntegrationChannelsAcl.canUseUnarchive({ officeId } ));
-      return IntegrationChannelsApi.unarchive(officeId, id, config)
+      return IntegrationChannelsApi.unarchive(officeId, id)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -224,14 +223,14 @@ export const useUnarchive = (options?: AppMutationOptions<typeof IntegrationChan
  * @returns { UseMutationResult<IntegrationChannelsModels.TestConnectionResponseDto> } 
  * @statusCodes [200, 401]
  */
-export const useTestConnection = (options?: AppMutationOptions<typeof IntegrationChannelsApi.testConnection, { officeId: string, id: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useTestConnection = (options?: AppMutationOptions<typeof IntegrationChannelsApi.testConnection, { officeId: string, id: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, id }) => { 
       checkAcl(IntegrationChannelsAcl.canUseTestConnection({ officeId } ));
-      return IntegrationChannelsApi.testConnection(officeId, id, config)
+      return IntegrationChannelsApi.testConnection(officeId, id)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -256,14 +255,14 @@ export const useTestConnection = (options?: AppMutationOptions<typeof Integratio
  * @returns { UseQueryResult<IntegrationChannelsModels.ListMessagesResponse> } 
  * @statusCodes [200, 401]
  */
-export const useListMessages = <TData>({ officeId, id, limit, order, filter, page, cursor }: { officeId: string, id: string, limit: number, order?: string, filter?: IntegrationChannelsModels.IntegrationMessageFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof IntegrationChannelsApi.listMessages, TData>, config?: AxiosRequestConfig) => {
+export const useListMessages = <TData>({ officeId, id, limit, order, filter, page, cursor }: { officeId: string, id: string, limit: number, order?: string, filter?: IntegrationChannelsModels.IntegrationMessageFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof IntegrationChannelsApi.listMessages, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.listMessages(officeId, id, limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(IntegrationChannelsAcl.canUseListMessages({ officeId } ));
-    return IntegrationChannelsApi.listMessages(officeId, id, limit, order, filter, page, cursor, config) },
+    return IntegrationChannelsApi.listMessages(officeId, id, limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -283,14 +282,14 @@ export const useListMessages = <TData>({ officeId, id, limit, order, filter, pag
  * @returns { UseInfiniteQueryResult<IntegrationChannelsModels.ListMessagesResponse> } 
  * @statusCodes [200, 401]
  */
-export const useListMessagesInfinite = <TData>({ officeId, id, limit, order, filter, cursor }: { officeId: string, id: string, limit: number, order?: string, filter?: IntegrationChannelsModels.IntegrationMessageFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof IntegrationChannelsApi.listMessages, TData>, config?: AxiosRequestConfig) => {
+export const useListMessagesInfinite = <TData>({ officeId, id, limit, order, filter, cursor }: { officeId: string, id: string, limit: number, order?: string, filter?: IntegrationChannelsModels.IntegrationMessageFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof IntegrationChannelsApi.listMessages, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.listMessagesInfinite(officeId, id, limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(IntegrationChannelsAcl.canUseListMessages({ officeId } ));
-    return IntegrationChannelsApi.listMessages(officeId, id, limit, order, filter, pageParam, cursor, config) },
+    return IntegrationChannelsApi.listMessages(officeId, id, limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;

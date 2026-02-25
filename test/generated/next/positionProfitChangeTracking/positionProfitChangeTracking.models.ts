@@ -13,7 +13,7 @@ export namespace PositionProfitChangeTrackingModels {
  * @property { string } profit.currencyCode  
  * @property { number } changeCount  
  */
-export const PositionAccountProfitChangeGroupDtoSchema = z.object({ id: z.string(), timestamp: z.iso.datetime({ offset: true }), users: z.array(CommonModels.UserPreviewDtoSchema).readonly(), profit: z.object({ amount: z.number(), currencyCode: z.string() }).readonly(), changeCount: z.number() }).readonly();
+export const PositionAccountProfitChangeGroupDtoSchema = z.object({ id: z.string(), timestamp: z.iso.datetime({ offset: true }), users: z.array(CommonModels.UserPreviewDtoSchema), profit: z.object({ amount: z.number(), currencyCode: z.string() }), changeCount: z.number() });
 export type PositionAccountProfitChangeGroupDto = z.infer<typeof PositionAccountProfitChangeGroupDtoSchema>;
 
 /** 
@@ -26,7 +26,7 @@ export type PositionAccountProfitChangeGroupDto = z.infer<typeof PositionAccount
  * @property { number } newProfit  
  * @property { string } currencyCode  
  */
-export const PositionAccountProfitChangeEntryDtoSchema = z.object({ timestamp: z.iso.datetime({ offset: true }), user: CommonModels.UserPreviewDtoSchema, changeNumber: z.number(), oldProfit: z.number(), newProfit: z.number(), currencyCode: z.string() }).readonly();
+export const PositionAccountProfitChangeEntryDtoSchema = z.object({ timestamp: z.iso.datetime({ offset: true }), user: CommonModels.UserPreviewDtoSchema, changeNumber: z.number(), oldProfit: z.number(), newProfit: z.number(), currencyCode: z.string() });
 export type PositionAccountProfitChangeEntryDto = z.infer<typeof PositionAccountProfitChangeEntryDtoSchema>;
 
 /** 
@@ -37,7 +37,7 @@ export type PositionAccountProfitChangeEntryDto = z.infer<typeof PositionAccount
  * @property { string } currencyCode  
  * @property { PositionAccountProfitChangeEntryDto[] } entries  
  */
-export const PositionAccountProfitChangeGroupDetailDtoSchema = z.object({ id: z.string(), timestamp: z.iso.datetime({ offset: true }), currencyCode: z.string(), entries: z.array(PositionAccountProfitChangeEntryDtoSchema).readonly() }).readonly();
+export const PositionAccountProfitChangeGroupDetailDtoSchema = z.object({ id: z.string(), timestamp: z.iso.datetime({ offset: true }), currencyCode: z.string(), entries: z.array(PositionAccountProfitChangeEntryDtoSchema) });
 export type PositionAccountProfitChangeGroupDetailDto = z.infer<typeof PositionAccountProfitChangeGroupDetailDtoSchema>;
 
 /** 
@@ -47,7 +47,7 @@ export type PositionAccountProfitChangeGroupDetailDto = z.infer<typeof PositionA
  * @property { string } dateFrom Date range start 
  * @property { string } dateTo Date range end 
  */
-export const PositionProfitChangeTrackingFilterDtoSchema = z.object({ userId: z.string().describe("User IDs who made the changes"), dateFrom: z.string().describe("Date range start"), dateTo: z.string().describe("Date range end") }).readonly();
+export const PositionProfitChangeTrackingFilterDtoSchema = z.object({ userId: z.string().nullable(), dateFrom: z.string().nullable(), dateTo: z.string().nullable() }).partial();
 export type PositionProfitChangeTrackingFilterDto = z.infer<typeof PositionProfitChangeTrackingFilterDtoSchema>;
 
 /** 
@@ -68,7 +68,7 @@ export const PositionProfitChangeTrackingFindProfitChangeGroupsOrderParamEnum = 
  * @property { number } totalItems Total available items 
  * @property { PositionAccountProfitChangeGroupDto[] } items  
  */
-export const PositionProfitChangeTrackingFindProfitChangeGroupsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(PositionAccountProfitChangeGroupDtoSchema).readonly() }).readonly().shape });
+export const PositionProfitChangeTrackingFindProfitChangeGroupsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(PositionAccountProfitChangeGroupDtoSchema).nullable() }).partial().shape });
 export type PositionProfitChangeTrackingFindProfitChangeGroupsResponse = z.infer<typeof PositionProfitChangeTrackingFindProfitChangeGroupsResponseSchema>;
 
 }

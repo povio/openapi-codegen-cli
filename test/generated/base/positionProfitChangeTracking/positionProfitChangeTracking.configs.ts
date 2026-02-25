@@ -5,47 +5,47 @@ import { PositionProfitChangeTrackingQueries } from "./positionProfitChangeTrack
 import { PositionProfitChangeTrackingAcl } from "./positionProfitChangeTracking.acl";
 
 export namespace PositionProfitChangeTrackingConfigs {
-  export const profitChangeGroupsConfig = {
+export const profitChangeGroupsConfig = {
     meta: {
-      title: "Profit Change Groups",
+        title: "Profit Change Groups",
     },
     readAll: {
-      acl: PositionProfitChangeTrackingAcl.canUseFindProfitChangeGroups,
-      schema: PositionProfitChangeTrackingModels.PositionAccountProfitChangeGroupDtoSchema,
-      paginated: PositionProfitChangeTrackingQueries.useFindProfitChangeGroups,
-      infinite: PositionProfitChangeTrackingQueries.useFindProfitChangeGroupsInfinite,
-      filters: {
-        schema: PositionProfitChangeTrackingModels.PositionProfitChangeTrackingFilterDtoSchema,
-        filterDefs: dynamicInputs({
-          schema: PositionProfitChangeTrackingModels.PositionProfitChangeTrackingFilterDtoSchema,
-          options: {
-            inputs: {
-              userId: true,
-              dateFrom: true,
-              dateTo: true,
-            },
-          },
-        }),
-      },
-      columns: dynamicColumns({
+        acl: PositionProfitChangeTrackingAcl.canUseFindProfitChangeGroups,
         schema: PositionProfitChangeTrackingModels.PositionAccountProfitChangeGroupDtoSchema,
-        options: {
-          columns: {
-            id: true,
-            timestamp: true,
-            users: true,
-            profit: true,
-            changeCount: true,
-          },
-          sortable:
-            PositionProfitChangeTrackingModels.PositionProfitChangeTrackingFindProfitChangeGroupsOrderParamEnumSchema,
+        paginated: PositionProfitChangeTrackingQueries.useFindProfitChangeGroups,
+        infinite: PositionProfitChangeTrackingQueries.useFindProfitChangeGroupsInfinite,
+        filters: {
+            schema: PositionProfitChangeTrackingModels.PositionProfitChangeTrackingFilterDtoSchema,
+            filterDefs: dynamicInputs({
+  schema: PositionProfitChangeTrackingModels.PositionProfitChangeTrackingFilterDtoSchema,
+  options: {
+    inputs: {
+      userId: true,
+      dateFrom: true,
+      dateTo: true,
+    },
+  },
+})
         },
-      }),
+        columns: dynamicColumns({
+  schema: PositionProfitChangeTrackingModels.PositionAccountProfitChangeGroupDtoSchema,
+  options: {
+    columns: {
+      id: true,
+      timestamp: true,
+      users: true,
+      profit: true,
+      changeCount: true,
+    },
+    sortable: PositionProfitChangeTrackingModels.PositionProfitChangeTrackingFindProfitChangeGroupsOrderParamEnumSchema,
+  },
+}),
     },
     read: {
-      acl: PositionProfitChangeTrackingAcl.canUseFindProfitChangeGroupDetail,
-      schema: PositionProfitChangeTrackingModels.PositionAccountProfitChangeGroupDetailDtoSchema,
-      query: PositionProfitChangeTrackingQueries.useFindProfitChangeGroupDetail,
+        acl: PositionProfitChangeTrackingAcl.canUseFindProfitChangeGroupDetail,
+        schema: PositionProfitChangeTrackingModels.PositionAccountProfitChangeGroupDetailDtoSchema,
+        query: PositionProfitChangeTrackingQueries.useFindProfitChangeGroupDetail,
     },
-  };
+};
+
 }

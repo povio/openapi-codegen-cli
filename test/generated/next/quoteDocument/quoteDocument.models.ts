@@ -9,7 +9,7 @@ export namespace QuoteDocumentModels {
  * @property { CommonModels.CargoTableBlockDto } cargoTable  
  * @property { CommonModels.FinanceTableBlockDto } financeTable  
  */
-export const QuoteDocumentDataDtoSchema = z.object({ routeTable: CommonModels.RouteTableBlockResponseDtoSchema, cargoTable: CommonModels.CargoTableBlockDtoSchema, financeTable: CommonModels.FinanceTableBlockDtoSchema }).readonly();
+export const QuoteDocumentDataDtoSchema = z.object({ routeTable: CommonModels.RouteTableBlockResponseDtoSchema.nullable(), cargoTable: CommonModels.CargoTableBlockDtoSchema.nullable(), financeTable: CommonModels.FinanceTableBlockDtoSchema.nullable() }).partial();
 export type QuoteDocumentDataDto = z.infer<typeof QuoteDocumentDataDtoSchema>;
 
 /** 
@@ -21,7 +21,7 @@ export type QuoteDocumentDataDto = z.infer<typeof QuoteDocumentDataDtoSchema>;
  * @property { boolean } showWatermarkOnDocuments  
  * @property { CommonModels.LocaleEnum } locale  
  */
-export const QuoteDocumentConfigDtoSchema = z.object({ footerImageUrl: z.string().nullish(), headerImageUrl: z.string().nullish(), termsAndConditionsImageUrl: z.string().nullish(), showWatermarkOnDocuments: z.boolean(), locale: CommonModels.LocaleEnumSchema.nullish() }).readonly();
+export const QuoteDocumentConfigDtoSchema = z.object({ footerImageUrl: z.string().nullish(), headerImageUrl: z.string().nullish(), termsAndConditionsImageUrl: z.string().nullish(), showWatermarkOnDocuments: z.boolean(), locale: CommonModels.LocaleEnumSchema.nullish() });
 export type QuoteDocumentConfigDto = z.infer<typeof QuoteDocumentConfigDtoSchema>;
 
 /** 
@@ -30,7 +30,7 @@ export type QuoteDocumentConfigDto = z.infer<typeof QuoteDocumentConfigDtoSchema
  * @property { string } name  
  * @property { string } address  
  */
-export const CustomerDtoSchema = z.object({ name: z.string(), address: z.string() }).readonly();
+export const CustomerDtoSchema = z.object({ name: z.string(), address: z.string() });
 export type CustomerDto = z.infer<typeof CustomerDtoSchema>;
 
 /** 
@@ -43,7 +43,7 @@ export type CustomerDto = z.infer<typeof CustomerDtoSchema>;
  * @property { string } validFrom  
  * @property { string } validUntil  
  */
-export const ContactDtoSchema = z.object({ name: z.string(), email: z.string(), phone: z.string(), date: z.iso.datetime({ offset: true }), validFrom: z.iso.datetime({ offset: true }).nullish(), validUntil: z.iso.datetime({ offset: true }).nullish() }).readonly();
+export const ContactDtoSchema = z.object({ name: z.string(), email: z.string(), phone: z.string(), date: z.iso.datetime({ offset: true }), validFrom: z.iso.datetime({ offset: true }).nullish(), validUntil: z.iso.datetime({ offset: true }).nullish() });
 export type ContactDto = z.infer<typeof ContactDtoSchema>;
 
 /** 
@@ -67,7 +67,7 @@ export type ContactDto = z.infer<typeof ContactDtoSchema>;
  * @property { QuoteDocumentConfigDto } config  
  * @property { string } issuedAt  
  */
-export const QuoteDocumentResponseDtoSchema = z.object({ id: z.string(), quoteId: z.string(), quoteNumber: z.string(), quoteTransportMode: CommonModels.TransportModeEnumSchema.describe("Mode of transport"), frequency: CommonModels.FrequencyEnumSchema.describe("Frequency of the quote").nullish(), transitDurationInDays: z.string().describe("Transit duration in days").nullish(), customer: CustomerDtoSchema, contact: ContactDtoSchema, data: QuoteDocumentDataDtoSchema.nullish(), suspendCargoTable: z.boolean(), suspendFinanceTable: z.boolean(), bodyRemarks: CommonModels.EditorContentResponseDtoSchema.nullish(), footerRemarks: CommonModels.EditorContentResponseDtoSchema.nullish(), isIssued: z.boolean(), version: z.number(), config: QuoteDocumentConfigDtoSchema.nullish(), issuedAt: z.iso.datetime({ offset: true }).nullish() }).readonly();
+export const QuoteDocumentResponseDtoSchema = z.object({ id: z.string(), quoteId: z.string(), quoteNumber: z.string(), quoteTransportMode: CommonModels.TransportModeEnumSchema, frequency: CommonModels.FrequencyEnumSchema.nullish(), transitDurationInDays: z.string().nullish(), customer: CustomerDtoSchema, contact: ContactDtoSchema, data: QuoteDocumentDataDtoSchema.nullish(), suspendCargoTable: z.boolean(), suspendFinanceTable: z.boolean(), bodyRemarks: CommonModels.EditorContentResponseDtoSchema.nullish(), footerRemarks: CommonModels.EditorContentResponseDtoSchema.nullish(), isIssued: z.boolean(), version: z.number(), config: QuoteDocumentConfigDtoSchema.nullish(), issuedAt: z.iso.datetime({ offset: true }).nullish() });
 export type QuoteDocumentResponseDto = z.infer<typeof QuoteDocumentResponseDtoSchema>;
 
 /** 
@@ -77,7 +77,7 @@ export type QuoteDocumentResponseDto = z.infer<typeof QuoteDocumentResponseDtoSc
  * @property { CommonModels.CargoTableBlockUpdateDto } cargoTable  
  * @property { CommonModels.FinanceTableBlockUpdateDto } financeTable  
  */
-export const QuoteDocumentDataUpdateDtoSchema = z.object({ routeTable: CommonModels.RouteTableUpdateBlockDtoSchema, cargoTable: CommonModels.CargoTableBlockUpdateDtoSchema, financeTable: CommonModels.FinanceTableBlockUpdateDtoSchema }).readonly();
+export const QuoteDocumentDataUpdateDtoSchema = z.object({ routeTable: CommonModels.RouteTableUpdateBlockDtoSchema.nullable(), cargoTable: CommonModels.CargoTableBlockUpdateDtoSchema.nullable(), financeTable: CommonModels.FinanceTableBlockUpdateDtoSchema.nullable() }).partial();
 export type QuoteDocumentDataUpdateDto = z.infer<typeof QuoteDocumentDataUpdateDtoSchema>;
 
 /** 
@@ -86,7 +86,7 @@ export type QuoteDocumentDataUpdateDto = z.infer<typeof QuoteDocumentDataUpdateD
  * @property { string } name  
  * @property { string } address  
  */
-export const CustomerUpdateDtoSchema = z.object({ name: z.string(), address: z.string() }).readonly();
+export const CustomerUpdateDtoSchema = z.object({ name: z.string().nullable(), address: z.string().nullable() }).partial();
 export type CustomerUpdateDto = z.infer<typeof CustomerUpdateDtoSchema>;
 
 /** 
@@ -97,7 +97,7 @@ export type CustomerUpdateDto = z.infer<typeof CustomerUpdateDtoSchema>;
  * @property { string } phone  
  * @property { string } date  
  */
-export const ContactUpdateDtoSchema = z.object({ name: z.string(), email: z.email(), phone: z.string(), date: z.iso.datetime({ offset: true }) }).readonly();
+export const ContactUpdateDtoSchema = z.object({ name: z.string().nullable(), email: z.email().nullable(), phone: z.string().nullable(), date: z.iso.datetime({ offset: true }).nullable() }).partial();
 export type ContactUpdateDto = z.infer<typeof ContactUpdateDtoSchema>;
 
 /** 
@@ -111,7 +111,7 @@ export type ContactUpdateDto = z.infer<typeof ContactUpdateDtoSchema>;
  * @property { boolean } suspendFinanceTable  
  * @property { QuoteDocumentDataUpdateDto } data  
  */
-export const UpdateQuoteDocumentRequestDtoSchema = z.object({ customer: CustomerUpdateDtoSchema, contact: ContactUpdateDtoSchema, bodyRemarks: CommonModels.EditorContentUpdateDtoSchema, footerRemarks: CommonModels.EditorContentUpdateDtoSchema, suspendCargoTable: z.boolean(), suspendFinanceTable: z.boolean(), data: QuoteDocumentDataUpdateDtoSchema }).readonly();
+export const UpdateQuoteDocumentRequestDtoSchema = z.object({ customer: CustomerUpdateDtoSchema.nullable(), contact: ContactUpdateDtoSchema.nullable(), bodyRemarks: CommonModels.EditorContentUpdateDtoSchema.nullable(), footerRemarks: CommonModels.EditorContentUpdateDtoSchema.nullable(), suspendCargoTable: z.boolean().nullable(), suspendFinanceTable: z.boolean().nullable(), data: QuoteDocumentDataUpdateDtoSchema.nullable() }).partial();
 export type UpdateQuoteDocumentRequestDto = z.infer<typeof UpdateQuoteDocumentRequestDtoSchema>;
 
 /** 
@@ -119,7 +119,7 @@ export type UpdateQuoteDocumentRequestDto = z.infer<typeof UpdateQuoteDocumentRe
  * @type { object }
  * @property { string } issuedAt  
  */
-export const GenerateQuoteDocumentPreviewRequestDtoSchema = z.object({ issuedAt: z.iso.datetime({ offset: true }) }).readonly();
+export const GenerateQuoteDocumentPreviewRequestDtoSchema = z.object({ issuedAt: z.iso.datetime({ offset: true }).nullable() }).partial();
 export type GenerateQuoteDocumentPreviewRequestDto = z.infer<typeof GenerateQuoteDocumentPreviewRequestDtoSchema>;
 
 /** 
@@ -128,7 +128,7 @@ export type GenerateQuoteDocumentPreviewRequestDto = z.infer<typeof GenerateQuot
  * @property { string } issuedAt  
  * @property { string } fileName  
  */
-export const GenerateQuoteDocumentRequestDtoSchema = z.object({ issuedAt: z.iso.datetime({ offset: true }).nullish(), fileName: z.string() }).readonly();
+export const GenerateQuoteDocumentRequestDtoSchema = z.object({ issuedAt: z.iso.datetime({ offset: true }).nullish(), fileName: z.string() });
 export type GenerateQuoteDocumentRequestDto = z.infer<typeof GenerateQuoteDocumentRequestDtoSchema>;
 
 }

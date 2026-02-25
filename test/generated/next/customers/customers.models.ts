@@ -8,7 +8,7 @@ export namespace CustomersModels {
  * @property { string } id  
  * @property { string } name  
  */
-export const CustomerProfileBusinessPartnerDtoSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const CustomerProfileBusinessPartnerDtoSchema = z.object({ id: z.string(), name: z.string() });
 export type CustomerProfileBusinessPartnerDto = z.infer<typeof CustomerProfileBusinessPartnerDtoSchema>;
 
 /** 
@@ -23,7 +23,7 @@ export type CustomerProfileBusinessPartnerDto = z.infer<typeof CustomerProfileBu
  * @property { string } businessPartnerId Business partner id of the customer 
  * @property { CustomerProfileBusinessPartnerDto } businessPartner  
  */
-export const CustomerProfileResponseDTOSchema = z.object({ id: z.string().describe("Unique identifier of the customer"), firstName: z.string().describe("First name of the customer"), lastName: z.string().describe("Last name of the customer"), email: z.email().describe("Email of the customer"), phone: z.string().describe("Phone number of the customer"), companyId: z.string().describe("Company id of the customer").nullish(), businessPartnerId: z.string().describe("Business partner id of the customer").nullish(), businessPartner: CustomerProfileBusinessPartnerDtoSchema.nullish() }).readonly();
+export const CustomerProfileResponseDTOSchema = z.object({ id: z.string(), firstName: z.string(), lastName: z.string(), email: z.email(), phone: z.string(), companyId: z.string().nullish(), businessPartnerId: z.string().nullish(), businessPartner: CustomerProfileBusinessPartnerDtoSchema.nullish() });
 export type CustomerProfileResponseDTO = z.infer<typeof CustomerProfileResponseDTOSchema>;
 
 /** 
@@ -32,7 +32,7 @@ export type CustomerProfileResponseDTO = z.infer<typeof CustomerProfileResponseD
  * @property { string } id  
  * @property { string } name  
  */
-export const CustomerBusinessPartnerResponseDtoSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const CustomerBusinessPartnerResponseDtoSchema = z.object({ id: z.string(), name: z.string() });
 export type CustomerBusinessPartnerResponseDto = z.infer<typeof CustomerBusinessPartnerResponseDtoSchema>;
 
 /** 
@@ -48,7 +48,7 @@ export type CustomerBusinessPartnerResponseDto = z.infer<typeof CustomerBusiness
  * @property { boolean } archived Wether the customer is archived 
  * @property { CustomerBusinessPartnerResponseDto } businessPartner  
  */
-export const CustomerResponseDTOSchema = z.object({ id: z.string().describe("Unique identifier of the customer"), firstName: z.string().describe("First name of the customer"), lastName: z.string().describe("Last name of the customer"), email: z.email().describe("Email of the customer"), phone: z.string().describe("Phone number of the customer"), companyId: z.string().describe("Company Id of the customer").nullish(), businessPartnerId: z.string().describe("Business partner Id of the customer").nullish(), archived: z.boolean().describe("Wether the customer is archived"), businessPartner: CustomerBusinessPartnerResponseDtoSchema.nullish() }).readonly();
+export const CustomerResponseDTOSchema = z.object({ id: z.string(), firstName: z.string(), lastName: z.string(), email: z.email(), phone: z.string(), companyId: z.string().nullish(), businessPartnerId: z.string().nullish(), archived: z.boolean(), businessPartner: CustomerBusinessPartnerResponseDtoSchema.nullish() });
 export type CustomerResponseDTO = z.infer<typeof CustomerResponseDTOSchema>;
 
 /** 
@@ -57,7 +57,7 @@ export type CustomerResponseDTO = z.infer<typeof CustomerResponseDTOSchema>;
  * @property { string } id  
  * @property { string } name  
  */
-export const CustomerListItemBusinessPartnerDtoSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const CustomerListItemBusinessPartnerDtoSchema = z.object({ id: z.string(), name: z.string() });
 export type CustomerListItemBusinessPartnerDto = z.infer<typeof CustomerListItemBusinessPartnerDtoSchema>;
 
 /** 
@@ -72,7 +72,7 @@ export type CustomerListItemBusinessPartnerDto = z.infer<typeof CustomerListItem
  * @property { string } businessPartnerId Business partner id of the customer 
  * @property { CustomerListItemBusinessPartnerDto } businessPartner  
  */
-export const CustomerListItemDTOSchema = z.object({ id: z.string().describe("Unique identifier of the customer"), firstName: z.string().describe("First name of the customer"), lastName: z.string().describe("Last name of the customer"), email: z.string().describe("Email of the customer"), phone: z.string().describe("Phone number of the customer"), companyId: z.string().describe("Company id of the customer").nullish(), businessPartnerId: z.string().describe("Business partner id of the customer").nullish(), businessPartner: CustomerListItemBusinessPartnerDtoSchema.nullish() }).readonly();
+export const CustomerListItemDTOSchema = z.object({ id: z.string(), firstName: z.string(), lastName: z.string(), email: z.string(), phone: z.string(), companyId: z.string().nullish(), businessPartnerId: z.string().nullish(), businessPartner: CustomerListItemBusinessPartnerDtoSchema.nullish() });
 export type CustomerListItemDTO = z.infer<typeof CustomerListItemDTOSchema>;
 
 /** 
@@ -85,7 +85,7 @@ export type CustomerListItemDTO = z.infer<typeof CustomerListItemDTOSchema>;
  * @property { string } companyId Company id of the customer 
  * @property { string } businessPartnerId Business partner id of the customer 
  */
-export const CreateCustomerDTOSchema = z.object({ firstName: z.string().describe("First name of the customer"), lastName: z.string().describe("Last name of the customer"), email: z.email().describe("Email of the customer"), phone: z.string().describe("Phone number of the customer").nullish(), companyId: z.string().describe("Company id of the customer").nullish(), businessPartnerId: z.string().describe("Business partner id of the customer").nullish() }).readonly();
+export const CreateCustomerDTOSchema = z.object({ firstName: z.string(), lastName: z.string(), email: z.email(), phone: z.string().nullish(), companyId: z.string().nullish(), businessPartnerId: z.string().nullish() });
 export type CreateCustomerDTO = z.infer<typeof CreateCustomerDTOSchema>;
 
 /** 
@@ -98,7 +98,7 @@ export type CreateCustomerDTO = z.infer<typeof CreateCustomerDTOSchema>;
  * @property { string } businessPartnerId  
  * @property { string } search  
  */
-export const CustomerPaginationFilterDtoSchema = z.object({ firstName: z.string(), lastName: z.string(), email: z.string(), companyId: z.string(), businessPartnerId: z.string(), search: z.string() }).readonly();
+export const CustomerPaginationFilterDtoSchema = z.object({ firstName: z.string().nullable(), lastName: z.string().nullable(), email: z.string().nullable(), companyId: z.string().nullable(), businessPartnerId: z.string().nullable(), search: z.string().nullable() }).partial();
 export type CustomerPaginationFilterDto = z.infer<typeof CustomerPaginationFilterDtoSchema>;
 
 /** 
@@ -110,7 +110,7 @@ export type CustomerPaginationFilterDto = z.infer<typeof CustomerPaginationFilte
  * @property { string } companyId Company id of the customer 
  * @property { string } businessPartnerId Business partner id of the customer 
  */
-export const UpdateCustomerDTOSchema = z.object({ firstName: z.string().describe("First name of the customer"), lastName: z.string().describe("Last name of the customer"), phone: z.string().describe("Phone number of the customer"), companyId: z.string().describe("Company id of the customer"), businessPartnerId: z.string().describe("Business partner id of the customer") }).readonly();
+export const UpdateCustomerDTOSchema = z.object({ firstName: z.string().nullable(), lastName: z.string().nullable(), phone: z.string().nullable(), companyId: z.string().nullable(), businessPartnerId: z.string().nullable() }).partial();
 export type UpdateCustomerDTO = z.infer<typeof UpdateCustomerDTOSchema>;
 
 /** 
@@ -131,7 +131,7 @@ export const CustomersListOrderParamEnum = CustomersListOrderParamEnumSchema.enu
  * @property { number } totalItems Total available items 
  * @property { CustomerListItemDTO[] } items  
  */
-export const CustomersListResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CustomerListItemDTOSchema).readonly() }).readonly().shape });
+export const CustomersListResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CustomerListItemDTOSchema).nullable() }).partial().shape });
 export type CustomersListResponse = z.infer<typeof CustomersListResponseSchema>;
 
 }

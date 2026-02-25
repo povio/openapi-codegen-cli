@@ -17,7 +17,7 @@ export const MasterDataTypeEnum = MasterDataTypeEnumSchema.enum;
  * @property { string } name Name of the item 
  * @property { MasterDataTypeEnum } type Type of the item 
  */
-export const MasterDataItemResponseDTOSchema = z.object({ id: z.string().describe("Unique identifier of the item"), name: z.string().describe("Name of the item"), type: MasterDataTypeEnumSchema.describe("Type of the item") }).readonly();
+export const MasterDataItemResponseDTOSchema = z.object({ id: z.string(), name: z.string(), type: MasterDataTypeEnumSchema });
 export type MasterDataItemResponseDTO = z.infer<typeof MasterDataItemResponseDTOSchema>;
 
 /** 
@@ -25,7 +25,7 @@ export type MasterDataItemResponseDTO = z.infer<typeof MasterDataItemResponseDTO
  * @type { object }
  * @property { MasterDataItemResponseDTO[] } items List of master data items 
  */
-export const MasterDataItemsResponseDTOSchema = z.object({ items: z.array(MasterDataItemResponseDTOSchema).readonly().describe("List of master data items") }).readonly();
+export const MasterDataItemsResponseDTOSchema = z.object({ items: z.array(MasterDataItemResponseDTOSchema) });
 export type MasterDataItemsResponseDTO = z.infer<typeof MasterDataItemsResponseDTOSchema>;
 
 /** 
@@ -35,21 +35,21 @@ export type MasterDataItemsResponseDTO = z.infer<typeof MasterDataItemsResponseD
  * @property { string } label Label of the item 
  * @property { MasterDataTypeEnum } type Type of the item 
  */
-export const MasterDataLabelResponseDTOSchema = z.object({ id: z.string().describe("Unique identifier of the item"), label: z.string().describe("Label of the item"), type: MasterDataTypeEnumSchema.describe("Type of the item") }).readonly();
+export const MasterDataLabelResponseDTOSchema = z.object({ id: z.string(), label: z.string(), type: MasterDataTypeEnumSchema });
 export type MasterDataLabelResponseDTO = z.infer<typeof MasterDataLabelResponseDTOSchema>;
 
 /** 
  * MasterDataFindAllTypesParamSchema 
  * @type { array }
  */
-export const MasterDataFindAllTypesParamSchema = z.array(MasterDataTypeEnumSchema).readonly();
+export const MasterDataFindAllTypesParamSchema = z.array(MasterDataTypeEnumSchema);
 export type MasterDataFindAllTypesParam = z.infer<typeof MasterDataFindAllTypesParamSchema>;
 
 /** 
  * MasterDataPaginateTypesParamSchema 
  * @type { array }
  */
-export const MasterDataPaginateTypesParamSchema = z.array(MasterDataTypeEnumSchema).readonly();
+export const MasterDataPaginateTypesParamSchema = z.array(MasterDataTypeEnumSchema);
 export type MasterDataPaginateTypesParam = z.infer<typeof MasterDataPaginateTypesParamSchema>;
 
 /** 
@@ -62,7 +62,7 @@ export type MasterDataPaginateTypesParam = z.infer<typeof MasterDataPaginateType
  * @property { number } totalItems Total available items 
  * @property { MasterDataLabelResponseDTO[] } items  
  */
-export const MasterDataPaginateResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(MasterDataLabelResponseDTOSchema).readonly() }).readonly().shape });
+export const MasterDataPaginateResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(MasterDataLabelResponseDTOSchema).nullable() }).partial().shape });
 export type MasterDataPaginateResponse = z.infer<typeof MasterDataPaginateResponseSchema>;
 
 }

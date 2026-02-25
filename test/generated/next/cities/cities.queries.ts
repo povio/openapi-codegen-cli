@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -34,14 +33,14 @@ export const keys = {
  * @returns { UseQueryResult<CitiesModels.CitiesPaginateResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: CitiesModels.CityPaginationFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof CitiesApi.paginate, TData>, config?: AxiosRequestConfig) => {
+export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: CitiesModels.CityPaginationFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof CitiesApi.paginate, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.paginate(limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(CitiesAcl.canUsePaginate());
-    return CitiesApi.paginate(limit, order, filter, page, cursor, config) },
+    return CitiesApi.paginate(limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -59,14 +58,14 @@ export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { lim
  * @returns { UseInfiniteQueryResult<CitiesModels.CitiesPaginateResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: CitiesModels.CityPaginationFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof CitiesApi.paginate, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: CitiesModels.CityPaginationFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof CitiesApi.paginate, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.paginateInfinite(limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(CitiesAcl.canUsePaginate());
-    return CitiesApi.paginate(limit, order, filter, pageParam, cursor, config) },
+    return CitiesApi.paginate(limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -85,14 +84,14 @@ export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { l
  * @returns { UseMutationResult<CitiesModels.CityResponseDTO> } 
  * @statusCodes [201, 401]
  */
-export const useCreate = (options?: AppMutationOptions<typeof CitiesApi.create, { data: CitiesModels.CreateCityRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreate = (options?: AppMutationOptions<typeof CitiesApi.create, { data: CitiesModels.CreateCityRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ data }) => { 
       checkAcl(CitiesAcl.canUseCreate());
-      return CitiesApi.create(data, config)
+      return CitiesApi.create(data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -115,14 +114,14 @@ export const useCreate = (options?: AppMutationOptions<typeof CitiesApi.create, 
  * @returns { UseQueryResult<CitiesModels.ListCityLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const useListCityLabels = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: CitiesModels.CityLabelFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof CitiesApi.listCityLabels, TData>, config?: AxiosRequestConfig) => {
+export const useListCityLabels = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: CitiesModels.CityLabelFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof CitiesApi.listCityLabels, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.listCityLabels(limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(CitiesAcl.canUseListCityLabels());
-    return CitiesApi.listCityLabels(limit, order, filter, page, cursor, config) },
+    return CitiesApi.listCityLabels(limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -140,14 +139,14 @@ export const useListCityLabels = <TData>({ limit, order, filter, page, cursor }:
  * @returns { UseInfiniteQueryResult<CitiesModels.ListCityLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const useListCityLabelsInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: CitiesModels.CityLabelFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof CitiesApi.listCityLabels, TData>, config?: AxiosRequestConfig) => {
+export const useListCityLabelsInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: CitiesModels.CityLabelFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof CitiesApi.listCityLabels, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.listCityLabelsInfinite(limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(CitiesAcl.canUseListCityLabels());
-    return CitiesApi.listCityLabels(limit, order, filter, pageParam, cursor, config) },
+    return CitiesApi.listCityLabels(limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -166,14 +165,14 @@ export const useListCityLabelsInfinite = <TData>({ limit, order, filter, cursor 
  * @returns { UseQueryResult<CitiesModels.CityLabelResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useGetCityLabelById = <TData>({ id }: { id: string }, options?: AppQueryOptions<typeof CitiesApi.getCityLabelById, TData>, config?: AxiosRequestConfig) => {
+export const useGetCityLabelById = <TData>({ id }: { id: string }, options?: AppQueryOptions<typeof CitiesApi.getCityLabelById, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.getCityLabelById(id),
     queryFn: () => { 
     checkAcl(CitiesAcl.canUseGetCityLabelById());
-    return CitiesApi.getCityLabelById(id, config) },
+    return CitiesApi.getCityLabelById(id) },
     ...options,
   });
 };
@@ -187,14 +186,14 @@ export const useGetCityLabelById = <TData>({ id }: { id: string }, options?: App
  * @returns { UseQueryResult<CitiesModels.CityResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useFindById = <TData>({ id }: { id: string }, options?: AppQueryOptions<typeof CitiesApi.findById, TData>, config?: AxiosRequestConfig) => {
+export const useFindById = <TData>({ id }: { id: string }, options?: AppQueryOptions<typeof CitiesApi.findById, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.findById(id),
     queryFn: () => { 
     checkAcl(CitiesAcl.canUseFindById());
-    return CitiesApi.findById(id, config) },
+    return CitiesApi.findById(id) },
     ...options,
   });
 };
@@ -209,14 +208,14 @@ export const useFindById = <TData>({ id }: { id: string }, options?: AppQueryOpt
  * @returns { UseMutationResult<CitiesModels.CityResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useUpdate = (options?: AppMutationOptions<typeof CitiesApi.update, { id: string, data: CitiesModels.UpdateCityRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdate = (options?: AppMutationOptions<typeof CitiesApi.update, { id: string, data: CitiesModels.UpdateCityRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ id, data }) => { 
       checkAcl(CitiesAcl.canUseUpdate());
-      return CitiesApi.update(id, data, config)
+      return CitiesApi.update(id, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -237,14 +236,14 @@ export const useUpdate = (options?: AppMutationOptions<typeof CitiesApi.update, 
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
  */
-export const useArchive = (options?: AppMutationOptions<typeof CitiesApi.archive, { id: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useArchive = (options?: AppMutationOptions<typeof CitiesApi.archive, { id: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ id }) => { 
       checkAcl(CitiesAcl.canUseArchive());
-      return CitiesApi.archive(id, config)
+      return CitiesApi.archive(id)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -263,14 +262,14 @@ export const useArchive = (options?: AppMutationOptions<typeof CitiesApi.archive
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
  */
-export const useUnarchive = (options?: AppMutationOptions<typeof CitiesApi.unarchive, { id: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUnarchive = (options?: AppMutationOptions<typeof CitiesApi.unarchive, { id: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ id }) => { 
       checkAcl(CitiesAcl.canUseUnarchive());
-      return CitiesApi.unarchive(id, config)
+      return CitiesApi.unarchive(id)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

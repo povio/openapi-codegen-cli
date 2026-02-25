@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -26,14 +25,14 @@ export const keys = {
  * @returns { UseQueryResult<PositionChecklistModels.PositionChecklistResponseDto> } 
  * @statusCodes [200, 401]
  */
-export const useList = <TData>({ officeId, positionId }: { officeId: string, positionId: string }, options?: AppQueryOptions<typeof PositionChecklistApi.list, TData>, config?: AxiosRequestConfig) => {
+export const useList = <TData>({ officeId, positionId }: { officeId: string, positionId: string }, options?: AppQueryOptions<typeof PositionChecklistApi.list, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.list(officeId, positionId),
     queryFn: () => { 
     checkAcl(PositionChecklistAcl.canUseList({ officeId } ));
-    return PositionChecklistApi.list(officeId, positionId, config) },
+    return PositionChecklistApi.list(officeId, positionId) },
     ...options,
   });
 };
@@ -49,14 +48,14 @@ export const useList = <TData>({ officeId, positionId }: { officeId: string, pos
  * @returns { UseMutationResult<PositionChecklistModels.ApplyTemplatesResponse> } 
  * @statusCodes [201, 401]
  */
-export const useApplyTemplates = (options?: AppMutationOptions<typeof PositionChecklistApi.applyTemplates, { officeId: string, positionId: string, data: PositionChecklistModels.ApplyTemplatesRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useApplyTemplates = (options?: AppMutationOptions<typeof PositionChecklistApi.applyTemplates, { officeId: string, positionId: string, data: PositionChecklistModels.ApplyTemplatesRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, positionId, data }) => { 
       checkAcl(PositionChecklistAcl.canUseApplyTemplates({ officeId } ));
-      return PositionChecklistApi.applyTemplates(officeId, positionId, data, config)
+      return PositionChecklistApi.applyTemplates(officeId, positionId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -77,14 +76,14 @@ export const useApplyTemplates = (options?: AppMutationOptions<typeof PositionCh
  * @returns { UseMutationResult<PositionChecklistModels.PositionChecklistItemResponseDto> } 
  * @statusCodes [201, 401]
  */
-export const useComplete = (options?: AppMutationOptions<typeof PositionChecklistApi.complete, { officeId: string, positionId: string, itemId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useComplete = (options?: AppMutationOptions<typeof PositionChecklistApi.complete, { officeId: string, positionId: string, itemId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, positionId, itemId }) => { 
       checkAcl(PositionChecklistAcl.canUseComplete({ officeId } ));
-      return PositionChecklistApi.complete(officeId, positionId, itemId, config)
+      return PositionChecklistApi.complete(officeId, positionId, itemId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -105,14 +104,14 @@ export const useComplete = (options?: AppMutationOptions<typeof PositionChecklis
  * @returns { UseMutationResult<PositionChecklistModels.PositionChecklistItemResponseDto> } 
  * @statusCodes [201, 401]
  */
-export const useUncomplete = (options?: AppMutationOptions<typeof PositionChecklistApi.uncomplete, { officeId: string, positionId: string, itemId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUncomplete = (options?: AppMutationOptions<typeof PositionChecklistApi.uncomplete, { officeId: string, positionId: string, itemId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, positionId, itemId }) => { 
       checkAcl(PositionChecklistAcl.canUseUncomplete({ officeId } ));
-      return PositionChecklistApi.uncomplete(officeId, positionId, itemId, config)
+      return PositionChecklistApi.uncomplete(officeId, positionId, itemId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -134,14 +133,14 @@ export const useUncomplete = (options?: AppMutationOptions<typeof PositionCheckl
  * @returns { UseMutationResult<PositionChecklistModels.PositionChecklistItemResponseDto> } 
  * @statusCodes [200, 401]
  */
-export const useUpdateNotes = (options?: AppMutationOptions<typeof PositionChecklistApi.updateNotes, { officeId: string, positionId: string, itemId: string, data: PositionChecklistModels.UpdatePositionChecklistItemDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdateNotes = (options?: AppMutationOptions<typeof PositionChecklistApi.updateNotes, { officeId: string, positionId: string, itemId: string, data: PositionChecklistModels.UpdatePositionChecklistItemDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, positionId, itemId, data }) => { 
       checkAcl(PositionChecklistAcl.canUseUpdateNotes({ officeId } ));
-      return PositionChecklistApi.updateNotes(officeId, positionId, itemId, data, config)
+      return PositionChecklistApi.updateNotes(officeId, positionId, itemId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -162,14 +161,14 @@ export const useUpdateNotes = (options?: AppMutationOptions<typeof PositionCheck
  * @returns { UseMutationResult<PositionChecklistModels.PositionChecklistReorderResponse> } 
  * @statusCodes [200, 401]
  */
-export const useReorder = (options?: AppMutationOptions<typeof PositionChecklistApi.reorder, { officeId: string, positionId: string, data: PositionChecklistModels.ReorderPositionChecklistDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useReorder = (options?: AppMutationOptions<typeof PositionChecklistApi.reorder, { officeId: string, positionId: string, data: PositionChecklistModels.ReorderPositionChecklistDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, positionId, data }) => { 
       checkAcl(PositionChecklistAcl.canUseReorder({ officeId } ));
-      return PositionChecklistApi.reorder(officeId, positionId, data, config)
+      return PositionChecklistApi.reorder(officeId, positionId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

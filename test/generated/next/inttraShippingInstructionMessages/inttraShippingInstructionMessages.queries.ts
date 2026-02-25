@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -33,14 +32,14 @@ export const keys = {
  * @returns { UseQueryResult<InttraShippingInstructionMessagesModels.InttraShippingInstructionMessagesListResponse> } 
  * @statusCodes [200, 401]
  */
-export const useList = <TData>({ officeId, positionId, shippingInstructionsId, limit, page, cursor, filter }: { officeId: string, positionId: string, shippingInstructionsId: string, limit: number, page?: number, cursor?: string, filter?: InttraShippingInstructionMessagesModels.ShippingInstructionMessageFilterDto }, options?: AppQueryOptions<typeof InttraShippingInstructionMessagesApi.list, TData>, config?: AxiosRequestConfig) => {
+export const useList = <TData>({ officeId, positionId, shippingInstructionsId, limit, page, cursor, filter }: { officeId: string, positionId: string, shippingInstructionsId: string, limit: number, page?: number, cursor?: string, filter?: InttraShippingInstructionMessagesModels.ShippingInstructionMessageFilterDto }, options?: AppQueryOptions<typeof InttraShippingInstructionMessagesApi.list, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.list(officeId, positionId, shippingInstructionsId, limit, page, cursor, filter),
     queryFn: () => { 
     checkAcl(InttraShippingInstructionMessagesAcl.canUseList({ officeId } ));
-    return InttraShippingInstructionMessagesApi.list(officeId, positionId, shippingInstructionsId, limit, page, cursor, filter, config) },
+    return InttraShippingInstructionMessagesApi.list(officeId, positionId, shippingInstructionsId, limit, page, cursor, filter) },
     ...options,
   });
 };
@@ -60,14 +59,14 @@ export const useList = <TData>({ officeId, positionId, shippingInstructionsId, l
  * @returns { UseInfiniteQueryResult<InttraShippingInstructionMessagesModels.InttraShippingInstructionMessagesListResponse> } 
  * @statusCodes [200, 401]
  */
-export const useListInfinite = <TData>({ officeId, positionId, shippingInstructionsId, limit, cursor, filter }: { officeId: string, positionId: string, shippingInstructionsId: string, limit: number, cursor?: string, filter?: InttraShippingInstructionMessagesModels.ShippingInstructionMessageFilterDto }, options?: AppInfiniteQueryOptions<typeof InttraShippingInstructionMessagesApi.list, TData>, config?: AxiosRequestConfig) => {
+export const useListInfinite = <TData>({ officeId, positionId, shippingInstructionsId, limit, cursor, filter }: { officeId: string, positionId: string, shippingInstructionsId: string, limit: number, cursor?: string, filter?: InttraShippingInstructionMessagesModels.ShippingInstructionMessageFilterDto }, options?: AppInfiniteQueryOptions<typeof InttraShippingInstructionMessagesApi.list, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.listInfinite(officeId, positionId, shippingInstructionsId, limit, cursor, filter),
     queryFn: ({ pageParam }) => { 
     checkAcl(InttraShippingInstructionMessagesAcl.canUseList({ officeId } ));
-    return InttraShippingInstructionMessagesApi.list(officeId, positionId, shippingInstructionsId, limit, pageParam, cursor, filter, config) },
+    return InttraShippingInstructionMessagesApi.list(officeId, positionId, shippingInstructionsId, limit, pageParam, cursor, filter) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -89,14 +88,14 @@ export const useListInfinite = <TData>({ officeId, positionId, shippingInstructi
  * @returns { UseMutationResult<InttraShippingInstructionMessagesModels.ShippingInstructionMessageResponseDto> } 
  * @statusCodes [201, 401]
  */
-export const useCreate = (options?: AppMutationOptions<typeof InttraShippingInstructionMessagesApi.create, { officeId: string, positionId: string, shippingInstructionsId: string, data: InttraShippingInstructionMessagesModels.CreateShippingInstructionMessageRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreate = (options?: AppMutationOptions<typeof InttraShippingInstructionMessagesApi.create, { officeId: string, positionId: string, shippingInstructionsId: string, data: InttraShippingInstructionMessagesModels.CreateShippingInstructionMessageRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, positionId, shippingInstructionsId, data }) => { 
       checkAcl(InttraShippingInstructionMessagesAcl.canUseCreate({ officeId } ));
-      return InttraShippingInstructionMessagesApi.create(officeId, positionId, shippingInstructionsId, data, config)
+      return InttraShippingInstructionMessagesApi.create(officeId, positionId, shippingInstructionsId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -118,14 +117,14 @@ export const useCreate = (options?: AppMutationOptions<typeof InttraShippingInst
  * @returns { UseQueryResult<InttraShippingInstructionMessagesModels.ShippingInstructionMessageResponseDto> } 
  * @statusCodes [200, 401]
  */
-export const useGetById = <TData>({ officeId, positionId, shippingInstructionsId, messageId }: { officeId: string, positionId: string, shippingInstructionsId: string, messageId: string }, options?: AppQueryOptions<typeof InttraShippingInstructionMessagesApi.getById, TData>, config?: AxiosRequestConfig) => {
+export const useGetById = <TData>({ officeId, positionId, shippingInstructionsId, messageId }: { officeId: string, positionId: string, shippingInstructionsId: string, messageId: string }, options?: AppQueryOptions<typeof InttraShippingInstructionMessagesApi.getById, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.getById(officeId, positionId, shippingInstructionsId, messageId),
     queryFn: () => { 
     checkAcl(InttraShippingInstructionMessagesAcl.canUseGetById({ officeId } ));
-    return InttraShippingInstructionMessagesApi.getById(officeId, positionId, shippingInstructionsId, messageId, config) },
+    return InttraShippingInstructionMessagesApi.getById(officeId, positionId, shippingInstructionsId, messageId) },
     ...options,
   });
 };
@@ -143,14 +142,14 @@ export const useGetById = <TData>({ officeId, positionId, shippingInstructionsId
  * @returns { UseMutationResult<InttraShippingInstructionMessagesModels.ShippingInstructionMessageResponseDto> } 
  * @statusCodes [200, 401]
  */
-export const useUpdate = (options?: AppMutationOptions<typeof InttraShippingInstructionMessagesApi.update, { officeId: string, positionId: string, shippingInstructionsId: string, messageId: string, data: InttraShippingInstructionMessagesModels.UpdateShippingInstructionMessageRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdate = (options?: AppMutationOptions<typeof InttraShippingInstructionMessagesApi.update, { officeId: string, positionId: string, shippingInstructionsId: string, messageId: string, data: InttraShippingInstructionMessagesModels.UpdateShippingInstructionMessageRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, positionId, shippingInstructionsId, messageId, data }) => { 
       checkAcl(InttraShippingInstructionMessagesAcl.canUseUpdate({ officeId } ));
-      return InttraShippingInstructionMessagesApi.update(officeId, positionId, shippingInstructionsId, messageId, data, config)
+      return InttraShippingInstructionMessagesApi.update(officeId, positionId, shippingInstructionsId, messageId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

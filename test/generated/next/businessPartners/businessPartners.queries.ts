@@ -1,4 +1,4 @@
-import axios, { AxiosRequestConfig } from "axios";
+import axios, {  } from "axios";
 import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -38,14 +38,14 @@ export const keys = {
  * @returns { UseQueryResult<BusinessPartnersModels.BusinessPartnersPaginateResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginate = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: BusinessPartnersModels.BusinessPartnerFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof BusinessPartnersApi.paginate, TData>, config?: AxiosRequestConfig) => {
+export const usePaginate = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: BusinessPartnersModels.BusinessPartnerFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof BusinessPartnersApi.paginate, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.paginate(officeId, limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(BusinessPartnersAcl.canUsePaginate({ officeId } ));
-    return BusinessPartnersApi.paginate(officeId, limit, order, filter, page, cursor, config) },
+    return BusinessPartnersApi.paginate(officeId, limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -64,14 +64,14 @@ export const usePaginate = <TData>({ officeId, limit, order, filter, page, curso
  * @returns { UseInfiniteQueryResult<BusinessPartnersModels.BusinessPartnersPaginateResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: BusinessPartnersModels.BusinessPartnerFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof BusinessPartnersApi.paginate, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: BusinessPartnersModels.BusinessPartnerFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof BusinessPartnersApi.paginate, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.paginateInfinite(officeId, limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(BusinessPartnersAcl.canUsePaginate({ officeId } ));
-    return BusinessPartnersApi.paginate(officeId, limit, order, filter, pageParam, cursor, config) },
+    return BusinessPartnersApi.paginate(officeId, limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -91,14 +91,14 @@ export const usePaginateInfinite = <TData>({ officeId, limit, order, filter, cur
  * @returns { UseMutationResult<BusinessPartnersModels.BusinessPartnerResponseDTO> } 
  * @statusCodes [201, 401]
  */
-export const useCreate = (options?: AppMutationOptions<typeof BusinessPartnersApi.create, { officeId: string, data: BusinessPartnersModels.CreateBusinessPartnerRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreate = (options?: AppMutationOptions<typeof BusinessPartnersApi.create, { officeId: string, data: BusinessPartnersModels.CreateBusinessPartnerRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, data }) => { 
       checkAcl(BusinessPartnersAcl.canUseCreate({ officeId } ));
-      return BusinessPartnersApi.create(officeId, data, config)
+      return BusinessPartnersApi.create(officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -121,14 +121,14 @@ export const useCreate = (options?: AppMutationOptions<typeof BusinessPartnersAp
  * @returns { UseQueryResult<BusinessPartnersModels.BusinessPartnersPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateLabels = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: BusinessPartnersModels.BusinessPartnerLabelsFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof BusinessPartnersApi.paginateLabels, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateLabels = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: BusinessPartnersModels.BusinessPartnerLabelsFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof BusinessPartnersApi.paginateLabels, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.paginateLabels(officeId, limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(BusinessPartnersAcl.canUsePaginateLabels({ officeId } ));
-    return BusinessPartnersApi.paginateLabels(officeId, limit, order, filter, page, cursor, config) },
+    return BusinessPartnersApi.paginateLabels(officeId, limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -146,14 +146,14 @@ export const usePaginateLabels = <TData>({ officeId, limit, order, filter, page,
  * @returns { UseInfiniteQueryResult<BusinessPartnersModels.BusinessPartnersPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateLabelsInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: BusinessPartnersModels.BusinessPartnerLabelsFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof BusinessPartnersApi.paginateLabels, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateLabelsInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: BusinessPartnersModels.BusinessPartnerLabelsFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof BusinessPartnersApi.paginateLabels, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.paginateLabelsInfinite(officeId, limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(BusinessPartnersAcl.canUsePaginateLabels({ officeId } ));
-    return BusinessPartnersApi.paginateLabels(officeId, limit, order, filter, pageParam, cursor, config) },
+    return BusinessPartnersApi.paginateLabels(officeId, limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -173,14 +173,14 @@ export const usePaginateLabelsInfinite = <TData>({ officeId, limit, order, filte
  * @returns { UseQueryResult<BusinessPartnersModels.BusinessPartnerDetailResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useGetById = <TData>({ officeId, id }: { officeId: string, id: string }, options?: AppQueryOptions<typeof BusinessPartnersApi.getById, TData>, config?: AxiosRequestConfig) => {
+export const useGetById = <TData>({ officeId, id }: { officeId: string, id: string }, options?: AppQueryOptions<typeof BusinessPartnersApi.getById, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.getById(officeId, id),
     queryFn: () => { 
     checkAcl(BusinessPartnersAcl.canUseGetById({ officeId } ));
-    return BusinessPartnersApi.getById(officeId, id, config) },
+    return BusinessPartnersApi.getById(officeId, id) },
     ...options,
   });
 };
@@ -196,14 +196,14 @@ export const useGetById = <TData>({ officeId, id }: { officeId: string, id: stri
  * @returns { UseMutationResult<BusinessPartnersModels.BusinessPartnerDetailResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useUpdate = (options?: AppMutationOptions<typeof BusinessPartnersApi.update, { officeId: string, id: string, data: BusinessPartnersModels.UpdateBusinessPartnerRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdate = (options?: AppMutationOptions<typeof BusinessPartnersApi.update, { officeId: string, id: string, data: BusinessPartnersModels.UpdateBusinessPartnerRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, id, data }) => { 
       checkAcl(BusinessPartnersAcl.canUseUpdate({ officeId } ));
-      return BusinessPartnersApi.update(officeId, id, data, config)
+      return BusinessPartnersApi.update(officeId, id, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -225,14 +225,14 @@ export const useUpdate = (options?: AppMutationOptions<typeof BusinessPartnersAp
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
  */
-export const useArchive = (options?: AppMutationOptions<typeof BusinessPartnersApi.archive, { officeId: string, id: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useArchive = (options?: AppMutationOptions<typeof BusinessPartnersApi.archive, { officeId: string, id: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, id }) => { 
       checkAcl(BusinessPartnersAcl.canUseArchive({ officeId } ));
-      return BusinessPartnersApi.archive(officeId, id, config)
+      return BusinessPartnersApi.archive(officeId, id)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -252,14 +252,14 @@ export const useArchive = (options?: AppMutationOptions<typeof BusinessPartnersA
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
  */
-export const useUnarchive = (options?: AppMutationOptions<typeof BusinessPartnersApi.unarchive, { officeId: string, id: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUnarchive = (options?: AppMutationOptions<typeof BusinessPartnersApi.unarchive, { officeId: string, id: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, id }) => { 
       checkAcl(BusinessPartnersAcl.canUseUnarchive({ officeId } ));
-      return BusinessPartnersApi.unarchive(officeId, id, config)
+      return BusinessPartnersApi.unarchive(officeId, id)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -279,14 +279,14 @@ export const useUnarchive = (options?: AppMutationOptions<typeof BusinessPartner
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
  */
-export const useLock = (options?: AppMutationOptions<typeof BusinessPartnersApi.lock, { officeId: string, id: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useLock = (options?: AppMutationOptions<typeof BusinessPartnersApi.lock, { officeId: string, id: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, id }) => { 
       checkAcl(BusinessPartnersAcl.canUseLock({ officeId } ));
-      return BusinessPartnersApi.lock(officeId, id, config)
+      return BusinessPartnersApi.lock(officeId, id)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -306,14 +306,14 @@ export const useLock = (options?: AppMutationOptions<typeof BusinessPartnersApi.
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
  */
-export const useUnlock = (options?: AppMutationOptions<typeof BusinessPartnersApi.unlock, { officeId: string, id: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUnlock = (options?: AppMutationOptions<typeof BusinessPartnersApi.unlock, { officeId: string, id: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, id }) => { 
       checkAcl(BusinessPartnersAcl.canUseUnlock({ officeId } ));
-      return BusinessPartnersApi.unlock(officeId, id, config)
+      return BusinessPartnersApi.unlock(officeId, id)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -333,14 +333,14 @@ export const useUnlock = (options?: AppMutationOptions<typeof BusinessPartnersAp
  * @returns { UseQueryResult<BusinessPartnersModels.GetRemarksResponse> } 
  * @statusCodes [200, 401]
  */
-export const useGetRemarks = <TData>({ officeId, id }: { officeId: string, id: string }, options?: AppQueryOptions<typeof BusinessPartnersApi.getRemarks, TData>, config?: AxiosRequestConfig) => {
+export const useGetRemarks = <TData>({ officeId, id }: { officeId: string, id: string }, options?: AppQueryOptions<typeof BusinessPartnersApi.getRemarks, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.getRemarks(officeId, id),
     queryFn: () => { 
     checkAcl(BusinessPartnersAcl.canUseGetRemarks({ officeId } ));
-    return BusinessPartnersApi.getRemarks(officeId, id, config) },
+    return BusinessPartnersApi.getRemarks(officeId, id) },
     ...options,
   });
 };
@@ -356,14 +356,14 @@ export const useGetRemarks = <TData>({ officeId, id }: { officeId: string, id: s
  * @returns { UseMutationResult<BusinessPartnersModels.BusinessPartnerRemarkResponseDTO> } 
  * @statusCodes [201, 401]
  */
-export const useCreateRemark = (options?: AppMutationOptions<typeof BusinessPartnersApi.createRemark, { officeId: string, id: string, data: BusinessPartnersModels.CreateBusinessPartnerRemarkRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreateRemark = (options?: AppMutationOptions<typeof BusinessPartnersApi.createRemark, { officeId: string, id: string, data: BusinessPartnersModels.CreateBusinessPartnerRemarkRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, id, data }) => { 
       checkAcl(BusinessPartnersAcl.canUseCreateRemark({ officeId } ));
-      return BusinessPartnersApi.createRemark(officeId, id, data, config)
+      return BusinessPartnersApi.createRemark(officeId, id, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -384,14 +384,14 @@ export const useCreateRemark = (options?: AppMutationOptions<typeof BusinessPart
  * @returns { UseMutationResult<BusinessPartnersModels.BusinessPartnerRemarkResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useUpdateRemark = (options?: AppMutationOptions<typeof BusinessPartnersApi.updateRemark, { officeId: string, id: string, remarkId: string, data: BusinessPartnersModels.UpdateBusinessPartnerRemarkRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdateRemark = (options?: AppMutationOptions<typeof BusinessPartnersApi.updateRemark, { officeId: string, id: string, remarkId: string, data: BusinessPartnersModels.UpdateBusinessPartnerRemarkRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, id, remarkId, data }) => { 
       checkAcl(BusinessPartnersAcl.canUseUpdateRemark({ officeId } ));
-      return BusinessPartnersApi.updateRemark(officeId, id, remarkId, data, config)
+      return BusinessPartnersApi.updateRemark(officeId, id, remarkId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -412,14 +412,14 @@ export const useUpdateRemark = (options?: AppMutationOptions<typeof BusinessPart
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
  */
-export const useDeleteRemark = (options?: AppMutationOptions<typeof BusinessPartnersApi.deleteRemark, { officeId: string, id: string, remarkId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useDeleteRemark = (options?: AppMutationOptions<typeof BusinessPartnersApi.deleteRemark, { officeId: string, id: string, remarkId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, id, remarkId }) => { 
       checkAcl(BusinessPartnersAcl.canUseDeleteRemark({ officeId } ));
-      return BusinessPartnersApi.deleteRemark(officeId, id, remarkId, config)
+      return BusinessPartnersApi.deleteRemark(officeId, id, remarkId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -439,14 +439,14 @@ export const useDeleteRemark = (options?: AppMutationOptions<typeof BusinessPart
  * @returns { UseQueryResult<BusinessPartnersModels.BusinessPartnerBasicResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useGetBasicInfo = <TData>({ officeId, id }: { officeId: string, id: string }, options?: AppQueryOptions<typeof BusinessPartnersApi.getBasicInfo, TData>, config?: AxiosRequestConfig) => {
+export const useGetBasicInfo = <TData>({ officeId, id }: { officeId: string, id: string }, options?: AppQueryOptions<typeof BusinessPartnersApi.getBasicInfo, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.getBasicInfo(officeId, id),
     queryFn: () => { 
     checkAcl(BusinessPartnersAcl.canUseGetBasicInfo({ officeId } ));
-    return BusinessPartnersApi.getBasicInfo(officeId, id, config) },
+    return BusinessPartnersApi.getBasicInfo(officeId, id) },
     ...options,
   });
 };
@@ -462,14 +462,14 @@ export const useGetBasicInfo = <TData>({ officeId, id }: { officeId: string, id:
  * @returns { UseMutationResult<BusinessPartnersModels.BusinessPartnerBasicResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useUpdateBasicInfo = (options?: AppMutationOptions<typeof BusinessPartnersApi.updateBasicInfo, { officeId: string, id: string, data: BusinessPartnersModels.UpdateBusinessPartnerBasicRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdateBasicInfo = (options?: AppMutationOptions<typeof BusinessPartnersApi.updateBasicInfo, { officeId: string, id: string, data: BusinessPartnersModels.UpdateBusinessPartnerBasicRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, id, data }) => { 
       checkAcl(BusinessPartnersAcl.canUseUpdateBasicInfo({ officeId } ));
-      return BusinessPartnersApi.updateBasicInfo(officeId, id, data, config)
+      return BusinessPartnersApi.updateBasicInfo(officeId, id, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -493,14 +493,14 @@ export const useUpdateBasicInfo = (options?: AppMutationOptions<typeof BusinessP
  * @returns { UseMutationResult<BusinessPartnersModels.BusinessPartnerSignatureUploadResponseDTO> } 
  * @statusCodes [201, 401]
  */
-export const useCreateSignatureUploadInstructions = (options?: AppMutationOptions<typeof BusinessPartnersApi.createSignatureUploadInstructions, { officeId: string, id: string, data: BusinessPartnersModels.BusinessPartnerSignatureUploadRequestDTO, file?: File; abortController?: AbortController; onUploadProgress?: (progress: { loaded: number; total: number }) => void }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreateSignatureUploadInstructions = (options?: AppMutationOptions<typeof BusinessPartnersApi.createSignatureUploadInstructions, { officeId: string, id: string, data: BusinessPartnersModels.BusinessPartnerSignatureUploadRequestDTO, file?: File; abortController?: AbortController; onUploadProgress?: (progress: { loaded: number; total: number }) => void }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: async ({ officeId, id, data, file, abortController, onUploadProgress }) => { 
       checkAcl(BusinessPartnersAcl.canUseCreateSignatureUploadInstructions({ officeId } ));
-      const uploadInstructions = await BusinessPartnersApi.createSignatureUploadInstructions(officeId, id, data, config);
+      const uploadInstructions = await BusinessPartnersApi.createSignatureUploadInstructions(officeId, id, data);
       
       if (file && uploadInstructions.url) {
         const method = (data?.method?.toLowerCase() ?? "put") as "put" | "post";
@@ -545,14 +545,14 @@ export const useCreateSignatureUploadInstructions = (options?: AppMutationOption
  * @returns { UseQueryResult<BusinessPartnersModels.CargoAgentResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useGetCargoAgentInfo = <TData>({ officeId, id }: { officeId: string, id: string }, options?: AppQueryOptions<typeof BusinessPartnersApi.getCargoAgentInfo, TData>, config?: AxiosRequestConfig) => {
+export const useGetCargoAgentInfo = <TData>({ officeId, id }: { officeId: string, id: string }, options?: AppQueryOptions<typeof BusinessPartnersApi.getCargoAgentInfo, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.getCargoAgentInfo(officeId, id),
     queryFn: () => { 
     checkAcl(BusinessPartnersAcl.canUseGetCargoAgentInfo({ officeId } ));
-    return BusinessPartnersApi.getCargoAgentInfo(officeId, id, config) },
+    return BusinessPartnersApi.getCargoAgentInfo(officeId, id) },
     ...options,
   });
 };
@@ -568,14 +568,14 @@ export const useGetCargoAgentInfo = <TData>({ officeId, id }: { officeId: string
  * @returns { UseMutationResult<BusinessPartnersModels.CargoAgentResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useUpdateCargoAgent = (options?: AppMutationOptions<typeof BusinessPartnersApi.updateCargoAgent, { officeId: string, id: string, data: BusinessPartnersModels.UpdateCargoAgentDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdateCargoAgent = (options?: AppMutationOptions<typeof BusinessPartnersApi.updateCargoAgent, { officeId: string, id: string, data: BusinessPartnersModels.UpdateCargoAgentDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, id, data }) => { 
       checkAcl(BusinessPartnersAcl.canUseUpdateCargoAgent({ officeId } ));
-      return BusinessPartnersApi.updateCargoAgent(officeId, id, data, config)
+      return BusinessPartnersApi.updateCargoAgent(officeId, id, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -597,14 +597,14 @@ export const useUpdateCargoAgent = (options?: AppMutationOptions<typeof Business
  * @returns { UseQueryResult<BusinessPartnersModels.CarrierResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useGetCarrierInformation = <TData>({ officeId, id }: { officeId: string, id: string }, options?: AppQueryOptions<typeof BusinessPartnersApi.getCarrierInformation, TData>, config?: AxiosRequestConfig) => {
+export const useGetCarrierInformation = <TData>({ officeId, id }: { officeId: string, id: string }, options?: AppQueryOptions<typeof BusinessPartnersApi.getCarrierInformation, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.getCarrierInformation(officeId, id),
     queryFn: () => { 
     checkAcl(BusinessPartnersAcl.canUseGetCarrierInformation({ officeId } ));
-    return BusinessPartnersApi.getCarrierInformation(officeId, id, config) },
+    return BusinessPartnersApi.getCarrierInformation(officeId, id) },
     ...options,
   });
 };
@@ -620,14 +620,14 @@ export const useGetCarrierInformation = <TData>({ officeId, id }: { officeId: st
  * @returns { UseMutationResult<BusinessPartnersModels.CarrierResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useUpdateCarrier = (options?: AppMutationOptions<typeof BusinessPartnersApi.updateCarrier, { officeId: string, id: string, data: BusinessPartnersModels.UpdateCarrierDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdateCarrier = (options?: AppMutationOptions<typeof BusinessPartnersApi.updateCarrier, { officeId: string, id: string, data: BusinessPartnersModels.UpdateCarrierDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, id, data }) => { 
       checkAcl(BusinessPartnersAcl.canUseUpdateCarrier({ officeId } ));
-      return BusinessPartnersApi.updateCarrier(officeId, id, data, config)
+      return BusinessPartnersApi.updateCarrier(officeId, id, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

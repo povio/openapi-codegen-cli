@@ -14,7 +14,7 @@ export namespace SeaQuotesModels {
  * @property { CommonModels.SeaRoutingEnum } routing  
  * @property { boolean } splitRoute Indicates if the route is split 
  */
-export const SeaQuoteResponseDTOSchema = z.object({ id: z.string().describe("Unique identifier for the sea quote"), bookingMatchingCode: z.string().describe("Code for matching bookings"), validFrom: z.iso.datetime({ offset: true }).describe("Start date of quote validity").nullable(), validUntil: z.iso.datetime({ offset: true }).describe("End date of quote validity").nullable(), buyServiceContract: z.string().describe("Service contract for buying"), sellServiceContract: z.string().describe("Service contract for selling"), routing: CommonModels.SeaRoutingEnumSchema.nullish(), splitRoute: z.boolean().describe("Indicates if the route is split").nullish() }).readonly();
+export const SeaQuoteResponseDTOSchema = z.object({ id: z.string(), bookingMatchingCode: z.string(), validFrom: z.iso.datetime({ offset: true }).nullable(), validUntil: z.iso.datetime({ offset: true }).nullable(), buyServiceContract: z.string(), sellServiceContract: z.string(), routing: CommonModels.SeaRoutingEnumSchema.nullish(), splitRoute: z.boolean().nullish() });
 export type SeaQuoteResponseDTO = z.infer<typeof SeaQuoteResponseDTOSchema>;
 
 /** 
@@ -27,7 +27,7 @@ export type SeaQuoteResponseDTO = z.infer<typeof SeaQuoteResponseDTOSchema>;
  * @property { string } sellServiceContract Service contract for selling 
  * @property { CommonModels.SeaRoutingEnum } routing  
  */
-export const UpdateSeaQuoteRequestDTOSchema = z.object({ bookingMatchingCode: z.string().describe("Code for matching bookings"), validFrom: z.iso.datetime({ offset: true }).describe("Start date of quote validity"), validUntil: z.iso.datetime({ offset: true }).describe("End date of quote validity"), buyServiceContract: z.string().describe("Service contract for buying"), sellServiceContract: z.string().describe("Service contract for selling"), routing: CommonModels.SeaRoutingEnumSchema }).readonly();
+export const UpdateSeaQuoteRequestDTOSchema = z.object({ bookingMatchingCode: z.string().nullable(), validFrom: z.iso.datetime({ offset: true }).nullable(), validUntil: z.iso.datetime({ offset: true }).nullable(), buyServiceContract: z.string().nullable(), sellServiceContract: z.string().nullable(), routing: CommonModels.SeaRoutingEnumSchema.nullable() }).partial();
 export type UpdateSeaQuoteRequestDTO = z.infer<typeof UpdateSeaQuoteRequestDTOSchema>;
 
 }

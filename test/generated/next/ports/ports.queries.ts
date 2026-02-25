@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -33,14 +32,14 @@ export const keys = {
  * @returns { UseQueryResult<PortsModels.PortsPaginateResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: PortsModels.PortPaginationFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof PortsApi.paginate, TData>, config?: AxiosRequestConfig) => {
+export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: PortsModels.PortPaginationFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof PortsApi.paginate, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.paginate(limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(PortsAcl.canUsePaginate());
-    return PortsApi.paginate(limit, order, filter, page, cursor, config) },
+    return PortsApi.paginate(limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -58,14 +57,14 @@ export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { lim
  * @returns { UseInfiniteQueryResult<PortsModels.PortsPaginateResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: PortsModels.PortPaginationFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof PortsApi.paginate, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: PortsModels.PortPaginationFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof PortsApi.paginate, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.paginateInfinite(limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(PortsAcl.canUsePaginate());
-    return PortsApi.paginate(limit, order, filter, pageParam, cursor, config) },
+    return PortsApi.paginate(limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -84,14 +83,14 @@ export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { l
  * @returns { UseMutationResult<PortsModels.PortResponseDTO> } 
  * @statusCodes [201, 401]
  */
-export const useCreate = (options?: AppMutationOptions<typeof PortsApi.create, { data: PortsModels.CreatePortRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreate = (options?: AppMutationOptions<typeof PortsApi.create, { data: PortsModels.CreatePortRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ data }) => { 
       checkAcl(PortsAcl.canUseCreate());
-      return PortsApi.create(data, config)
+      return PortsApi.create(data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -114,14 +113,14 @@ export const useCreate = (options?: AppMutationOptions<typeof PortsApi.create, {
  * @returns { UseQueryResult<PortsModels.PortsPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: PortsModels.PortLabelFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof PortsApi.paginateLabels, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: PortsModels.PortLabelFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof PortsApi.paginateLabels, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.paginateLabels(limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(PortsAcl.canUsePaginateLabels());
-    return PortsApi.paginateLabels(limit, order, filter, page, cursor, config) },
+    return PortsApi.paginateLabels(limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -139,14 +138,14 @@ export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }:
  * @returns { UseInfiniteQueryResult<PortsModels.PortsPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: PortsModels.PortLabelFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof PortsApi.paginateLabels, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: PortsModels.PortLabelFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof PortsApi.paginateLabels, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.paginateLabelsInfinite(limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(PortsAcl.canUsePaginateLabels());
-    return PortsApi.paginateLabels(limit, order, filter, pageParam, cursor, config) },
+    return PortsApi.paginateLabels(limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -166,14 +165,14 @@ export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor 
  * @returns { UseMutationResult<PortsModels.PortResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useUpdate = (options?: AppMutationOptions<typeof PortsApi.update, { id: string, data: PortsModels.UpdatePortRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdate = (options?: AppMutationOptions<typeof PortsApi.update, { id: string, data: PortsModels.UpdatePortRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ id, data }) => { 
       checkAcl(PortsAcl.canUseUpdate());
-      return PortsApi.update(id, data, config)
+      return PortsApi.update(id, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -194,14 +193,14 @@ export const useUpdate = (options?: AppMutationOptions<typeof PortsApi.update, {
  * @returns { UseQueryResult<PortsModels.PortResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useFindById = <TData>({ id }: { id: string }, options?: AppQueryOptions<typeof PortsApi.findById, TData>, config?: AxiosRequestConfig) => {
+export const useFindById = <TData>({ id }: { id: string }, options?: AppQueryOptions<typeof PortsApi.findById, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.findById(id),
     queryFn: () => { 
     checkAcl(PortsAcl.canUseFindById());
-    return PortsApi.findById(id, config) },
+    return PortsApi.findById(id) },
     ...options,
   });
 };

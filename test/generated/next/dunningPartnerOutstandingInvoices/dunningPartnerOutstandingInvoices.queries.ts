@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -33,14 +32,14 @@ export const keys = {
  * @returns { UseQueryResult<DunningPartnerOutstandingInvoicesModels.ListPartnerOutstandingInvoiceSummariesResponse> } 
  * @statusCodes [200, 401]
  */
-export const useListPartnerOutstandingInvoiceSummaries = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: DunningPartnerOutstandingInvoicesModels.PartnerOutstandingInvoiceSummaryFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof DunningPartnerOutstandingInvoicesApi.listPartnerOutstandingInvoiceSummaries, TData>, config?: AxiosRequestConfig) => {
+export const useListPartnerOutstandingInvoiceSummaries = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: DunningPartnerOutstandingInvoicesModels.PartnerOutstandingInvoiceSummaryFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof DunningPartnerOutstandingInvoicesApi.listPartnerOutstandingInvoiceSummaries, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.listPartnerOutstandingInvoiceSummaries(officeId, limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(DunningPartnerOutstandingInvoicesAcl.canUseListPartnerOutstandingInvoiceSummaries({ officeId } ));
-    return DunningPartnerOutstandingInvoicesApi.listPartnerOutstandingInvoiceSummaries(officeId, limit, order, filter, page, cursor, config) },
+    return DunningPartnerOutstandingInvoicesApi.listPartnerOutstandingInvoiceSummaries(officeId, limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -59,14 +58,14 @@ export const useListPartnerOutstandingInvoiceSummaries = <TData>({ officeId, lim
  * @returns { UseInfiniteQueryResult<DunningPartnerOutstandingInvoicesModels.ListPartnerOutstandingInvoiceSummariesResponse> } 
  * @statusCodes [200, 401]
  */
-export const useListPartnerOutstandingInvoiceSummariesInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: DunningPartnerOutstandingInvoicesModels.PartnerOutstandingInvoiceSummaryFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof DunningPartnerOutstandingInvoicesApi.listPartnerOutstandingInvoiceSummaries, TData>, config?: AxiosRequestConfig) => {
+export const useListPartnerOutstandingInvoiceSummariesInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: DunningPartnerOutstandingInvoicesModels.PartnerOutstandingInvoiceSummaryFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof DunningPartnerOutstandingInvoicesApi.listPartnerOutstandingInvoiceSummaries, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.listPartnerOutstandingInvoiceSummariesInfinite(officeId, limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(DunningPartnerOutstandingInvoicesAcl.canUseListPartnerOutstandingInvoiceSummaries({ officeId } ));
-    return DunningPartnerOutstandingInvoicesApi.listPartnerOutstandingInvoiceSummaries(officeId, limit, order, filter, pageParam, cursor, config) },
+    return DunningPartnerOutstandingInvoicesApi.listPartnerOutstandingInvoiceSummaries(officeId, limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -91,14 +90,14 @@ export const useListPartnerOutstandingInvoiceSummariesInfinite = <TData>({ offic
  * @returns { UseQueryResult<DunningPartnerOutstandingInvoicesModels.ListPartnerOutstandingInvoicesResponse> } 
  * @statusCodes [200, 401]
  */
-export const useListPartnerOutstandingInvoices = <TData>({ partnerId, officeId, limit, order, filter, page, cursor }: { partnerId: string, officeId: string, limit: number, order?: string, filter?: DunningPartnerOutstandingInvoicesModels.PartnerOutstandingInvoiceFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof DunningPartnerOutstandingInvoicesApi.listPartnerOutstandingInvoices, TData>, config?: AxiosRequestConfig) => {
+export const useListPartnerOutstandingInvoices = <TData>({ partnerId, officeId, limit, order, filter, page, cursor }: { partnerId: string, officeId: string, limit: number, order?: string, filter?: DunningPartnerOutstandingInvoicesModels.PartnerOutstandingInvoiceFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof DunningPartnerOutstandingInvoicesApi.listPartnerOutstandingInvoices, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.listPartnerOutstandingInvoices(partnerId, officeId, limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(DunningPartnerOutstandingInvoicesAcl.canUseListPartnerOutstandingInvoices({ officeId } ));
-    return DunningPartnerOutstandingInvoicesApi.listPartnerOutstandingInvoices(partnerId, officeId, limit, order, filter, page, cursor, config) },
+    return DunningPartnerOutstandingInvoicesApi.listPartnerOutstandingInvoices(partnerId, officeId, limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -118,14 +117,14 @@ export const useListPartnerOutstandingInvoices = <TData>({ partnerId, officeId, 
  * @returns { UseInfiniteQueryResult<DunningPartnerOutstandingInvoicesModels.ListPartnerOutstandingInvoicesResponse> } 
  * @statusCodes [200, 401]
  */
-export const useListPartnerOutstandingInvoicesInfinite = <TData>({ partnerId, officeId, limit, order, filter, cursor }: { partnerId: string, officeId: string, limit: number, order?: string, filter?: DunningPartnerOutstandingInvoicesModels.PartnerOutstandingInvoiceFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof DunningPartnerOutstandingInvoicesApi.listPartnerOutstandingInvoices, TData>, config?: AxiosRequestConfig) => {
+export const useListPartnerOutstandingInvoicesInfinite = <TData>({ partnerId, officeId, limit, order, filter, cursor }: { partnerId: string, officeId: string, limit: number, order?: string, filter?: DunningPartnerOutstandingInvoicesModels.PartnerOutstandingInvoiceFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof DunningPartnerOutstandingInvoicesApi.listPartnerOutstandingInvoices, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.listPartnerOutstandingInvoicesInfinite(partnerId, officeId, limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(DunningPartnerOutstandingInvoicesAcl.canUseListPartnerOutstandingInvoices({ officeId } ));
-    return DunningPartnerOutstandingInvoicesApi.listPartnerOutstandingInvoices(partnerId, officeId, limit, order, filter, pageParam, cursor, config) },
+    return DunningPartnerOutstandingInvoicesApi.listPartnerOutstandingInvoices(partnerId, officeId, limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -146,14 +145,14 @@ export const useListPartnerOutstandingInvoicesInfinite = <TData>({ partnerId, of
  * @returns { UseMutationResult<DunningPartnerOutstandingInvoicesModels.ListRecommendedDunningLevelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const useListRecommendedDunningLevels = (options?: AppMutationOptions<typeof DunningPartnerOutstandingInvoicesApi.listRecommendedDunningLevels, { partnerId: string, officeId: string, data: DunningPartnerOutstandingInvoicesModels.RecommendedDunningLevelsRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useListRecommendedDunningLevels = (options?: AppMutationOptions<typeof DunningPartnerOutstandingInvoicesApi.listRecommendedDunningLevels, { partnerId: string, officeId: string, data: DunningPartnerOutstandingInvoicesModels.RecommendedDunningLevelsRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ partnerId, officeId, data }) => { 
       checkAcl(DunningPartnerOutstandingInvoicesAcl.canUseListRecommendedDunningLevels({ officeId } ));
-      return DunningPartnerOutstandingInvoicesApi.listRecommendedDunningLevels(partnerId, officeId, data, config)
+      return DunningPartnerOutstandingInvoicesApi.listRecommendedDunningLevels(partnerId, officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

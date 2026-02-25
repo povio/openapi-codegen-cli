@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -28,14 +27,14 @@ export const keys = {
  * @returns { UseQueryResult<BusinessPartnerContactsModels.BusinessPartnerContactListResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useGetContacts = <TData>({ officeId, businessPartnerId }: { officeId: string, businessPartnerId: string }, options?: AppQueryOptions<typeof BusinessPartnerContactsApi.getContacts, TData>, config?: AxiosRequestConfig) => {
+export const useGetContacts = <TData>({ officeId, businessPartnerId }: { officeId: string, businessPartnerId: string }, options?: AppQueryOptions<typeof BusinessPartnerContactsApi.getContacts, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.getContacts(officeId, businessPartnerId),
     queryFn: () => { 
     checkAcl(BusinessPartnerContactsAcl.canUseGetContacts({ officeId } ));
-    return BusinessPartnerContactsApi.getContacts(officeId, businessPartnerId, config) },
+    return BusinessPartnerContactsApi.getContacts(officeId, businessPartnerId) },
     ...options,
   });
 };
@@ -51,14 +50,14 @@ export const useGetContacts = <TData>({ officeId, businessPartnerId }: { officeI
  * @returns { UseMutationResult<BusinessPartnerContactsModels.BusinessPartnerContactResponseDTO> } 
  * @statusCodes [201, 401]
  */
-export const useCreateContact = (options?: AppMutationOptions<typeof BusinessPartnerContactsApi.createContact, { officeId: string, businessPartnerId: string, data: BusinessPartnerContactsModels.CreateBusinessPartnerContactRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreateContact = (options?: AppMutationOptions<typeof BusinessPartnerContactsApi.createContact, { officeId: string, businessPartnerId: string, data: BusinessPartnerContactsModels.CreateBusinessPartnerContactRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, businessPartnerId, data }) => { 
       checkAcl(BusinessPartnerContactsAcl.canUseCreateContact({ officeId } ));
-      return BusinessPartnerContactsApi.createContact(officeId, businessPartnerId, data, config)
+      return BusinessPartnerContactsApi.createContact(officeId, businessPartnerId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -83,14 +82,14 @@ export const useCreateContact = (options?: AppMutationOptions<typeof BusinessPar
  * @returns { UseQueryResult<BusinessPartnerContactsModels.PaginateContactLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateContactLabels = <TData>({ officeId, businessPartnerId, limit, order, filter, page, cursor }: { officeId: string, businessPartnerId: string, limit: number, order?: string, filter?: BusinessPartnerContactsModels.BusinessPartnerContactFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof BusinessPartnerContactsApi.paginateContactLabels, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateContactLabels = <TData>({ officeId, businessPartnerId, limit, order, filter, page, cursor }: { officeId: string, businessPartnerId: string, limit: number, order?: string, filter?: BusinessPartnerContactsModels.BusinessPartnerContactFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof BusinessPartnerContactsApi.paginateContactLabels, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.paginateContactLabels(officeId, businessPartnerId, limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(BusinessPartnerContactsAcl.canUsePaginateContactLabels({ officeId } ));
-    return BusinessPartnerContactsApi.paginateContactLabels(officeId, businessPartnerId, limit, order, filter, page, cursor, config) },
+    return BusinessPartnerContactsApi.paginateContactLabels(officeId, businessPartnerId, limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -110,14 +109,14 @@ export const usePaginateContactLabels = <TData>({ officeId, businessPartnerId, l
  * @returns { UseInfiniteQueryResult<BusinessPartnerContactsModels.PaginateContactLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateContactLabelsInfinite = <TData>({ officeId, businessPartnerId, limit, order, filter, cursor }: { officeId: string, businessPartnerId: string, limit: number, order?: string, filter?: BusinessPartnerContactsModels.BusinessPartnerContactFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof BusinessPartnerContactsApi.paginateContactLabels, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateContactLabelsInfinite = <TData>({ officeId, businessPartnerId, limit, order, filter, cursor }: { officeId: string, businessPartnerId: string, limit: number, order?: string, filter?: BusinessPartnerContactsModels.BusinessPartnerContactFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof BusinessPartnerContactsApi.paginateContactLabels, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.paginateContactLabelsInfinite(officeId, businessPartnerId, limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(BusinessPartnerContactsAcl.canUsePaginateContactLabels({ officeId } ));
-    return BusinessPartnerContactsApi.paginateContactLabels(officeId, businessPartnerId, limit, order, filter, pageParam, cursor, config) },
+    return BusinessPartnerContactsApi.paginateContactLabels(officeId, businessPartnerId, limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -139,14 +138,14 @@ export const usePaginateContactLabelsInfinite = <TData>({ officeId, businessPart
  * @returns { UseMutationResult<BusinessPartnerContactsModels.BusinessPartnerContactResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useUpdateContact = (options?: AppMutationOptions<typeof BusinessPartnerContactsApi.updateContact, { contactId: string, officeId: string, businessPartnerId: string, data: BusinessPartnerContactsModels.UpdateBusinessPartnerContactRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdateContact = (options?: AppMutationOptions<typeof BusinessPartnerContactsApi.updateContact, { contactId: string, officeId: string, businessPartnerId: string, data: BusinessPartnerContactsModels.UpdateBusinessPartnerContactRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ contactId, officeId, businessPartnerId, data }) => { 
       checkAcl(BusinessPartnerContactsAcl.canUseUpdateContact({ officeId } ));
-      return BusinessPartnerContactsApi.updateContact(contactId, officeId, businessPartnerId, data, config)
+      return BusinessPartnerContactsApi.updateContact(contactId, officeId, businessPartnerId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -166,14 +165,14 @@ export const useUpdateContact = (options?: AppMutationOptions<typeof BusinessPar
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 204, 401]
  */
-export const useDeleteContact = (options?: AppMutationOptions<typeof BusinessPartnerContactsApi.deleteContact, { contactId: string, officeId: string, businessPartnerId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useDeleteContact = (options?: AppMutationOptions<typeof BusinessPartnerContactsApi.deleteContact, { contactId: string, officeId: string, businessPartnerId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ contactId, officeId, businessPartnerId }) => { 
       checkAcl(BusinessPartnerContactsAcl.canUseDeleteContact({ officeId } ));
-      return BusinessPartnerContactsApi.deleteContact(contactId, officeId, businessPartnerId, config)
+      return BusinessPartnerContactsApi.deleteContact(contactId, officeId, businessPartnerId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

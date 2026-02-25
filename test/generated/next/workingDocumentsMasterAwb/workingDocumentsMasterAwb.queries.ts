@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -28,14 +27,14 @@ export const keys = {
  * @returns { UseMutationResult<WorkingDocumentsMasterAwbModels.MasterAwbDocumentResponseDTO> } 
  * @statusCodes [201, 401]
  */
-export const useCreate = (options?: AppMutationOptions<typeof WorkingDocumentsMasterAwbApi.create, { positionId: string, officeId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreate = (options?: AppMutationOptions<typeof WorkingDocumentsMasterAwbApi.create, { positionId: string, officeId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, officeId }) => { 
       checkAcl(WorkingDocumentsMasterAwbAcl.canUseCreate({ officeId } ));
-      return WorkingDocumentsMasterAwbApi.create(positionId, officeId, config)
+      return WorkingDocumentsMasterAwbApi.create(positionId, officeId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -56,14 +55,14 @@ export const useCreate = (options?: AppMutationOptions<typeof WorkingDocumentsMa
  * @returns { UseQueryResult<WorkingDocumentsMasterAwbModels.MasterAwbDocumentResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useGetMasterAwbData = <TData>({ positionId, mawbId, officeId }: { positionId: string, mawbId: string, officeId: string }, options?: AppQueryOptions<typeof WorkingDocumentsMasterAwbApi.getMasterAwbData, TData>, config?: AxiosRequestConfig) => {
+export const useGetMasterAwbData = <TData>({ positionId, mawbId, officeId }: { positionId: string, mawbId: string, officeId: string }, options?: AppQueryOptions<typeof WorkingDocumentsMasterAwbApi.getMasterAwbData, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.getMasterAwbData(positionId, mawbId, officeId),
     queryFn: () => { 
     checkAcl(WorkingDocumentsMasterAwbAcl.canUseGetMasterAwbData({ officeId } ));
-    return WorkingDocumentsMasterAwbApi.getMasterAwbData(positionId, mawbId, officeId, config) },
+    return WorkingDocumentsMasterAwbApi.getMasterAwbData(positionId, mawbId, officeId) },
     ...options,
   });
 };
@@ -80,14 +79,14 @@ export const useGetMasterAwbData = <TData>({ positionId, mawbId, officeId }: { p
  * @returns { UseMutationResult<WorkingDocumentsMasterAwbModels.MasterAwbDocumentResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useUpdateMasterAwbData = (options?: AppMutationOptions<typeof WorkingDocumentsMasterAwbApi.updateMasterAwbData, { positionId: string, mawbId: string, officeId: string, data: WorkingDocumentsMasterAwbModels.UpdateMasterAwbDocumentRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdateMasterAwbData = (options?: AppMutationOptions<typeof WorkingDocumentsMasterAwbApi.updateMasterAwbData, { positionId: string, mawbId: string, officeId: string, data: WorkingDocumentsMasterAwbModels.UpdateMasterAwbDocumentRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, mawbId, officeId, data }) => { 
       checkAcl(WorkingDocumentsMasterAwbAcl.canUseUpdateMasterAwbData({ officeId } ));
-      return WorkingDocumentsMasterAwbApi.updateMasterAwbData(positionId, mawbId, officeId, data, config)
+      return WorkingDocumentsMasterAwbApi.updateMasterAwbData(positionId, mawbId, officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -110,14 +109,14 @@ export const useUpdateMasterAwbData = (options?: AppMutationOptions<typeof Worki
  * @returns { UseMutationResult<void> } Master AWB document deleted
  * @statusCodes [204, 401, 404]
  */
-export const useDeleteMasterAwb = (options?: AppMutationOptions<typeof WorkingDocumentsMasterAwbApi.deleteMasterAwb, { positionId: string, mawbId: string, officeId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useDeleteMasterAwb = (options?: AppMutationOptions<typeof WorkingDocumentsMasterAwbApi.deleteMasterAwb, { positionId: string, mawbId: string, officeId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, mawbId, officeId }) => { 
       checkAcl(WorkingDocumentsMasterAwbAcl.canUseDeleteMasterAwb({ officeId } ));
-      return WorkingDocumentsMasterAwbApi.deleteMasterAwb(positionId, mawbId, officeId, config)
+      return WorkingDocumentsMasterAwbApi.deleteMasterAwb(positionId, mawbId, officeId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -138,14 +137,14 @@ export const useDeleteMasterAwb = (options?: AppMutationOptions<typeof WorkingDo
  * @returns { UseQueryResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
  */
-export const usePreviewMasterAwb = <TData>({ positionId, mawbId, officeId }: { positionId: string, mawbId: string, officeId: string }, options?: AppQueryOptions<typeof WorkingDocumentsMasterAwbApi.previewMasterAwb, TData>, config?: AxiosRequestConfig) => {
+export const usePreviewMasterAwb = <TData>({ positionId, mawbId, officeId }: { positionId: string, mawbId: string, officeId: string }, options?: AppQueryOptions<typeof WorkingDocumentsMasterAwbApi.previewMasterAwb, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.previewMasterAwb(positionId, mawbId, officeId),
     queryFn: () => { 
     checkAcl(WorkingDocumentsMasterAwbAcl.canUsePreviewMasterAwb({ officeId } ));
-    return WorkingDocumentsMasterAwbApi.previewMasterAwb(positionId, mawbId, officeId, config) },
+    return WorkingDocumentsMasterAwbApi.previewMasterAwb(positionId, mawbId, officeId) },
     ...options,
   });
 };
@@ -161,14 +160,14 @@ export const usePreviewMasterAwb = <TData>({ positionId, mawbId, officeId }: { p
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
  */
-export const usePreviewMasterAwbMutation = (options?: AppMutationOptions<typeof WorkingDocumentsMasterAwbApi.previewMasterAwb, { positionId: string, mawbId: string, officeId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const usePreviewMasterAwbMutation = (options?: AppMutationOptions<typeof WorkingDocumentsMasterAwbApi.previewMasterAwb, { positionId: string, mawbId: string, officeId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, mawbId, officeId }) => { 
       checkAcl(WorkingDocumentsMasterAwbAcl.canUsePreviewMasterAwb({ officeId } ));
-      return WorkingDocumentsMasterAwbApi.previewMasterAwb(positionId, mawbId, officeId, config)
+      return WorkingDocumentsMasterAwbApi.previewMasterAwb(positionId, mawbId, officeId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -192,14 +191,14 @@ export const usePreviewMasterAwbMutation = (options?: AppMutationOptions<typeof 
  * @returns { UseMutationResult<void> } 
  * @statusCodes [201, 401]
  */
-export const useGenerateMasterAwb = (options?: AppMutationOptions<typeof WorkingDocumentsMasterAwbApi.generateMasterAwb, { positionId: string, mawbId: string, officeId: string, data: CommonModels.GenerateWorkingDocumentRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useGenerateMasterAwb = (options?: AppMutationOptions<typeof WorkingDocumentsMasterAwbApi.generateMasterAwb, { positionId: string, mawbId: string, officeId: string, data: CommonModels.GenerateWorkingDocumentRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, mawbId, officeId, data }) => { 
       checkAcl(WorkingDocumentsMasterAwbAcl.canUseGenerateMasterAwb({ officeId } ));
-      return WorkingDocumentsMasterAwbApi.generateMasterAwb(positionId, mawbId, officeId, data, config)
+      return WorkingDocumentsMasterAwbApi.generateMasterAwb(positionId, mawbId, officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

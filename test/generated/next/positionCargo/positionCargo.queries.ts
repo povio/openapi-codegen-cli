@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -35,14 +34,14 @@ export const keys = {
  * @returns { UseQueryResult<PositionCargoModels.ListCargosByPositionIdResponse> } 
  * @statusCodes [200, 401]
  */
-export const useListCargosByPositionId = <TData>({ officeId, positionId, limit, order, page, cursor }: { officeId: string, positionId: string, limit: number, order?: PositionCargoModels.ListCargosByPositionIdOrderParam, page?: number, cursor?: string }, options?: AppQueryOptions<typeof PositionCargoApi.listCargosByPositionId, TData>, config?: AxiosRequestConfig) => {
+export const useListCargosByPositionId = <TData>({ officeId, positionId, limit, order, page, cursor }: { officeId: string, positionId: string, limit: number, order?: PositionCargoModels.ListCargosByPositionIdOrderParam, page?: number, cursor?: string }, options?: AppQueryOptions<typeof PositionCargoApi.listCargosByPositionId, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.listCargosByPositionId(officeId, positionId, limit, order, page, cursor),
     queryFn: () => { 
     checkAcl(PositionCargoAcl.canUseListCargosByPositionId({ officeId } ));
-    return PositionCargoApi.listCargosByPositionId(officeId, positionId, limit, order, page, cursor, config) },
+    return PositionCargoApi.listCargosByPositionId(officeId, positionId, limit, order, page, cursor) },
     ...options,
   });
 };
@@ -61,14 +60,14 @@ export const useListCargosByPositionId = <TData>({ officeId, positionId, limit, 
  * @returns { UseInfiniteQueryResult<PositionCargoModels.ListCargosByPositionIdResponse> } 
  * @statusCodes [200, 401]
  */
-export const useListCargosByPositionIdInfinite = <TData>({ officeId, positionId, limit, order, cursor }: { officeId: string, positionId: string, limit: number, order?: PositionCargoModels.ListCargosByPositionIdOrderParam, cursor?: string }, options?: AppInfiniteQueryOptions<typeof PositionCargoApi.listCargosByPositionId, TData>, config?: AxiosRequestConfig) => {
+export const useListCargosByPositionIdInfinite = <TData>({ officeId, positionId, limit, order, cursor }: { officeId: string, positionId: string, limit: number, order?: PositionCargoModels.ListCargosByPositionIdOrderParam, cursor?: string }, options?: AppInfiniteQueryOptions<typeof PositionCargoApi.listCargosByPositionId, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.listCargosByPositionIdInfinite(officeId, positionId, limit, order, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(PositionCargoAcl.canUseListCargosByPositionId({ officeId } ));
-    return PositionCargoApi.listCargosByPositionId(officeId, positionId, limit, order, pageParam, cursor, config) },
+    return PositionCargoApi.listCargosByPositionId(officeId, positionId, limit, order, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -89,14 +88,14 @@ export const useListCargosByPositionIdInfinite = <TData>({ officeId, positionId,
  * @returns { UseMutationResult<CommonModels.PositionCargoResponseDTO> } 
  * @statusCodes [201, 401]
  */
-export const useCreateCargo = (options?: AppMutationOptions<typeof PositionCargoApi.createCargo, { officeId: string, positionId: string, data: CommonModels.CreatePositionCargoDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreateCargo = (options?: AppMutationOptions<typeof PositionCargoApi.createCargo, { officeId: string, positionId: string, data: CommonModels.CreatePositionCargoDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, positionId, data }) => { 
       checkAcl(PositionCargoAcl.canUseCreateCargo({ officeId } ));
-      return PositionCargoApi.createCargo(officeId, positionId, data, config)
+      return PositionCargoApi.createCargo(officeId, positionId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -116,14 +115,14 @@ export const useCreateCargo = (options?: AppMutationOptions<typeof PositionCargo
  * @returns { UseQueryResult<PositionCargoModels.PositionCargoListCargoLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const useListCargoLabels = <TData>({ officeId, positionId }: { officeId: string, positionId: string }, options?: AppQueryOptions<typeof PositionCargoApi.listCargoLabels, TData>, config?: AxiosRequestConfig) => {
+export const useListCargoLabels = <TData>({ officeId, positionId }: { officeId: string, positionId: string }, options?: AppQueryOptions<typeof PositionCargoApi.listCargoLabels, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.listCargoLabels(officeId, positionId),
     queryFn: () => { 
     checkAcl(PositionCargoAcl.canUseListCargoLabels({ officeId } ));
-    return PositionCargoApi.listCargoLabels(officeId, positionId, config) },
+    return PositionCargoApi.listCargoLabels(officeId, positionId) },
     ...options,
   });
 };
@@ -138,14 +137,14 @@ export const useListCargoLabels = <TData>({ officeId, positionId }: { officeId: 
  * @returns { UseQueryResult<PositionCargoModels.PositionCargoGetCargoSummaryResponse> } 
  * @statusCodes [200, 401]
  */
-export const useGetCargoSummary = <TData>({ officeId, positionId }: { officeId: string, positionId: string }, options?: AppQueryOptions<typeof PositionCargoApi.getCargoSummary, TData>, config?: AxiosRequestConfig) => {
+export const useGetCargoSummary = <TData>({ officeId, positionId }: { officeId: string, positionId: string }, options?: AppQueryOptions<typeof PositionCargoApi.getCargoSummary, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.getCargoSummary(officeId, positionId),
     queryFn: () => { 
     checkAcl(PositionCargoAcl.canUseGetCargoSummary({ officeId } ));
-    return PositionCargoApi.getCargoSummary(officeId, positionId, config) },
+    return PositionCargoApi.getCargoSummary(officeId, positionId) },
     ...options,
   });
 };
@@ -161,14 +160,14 @@ export const useGetCargoSummary = <TData>({ officeId, positionId }: { officeId: 
  * @returns { UseQueryResult<CommonModels.PositionCargoResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useGetCargoById = <TData>({ officeId, positionId, cargoId }: { officeId: string, positionId: string, cargoId: string }, options?: AppQueryOptions<typeof PositionCargoApi.getCargoById, TData>, config?: AxiosRequestConfig) => {
+export const useGetCargoById = <TData>({ officeId, positionId, cargoId }: { officeId: string, positionId: string, cargoId: string }, options?: AppQueryOptions<typeof PositionCargoApi.getCargoById, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.getCargoById(officeId, positionId, cargoId),
     queryFn: () => { 
     checkAcl(PositionCargoAcl.canUseGetCargoById({ officeId } ));
-    return PositionCargoApi.getCargoById(officeId, positionId, cargoId, config) },
+    return PositionCargoApi.getCargoById(officeId, positionId, cargoId) },
     ...options,
   });
 };
@@ -185,14 +184,14 @@ export const useGetCargoById = <TData>({ officeId, positionId, cargoId }: { offi
  * @returns { UseMutationResult<CommonModels.PositionCargoResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useUpdateCargo = (options?: AppMutationOptions<typeof PositionCargoApi.updateCargo, { officeId: string, positionId: string, cargoId: string, data: CommonModels.UpdatePositionCargoDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdateCargo = (options?: AppMutationOptions<typeof PositionCargoApi.updateCargo, { officeId: string, positionId: string, cargoId: string, data: CommonModels.UpdatePositionCargoDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, positionId, cargoId, data }) => { 
       checkAcl(PositionCargoAcl.canUseUpdateCargo({ officeId } ));
-      return PositionCargoApi.updateCargo(officeId, positionId, cargoId, data, config)
+      return PositionCargoApi.updateCargo(officeId, positionId, cargoId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -215,14 +214,14 @@ export const useUpdateCargo = (options?: AppMutationOptions<typeof PositionCargo
  * @returns { UseMutationResult<void> } 
  * @statusCodes [204, 401]
  */
-export const useDeleteCargo = (options?: AppMutationOptions<typeof PositionCargoApi.deleteCargo, { officeId: string, positionId: string, cargoId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useDeleteCargo = (options?: AppMutationOptions<typeof PositionCargoApi.deleteCargo, { officeId: string, positionId: string, cargoId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, positionId, cargoId }) => { 
       checkAcl(PositionCargoAcl.canUseDeleteCargo({ officeId } ));
-      return PositionCargoApi.deleteCargo(officeId, positionId, cargoId, config)
+      return PositionCargoApi.deleteCargo(officeId, positionId, cargoId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -244,14 +243,14 @@ export const useDeleteCargo = (options?: AppMutationOptions<typeof PositionCargo
  * @returns { UseMutationResult<PositionCargoModels.PositionCargoCreateBulkCargosResponse> } 
  * @statusCodes [201, 401]
  */
-export const useCreateBulkCargos = (options?: AppMutationOptions<typeof PositionCargoApi.createBulkCargos, { numberOfCargos: number, officeId: string, positionId: string, data: CommonModels.CreatePositionCargoDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreateBulkCargos = (options?: AppMutationOptions<typeof PositionCargoApi.createBulkCargos, { numberOfCargos: number, officeId: string, positionId: string, data: CommonModels.CreatePositionCargoDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ numberOfCargos, officeId, positionId, data }) => { 
       checkAcl(PositionCargoAcl.canUseCreateBulkCargos({ officeId } ));
-      return PositionCargoApi.createBulkCargos(numberOfCargos, officeId, positionId, data, config)
+      return PositionCargoApi.createBulkCargos(numberOfCargos, officeId, positionId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -272,14 +271,14 @@ export const useCreateBulkCargos = (options?: AppMutationOptions<typeof Position
  * @returns { UseMutationResult<CommonModels.PositionCargoResponseDTO> } 
  * @statusCodes [201, 401]
  */
-export const useDuplicateCargo = (options?: AppMutationOptions<typeof PositionCargoApi.duplicateCargo, { officeId: string, positionId: string, cargoId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useDuplicateCargo = (options?: AppMutationOptions<typeof PositionCargoApi.duplicateCargo, { officeId: string, positionId: string, cargoId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, positionId, cargoId }) => { 
       checkAcl(PositionCargoAcl.canUseDuplicateCargo({ officeId } ));
-      return PositionCargoApi.duplicateCargo(officeId, positionId, cargoId, config)
+      return PositionCargoApi.duplicateCargo(officeId, positionId, cargoId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

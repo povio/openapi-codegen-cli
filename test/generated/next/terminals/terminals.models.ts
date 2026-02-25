@@ -27,7 +27,7 @@ export const TerminalType = TerminalTypeSchema.enum;
  * @property { string } countryId Country id 
  * @property { string } additionalInformation Additional information 
  */
-export const CreateTerminalRequestDTOSchema = z.object({ matchCode: z.string().describe("Unique identifier code for the terminal"), shortName: z.string().describe("Optional short name for the terminal").nullish(), name: z.string().describe("Full name of the terminal"), type: TerminalTypeSchema.describe("Type of the terminal"), portId: z.string().describe("ID of associated port, required if type is port").nullish(), airportId: z.string().describe("ID of associated airport, required if type is airport").nullish(), street: z.string().describe("Street address"), secondaryStreet: z.string().describe("Secondary street").nullish(), zip: z.string().describe("ZIP / Postal code"), district: z.string().describe("District").nullish(), cityId: z.string().describe("City id"), countryId: z.string().describe("Country id"), additionalInformation: z.string().describe("Additional information").nullish() }).readonly();
+export const CreateTerminalRequestDTOSchema = z.object({ matchCode: z.string(), shortName: z.string().nullish(), name: z.string(), type: TerminalTypeSchema, portId: z.string().nullish(), airportId: z.string().nullish(), street: z.string(), secondaryStreet: z.string().nullish(), zip: z.string(), district: z.string().nullish(), cityId: z.string(), countryId: z.string(), additionalInformation: z.string().nullish() });
 export type CreateTerminalRequestDTO = z.infer<typeof CreateTerminalRequestDTOSchema>;
 
 /** 
@@ -36,7 +36,7 @@ export type CreateTerminalRequestDTO = z.infer<typeof CreateTerminalRequestDTOSc
  * @property { string } id  
  * @property { string } name  
  */
-export const TerminalCityDtoSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const TerminalCityDtoSchema = z.object({ id: z.string(), name: z.string() });
 export type TerminalCityDto = z.infer<typeof TerminalCityDtoSchema>;
 
 /** 
@@ -47,7 +47,7 @@ export type TerminalCityDto = z.infer<typeof TerminalCityDtoSchema>;
  * @property { string } isoCode2  
  * @property { string } isoCode3  
  */
-export const TerminalCountryDtoSchema = z.object({ id: z.string(), name: z.string(), isoCode2: z.string(), isoCode3: z.string() }).readonly();
+export const TerminalCountryDtoSchema = z.object({ id: z.string(), name: z.string(), isoCode2: z.string(), isoCode3: z.string() });
 export type TerminalCountryDto = z.infer<typeof TerminalCountryDtoSchema>;
 
 /** 
@@ -60,7 +60,7 @@ export type TerminalCountryDto = z.infer<typeof TerminalCountryDtoSchema>;
  * @property { string } district District name 
  * @property { TerminalCountryDto } country  
  */
-export const TerminalAddressDTOSchema = z.object({ street: z.string().describe("Street address"), secondaryStreet: z.string().describe("Secondary street").nullish(), zip: z.string().describe("ZIP/Postal code"), city: TerminalCityDtoSchema.nullish(), district: z.string().describe("District name").nullish(), country: TerminalCountryDtoSchema.nullish() }).readonly();
+export const TerminalAddressDTOSchema = z.object({ street: z.string(), secondaryStreet: z.string().nullish(), zip: z.string(), city: TerminalCityDtoSchema.nullish(), district: z.string().nullish(), country: TerminalCountryDtoSchema.nullish() });
 export type TerminalAddressDTO = z.infer<typeof TerminalAddressDTOSchema>;
 
 /** 
@@ -69,7 +69,7 @@ export type TerminalAddressDTO = z.infer<typeof TerminalAddressDTOSchema>;
  * @property { string } id Unique identifier of the airport 
  * @property { string } name Name of the airport 
  */
-export const AirportReferenceDTOSchema = z.object({ id: z.string().describe("Unique identifier of the airport"), name: z.string().describe("Name of the airport") }).readonly();
+export const AirportReferenceDTOSchema = z.object({ id: z.string(), name: z.string() });
 export type AirportReferenceDTO = z.infer<typeof AirportReferenceDTOSchema>;
 
 /** 
@@ -78,7 +78,7 @@ export type AirportReferenceDTO = z.infer<typeof AirportReferenceDTOSchema>;
  * @property { string } id Unique identifier of the port 
  * @property { string } name Name of the port 
  */
-export const PortReferenceDTOSchema = z.object({ id: z.string().describe("Unique identifier of the port"), name: z.string().describe("Name of the port") }).readonly();
+export const PortReferenceDTOSchema = z.object({ id: z.string(), name: z.string() });
 export type PortReferenceDTO = z.infer<typeof PortReferenceDTOSchema>;
 
 /** 
@@ -87,7 +87,7 @@ export type PortReferenceDTO = z.infer<typeof PortReferenceDTOSchema>;
  * @property { string } id  
  * @property { string } name  
  */
-export const TerminalEmployeeDTOSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const TerminalEmployeeDTOSchema = z.object({ id: z.string(), name: z.string() });
 export type TerminalEmployeeDTO = z.infer<typeof TerminalEmployeeDTOSchema>;
 
 /** 
@@ -110,7 +110,7 @@ export type TerminalEmployeeDTO = z.infer<typeof TerminalEmployeeDTOSchema>;
  * @property { TerminalEmployeeDTO } updatedBy  
  * @property { string } updatedAt  
  */
-export const TerminalResponseDTOSchema = z.object({ id: z.string().describe("Unique identifier of the terminal"), matchCode: z.string().describe("Match code for the terminal"), name: z.string().describe("Name of the terminal"), type: TerminalTypeSchema.describe("Type of the terminal").nullish(), airport: AirportReferenceDTOSchema.describe("Associated airport information if terminal type is airport").nullish(), port: PortReferenceDTOSchema.describe("Associated port information if terminal type is port").nullish(), archived: z.boolean().describe("Archived status of the terminal"), shortName: z.string().describe("Short name of the terminal").nullish(), address: TerminalAddressDTOSchema.describe("Address of the terminal").nullish(), additionalInformation: z.string().describe("Additional information").nullish(), createdById: z.string().nullish(), createdBy: TerminalEmployeeDTOSchema.nullish(), createdAt: z.iso.datetime({ offset: true }), updatedById: z.string().nullish(), updatedBy: TerminalEmployeeDTOSchema.nullish(), updatedAt: z.iso.datetime({ offset: true }) }).readonly();
+export const TerminalResponseDTOSchema = z.object({ id: z.string(), matchCode: z.string(), name: z.string(), type: TerminalTypeSchema.nullish(), airport: AirportReferenceDTOSchema.nullish(), port: PortReferenceDTOSchema.nullish(), archived: z.boolean(), shortName: z.string().nullish(), address: TerminalAddressDTOSchema.nullish(), additionalInformation: z.string().nullish(), createdById: z.string().nullish(), createdBy: TerminalEmployeeDTOSchema.nullish(), createdAt: z.iso.datetime({ offset: true }), updatedById: z.string().nullish(), updatedBy: TerminalEmployeeDTOSchema.nullish(), updatedAt: z.iso.datetime({ offset: true }) });
 export type TerminalResponseDTO = z.infer<typeof TerminalResponseDTOSchema>;
 
 /** 
@@ -130,7 +130,7 @@ export type TerminalResponseDTO = z.infer<typeof TerminalResponseDTOSchema>;
  * @property { string } countryId Country id 
  * @property { string } additionalInformation Additional information 
  */
-export const UpdateTerminalRequestDTOSchema = z.object({ matchCode: z.string().describe("Updated match code for the terminal"), shortName: z.string().describe("Updated short name"), name: z.string().describe("Updated name"), type: TerminalTypeSchema.describe("Type of the terminal"), portId: z.string().describe("ID of associated port, required if type is port"), airportId: z.string().describe("ID of associated airport, required if type is airport"), street: z.string().describe("Street address"), secondaryStreet: z.string().describe("Secondary street"), zip: z.string().describe("ZIP / Postal code"), district: z.string().describe("District"), cityId: z.string().describe("City id"), countryId: z.string().describe("Country id"), additionalInformation: z.string().describe("Additional information") }).readonly();
+export const UpdateTerminalRequestDTOSchema = z.object({ matchCode: z.string().nullable(), shortName: z.string().nullable(), name: z.string().nullable(), type: TerminalTypeSchema.nullable(), portId: z.string().nullable(), airportId: z.string().nullable(), street: z.string().nullable(), secondaryStreet: z.string().nullable(), zip: z.string().nullable(), district: z.string().nullable(), cityId: z.string().nullable(), countryId: z.string().nullable(), additionalInformation: z.string().nullable() }).partial();
 export type UpdateTerminalRequestDTO = z.infer<typeof UpdateTerminalRequestDTOSchema>;
 
 /** 
@@ -140,7 +140,7 @@ export type UpdateTerminalRequestDTO = z.infer<typeof UpdateTerminalRequestDTOSc
  * @property { boolean } archived  
  * @property { string } type  
  */
-export const TerminalPaginationFilterDtoSchema = z.object({ search: z.string().describe("Search term to filter terminals by matchCode, shortName, or name"), archived: z.boolean(), type: TerminalTypeSchema }).readonly();
+export const TerminalPaginationFilterDtoSchema = z.object({ search: z.string().nullable(), archived: z.boolean().nullable(), type: TerminalTypeSchema.nullable() }).partial();
 export type TerminalPaginationFilterDto = z.infer<typeof TerminalPaginationFilterDtoSchema>;
 
 /** 
@@ -148,7 +148,7 @@ export type TerminalPaginationFilterDto = z.infer<typeof TerminalPaginationFilte
  * @type { object }
  * @property { string } search  
  */
-export const TerminalLabelFilterDtoSchema = z.object({ search: z.string() }).readonly();
+export const TerminalLabelFilterDtoSchema = z.object({ search: z.string().nullable() }).partial();
 export type TerminalLabelFilterDto = z.infer<typeof TerminalLabelFilterDtoSchema>;
 
 /** 
@@ -169,7 +169,7 @@ export const TerminalsPaginateOrderParamEnum = TerminalsPaginateOrderParamEnumSc
  * @property { number } totalItems Total available items 
  * @property { TerminalResponseDTO[] } items  
  */
-export const TerminalsPaginateResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(TerminalResponseDTOSchema).readonly() }).readonly().shape });
+export const TerminalsPaginateResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(TerminalResponseDTOSchema).nullable() }).partial().shape });
 export type TerminalsPaginateResponse = z.infer<typeof TerminalsPaginateResponseSchema>;
 
 /** 
@@ -190,7 +190,7 @@ export const TerminalsPaginateLabelsOrderParamEnum = TerminalsPaginateLabelsOrde
  * @property { number } totalItems Total available items 
  * @property { CommonModels.LabelResponseDTO[] } items  
  */
-export const TerminalsPaginateLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).readonly() }).readonly().shape });
+export const TerminalsPaginateLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).nullable() }).partial().shape });
 export type TerminalsPaginateLabelsResponse = z.infer<typeof TerminalsPaginateLabelsResponseSchema>;
 
 }

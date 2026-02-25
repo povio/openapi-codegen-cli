@@ -26,7 +26,7 @@ export const RemarkType = RemarkTypeSchema.enum;
  * @property { string } content Content of the remark 
  * @property { RemarkType } type Type of the remark 
  */
-export const BusinessPartnerRemarkResponseDTOSchema = z.object({ id: z.string().describe("Unique identifier of the remark"), visibility: RemarkVisibilitySchema.describe("Visibility level of the remark"), content: z.string().describe("Content of the remark"), type: RemarkTypeSchema.describe("Type of the remark") }).readonly();
+export const BusinessPartnerRemarkResponseDTOSchema = z.object({ id: z.string(), visibility: RemarkVisibilitySchema, content: z.string(), type: RemarkTypeSchema });
 export type BusinessPartnerRemarkResponseDTO = z.infer<typeof BusinessPartnerRemarkResponseDTOSchema>;
 
 /** 
@@ -37,7 +37,7 @@ export type BusinessPartnerRemarkResponseDTO = z.infer<typeof BusinessPartnerRem
  * @property { string } city City name 
  * @property { string } isoCode Country code 
  */
-export const BusinessPartnerAddressDtoSchema = z.object({ street: z.string().describe("Street address"), zip: z.string().describe("ZIP/Postal code"), city: z.string().describe("City name"), isoCode: z.string().describe("Country code") }).readonly();
+export const BusinessPartnerAddressDtoSchema = z.object({ street: z.string().nullable(), zip: z.string().nullable(), city: z.string().nullable(), isoCode: z.string().nullable() }).partial();
 export type BusinessPartnerAddressDto = z.infer<typeof BusinessPartnerAddressDtoSchema>;
 
 /** 
@@ -46,7 +46,7 @@ export type BusinessPartnerAddressDto = z.infer<typeof BusinessPartnerAddressDto
  * @property { string } id  
  * @property { string } name  
  */
-export const BusinessPartnerEmployeeDTOSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const BusinessPartnerEmployeeDTOSchema = z.object({ id: z.string(), name: z.string() });
 export type BusinessPartnerEmployeeDTO = z.infer<typeof BusinessPartnerEmployeeDTOSchema>;
 
 /** 
@@ -72,7 +72,7 @@ export type BusinessPartnerEmployeeDTO = z.infer<typeof BusinessPartnerEmployeeD
  * @property { BusinessPartnerEmployeeDTO } updatedBy Employee who last updated this business partner 
  * @property { string } updatedAt Date when the business partner was last updated 
  */
-export const BusinessPartnerListResponseDTOSchema = z.object({ id: z.string().describe("Unique identifier of the business partner"), name: z.string().describe("Name of the business partner"), matchCode: z.string().describe("Match code of the business partner"), address: BusinessPartnerAddressDtoSchema.describe("Address information"), types: z.array(CommonModels.BusinessPartnerTypeSchema).readonly().describe("List of business partner types"), archived: z.boolean().describe("Archive status"), shortName: z.string().describe("Short name of the business partner").nullish(), vat: z.string().describe("VAT number of the business partner").nullish(), debtorId: z.string().describe("Debtor ID for the local currency").nullish(), creditorId: z.string().describe("Creditor ID for the local currency").nullish(), locked: z.boolean().describe("Whether the business partner is locked"), currency: z.string().describe("Currency (invoice currency)").nullish(), remarks: z.array(BusinessPartnerRemarkResponseDTOSchema).readonly().describe("Remarks for the business partner"), createdById: z.string().describe("ID of the employee who created this business partner").nullish(), createdBy: BusinessPartnerEmployeeDTOSchema.describe("Employee who created this business partner").nullish(), createdAt: z.iso.datetime({ offset: true }).describe("Date when the business partner was created"), updatedById: z.string().describe("ID of the employee who last updated this business partner").nullish(), updatedBy: BusinessPartnerEmployeeDTOSchema.describe("Employee who last updated this business partner").nullish(), updatedAt: z.iso.datetime({ offset: true }).describe("Date when the business partner was last updated") }).readonly();
+export const BusinessPartnerListResponseDTOSchema = z.object({ id: z.string(), name: z.string(), matchCode: z.string(), address: BusinessPartnerAddressDtoSchema, types: z.array(CommonModels.BusinessPartnerTypeSchema), archived: z.boolean(), shortName: z.string().nullish(), vat: z.string().nullish(), debtorId: z.string().nullish(), creditorId: z.string().nullish(), locked: z.boolean(), currency: z.string().nullish(), remarks: z.array(BusinessPartnerRemarkResponseDTOSchema), createdById: z.string().nullish(), createdBy: BusinessPartnerEmployeeDTOSchema.nullish(), createdAt: z.iso.datetime({ offset: true }), updatedById: z.string().nullish(), updatedBy: BusinessPartnerEmployeeDTOSchema.nullish(), updatedAt: z.iso.datetime({ offset: true }) });
 export type BusinessPartnerListResponseDTO = z.infer<typeof BusinessPartnerListResponseDTOSchema>;
 
 /** 
@@ -88,7 +88,7 @@ export type BusinessPartnerListResponseDTO = z.infer<typeof BusinessPartnerListR
  * @property { string } matchCode  
  * @property { boolean } archived Filter by archived status 
  */
-export const BusinessPartnerFilterDtoSchema = z.object({ search: z.string(), types: z.array(CommonModels.BusinessPartnerTypeSchema).readonly(), shortName: z.string(), name: z.string(), vat: z.string(), debtorId: z.string(), creditorId: z.string(), matchCode: z.string(), archived: z.boolean().describe("Filter by archived status") }).readonly();
+export const BusinessPartnerFilterDtoSchema = z.object({ search: z.string().nullable(), types: z.array(CommonModels.BusinessPartnerTypeSchema).nullable(), shortName: z.string().nullable(), name: z.string().nullable(), vat: z.string().nullable(), debtorId: z.string().nullable(), creditorId: z.string().nullable(), matchCode: z.string().nullable(), archived: z.boolean().nullable() }).partial();
 export type BusinessPartnerFilterDto = z.infer<typeof BusinessPartnerFilterDtoSchema>;
 
 /** 
@@ -98,7 +98,7 @@ export type BusinessPartnerFilterDto = z.infer<typeof BusinessPartnerFilterDtoSc
  * @property { string } label Label of the business partner 
  * @property { CommonModels.BusinessPartnerType[] } types Array of business partner types 
  */
-export const BusinessPartnerPaginatedLabelResponseDTOSchema = z.object({ id: z.string().describe("Unique identifier of the business partner"), label: z.string().describe("Label of the business partner"), types: z.array(CommonModels.BusinessPartnerTypeSchema).readonly().describe("Array of business partner types") }).readonly();
+export const BusinessPartnerPaginatedLabelResponseDTOSchema = z.object({ id: z.string(), label: z.string(), types: z.array(CommonModels.BusinessPartnerTypeSchema) });
 export type BusinessPartnerPaginatedLabelResponseDTO = z.infer<typeof BusinessPartnerPaginatedLabelResponseDTOSchema>;
 
 /** 
@@ -109,7 +109,7 @@ export type BusinessPartnerPaginatedLabelResponseDTO = z.infer<typeof BusinessPa
  * @property { CommonModels.BusinessPartnerType[] } types Array of business partner types to filter by 
  * @property { boolean } archived Filter by archived status 
  */
-export const BusinessPartnerLabelsFilterDtoSchema = z.object({ search: z.string(), ids: z.array(z.string()).readonly().describe("Business partner ids to filter by"), types: z.array(CommonModels.BusinessPartnerTypeSchema).readonly().describe("Array of business partner types to filter by"), archived: z.boolean().describe("Filter by archived status") }).readonly();
+export const BusinessPartnerLabelsFilterDtoSchema = z.object({ search: z.string().nullable(), ids: z.array(z.string()).nullable(), types: z.array(CommonModels.BusinessPartnerTypeSchema).nullable(), archived: z.boolean().nullable() }).partial();
 export type BusinessPartnerLabelsFilterDto = z.infer<typeof BusinessPartnerLabelsFilterDtoSchema>;
 
 /** 
@@ -122,7 +122,7 @@ export type BusinessPartnerLabelsFilterDto = z.infer<typeof BusinessPartnerLabel
  * @property { string } district  
  * @property { string } countryId  
  */
-export const CreateBusinessPartnerAddressDtoSchema = z.object({ street: z.string(), secondaryStreet: z.string(), zip: z.string(), cityId: z.string(), district: z.string(), countryId: z.string() }).readonly();
+export const CreateBusinessPartnerAddressDtoSchema = z.object({ street: z.string().nullable(), secondaryStreet: z.string().nullable(), zip: z.string().nullable(), cityId: z.string().nullable(), district: z.string().nullable(), countryId: z.string().nullable() }).partial();
 export type CreateBusinessPartnerAddressDto = z.infer<typeof CreateBusinessPartnerAddressDtoSchema>;
 
 /** 
@@ -135,7 +135,7 @@ export type CreateBusinessPartnerAddressDto = z.infer<typeof CreateBusinessPartn
  * @property { string } shortName Short name for the business partner 
  * @property { CreateBusinessPartnerAddressDto } address Address information 
  */
-export const CreateBusinessPartnerRequestDTOSchema = z.object({ name: z.string().min(3).describe("Full name of the business partner"), secondaryName: z.string().min(3).describe("Full name of the business partner").nullish(), types: z.array(CommonModels.BusinessPartnerTypeSchema).readonly().describe("Types/roles of the business partner"), matchCode: z.string().describe("Unique identifier code").nullish(), shortName: z.string().describe("Short name for the business partner").nullish(), address: CreateBusinessPartnerAddressDtoSchema.describe("Address information").nullish() }).readonly();
+export const CreateBusinessPartnerRequestDTOSchema = z.object({ name: z.string().min(3), secondaryName: z.string().min(3).nullish(), types: z.array(CommonModels.BusinessPartnerTypeSchema), matchCode: z.string().nullish(), shortName: z.string().nullish(), address: CreateBusinessPartnerAddressDtoSchema.nullish() });
 export type CreateBusinessPartnerRequestDTO = z.infer<typeof CreateBusinessPartnerRequestDTOSchema>;
 
 /** 
@@ -146,7 +146,7 @@ export type CreateBusinessPartnerRequestDTO = z.infer<typeof CreateBusinessPartn
  * @property { CommonModels.BusinessPartnerType[] } types Types/roles of the business partner 
  * @property { string } rootFolderId Root folder identifier associated with this business partner 
  */
-export const BusinessPartnerResponseDTOSchema = z.object({ id: z.string().describe("Unique identifier of the business partner"), name: z.string().describe("Name of the business partner"), types: z.array(CommonModels.BusinessPartnerTypeSchema).readonly().describe("Types/roles of the business partner"), rootFolderId: z.string().describe("Root folder identifier associated with this business partner").nullish() }).readonly();
+export const BusinessPartnerResponseDTOSchema = z.object({ id: z.string(), name: z.string(), types: z.array(CommonModels.BusinessPartnerTypeSchema), rootFolderId: z.string().nullish() });
 export type BusinessPartnerResponseDTO = z.infer<typeof BusinessPartnerResponseDTOSchema>;
 
 /** 
@@ -155,7 +155,7 @@ export type BusinessPartnerResponseDTO = z.infer<typeof BusinessPartnerResponseD
  * @property { string } id Unique identifier of the business partner 
  * @property { string } name Name of the business partner 
  */
-export const BusinessPartnerLabelResponseDtoSchema = z.object({ id: z.string().describe("Unique identifier of the business partner"), name: z.string().describe("Name of the business partner") }).readonly();
+export const BusinessPartnerLabelResponseDtoSchema = z.object({ id: z.string(), name: z.string() });
 export type BusinessPartnerLabelResponseDto = z.infer<typeof BusinessPartnerLabelResponseDtoSchema>;
 
 /** 
@@ -164,7 +164,7 @@ export type BusinessPartnerLabelResponseDto = z.infer<typeof BusinessPartnerLabe
  * @property { string } id Unique identifier of the contact 
  * @property { string } name Name of the contact 
  */
-export const ContactResponseDTOSchema = z.object({ id: z.string().describe("Unique identifier of the contact"), name: z.string().describe("Name of the contact") }).readonly();
+export const ContactResponseDTOSchema = z.object({ id: z.string(), name: z.string() });
 export type ContactResponseDTO = z.infer<typeof ContactResponseDTOSchema>;
 
 /** 
@@ -195,7 +195,7 @@ export type ContactResponseDTO = z.infer<typeof ContactResponseDTOSchema>;
  * @property { ContactResponseDTO } salesRep Sales representative 
  * @property { ContactResponseDTO } operations Operations contact 
  */
-export const BusinessPartnerDetailResponseDTOSchema = z.object({ id: z.string().describe("Unique identifier of the business partner"), createdById: z.string().describe("ID of the employee who created this record").nullish(), createdBy: BusinessPartnerEmployeeDTOSchema.describe("Employee who created this record").nullish(), createdAt: z.iso.datetime({ offset: true }).describe("Creation timestamp"), updatedById: z.string().describe("ID of the employee who last updated this record").nullish(), updatedBy: BusinessPartnerEmployeeDTOSchema.describe("Employee who last updated this record").nullish(), updatedAt: z.iso.datetime({ offset: true }).describe("Last update timestamp"), matchCode: z.string().describe("Match code of the business partner"), shortName: z.string().describe("Short name"), name: z.string().describe("Full name"), secondaryName: z.string().describe("Secondary name"), types: z.array(CommonModels.BusinessPartnerTypeSchema).readonly().describe("List of business partner types"), archived: z.boolean().describe("Archived status"), address: CommonModels.BusinessPartnerAddressResponseDTOSchema.describe("Main address information"), blAddress: CommonModels.BusinessPartnerAddressResponseDTOSchema.describe("BL address information"), similar: z.array(BusinessPartnerLabelResponseDtoSchema).readonly().describe("Similar named business partners").nullish(), locked: z.boolean(), addressIsDifferentForBl: z.boolean(), lockedById: z.string().describe("Unique identifier of the employee who locked the business partner").nullish(), lockedByName: z.string().nullish(), lockedAt: z.iso.datetime({ offset: true }).describe("Unique identifier of the employee who locked the business partner").nullish(), belongsTo: ContactResponseDTOSchema.describe("Parent business partner"), salesRep: ContactResponseDTOSchema.describe("Sales representative"), operations: ContactResponseDTOSchema.describe("Operations contact") }).readonly();
+export const BusinessPartnerDetailResponseDTOSchema = z.object({ id: z.string(), createdById: z.string().nullish(), createdBy: BusinessPartnerEmployeeDTOSchema.nullish(), createdAt: z.iso.datetime({ offset: true }), updatedById: z.string().nullish(), updatedBy: BusinessPartnerEmployeeDTOSchema.nullish(), updatedAt: z.iso.datetime({ offset: true }), matchCode: z.string(), shortName: z.string(), name: z.string(), secondaryName: z.string(), types: z.array(CommonModels.BusinessPartnerTypeSchema), archived: z.boolean(), address: CommonModels.BusinessPartnerAddressResponseDTOSchema, blAddress: CommonModels.BusinessPartnerAddressResponseDTOSchema, similar: z.array(BusinessPartnerLabelResponseDtoSchema).nullish(), locked: z.boolean(), addressIsDifferentForBl: z.boolean(), lockedById: z.string().nullish(), lockedByName: z.string().nullish(), lockedAt: z.iso.datetime({ offset: true }).nullish(), belongsTo: ContactResponseDTOSchema, salesRep: ContactResponseDTOSchema, operations: ContactResponseDTOSchema });
 export type BusinessPartnerDetailResponseDTO = z.infer<typeof BusinessPartnerDetailResponseDTOSchema>;
 
 /** 
@@ -208,7 +208,7 @@ export type BusinessPartnerDetailResponseDTO = z.infer<typeof BusinessPartnerDet
  * @property { string } district  
  * @property { string } countryId  
  */
-export const UpdateBusinessPartnerAddressDtoSchema = z.object({ street: z.string(), secondaryStreet: z.string(), zip: z.string(), cityId: z.string().nullable(), district: z.string(), countryId: z.string() }).readonly();
+export const UpdateBusinessPartnerAddressDtoSchema = z.object({ street: z.string().nullable(), secondaryStreet: z.string().nullable(), zip: z.string().nullable(), cityId: z.string().nullable(), district: z.string().nullable(), countryId: z.string().nullable() }).partial();
 export type UpdateBusinessPartnerAddressDto = z.infer<typeof UpdateBusinessPartnerAddressDtoSchema>;
 
 /** 
@@ -226,7 +226,7 @@ export type UpdateBusinessPartnerAddressDto = z.infer<typeof UpdateBusinessPartn
  * @property { string } operationsId Operations contact 
  * @property { boolean } addressIsDifferentForBl Different address for BL 
  */
-export const UpdateBusinessPartnerRequestDTOSchema = z.object({ matchCode: z.string().describe("Updated match code"), shortName: z.string().describe("Updated short name"), name: z.string().describe("Updated full name"), secondaryName: z.string().describe("Updated secondary name"), types: z.array(CommonModels.BusinessPartnerTypeSchema).readonly().describe("Types/roles of the business partner"), address: UpdateBusinessPartnerAddressDtoSchema.describe("Address information"), blAddress: UpdateBusinessPartnerAddressDtoSchema.describe("Bl address information"), belongsToId: z.string().describe("Parent business partner"), salesRepId: z.string().describe("Sales representative"), operationsId: z.string().describe("Operations contact"), addressIsDifferentForBl: z.boolean().describe("Different address for BL") }).readonly();
+export const UpdateBusinessPartnerRequestDTOSchema = z.object({ matchCode: z.string().nullable(), shortName: z.string().nullable(), name: z.string().nullable(), secondaryName: z.string().nullable(), types: z.array(CommonModels.BusinessPartnerTypeSchema).nullable(), address: UpdateBusinessPartnerAddressDtoSchema.nullable(), blAddress: UpdateBusinessPartnerAddressDtoSchema.nullable(), belongsToId: z.string().nullable(), salesRepId: z.string().nullable(), operationsId: z.string().nullable(), addressIsDifferentForBl: z.boolean().nullable() }).partial();
 export type UpdateBusinessPartnerRequestDTO = z.infer<typeof UpdateBusinessPartnerRequestDTOSchema>;
 
 /** 
@@ -236,7 +236,7 @@ export type UpdateBusinessPartnerRequestDTO = z.infer<typeof UpdateBusinessPartn
  * @property { string } content Content of the remark 
  * @property { RemarkType } type Type of remark 
  */
-export const CreateBusinessPartnerRemarkRequestDTOSchema = z.object({ visibility: RemarkVisibilitySchema.describe("Visibility level of the remark"), content: z.string().describe("Content of the remark"), type: RemarkTypeSchema.describe("Type of remark") }).readonly();
+export const CreateBusinessPartnerRemarkRequestDTOSchema = z.object({ visibility: RemarkVisibilitySchema, content: z.string(), type: RemarkTypeSchema });
 export type CreateBusinessPartnerRemarkRequestDTO = z.infer<typeof CreateBusinessPartnerRemarkRequestDTOSchema>;
 
 /** 
@@ -246,7 +246,7 @@ export type CreateBusinessPartnerRemarkRequestDTO = z.infer<typeof CreateBusines
  * @property { string } content Content of the remark 
  * @property { RemarkType } type Type of remark 
  */
-export const UpdateBusinessPartnerRemarkRequestDtoSchema = z.object({ visibility: RemarkVisibilitySchema.describe("Visibility level of the remark"), content: z.string().describe("Content of the remark"), type: RemarkTypeSchema.describe("Type of remark") }).readonly();
+export const UpdateBusinessPartnerRemarkRequestDtoSchema = z.object({ visibility: RemarkVisibilitySchema.nullable(), content: z.string().nullable(), type: RemarkTypeSchema.nullable() }).partial();
 export type UpdateBusinessPartnerRemarkRequestDto = z.infer<typeof UpdateBusinessPartnerRemarkRequestDtoSchema>;
 
 /** 
@@ -271,7 +271,7 @@ export const BusinessPartnerAuthorization = BusinessPartnerAuthorizationSchema.e
  * @property { string } relativeTo  
  * @property { number } days Minimum: `0` 
  */
-export const BusinessPartnerPaymentTermsResponseDtoSchema = z.object({ relativeTo: CommonModels.OfficePaymentTermsDateTypeSchema, days: z.number().gte(0) }).readonly();
+export const BusinessPartnerPaymentTermsResponseDtoSchema = z.object({ relativeTo: CommonModels.OfficePaymentTermsDateTypeSchema, days: z.number().gte(0) });
 export type BusinessPartnerPaymentTermsResponseDto = z.infer<typeof BusinessPartnerPaymentTermsResponseDtoSchema>;
 
 /** 
@@ -280,7 +280,7 @@ export type BusinessPartnerPaymentTermsResponseDto = z.infer<typeof BusinessPart
  * @property { string } id  
  * @property { string } name  
  */
-export const BusinessPartnerBankAccountResponseDtoSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const BusinessPartnerBankAccountResponseDtoSchema = z.object({ id: z.string(), name: z.string() });
 export type BusinessPartnerBankAccountResponseDto = z.infer<typeof BusinessPartnerBankAccountResponseDtoSchema>;
 
 /** 
@@ -289,7 +289,7 @@ export type BusinessPartnerBankAccountResponseDto = z.infer<typeof BusinessPartn
  * @property { string } id Partner network ID 
  * @property { string } name Partner network name 
  */
-export const PartnerNetworkInfoDtoSchema = z.object({ id: z.string().describe("Partner network ID"), name: z.string().describe("Partner network name") }).readonly();
+export const PartnerNetworkInfoDtoSchema = z.object({ id: z.string(), name: z.string() });
 export type PartnerNetworkInfoDto = z.infer<typeof PartnerNetworkInfoDtoSchema>;
 
 /** 
@@ -321,7 +321,7 @@ export type PartnerNetworkInfoDto = z.infer<typeof PartnerNetworkInfoDtoSchema>;
  * @property { string } signatureFileAttachmentId Signature file attachment ID 
  * @property { string } signatureFileAttachmentUrl Signed URL for signature file attachment 
  */
-export const BusinessPartnerBasicResponseDTOSchema = z.object({ businessPartnerId: z.string().describe("Reference to the business partner"), relationship: z.array(z.string()).readonly().describe("List of relationships"), accountType: AccountTypeEnumSchema.nullish(), vat: z.string().describe("VAT number"), legacySystemId: z.string().describe("Legacy system (move) id").nullish(), registrationNumber: z.string().nullish(), eori: z.string().describe("EORI number"), authorization: BusinessPartnerAuthorizationSchema.describe("Authorization status").nullable(), creditLimit: z.number().describe("Credit limit"), invoiceLanguage: z.string().describe("Invoice language"), invoiceCurrency: z.string().describe("Invoice currency"), iban: z.string().describe("IBAN"), bankNumber: z.string().describe("Bank number"), bankAccountNumber: z.string().describe("Bank account number"), termsExport: BusinessPartnerPaymentTermsResponseDtoSchema, termsImport: BusinessPartnerPaymentTermsResponseDtoSchema, notes: CommonModels.EditorContentResponseDtoSchema.describe("Notes").nullish(), bankAccountId: z.string().nullish(), bankAccount: BusinessPartnerBankAccountResponseDtoSchema.nullish(), partnerNetworks: z.array(PartnerNetworkInfoDtoSchema).readonly().describe("Partner networks"), dunningSystemId: z.string().nullish(), dunningSystem: CommonModels.DunningSystemReferenceDTOSchema.nullish(), hblIssuerSigner: z.string().describe("HBL issuer/signer prefill"), signatureFileAttachmentId: z.string().describe("Signature file attachment ID"), signatureFileAttachmentUrl: z.string().describe("Signed URL for signature file attachment").nullish() }).readonly();
+export const BusinessPartnerBasicResponseDTOSchema = z.object({ businessPartnerId: z.string(), relationship: z.array(z.string()), accountType: AccountTypeEnumSchema.nullish(), vat: z.string(), legacySystemId: z.string().nullish(), registrationNumber: z.string().nullish(), eori: z.string(), authorization: BusinessPartnerAuthorizationSchema.nullable(), creditLimit: z.number(), invoiceLanguage: z.string(), invoiceCurrency: z.string(), iban: z.string(), bankNumber: z.string(), bankAccountNumber: z.string(), termsExport: BusinessPartnerPaymentTermsResponseDtoSchema, termsImport: BusinessPartnerPaymentTermsResponseDtoSchema, notes: CommonModels.EditorContentResponseDtoSchema.nullish(), bankAccountId: z.string().nullish(), bankAccount: BusinessPartnerBankAccountResponseDtoSchema.nullish(), partnerNetworks: z.array(PartnerNetworkInfoDtoSchema), dunningSystemId: z.string().nullish(), dunningSystem: CommonModels.DunningSystemReferenceDTOSchema.nullish(), hblIssuerSigner: z.string(), signatureFileAttachmentId: z.string(), signatureFileAttachmentUrl: z.string().nullish() });
 export type BusinessPartnerBasicResponseDTO = z.infer<typeof BusinessPartnerBasicResponseDTOSchema>;
 
 /** 
@@ -330,7 +330,7 @@ export type BusinessPartnerBasicResponseDTO = z.infer<typeof BusinessPartnerBasi
  * @property { string } relativeTo  
  * @property { number } days Minimum: `0` 
  */
-export const UpdateBusinessPartnerPaymentTermsDtoSchema = z.object({ relativeTo: CommonModels.OfficePaymentTermsDateTypeSchema, days: z.number().gte(0) }).readonly();
+export const UpdateBusinessPartnerPaymentTermsDtoSchema = z.object({ relativeTo: CommonModels.OfficePaymentTermsDateTypeSchema.nullable(), days: z.number().gte(0).nullable() }).partial();
 export type UpdateBusinessPartnerPaymentTermsDto = z.infer<typeof UpdateBusinessPartnerPaymentTermsDtoSchema>;
 
 /** 
@@ -358,7 +358,7 @@ export type UpdateBusinessPartnerPaymentTermsDto = z.infer<typeof UpdateBusiness
  * @property { string } hblIssuerSigner HBL issuer/signer prefill 
  * @property { string } signatureFileAttachmentId Signature file attachment ID 
  */
-export const UpdateBusinessPartnerBasicRequestDTOSchema = z.object({ relationship: z.array(z.string()).readonly().describe("Updated relationships"), vat: z.string().describe("Updated VAT number"), eori: z.string().describe("Updated EORI number"), accountType: AccountTypeEnumSchema, authorization: BusinessPartnerAuthorizationSchema.describe("Updated authorization status"), creditLimit: z.number().describe("Updated credit limit"), invoiceLanguage: z.string().describe("Invoice language"), invoiceCurrency: z.string().describe("Invoice currency"), iban: z.string().describe("IBAN"), bankNumber: z.string().describe("Bank number"), bankAccountNumber: z.string().describe("Bank account number"), legacySystemId: z.string().describe("Legacy system (move) id"), registrationNumber: z.string(), termsExport: UpdateBusinessPartnerPaymentTermsDtoSchema, termsImport: UpdateBusinessPartnerPaymentTermsDtoSchema, notes: CommonModels.EditorContentUpdateDtoSchema.describe("Notes"), bankAccountId: z.string().nullable(), partnerNetworkIds: z.array(z.string()).readonly().describe("Partner network IDs"), dunningSystemId: z.string().describe("Dunning system ID").nullable(), hblIssuerSigner: z.string().describe("HBL issuer/signer prefill").nullable(), signatureFileAttachmentId: z.string().describe("Signature file attachment ID").nullable() }).readonly();
+export const UpdateBusinessPartnerBasicRequestDTOSchema = z.object({ relationship: z.array(z.string()).nullable(), vat: z.string().nullable(), eori: z.string().nullable(), accountType: AccountTypeEnumSchema.nullable(), authorization: BusinessPartnerAuthorizationSchema.nullable(), creditLimit: z.number().nullable(), invoiceLanguage: z.string().nullable(), invoiceCurrency: z.string().nullable(), iban: z.string().nullable(), bankNumber: z.string().nullable(), bankAccountNumber: z.string().nullable(), legacySystemId: z.string().nullable(), registrationNumber: z.string().nullable(), termsExport: UpdateBusinessPartnerPaymentTermsDtoSchema.nullable(), termsImport: UpdateBusinessPartnerPaymentTermsDtoSchema.nullable(), notes: CommonModels.EditorContentUpdateDtoSchema.nullable(), bankAccountId: z.string().nullable(), partnerNetworkIds: z.array(z.string()).nullable(), dunningSystemId: z.string().nullable(), hblIssuerSigner: z.string().nullable(), signatureFileAttachmentId: z.string().nullable() }).partial();
 export type UpdateBusinessPartnerBasicRequestDTO = z.infer<typeof UpdateBusinessPartnerBasicRequestDTOSchema>;
 
 /** 
@@ -368,7 +368,7 @@ export type UpdateBusinessPartnerBasicRequestDTO = z.infer<typeof UpdateBusiness
  * @property { string } mimeType Mime type 
  * @property { number } fileSize File size in bytes. Minimum: `1` 
  */
-export const BusinessPartnerSignatureUploadRequestDTOSchema = z.object({ fileName: z.string().describe("File name"), mimeType: z.string().describe("Mime type"), fileSize: z.number().gte(1).describe("File size in bytes") }).readonly();
+export const BusinessPartnerSignatureUploadRequestDTOSchema = z.object({ fileName: z.string(), mimeType: z.string(), fileSize: z.number().gte(1) });
 export type BusinessPartnerSignatureUploadRequestDTO = z.infer<typeof BusinessPartnerSignatureUploadRequestDTOSchema>;
 
 /** 
@@ -378,7 +378,7 @@ export type BusinessPartnerSignatureUploadRequestDTO = z.infer<typeof BusinessPa
  * @property { string } method HTTP method to use for upload 
  * @property { string } url URL to upload the file to 
  */
-export const BusinessPartnerSignatureUploadResponseDTOSchema = z.object({ mediaId: z.string().describe("Media ID for the uploaded signature"), method: z.string().describe("HTTP method to use for upload"), url: z.string().describe("URL to upload the file to") }).readonly();
+export const BusinessPartnerSignatureUploadResponseDTOSchema = z.object({ mediaId: z.string(), method: z.string(), url: z.string() });
 export type BusinessPartnerSignatureUploadResponseDTO = z.infer<typeof BusinessPartnerSignatureUploadResponseDTOSchema>;
 
 /** 
@@ -389,7 +389,7 @@ export type BusinessPartnerSignatureUploadResponseDTO = z.infer<typeof BusinessP
  * @property { string } iataAccountNumber IATA account number 
  * @property { string } regulatedAgentCode Regulated agent code 
  */
-export const CargoAgentResponseDTOSchema = z.object({ businessPartnerId: z.string().describe("Business partner identifier"), portOfHamburgAccountNumber: z.string().describe("Port of Hamburg account number"), iataAccountNumber: z.string().describe("IATA account number"), regulatedAgentCode: z.string().describe("Regulated agent code") }).readonly();
+export const CargoAgentResponseDTOSchema = z.object({ businessPartnerId: z.string(), portOfHamburgAccountNumber: z.string(), iataAccountNumber: z.string(), regulatedAgentCode: z.string() });
 export type CargoAgentResponseDTO = z.infer<typeof CargoAgentResponseDTOSchema>;
 
 /** 
@@ -399,7 +399,7 @@ export type CargoAgentResponseDTO = z.infer<typeof CargoAgentResponseDTOSchema>;
  * @property { string } iataAccountNumber IATA account number 
  * @property { string } regulatedAgentCode Regulated agent code 
  */
-export const UpdateCargoAgentDTOSchema = z.object({ portOfHamburgAccountNumber: z.string().describe("Hamburg port account number"), iataAccountNumber: z.string().describe("IATA account number"), regulatedAgentCode: z.string().describe("Regulated agent code") }).readonly();
+export const UpdateCargoAgentDTOSchema = z.object({ portOfHamburgAccountNumber: z.string().nullable(), iataAccountNumber: z.string().nullable(), regulatedAgentCode: z.string().nullable() }).partial();
 export type UpdateCargoAgentDTO = z.infer<typeof UpdateCargoAgentDTOSchema>;
 
 /** 
@@ -417,7 +417,7 @@ export type UpdateCargoAgentDTO = z.infer<typeof UpdateCargoAgentDTOSchema>;
  * @property { string } fundReportSuffix Fund report suffix 
  * @property { string } invoiceSuffix Invoice suffix 
  */
-export const CarrierResponseDTOSchema = z.object({ businessPartnerId: z.string().describe("Business partner identifier"), scac: z.string().describe("SCAC code"), iataAirlinePrefix: z.string().describe("IATA airline prefix"), iataCode: z.string().describe("IATA code"), registrationAddress: z.string().describe("Registration address"), masterBlSuffix: z.string().describe("Master BL suffix"), houseBlSuffix: z.string().describe("House BL suffix"), airWaybillSuffix: z.string().describe("Air waybill suffix"), cargoManifestSuffix: z.string().describe("Cargo manifest suffix"), fundReportSuffix: z.string().describe("Fund report suffix"), invoiceSuffix: z.string().describe("Invoice suffix") }).readonly();
+export const CarrierResponseDTOSchema = z.object({ businessPartnerId: z.string(), scac: z.string(), iataAirlinePrefix: z.string(), iataCode: z.string(), registrationAddress: z.string(), masterBlSuffix: z.string(), houseBlSuffix: z.string(), airWaybillSuffix: z.string(), cargoManifestSuffix: z.string(), fundReportSuffix: z.string(), invoiceSuffix: z.string() });
 export type CarrierResponseDTO = z.infer<typeof CarrierResponseDTOSchema>;
 
 /** 
@@ -434,7 +434,7 @@ export type CarrierResponseDTO = z.infer<typeof CarrierResponseDTOSchema>;
  * @property { string } fundReportSuffix Fund report suffix 
  * @property { string } invoiceSuffix Invoice suffix 
  */
-export const UpdateCarrierDTOSchema = z.object({ scac: z.string().describe("SCAC code"), iataAirlinePrefix: z.string().describe("IATA airline prefix"), iataCode: z.string().describe("IATA code"), registrationAddress: z.string().describe("Registration address"), masterBlSuffix: z.string().describe("Master BL suffix"), houseBlSuffix: z.string().describe("House BL suffix"), airWaybillSuffix: z.string().describe("Air waybill suffix"), cargoManifestSuffix: z.string().describe("Cargo manifest suffix"), fundReportSuffix: z.string().describe("Fund report suffix"), invoiceSuffix: z.string().describe("Invoice suffix") }).readonly();
+export const UpdateCarrierDTOSchema = z.object({ scac: z.string().nullable(), iataAirlinePrefix: z.string().nullable(), iataCode: z.string().nullable(), registrationAddress: z.string().nullable(), masterBlSuffix: z.string().nullable(), houseBlSuffix: z.string().nullable(), airWaybillSuffix: z.string().nullable(), cargoManifestSuffix: z.string().nullable(), fundReportSuffix: z.string().nullable(), invoiceSuffix: z.string().nullable() }).partial();
 export type UpdateCarrierDTO = z.infer<typeof UpdateCarrierDTOSchema>;
 
 /** 
@@ -455,7 +455,7 @@ export const BusinessPartnersPaginateOrderParamEnum = BusinessPartnersPaginateOr
  * @property { number } totalItems Total available items 
  * @property { BusinessPartnerListResponseDTO[] } items  
  */
-export const BusinessPartnersPaginateResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(BusinessPartnerListResponseDTOSchema).readonly() }).readonly().shape });
+export const BusinessPartnersPaginateResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(BusinessPartnerListResponseDTOSchema).nullable() }).partial().shape });
 export type BusinessPartnersPaginateResponse = z.infer<typeof BusinessPartnersPaginateResponseSchema>;
 
 /** 
@@ -476,14 +476,14 @@ export const BusinessPartnersPaginateLabelsOrderParamEnum = BusinessPartnersPagi
  * @property { number } totalItems Total available items 
  * @property { BusinessPartnerPaginatedLabelResponseDTO[] } items  
  */
-export const BusinessPartnersPaginateLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(BusinessPartnerPaginatedLabelResponseDTOSchema).readonly() }).readonly().shape });
+export const BusinessPartnersPaginateLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(BusinessPartnerPaginatedLabelResponseDTOSchema).nullable() }).partial().shape });
 export type BusinessPartnersPaginateLabelsResponse = z.infer<typeof BusinessPartnersPaginateLabelsResponseSchema>;
 
 /** 
  * GetRemarksResponseSchema 
  * @type { array }
  */
-export const GetRemarksResponseSchema = z.array(BusinessPartnerRemarkResponseDTOSchema).readonly();
+export const GetRemarksResponseSchema = z.array(BusinessPartnerRemarkResponseDTOSchema);
 export type GetRemarksResponse = z.infer<typeof GetRemarksResponseSchema>;
 
 }

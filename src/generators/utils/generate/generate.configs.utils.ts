@@ -38,7 +38,13 @@ import { getImportedZodSchemaName } from "./generate.zod.utils";
 export function getBuilderConfigs({ data, tag, resolver }: GenerateTypeParams) {
   const endpoints = data.get(tag)?.endpoints;
   if (!endpoints || endpoints.length === 0) {
-    return { configs: [] };
+    return {
+      configs: [],
+      hasZodImport: false,
+      modelsImports: [],
+      queriesImports: [],
+      aclImports: [],
+    };
   }
 
   const extendedEndpoints: ExtendedEndpoint[] = endpoints.map((endpoint) => ({

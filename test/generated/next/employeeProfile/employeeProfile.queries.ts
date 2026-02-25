@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -21,12 +20,11 @@ export const keys = {
  * @returns { UseQueryResult<EmployeeProfileModels.EmployeeProfileResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useGetProfile = <TData>(options?: AppQueryOptions<typeof EmployeeProfileApi.getProfile, TData>, config?: AxiosRequestConfig) => {
+export const useGetProfile = <TData>(options?: AppQueryOptions<typeof EmployeeProfileApi.getProfile, TData>) => {
   
   return useQuery({
     queryKey: keys.getProfile(),
-    queryFn: () => 
-    EmployeeProfileApi.getProfile(config),
+    queryFn: EmployeeProfileApi.getProfile,
     ...options,
   });
 };
@@ -39,12 +37,12 @@ export const useGetProfile = <TData>(options?: AppQueryOptions<typeof EmployeePr
  * @returns { UseMutationResult<EmployeeProfileModels.EmployeeProfileResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useUpdateProfile = (options?: AppMutationOptions<typeof EmployeeProfileApi.updateProfile, { data: EmployeeProfileModels.UpdateEmployeeProfileRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdateProfile = (options?: AppMutationOptions<typeof EmployeeProfileApi.updateProfile, { data: EmployeeProfileModels.UpdateEmployeeProfileRequestDTO }> & MutationEffectsOptions) => {
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ data }) => 
-      EmployeeProfileApi.updateProfile(data, config)
+      EmployeeProfileApi.updateProfile(data)
 ,
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

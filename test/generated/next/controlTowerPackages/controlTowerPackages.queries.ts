@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { AppQueryOptions, AppInfiniteQueryOptions } from "@povio/openapi-codegen-cli";
@@ -26,12 +25,12 @@ export const keys = {
  * @returns { UseQueryResult<ControlTowerPackagesModels.ControlTowerPackagesFindAllResponse> } 
  * @statusCodes [200, 401]
  */
-export const useFindAll = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: ControlTowerPackagesModels.PackageFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof ControlTowerPackagesApi.findAll, TData>, config?: AxiosRequestConfig) => {
+export const useFindAll = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: ControlTowerPackagesModels.PackageFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof ControlTowerPackagesApi.findAll, TData>) => {
   
   return useQuery({
     queryKey: keys.findAll(limit, order, filter, page, cursor),
     queryFn: () => 
-    ControlTowerPackagesApi.findAll(limit, order, filter, page, cursor, config),
+    ControlTowerPackagesApi.findAll(limit, order, filter, page, cursor),
     ...options,
   });
 };
@@ -48,12 +47,12 @@ export const useFindAll = <TData>({ limit, order, filter, page, cursor }: { limi
  * @returns { UseInfiniteQueryResult<ControlTowerPackagesModels.ControlTowerPackagesFindAllResponse> } 
  * @statusCodes [200, 401]
  */
-export const useFindAllInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: ControlTowerPackagesModels.PackageFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof ControlTowerPackagesApi.findAll, TData>, config?: AxiosRequestConfig) => {
+export const useFindAllInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: ControlTowerPackagesModels.PackageFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof ControlTowerPackagesApi.findAll, TData>) => {
 
   return useInfiniteQuery({
     queryKey: keys.findAllInfinite(limit, order, filter, cursor),
     queryFn: ({ pageParam }) => 
-    ControlTowerPackagesApi.findAll(limit, order, filter, pageParam, cursor, config),
+    ControlTowerPackagesApi.findAll(limit, order, filter, pageParam, cursor),
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;

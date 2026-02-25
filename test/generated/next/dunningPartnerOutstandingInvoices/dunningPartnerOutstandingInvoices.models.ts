@@ -13,7 +13,7 @@ export namespace DunningPartnerOutstandingInvoicesModels {
  * @property { string } dunningSystemId Dunning system ID 
  * @property { CommonModels.DateRangeDto } lastDunningDate Last dunning date range 
  */
-export const PartnerOutstandingInvoiceSummaryFilterDtoSchema = z.object({ search: z.string().describe("Search string (partner name)"), daysOverdueMin: z.number().describe("Minimum days overdue"), partnerId: z.string().describe("Partner ID"), outstandingAmountMin: z.number().describe("Minimum outstanding amount"), currency: z.string().describe("Currency"), dunningSystemId: z.string().describe("Dunning system ID"), lastDunningDate: CommonModels.DateRangeDtoSchema.describe("Last dunning date range") }).readonly();
+export const PartnerOutstandingInvoiceSummaryFilterDtoSchema = z.object({ search: z.string().nullable(), daysOverdueMin: z.number().nullable(), partnerId: z.string().nullable(), outstandingAmountMin: z.number().nullable(), currency: z.string().nullable(), dunningSystemId: z.string().nullable(), lastDunningDate: CommonModels.DateRangeDtoSchema.nullable() }).partial();
 export type PartnerOutstandingInvoiceSummaryFilterDto = z.infer<typeof PartnerOutstandingInvoiceSummaryFilterDtoSchema>;
 
 /** 
@@ -30,7 +30,7 @@ export type PartnerOutstandingInvoiceSummaryFilterDto = z.infer<typeof PartnerOu
  * @property { string } currencyNotation Currency of partner invoices 
  * @property { string } lastDunningDate Date of the most recent issued dunning document 
  */
-export const PartnerOutstandingInvoiceSummaryResponseDtoSchema = z.object({ partnerId: z.string().describe("Business partner ID"), partnerName: z.string().describe("Business partner name"), partnerCountry: z.string().describe("Business partner country").nullish(), dunningSystemId: z.string().describe("Dunning system ID"), dunningSystemName: z.string().describe("Dunning system name"), invoiceCount: z.number().describe("Number of outstanding invoices"), daysOverdue: z.number().describe("Maximum days overdue across all partner invoices").nullish(), outstandingAmount: z.number().describe("Total outstanding amount"), currencyNotation: z.string().describe("Currency of partner invoices"), lastDunningDate: z.iso.datetime({ offset: true }).describe("Date of the most recent issued dunning document").nullish() }).readonly();
+export const PartnerOutstandingInvoiceSummaryResponseDtoSchema = z.object({ partnerId: z.string(), partnerName: z.string(), partnerCountry: z.string().nullish(), dunningSystemId: z.string(), dunningSystemName: z.string(), invoiceCount: z.number(), daysOverdue: z.number().nullish(), outstandingAmount: z.number(), currencyNotation: z.string(), lastDunningDate: z.iso.datetime({ offset: true }).nullish() });
 export type PartnerOutstandingInvoiceSummaryResponseDto = z.infer<typeof PartnerOutstandingInvoiceSummaryResponseDtoSchema>;
 
 /** 
@@ -47,7 +47,7 @@ export type PartnerOutstandingInvoiceSummaryResponseDto = z.infer<typeof Partner
  * @property { boolean } invoiceInReview  
  * @property { boolean } dunningBlock  
  */
-export const PartnerOutstandingInvoiceResponseDtoSchema = z.object({ invoiceId: z.string().describe("Invoice ID"), invoiceNumber: z.string().describe("Invoice number").nullish(), invoiceDate: z.iso.datetime({ offset: true }).describe("Invoice date").nullish(), invoiceAmount: z.number().describe("Invoice amount"), owedAmount: z.number().describe("Owed amount"), currencyNotation: z.string().describe("Currency notation"), daysOverdue: z.number().describe("Days overdue").nullish(), dueDate: z.iso.datetime({ offset: true }).describe("Due date").nullish(), invoiceInReview: z.boolean().nullish(), dunningBlock: z.boolean().nullish() }).readonly();
+export const PartnerOutstandingInvoiceResponseDtoSchema = z.object({ invoiceId: z.string(), invoiceNumber: z.string().nullish(), invoiceDate: z.iso.datetime({ offset: true }).nullish(), invoiceAmount: z.number(), owedAmount: z.number(), currencyNotation: z.string(), daysOverdue: z.number().nullish(), dueDate: z.iso.datetime({ offset: true }).nullish(), invoiceInReview: z.boolean().nullish(), dunningBlock: z.boolean().nullish() });
 export type PartnerOutstandingInvoiceResponseDto = z.infer<typeof PartnerOutstandingInvoiceResponseDtoSchema>;
 
 /** 
@@ -56,7 +56,7 @@ export type PartnerOutstandingInvoiceResponseDto = z.infer<typeof PartnerOutstan
  * @property { string } partnerId Partner ID to filter by 
  * @property { string } currency Invoice currency notation to filter by 
  */
-export const PartnerOutstandingInvoiceFilterDtoSchema = z.object({ partnerId: z.string().describe("Partner ID to filter by"), currency: z.string().describe("Invoice currency notation to filter by") }).readonly();
+export const PartnerOutstandingInvoiceFilterDtoSchema = z.object({ partnerId: z.string().nullable(), currency: z.string().nullable() }).partial();
 export type PartnerOutstandingInvoiceFilterDto = z.infer<typeof PartnerOutstandingInvoiceFilterDtoSchema>;
 
 /** 
@@ -64,7 +64,7 @@ export type PartnerOutstandingInvoiceFilterDto = z.infer<typeof PartnerOutstandi
  * @type { object }
  * @property { string[] } invoiceIds Invoice IDs used to calculate the recommended dunning level. Min Items: `1`. Example: `123e4567-e89b-12d3-a456-426614174000` 
  */
-export const RecommendedDunningLevelsRequestDtoSchema = z.object({ invoiceIds: z.array(z.string()).readonly().min(1).describe("Invoice IDs used to calculate the recommended dunning level") }).readonly();
+export const RecommendedDunningLevelsRequestDtoSchema = z.object({ invoiceIds: z.array(z.string()).min(1) });
 export type RecommendedDunningLevelsRequestDto = z.infer<typeof RecommendedDunningLevelsRequestDtoSchema>;
 
 /** 
@@ -74,7 +74,7 @@ export type RecommendedDunningLevelsRequestDto = z.infer<typeof RecommendedDunni
  * @property { string } label  
  * @property { boolean } isRecommended  
  */
-export const RecommendedLabelResponseDtoSchema = z.object({ id: z.string(), label: z.string(), isRecommended: z.boolean() }).readonly();
+export const RecommendedLabelResponseDtoSchema = z.object({ id: z.string(), label: z.string(), isRecommended: z.boolean() });
 export type RecommendedLabelResponseDto = z.infer<typeof RecommendedLabelResponseDtoSchema>;
 
 /** 
@@ -95,7 +95,7 @@ export const ListPartnerOutstandingInvoiceSummariesOrderParamEnum = ListPartnerO
  * @property { number } totalItems Total available items 
  * @property { PartnerOutstandingInvoiceSummaryResponseDto[] } items  
  */
-export const ListPartnerOutstandingInvoiceSummariesResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(PartnerOutstandingInvoiceSummaryResponseDtoSchema).readonly() }).readonly().shape });
+export const ListPartnerOutstandingInvoiceSummariesResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(PartnerOutstandingInvoiceSummaryResponseDtoSchema).nullable() }).partial().shape });
 export type ListPartnerOutstandingInvoiceSummariesResponse = z.infer<typeof ListPartnerOutstandingInvoiceSummariesResponseSchema>;
 
 /** 
@@ -116,14 +116,14 @@ export const ListPartnerOutstandingInvoicesOrderParamEnum = ListPartnerOutstandi
  * @property { number } totalItems Total available items 
  * @property { PartnerOutstandingInvoiceResponseDto[] } items  
  */
-export const ListPartnerOutstandingInvoicesResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(PartnerOutstandingInvoiceResponseDtoSchema).readonly() }).readonly().shape });
+export const ListPartnerOutstandingInvoicesResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(PartnerOutstandingInvoiceResponseDtoSchema).nullable() }).partial().shape });
 export type ListPartnerOutstandingInvoicesResponse = z.infer<typeof ListPartnerOutstandingInvoicesResponseSchema>;
 
 /** 
  * ListRecommendedDunningLevelsResponseSchema 
  * @type { array }
  */
-export const ListRecommendedDunningLevelsResponseSchema = z.array(RecommendedLabelResponseDtoSchema).readonly();
+export const ListRecommendedDunningLevelsResponseSchema = z.array(RecommendedLabelResponseDtoSchema);
 export type ListRecommendedDunningLevelsResponse = z.infer<typeof ListRecommendedDunningLevelsResponseSchema>;
 
 }

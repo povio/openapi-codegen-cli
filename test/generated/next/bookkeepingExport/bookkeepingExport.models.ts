@@ -16,7 +16,7 @@ export const BookkeepingExportFormatEnum = BookkeepingExportFormatEnumSchema.enu
  * @property { BookkeepingExportFormatEnum } format  
  * @property { CommonModels.OfficeInvoiceFilterDto } invoiceFilters  
  */
-export const CreateBookkeepingExportBatchRequestDtoSchema = z.object({ format: BookkeepingExportFormatEnumSchema.nullish(), invoiceFilters: CommonModels.OfficeInvoiceFilterDtoSchema }).readonly();
+export const CreateBookkeepingExportBatchRequestDtoSchema = z.object({ format: BookkeepingExportFormatEnumSchema.nullish(), invoiceFilters: CommonModels.OfficeInvoiceFilterDtoSchema });
 export type CreateBookkeepingExportBatchRequestDto = z.infer<typeof CreateBookkeepingExportBatchRequestDtoSchema>;
 
 /** 
@@ -34,7 +34,7 @@ export const BookkeepingExportFileTypeEnum = BookkeepingExportFileTypeEnumSchema
  * @property { string } downloadUrl  
  * @property { string } fileName  
  */
-export const BookkeepingExportFileDtoSchema = z.object({ variant: BookkeepingExportFileTypeEnumSchema, downloadUrl: z.string().nullable(), fileName: z.string() }).readonly();
+export const BookkeepingExportFileDtoSchema = z.object({ variant: BookkeepingExportFileTypeEnumSchema, downloadUrl: z.string().nullable(), fileName: z.string() });
 export type BookkeepingExportFileDto = z.infer<typeof BookkeepingExportFileDtoSchema>;
 
 /** 
@@ -59,7 +59,7 @@ export const BookkeepingExportBatchStatusEnum = BookkeepingExportBatchStatusEnum
  * @property { string } dateRange.from  
  * @property { string } dateRange.to  
  */
-export const BookkeepingExportBatchSummaryDtoSchema = z.object({ totalCount: z.number(), needsReviewCount: z.number(), readyForExportCount: z.number(), excludedCount: z.number(), invoiceNumberRange: z.object({ from: z.string(), to: z.string() }).readonly().nullish(), dateRange: z.object({ from: z.iso.datetime({ offset: true }), to: z.iso.datetime({ offset: true }) }).readonly().nullish() }).readonly();
+export const BookkeepingExportBatchSummaryDtoSchema = z.object({ totalCount: z.number(), needsReviewCount: z.number(), readyForExportCount: z.number(), excludedCount: z.number(), invoiceNumberRange: z.object({ from: z.string(), to: z.string() }).nullish(), dateRange: z.object({ from: z.iso.datetime({ offset: true }), to: z.iso.datetime({ offset: true }) }).nullish() });
 export type BookkeepingExportBatchSummaryDto = z.infer<typeof BookkeepingExportBatchSummaryDtoSchema>;
 
 /** 
@@ -84,7 +84,7 @@ export type BookkeepingExportBatchSummaryDto = z.infer<typeof BookkeepingExportB
  * @property { BookkeepingExportBatchSummaryDto } summary  
  * @property { BookkeepingExportFileDto[] } files  
  */
-export const BookkeepingExportBatchDetailsDtoSchema = z.object({ id: z.string(), format: BookkeepingExportFormatEnumSchema, status: BookkeepingExportBatchStatusEnumSchema, totalInvoiceCount: z.number(), exportedInvoiceCount: z.number(), createdBy: z.object({ id: z.string(), fullName: z.string(), email: z.string() }).readonly(), createdAt: z.iso.datetime({ offset: true }), exportedAt: z.iso.datetime({ offset: true }).nullish(), revertedAt: z.iso.datetime({ offset: true }).nullish(), revertedBy: z.object({ id: z.string(), fullName: z.string(), email: z.string() }).readonly().nullish(), summary: BookkeepingExportBatchSummaryDtoSchema, files: z.array(BookkeepingExportFileDtoSchema).readonly().nullish() }).readonly();
+export const BookkeepingExportBatchDetailsDtoSchema = z.object({ id: z.string(), format: BookkeepingExportFormatEnumSchema, status: BookkeepingExportBatchStatusEnumSchema, totalInvoiceCount: z.number(), exportedInvoiceCount: z.number(), createdBy: z.object({ id: z.string(), fullName: z.string(), email: z.string() }), createdAt: z.iso.datetime({ offset: true }), exportedAt: z.iso.datetime({ offset: true }).nullish(), revertedAt: z.iso.datetime({ offset: true }).nullish(), revertedBy: z.object({ id: z.string(), fullName: z.string(), email: z.string() }).nullish(), summary: BookkeepingExportBatchSummaryDtoSchema, files: z.array(BookkeepingExportFileDtoSchema).nullish() });
 export type BookkeepingExportBatchDetailsDto = z.infer<typeof BookkeepingExportBatchDetailsDtoSchema>;
 
 /** 
@@ -92,7 +92,7 @@ export type BookkeepingExportBatchDetailsDto = z.infer<typeof BookkeepingExportB
  * @type { object }
  * @property { BookkeepingExportFormatEnum } format  
  */
-export const UpdateBookkeepingExportBatchRequestDtoSchema = z.object({ format: BookkeepingExportFormatEnumSchema }).readonly();
+export const UpdateBookkeepingExportBatchRequestDtoSchema = z.object({ format: BookkeepingExportFormatEnumSchema });
 export type UpdateBookkeepingExportBatchRequestDto = z.infer<typeof UpdateBookkeepingExportBatchRequestDtoSchema>;
 
 /** 
@@ -112,7 +112,7 @@ export type UpdateBookkeepingExportBatchRequestDto = z.infer<typeof UpdateBookke
  * @property { string } revertedAt  
  * @property { BookkeepingExportFileDto[] } files  
  */
-export const BookkeepingExportBatchPreviewDtoSchema = z.object({ id: z.string(), format: BookkeepingExportFormatEnumSchema, status: BookkeepingExportBatchStatusEnumSchema, totalInvoiceCount: z.number(), exportedInvoiceCount: z.number(), createdBy: z.object({ id: z.string(), fullName: z.string(), email: z.string() }).readonly(), createdAt: z.iso.datetime({ offset: true }), exportedAt: z.iso.datetime({ offset: true }).nullish(), revertedAt: z.iso.datetime({ offset: true }).nullish(), files: z.array(BookkeepingExportFileDtoSchema).readonly().nullish() }).readonly();
+export const BookkeepingExportBatchPreviewDtoSchema = z.object({ id: z.string(), format: BookkeepingExportFormatEnumSchema, status: BookkeepingExportBatchStatusEnumSchema, totalInvoiceCount: z.number(), exportedInvoiceCount: z.number(), createdBy: z.object({ id: z.string(), fullName: z.string(), email: z.string() }), createdAt: z.iso.datetime({ offset: true }), exportedAt: z.iso.datetime({ offset: true }).nullish(), revertedAt: z.iso.datetime({ offset: true }).nullish(), files: z.array(BookkeepingExportFileDtoSchema).nullish() });
 export type BookkeepingExportBatchPreviewDto = z.infer<typeof BookkeepingExportBatchPreviewDtoSchema>;
 
 /** 
@@ -121,7 +121,7 @@ export type BookkeepingExportBatchPreviewDto = z.infer<typeof BookkeepingExportB
  * @property { string } from  
  * @property { string } to  
  */
-export const DateRangeSchema = z.object({ from: z.iso.datetime({ offset: true }), to: z.iso.datetime({ offset: true }) }).readonly();
+export const DateRangeSchema = z.object({ from: z.iso.datetime({ offset: true }).nullable(), to: z.iso.datetime({ offset: true }).nullable() }).partial();
 export type DateRange = z.infer<typeof DateRangeSchema>;
 
 /** 
@@ -132,7 +132,7 @@ export type DateRange = z.infer<typeof DateRangeSchema>;
  * @property { BookkeepingExportFormatEnum[] } format  
  * @property { string[] } createdBy  
  */
-export const BookkeepingExportBatchPreviewFilterDtoSchema = z.object({ createdDate: DateRangeSchema, status: z.array(BookkeepingExportBatchStatusEnumSchema).readonly(), format: z.array(BookkeepingExportFormatEnumSchema).readonly(), createdBy: z.array(z.string()).readonly() }).readonly();
+export const BookkeepingExportBatchPreviewFilterDtoSchema = z.object({ createdDate: DateRangeSchema.nullable(), status: z.array(BookkeepingExportBatchStatusEnumSchema).nullable(), format: z.array(BookkeepingExportFormatEnumSchema).nullable(), createdBy: z.array(z.string()).nullable() }).partial();
 export type BookkeepingExportBatchPreviewFilterDto = z.infer<typeof BookkeepingExportBatchPreviewFilterDtoSchema>;
 
 /** 
@@ -167,7 +167,7 @@ export const BookkeepingExportBatchItemStatusEnum = BookkeepingExportBatchItemSt
  * @property { string } receiver.contraAccount  
  * @property { string } comments  
  */
-export const BookkeepingExportItemDetailDtoSchema = z.object({ id: z.string(), invoiceId: z.string(), status: BookkeepingExportBatchItemStatusEnumSchema, includedInExport: z.boolean(), validationIssues: z.array(z.string()).readonly().nullish(), invoice: z.object({ invoiceNumber: z.string(), issuingDate: z.iso.datetime({ offset: true }), currency: z.string(), amount: z.number(), tax: z.number(), vatRules: z.array(z.string()).readonly() }).readonly(), receiver: z.object({ id: z.string(), name: z.string(), matchCode: z.string(), label: z.string(), account: z.string(), contraAccount: z.string() }).readonly(), comments: z.string().nullish() }).readonly();
+export const BookkeepingExportItemDetailDtoSchema = z.object({ id: z.string(), invoiceId: z.string(), status: BookkeepingExportBatchItemStatusEnumSchema, includedInExport: z.boolean(), validationIssues: z.array(z.string()).nullish(), invoice: z.object({ invoiceNumber: z.string(), issuingDate: z.iso.datetime({ offset: true }), currency: z.string(), amount: z.number(), tax: z.number(), vatRules: z.array(z.string()) }), receiver: z.object({ id: z.string(), name: z.string(), matchCode: z.string(), label: z.string(), account: z.string(), contraAccount: z.string() }), comments: z.string().nullish() });
 export type BookkeepingExportItemDetailDto = z.infer<typeof BookkeepingExportItemDetailDtoSchema>;
 
 /** 
@@ -175,7 +175,7 @@ export type BookkeepingExportItemDetailDto = z.infer<typeof BookkeepingExportIte
  * @type { object }
  * @property { BookkeepingExportBatchItemStatusEnum[] } status  
  */
-export const BookkeepingExportItemDetailFilterDtoSchema = z.object({ status: z.array(BookkeepingExportBatchItemStatusEnumSchema).readonly() }).readonly();
+export const BookkeepingExportItemDetailFilterDtoSchema = z.object({ status: z.array(BookkeepingExportBatchItemStatusEnumSchema).nullable() }).partial();
 export type BookkeepingExportItemDetailFilterDto = z.infer<typeof BookkeepingExportItemDetailFilterDtoSchema>;
 
 /** 
@@ -211,7 +211,7 @@ export type BookkeepingExportItemDetailFilterDto = z.infer<typeof BookkeepingExp
  * @property { number } grossAmountInOfficeCurrency  
  * @property { string } officeCurrency  
  */
-export const BookkeepingExportVatLineItemDtoSchema = z.object({ invoiceId: z.string(), batchId: z.string(), batchItemId: z.string(), status: BookkeepingExportBatchItemStatusEnumSchema, includedInExport: z.boolean(), validationIssues: z.array(z.string()).readonly().nullish(), invoice: z.object({ invoiceNumber: z.string(), issuingDate: z.iso.datetime({ offset: true }), currency: z.string(), amount: z.number(), tax: z.number(), comments: z.string().nullish() }).readonly(), receiver: z.object({ id: z.string(), name: z.string(), matchCode: z.string(), label: z.string(), account: z.string(), contraAccount: z.string() }).readonly(), vatPercentage: z.number(), vatRule: z.string(), netAmount: z.number(), vatAmount: z.number(), grossAmount: z.number(), vatAmountInOfficeCurrency: z.number().nullish(), netAmountInOfficeCurrency: z.number().nullish(), grossAmountInOfficeCurrency: z.number().nullish(), officeCurrency: z.string() }).readonly();
+export const BookkeepingExportVatLineItemDtoSchema = z.object({ invoiceId: z.string(), batchId: z.string(), batchItemId: z.string(), status: BookkeepingExportBatchItemStatusEnumSchema, includedInExport: z.boolean(), validationIssues: z.array(z.string()).nullish(), invoice: z.object({ invoiceNumber: z.string(), issuingDate: z.iso.datetime({ offset: true }), currency: z.string(), amount: z.number(), tax: z.number(), comments: z.string().nullish() }), receiver: z.object({ id: z.string(), name: z.string(), matchCode: z.string(), label: z.string(), account: z.string(), contraAccount: z.string() }), vatPercentage: z.number(), vatRule: z.string(), netAmount: z.number(), vatAmount: z.number(), grossAmount: z.number(), vatAmountInOfficeCurrency: z.number().nullish(), netAmountInOfficeCurrency: z.number().nullish(), grossAmountInOfficeCurrency: z.number().nullish(), officeCurrency: z.string() });
 export type BookkeepingExportVatLineItemDto = z.infer<typeof BookkeepingExportVatLineItemDtoSchema>;
 
 /** 
@@ -219,7 +219,7 @@ export type BookkeepingExportVatLineItemDto = z.infer<typeof BookkeepingExportVa
  * @type { object }
  * @property { string } batchId  
  */
-export const CreateBookkeepingExportBatchResponseDtoSchema = z.object({ batchId: z.string() }).readonly();
+export const CreateBookkeepingExportBatchResponseDtoSchema = z.object({ batchId: z.string() });
 export type CreateBookkeepingExportBatchResponseDto = z.infer<typeof CreateBookkeepingExportBatchResponseDtoSchema>;
 
 /** 
@@ -230,7 +230,7 @@ export type CreateBookkeepingExportBatchResponseDto = z.infer<typeof CreateBookk
  * @property { boolean } vatOk  
  * @property { boolean } invoiceOk  
  */
-export const UpdateBookkeepingExportBatchItemRequestDtoSchema = z.object({ includedInExport: z.boolean().describe("Whether the item should be included in the export").nullish(), itemIds: z.array(z.string()).readonly(), vatOk: z.boolean().nullish(), invoiceOk: z.boolean().nullish() }).readonly();
+export const UpdateBookkeepingExportBatchItemRequestDtoSchema = z.object({ includedInExport: z.boolean().nullish(), itemIds: z.array(z.string()), vatOk: z.boolean().nullish(), invoiceOk: z.boolean().nullish() });
 export type UpdateBookkeepingExportBatchItemRequestDto = z.infer<typeof UpdateBookkeepingExportBatchItemRequestDtoSchema>;
 
 /** 
@@ -251,7 +251,7 @@ export const PaginateBatchesOrderParamEnum = PaginateBatchesOrderParamEnumSchema
  * @property { number } totalItems Total available items 
  * @property { BookkeepingExportBatchPreviewDto[] } items  
  */
-export const PaginateBatchesResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(BookkeepingExportBatchPreviewDtoSchema).readonly() }).readonly().shape });
+export const PaginateBatchesResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(BookkeepingExportBatchPreviewDtoSchema).nullable() }).partial().shape });
 export type PaginateBatchesResponse = z.infer<typeof PaginateBatchesResponseSchema>;
 
 /** 
@@ -272,7 +272,7 @@ export const PaginateBatchItemsOrderParamEnum = PaginateBatchItemsOrderParamEnum
  * @property { number } totalItems Total available items 
  * @property { BookkeepingExportItemDetailDto[] } items  
  */
-export const PaginateBatchItemsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(BookkeepingExportItemDetailDtoSchema).readonly() }).readonly().shape });
+export const PaginateBatchItemsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(BookkeepingExportItemDetailDtoSchema).nullable() }).partial().shape });
 export type PaginateBatchItemsResponse = z.infer<typeof PaginateBatchItemsResponseSchema>;
 
 /** 
@@ -287,7 +287,7 @@ export const GetVatLineItemsOrderParamEnum = GetVatLineItemsOrderParamEnumSchema
  * GetVatLineItemsResponseSchema 
  * @type { array }
  */
-export const GetVatLineItemsResponseSchema = z.array(BookkeepingExportVatLineItemDtoSchema).readonly();
+export const GetVatLineItemsResponseSchema = z.array(BookkeepingExportVatLineItemDtoSchema);
 export type GetVatLineItemsResponse = z.infer<typeof GetVatLineItemsResponseSchema>;
 
 }

@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { AppQueryOptions, AppInfiniteQueryOptions } from "@povio/openapi-codegen-cli";
@@ -28,12 +27,12 @@ export const keys = {
  * @returns { UseQueryResult<ControlTowerContainersModels.ControlTowerContainersFindAllResponse> } 
  * @statusCodes [200, 401]
  */
-export const useFindAll = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: ControlTowerContainersModels.ContainerFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof ControlTowerContainersApi.findAll, TData>, config?: AxiosRequestConfig) => {
+export const useFindAll = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: ControlTowerContainersModels.ContainerFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof ControlTowerContainersApi.findAll, TData>) => {
   
   return useQuery({
     queryKey: keys.findAll(limit, order, filter, page, cursor),
     queryFn: () => 
-    ControlTowerContainersApi.findAll(limit, order, filter, page, cursor, config),
+    ControlTowerContainersApi.findAll(limit, order, filter, page, cursor),
     ...options,
   });
 };
@@ -50,12 +49,12 @@ export const useFindAll = <TData>({ limit, order, filter, page, cursor }: { limi
  * @returns { UseInfiniteQueryResult<ControlTowerContainersModels.ControlTowerContainersFindAllResponse> } 
  * @statusCodes [200, 401]
  */
-export const useFindAllInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: ControlTowerContainersModels.ContainerFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof ControlTowerContainersApi.findAll, TData>, config?: AxiosRequestConfig) => {
+export const useFindAllInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: ControlTowerContainersModels.ContainerFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof ControlTowerContainersApi.findAll, TData>) => {
 
   return useInfiniteQuery({
     queryKey: keys.findAllInfinite(limit, order, filter, cursor),
     queryFn: ({ pageParam }) => 
-    ControlTowerContainersApi.findAll(limit, order, filter, pageParam, cursor, config),
+    ControlTowerContainersApi.findAll(limit, order, filter, pageParam, cursor),
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -73,12 +72,12 @@ export const useFindAllInfinite = <TData>({ limit, order, filter, cursor }: { li
  * @returns { UseQueryResult<ControlTowerContainersModels.ContainerResponseDto> } 
  * @statusCodes [200, 401]
  */
-export const useFindById = <TData>({ id }: { id: string }, options?: AppQueryOptions<typeof ControlTowerContainersApi.findById, TData>, config?: AxiosRequestConfig) => {
+export const useFindById = <TData>({ id }: { id: string }, options?: AppQueryOptions<typeof ControlTowerContainersApi.findById, TData>) => {
   
   return useQuery({
     queryKey: keys.findById(id),
     queryFn: () => 
-    ControlTowerContainersApi.findById(id, config),
+    ControlTowerContainersApi.findById(id),
     ...options,
   });
 };
@@ -91,12 +90,12 @@ export const useFindById = <TData>({ id }: { id: string }, options?: AppQueryOpt
  * @returns { UseQueryResult<ControlTowerContainersModels.ContainerJourneyResponseDto> } 
  * @statusCodes [200, 401]
  */
-export const useGetJourney = <TData>({ id }: { id: string }, options?: AppQueryOptions<typeof ControlTowerContainersApi.getJourney, TData>, config?: AxiosRequestConfig) => {
+export const useGetJourney = <TData>({ id }: { id: string }, options?: AppQueryOptions<typeof ControlTowerContainersApi.getJourney, TData>) => {
   
   return useQuery({
     queryKey: keys.getJourney(id),
     queryFn: () => 
-    ControlTowerContainersApi.getJourney(id, config),
+    ControlTowerContainersApi.getJourney(id),
     ...options,
   });
 };

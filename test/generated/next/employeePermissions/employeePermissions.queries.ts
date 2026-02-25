@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { useAclCheck } from "@/data/acl/useAclCheck";
@@ -29,14 +28,14 @@ export const keys = {
  * @returns { UseQueryResult<EmployeePermissionsModels.EmployeePermissionsPaginatePermissionsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginatePermissions = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: EmployeePermissionsModels.EmployeePermissionFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof EmployeePermissionsApi.paginatePermissions, TData>, config?: AxiosRequestConfig) => {
+export const usePaginatePermissions = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: EmployeePermissionsModels.EmployeePermissionFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof EmployeePermissionsApi.paginatePermissions, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.paginatePermissions(limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(EmployeePermissionsAcl.canUsePaginatePermissions());
-    return EmployeePermissionsApi.paginatePermissions(limit, order, filter, page, cursor, config) },
+    return EmployeePermissionsApi.paginatePermissions(limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -53,14 +52,14 @@ export const usePaginatePermissions = <TData>({ limit, order, filter, page, curs
  * @returns { UseInfiniteQueryResult<EmployeePermissionsModels.EmployeePermissionsPaginatePermissionsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginatePermissionsInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: EmployeePermissionsModels.EmployeePermissionFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof EmployeePermissionsApi.paginatePermissions, TData>, config?: AxiosRequestConfig) => {
+export const usePaginatePermissionsInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: EmployeePermissionsModels.EmployeePermissionFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof EmployeePermissionsApi.paginatePermissions, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.paginatePermissionsInfinite(limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(EmployeePermissionsAcl.canUsePaginatePermissions());
-    return EmployeePermissionsApi.paginatePermissions(limit, order, filter, pageParam, cursor, config) },
+    return EmployeePermissionsApi.paginatePermissions(limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -79,14 +78,14 @@ export const usePaginatePermissionsInfinite = <TData>({ limit, order, filter, cu
  * @returns { UseQueryResult<EmployeePermissionsModels.EmployeePermissionsFindAllResponse> } 
  * @statusCodes [200, 401]
  */
-export const useFindAll = <TData>({ search }: { search?: string }, options?: AppQueryOptions<typeof EmployeePermissionsApi.findAll, TData>, config?: AxiosRequestConfig) => {
+export const useFindAll = <TData>({ search }: { search?: string }, options?: AppQueryOptions<typeof EmployeePermissionsApi.findAll, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.findAll(search),
     queryFn: () => { 
     checkAcl(EmployeePermissionsAcl.canUseFindAll());
-    return EmployeePermissionsApi.findAll(search, config) },
+    return EmployeePermissionsApi.findAll(search) },
     ...options,
   });
 };

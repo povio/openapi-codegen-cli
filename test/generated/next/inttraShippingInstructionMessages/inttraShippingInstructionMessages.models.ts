@@ -33,7 +33,7 @@ export const InttraShippingInstructionStatusEnum = InttraShippingInstructionStat
  * @property { string } aperakReceivedAt  
  * @property { string } aperakRaw  
  */
-export const ShippingInstructionMessageListItemResponseDtoSchema = z.object({ id: z.string(), createdAt: z.iso.datetime({ offset: true }), updatedAt: z.iso.datetime({ offset: true }), shippingInstructionsId: z.string(), positionId: z.string(), createdByUserId: z.string(), status: InttraShippingInstructionStatusEnumSchema, fileName: z.string(), sftpPath: z.string(), sentAt: z.iso.datetime({ offset: true }), uploadAttemptCount: z.number(), lastUploadError: z.string().nullish(), notes: z.string().nullish(), contrlStatus: z.string().nullish(), contrlReceivedAt: z.iso.datetime({ offset: true }).nullish(), contrlRaw: z.string().nullish(), aperakStatus: z.string().nullish(), aperakReceivedAt: z.iso.datetime({ offset: true }).nullish(), aperakRaw: z.string().nullish() }).readonly();
+export const ShippingInstructionMessageListItemResponseDtoSchema = z.object({ id: z.string(), createdAt: z.iso.datetime({ offset: true }), updatedAt: z.iso.datetime({ offset: true }), shippingInstructionsId: z.string(), positionId: z.string(), createdByUserId: z.string(), status: InttraShippingInstructionStatusEnumSchema, fileName: z.string(), sftpPath: z.string(), sentAt: z.iso.datetime({ offset: true }), uploadAttemptCount: z.number(), lastUploadError: z.string().nullish(), notes: z.string().nullish(), contrlStatus: z.string().nullish(), contrlReceivedAt: z.iso.datetime({ offset: true }).nullish(), contrlRaw: z.string().nullish(), aperakStatus: z.string().nullish(), aperakReceivedAt: z.iso.datetime({ offset: true }).nullish(), aperakRaw: z.string().nullish() });
 export type ShippingInstructionMessageListItemResponseDto = z.infer<typeof ShippingInstructionMessageListItemResponseDtoSchema>;
 
 /** 
@@ -41,7 +41,7 @@ export type ShippingInstructionMessageListItemResponseDto = z.infer<typeof Shipp
  * @type { object }
  * @property { InttraShippingInstructionStatusEnum[] } status  
  */
-export const ShippingInstructionMessageFilterDtoSchema = z.object({ status: z.array(InttraShippingInstructionStatusEnumSchema).readonly() }).readonly();
+export const ShippingInstructionMessageFilterDtoSchema = z.object({ status: z.array(InttraShippingInstructionStatusEnumSchema).nullable() }).partial();
 export type ShippingInstructionMessageFilterDto = z.infer<typeof ShippingInstructionMessageFilterDtoSchema>;
 
 /** 
@@ -69,7 +69,7 @@ export type ShippingInstructionMessageFilterDto = z.infer<typeof ShippingInstruc
  * @property { string } aperakReceivedAt  
  * @property { string } aperakRaw  
  */
-export const ShippingInstructionMessageResponseDtoSchema = z.object({ id: z.string(), createdAt: z.iso.datetime({ offset: true }), updatedAt: z.iso.datetime({ offset: true }), shippingInstructionsId: z.string(), positionId: z.string(), createdByUserId: z.string(), status: InttraShippingInstructionStatusEnumSchema, shippingInstructionSnapshot: z.object({}).readonly(), renderedRequestPayload: z.string(), fileName: z.string(), sftpPath: z.string(), sentAt: z.iso.datetime({ offset: true }), uploadAttemptCount: z.number(), lastUploadError: z.string().nullish(), notes: z.string().nullish(), contrlStatus: z.string().nullish(), contrlReceivedAt: z.iso.datetime({ offset: true }).nullish(), contrlRaw: z.string().nullish(), aperakStatus: z.string().nullish(), aperakReceivedAt: z.iso.datetime({ offset: true }).nullish(), aperakRaw: z.string().nullish() }).readonly();
+export const ShippingInstructionMessageResponseDtoSchema = z.object({ id: z.string(), createdAt: z.iso.datetime({ offset: true }), updatedAt: z.iso.datetime({ offset: true }), shippingInstructionsId: z.string(), positionId: z.string(), createdByUserId: z.string(), status: InttraShippingInstructionStatusEnumSchema, shippingInstructionSnapshot: z.object({}), renderedRequestPayload: z.string(), fileName: z.string(), sftpPath: z.string(), sentAt: z.iso.datetime({ offset: true }), uploadAttemptCount: z.number(), lastUploadError: z.string().nullish(), notes: z.string().nullish(), contrlStatus: z.string().nullish(), contrlReceivedAt: z.iso.datetime({ offset: true }).nullish(), contrlRaw: z.string().nullish(), aperakStatus: z.string().nullish(), aperakReceivedAt: z.iso.datetime({ offset: true }).nullish(), aperakRaw: z.string().nullish() });
 export type ShippingInstructionMessageResponseDto = z.infer<typeof ShippingInstructionMessageResponseDtoSchema>;
 
 /** 
@@ -77,7 +77,7 @@ export type ShippingInstructionMessageResponseDto = z.infer<typeof ShippingInstr
  * @type { object }
  * @property { string } notes  
  */
-export const UpdateShippingInstructionMessageRequestDtoSchema = z.object({ notes: z.string() }).readonly();
+export const UpdateShippingInstructionMessageRequestDtoSchema = z.object({ notes: z.string().nullable() }).partial();
 export type UpdateShippingInstructionMessageRequestDto = z.infer<typeof UpdateShippingInstructionMessageRequestDtoSchema>;
 
 /** 
@@ -85,7 +85,7 @@ export type UpdateShippingInstructionMessageRequestDto = z.infer<typeof UpdateSh
  * @type { object }
  * @property { boolean } isAmendment Default: `false` 
  */
-export const CreateShippingInstructionMessageRequestDtoSchema = z.object({ isAmendment: z.boolean().default(false) }).readonly();
+export const CreateShippingInstructionMessageRequestDtoSchema = z.object({ isAmendment: z.boolean().nullable().default(false) }).partial();
 export type CreateShippingInstructionMessageRequestDto = z.infer<typeof CreateShippingInstructionMessageRequestDtoSchema>;
 
 /** 
@@ -98,7 +98,7 @@ export type CreateShippingInstructionMessageRequestDto = z.infer<typeof CreateSh
  * @property { number } totalItems Total available items 
  * @property { ShippingInstructionMessageListItemResponseDto[] } items  
  */
-export const InttraShippingInstructionMessagesListResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(ShippingInstructionMessageListItemResponseDtoSchema).readonly() }).readonly().shape });
+export const InttraShippingInstructionMessagesListResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(ShippingInstructionMessageListItemResponseDtoSchema).nullable() }).partial().shape });
 export type InttraShippingInstructionMessagesListResponse = z.infer<typeof InttraShippingInstructionMessagesListResponseSchema>;
 
 }

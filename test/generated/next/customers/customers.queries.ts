@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -26,12 +25,11 @@ export const keys = {
  * @returns { UseQueryResult<CustomersModels.CustomerProfileResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useFindProfile = <TData>(options?: AppQueryOptions<typeof CustomersApi.findProfile, TData>, config?: AxiosRequestConfig) => {
+export const useFindProfile = <TData>(options?: AppQueryOptions<typeof CustomersApi.findProfile, TData>) => {
   
   return useQuery({
     queryKey: keys.findProfile(),
-    queryFn: () => 
-    CustomersApi.findProfile(config),
+    queryFn: CustomersApi.findProfile,
     ...options,
   });
 };
@@ -45,14 +43,14 @@ export const useFindProfile = <TData>(options?: AppQueryOptions<typeof Customers
  * @returns { UseMutationResult<CustomersModels.CustomerResponseDTO> } 
  * @statusCodes [201, 401]
  */
-export const useCreate = (options?: AppMutationOptions<typeof CustomersApi.create, { data: CustomersModels.CreateCustomerDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreate = (options?: AppMutationOptions<typeof CustomersApi.create, { data: CustomersModels.CreateCustomerDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ data }) => { 
       checkAcl(CustomersAcl.canUseCreate());
-      return CustomersApi.create(data, config)
+      return CustomersApi.create(data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -75,14 +73,14 @@ export const useCreate = (options?: AppMutationOptions<typeof CustomersApi.creat
  * @returns { UseQueryResult<CustomersModels.CustomersListResponse> } 
  * @statusCodes [200, 401]
  */
-export const useList = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: CustomersModels.CustomerPaginationFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof CustomersApi.list, TData>, config?: AxiosRequestConfig) => {
+export const useList = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: CustomersModels.CustomerPaginationFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof CustomersApi.list, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.list(limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(CustomersAcl.canUseList());
-    return CustomersApi.list(limit, order, filter, page, cursor, config) },
+    return CustomersApi.list(limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -100,14 +98,14 @@ export const useList = <TData>({ limit, order, filter, page, cursor }: { limit: 
  * @returns { UseInfiniteQueryResult<CustomersModels.CustomersListResponse> } 
  * @statusCodes [200, 401]
  */
-export const useListInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: CustomersModels.CustomerPaginationFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof CustomersApi.list, TData>, config?: AxiosRequestConfig) => {
+export const useListInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: CustomersModels.CustomerPaginationFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof CustomersApi.list, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.listInfinite(limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(CustomersAcl.canUseList());
-    return CustomersApi.list(limit, order, filter, pageParam, cursor, config) },
+    return CustomersApi.list(limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -126,14 +124,14 @@ export const useListInfinite = <TData>({ limit, order, filter, cursor }: { limit
  * @returns { UseQueryResult<CustomersModels.CustomerResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useFindById = <TData>({ customerId }: { customerId: string }, options?: AppQueryOptions<typeof CustomersApi.findById, TData>, config?: AxiosRequestConfig) => {
+export const useFindById = <TData>({ customerId }: { customerId: string }, options?: AppQueryOptions<typeof CustomersApi.findById, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.findById(customerId),
     queryFn: () => { 
     checkAcl(CustomersAcl.canUseFindById());
-    return CustomersApi.findById(customerId, config) },
+    return CustomersApi.findById(customerId) },
     ...options,
   });
 };
@@ -148,14 +146,14 @@ export const useFindById = <TData>({ customerId }: { customerId: string }, optio
  * @returns { UseMutationResult<CustomersModels.CustomerResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useUpdate = (options?: AppMutationOptions<typeof CustomersApi.update, { customerId: string, data: CustomersModels.UpdateCustomerDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdate = (options?: AppMutationOptions<typeof CustomersApi.update, { customerId: string, data: CustomersModels.UpdateCustomerDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ customerId, data }) => { 
       checkAcl(CustomersAcl.canUseUpdate());
-      return CustomersApi.update(customerId, data, config)
+      return CustomersApi.update(customerId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -176,14 +174,14 @@ export const useUpdate = (options?: AppMutationOptions<typeof CustomersApi.updat
  * @returns { UseMutationResult<CustomersModels.CustomerResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useDeactivate = (options?: AppMutationOptions<typeof CustomersApi.deactivate, { id: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useDeactivate = (options?: AppMutationOptions<typeof CustomersApi.deactivate, { id: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ id }) => { 
       checkAcl(CustomersAcl.canUseDeactivate());
-      return CustomersApi.deactivate(id, config)
+      return CustomersApi.deactivate(id)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -202,14 +200,14 @@ export const useDeactivate = (options?: AppMutationOptions<typeof CustomersApi.d
  * @returns { UseMutationResult<CustomersModels.CustomerResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useReactivate = (options?: AppMutationOptions<typeof CustomersApi.reactivate, { id: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useReactivate = (options?: AppMutationOptions<typeof CustomersApi.reactivate, { id: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ id }) => { 
       checkAcl(CustomersAcl.canUseReactivate());
-      return CustomersApi.reactivate(id, config)
+      return CustomersApi.reactivate(id)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

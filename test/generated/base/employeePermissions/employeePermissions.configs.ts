@@ -5,40 +5,41 @@ import { EmployeePermissionsQueries } from "./employeePermissions.queries";
 import { EmployeePermissionsAcl } from "./employeePermissions.acl";
 
 export namespace EmployeePermissionsConfigs {
-  export const permissionsConfig = {
+export const permissionsConfig = {
     meta: {
-      title: "Permissions",
+        title: "Permissions",
     },
     readAll: {
-      acl: EmployeePermissionsAcl.canUsePaginatePermissions,
-      schema: EmployeePermissionsModels.EmployeePermissionResponseSchema,
-      paginated: EmployeePermissionsQueries.usePaginatePermissions,
-      infinite: EmployeePermissionsQueries.usePaginatePermissionsInfinite,
-      filters: {
-        schema: EmployeePermissionsModels.EmployeePermissionFilterDtoSchema,
-        filterDefs: dynamicInputs({
-          schema: EmployeePermissionsModels.EmployeePermissionFilterDtoSchema,
-          options: {
-            inputs: {
-              context: true,
-              ids: true,
-            },
-          },
-        }),
-      },
-      columns: dynamicColumns({
+        acl: EmployeePermissionsAcl.canUsePaginatePermissions,
         schema: EmployeePermissionsModels.EmployeePermissionResponseSchema,
-        options: {
-          columns: {
-            id: true,
-            label: true,
-            group: true,
-            description: true,
-            context: true,
-          },
-          sortable: EmployeePermissionsModels.EmployeePermissionsPaginatePermissionsOrderParamEnumSchema,
-        },
-      }),
+        paginated: EmployeePermissionsQueries.usePaginatePermissions,
+        infinite: EmployeePermissionsQueries.usePaginatePermissionsInfinite,
+        filters: {
+            schema: EmployeePermissionsModels.EmployeePermissionFilterDtoSchema,
+            filterDefs: dynamicInputs({
+  schema: EmployeePermissionsModels.EmployeePermissionFilterDtoSchema,
+  options: {
+    inputs: {
+      context: true,
+      ids: true,
     },
-  };
+  },
+})
+        },
+        columns: dynamicColumns({
+  schema: EmployeePermissionsModels.EmployeePermissionResponseSchema,
+  options: {
+    columns: {
+      id: true,
+      label: true,
+      group: true,
+      description: true,
+      context: true,
+    },
+    sortable: EmployeePermissionsModels.EmployeePermissionsPaginatePermissionsOrderParamEnumSchema,
+  },
+}),
+    },
+};
+
 }

@@ -6,57 +6,58 @@ import { EmploymentQueries } from "./employment.queries";
 import { EmploymentAcl } from "./employment.acl";
 
 export namespace EmploymentConfigs {
-  export const employmentsConfig = {
+export const employmentsConfig = {
     meta: {
-      title: "Employments",
+        title: "Employments",
     },
     readAll: {
-      acl: EmploymentAcl.canUseList,
-      schema: CommonModels.EmploymentResponseSchema,
-      paginated: EmploymentQueries.useList,
-      infinite: EmploymentQueries.useListInfinite,
-      filters: {
-        schema: EmploymentModels.EmploymentFilterDtoSchema,
-        filterDefs: dynamicInputs({
-          schema: EmploymentModels.EmploymentFilterDtoSchema,
-          options: {
-            inputs: {
-              officeId: true,
-              employeeId: true,
-            },
-          },
-        }),
-      },
-      columns: dynamicColumns({
+        acl: EmploymentAcl.canUseList,
         schema: CommonModels.EmploymentResponseSchema,
-        options: {
-          columns: {
-            id: true,
-            officeId: true,
-            office: true,
-            employeeId: true,
-            employee: true,
-            archived: true,
-            costCenter: true,
-            roles: true,
-          },
-          sortable: EmploymentModels.EmploymentListOrderParamEnumSchema,
+        paginated: EmploymentQueries.useList,
+        infinite: EmploymentQueries.useListInfinite,
+        filters: {
+            schema: EmploymentModels.EmploymentFilterDtoSchema,
+            filterDefs: dynamicInputs({
+  schema: EmploymentModels.EmploymentFilterDtoSchema,
+  options: {
+    inputs: {
+      officeId: true,
+      employeeId: true,
+    },
+  },
+})
         },
-      }),
+        columns: dynamicColumns({
+  schema: CommonModels.EmploymentResponseSchema,
+  options: {
+    columns: {
+      id: true,
+      officeId: true,
+      office: true,
+      employeeId: true,
+      employee: true,
+      archived: true,
+      costCenter: true,
+      roles: true,
+    },
+    sortable: EmploymentModels.EmploymentListOrderParamEnumSchema,
+  },
+}),
     },
     create: {
-      acl: EmploymentAcl.canUseCreate,
-      schema: EmploymentModels.EmploymentCreateRequestSchema,
-      mutation: EmploymentQueries.useCreate,
-      inputDefs: dynamicInputs({
+        acl: EmploymentAcl.canUseCreate,
         schema: EmploymentModels.EmploymentCreateRequestSchema,
-        options: {
-          inputs: {
-            officeId: true,
-            employeeId: true,
-          },
-        },
-      }),
+        mutation: EmploymentQueries.useCreate,
+        inputDefs: dynamicInputs({
+  schema: EmploymentModels.EmploymentCreateRequestSchema,
+  options: {
+    inputs: {
+      officeId: true,
+      employeeId: true,
     },
-  };
+  },
+})
+    },
+};
+
 }

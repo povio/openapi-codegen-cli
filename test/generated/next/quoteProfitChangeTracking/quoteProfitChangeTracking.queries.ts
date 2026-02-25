@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { useAclCheck } from "@/data/acl/useAclCheck";
@@ -29,14 +28,14 @@ export const keys = {
  * @returns { UseQueryResult<QuoteProfitChangeTrackingModels.QuoteProfitChangeTrackingFindProfitChangeGroupsResponse> } 
  * @statusCodes [200, 401]
  */
-export const useFindProfitChangeGroups = <TData>({ officeId, quoteId, limit, page, cursor }: { officeId: string, quoteId: string, limit: number, page?: number, cursor?: string }, options?: AppQueryOptions<typeof QuoteProfitChangeTrackingApi.findProfitChangeGroups, TData>, config?: AxiosRequestConfig) => {
+export const useFindProfitChangeGroups = <TData>({ officeId, quoteId, limit, page, cursor }: { officeId: string, quoteId: string, limit: number, page?: number, cursor?: string }, options?: AppQueryOptions<typeof QuoteProfitChangeTrackingApi.findProfitChangeGroups, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.findProfitChangeGroups(officeId, quoteId, limit, page, cursor),
     queryFn: () => { 
     checkAcl(QuoteProfitChangeTrackingAcl.canUseFindProfitChangeGroups({ officeId, quoteId } ));
-    return QuoteProfitChangeTrackingApi.findProfitChangeGroups(officeId, quoteId, limit, page, cursor, config) },
+    return QuoteProfitChangeTrackingApi.findProfitChangeGroups(officeId, quoteId, limit, page, cursor) },
     ...options,
   });
 };
@@ -54,14 +53,14 @@ export const useFindProfitChangeGroups = <TData>({ officeId, quoteId, limit, pag
  * @returns { UseInfiniteQueryResult<QuoteProfitChangeTrackingModels.QuoteProfitChangeTrackingFindProfitChangeGroupsResponse> } 
  * @statusCodes [200, 401]
  */
-export const useFindProfitChangeGroupsInfinite = <TData>({ officeId, quoteId, limit, cursor }: { officeId: string, quoteId: string, limit: number, cursor?: string }, options?: AppInfiniteQueryOptions<typeof QuoteProfitChangeTrackingApi.findProfitChangeGroups, TData>, config?: AxiosRequestConfig) => {
+export const useFindProfitChangeGroupsInfinite = <TData>({ officeId, quoteId, limit, cursor }: { officeId: string, quoteId: string, limit: number, cursor?: string }, options?: AppInfiniteQueryOptions<typeof QuoteProfitChangeTrackingApi.findProfitChangeGroups, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.findProfitChangeGroupsInfinite(officeId, quoteId, limit, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(QuoteProfitChangeTrackingAcl.canUseFindProfitChangeGroups({ officeId, quoteId } ));
-    return QuoteProfitChangeTrackingApi.findProfitChangeGroups(officeId, quoteId, limit, pageParam, cursor, config) },
+    return QuoteProfitChangeTrackingApi.findProfitChangeGroups(officeId, quoteId, limit, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -82,14 +81,14 @@ export const useFindProfitChangeGroupsInfinite = <TData>({ officeId, quoteId, li
  * @returns { UseQueryResult<QuoteProfitChangeTrackingModels.QuoteAccountProfitChangeGroupDetailDto> } 
  * @statusCodes [200, 401]
  */
-export const useFindProfitChangeGroupDetail = <TData>({ groupId, officeId, quoteId }: { groupId: string, officeId: string, quoteId: string }, options?: AppQueryOptions<typeof QuoteProfitChangeTrackingApi.findProfitChangeGroupDetail, TData>, config?: AxiosRequestConfig) => {
+export const useFindProfitChangeGroupDetail = <TData>({ groupId, officeId, quoteId }: { groupId: string, officeId: string, quoteId: string }, options?: AppQueryOptions<typeof QuoteProfitChangeTrackingApi.findProfitChangeGroupDetail, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.findProfitChangeGroupDetail(groupId, officeId, quoteId),
     queryFn: () => { 
     checkAcl(QuoteProfitChangeTrackingAcl.canUseFindProfitChangeGroupDetail({ officeId, quoteId } ));
-    return QuoteProfitChangeTrackingApi.findProfitChangeGroupDetail(groupId, officeId, quoteId, config) },
+    return QuoteProfitChangeTrackingApi.findProfitChangeGroupDetail(groupId, officeId, quoteId) },
     ...options,
   });
 };

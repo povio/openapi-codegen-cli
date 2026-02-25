@@ -15,11 +15,16 @@ import {
   requiresBody,
 } from "@/generators/utils/generate/generate.endpoints.utils";
 import { getAppRestClientImportPath, getZodExtendedImportPath } from "@/generators/utils/generate/generate.utils";
+import { shouldInlineEndpointsForTag } from "@/generators/utils/tag.utils";
 import { getImportedZodSchemaName } from "@/generators/utils/generate/generate.zod.utils";
 import { getNamespaceName } from "@/generators/utils/namespace.utils";
 import { isNamedZodSchema } from "@/generators/utils/zod-schema.utils";
 
 export function generateEndpoints({ resolver, data, tag }: GenerateTypeParams) {
+  if (shouldInlineEndpointsForTag(tag, resolver.options)) {
+    return;
+  }
+
   const endpoints = data.get(tag)?.endpoints;
   if (!endpoints || endpoints.length === 0) {
     return;

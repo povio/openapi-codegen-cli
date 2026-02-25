@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -26,14 +25,14 @@ export const keys = {
  * @returns { UseQueryResult<SeaPositionsModels.SeaPositionResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useGet = <TData>({ officeId, positionId }: { officeId: string, positionId: string }, options?: AppQueryOptions<typeof SeaPositionsApi.get, TData>, config?: AxiosRequestConfig) => {
+export const useGet = <TData>({ officeId, positionId }: { officeId: string, positionId: string }, options?: AppQueryOptions<typeof SeaPositionsApi.get, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.get(officeId, positionId),
     queryFn: () => { 
     checkAcl(SeaPositionsAcl.canUseGet({ officeId } ));
-    return SeaPositionsApi.get(officeId, positionId, config) },
+    return SeaPositionsApi.get(officeId, positionId) },
     ...options,
   });
 };
@@ -49,14 +48,14 @@ export const useGet = <TData>({ officeId, positionId }: { officeId: string, posi
  * @returns { UseMutationResult<SeaPositionsModels.SeaPositionResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useUpdate = (options?: AppMutationOptions<typeof SeaPositionsApi.update, { officeId: string, positionId: string, data: SeaPositionsModels.UpdateSeaPositionRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdate = (options?: AppMutationOptions<typeof SeaPositionsApi.update, { officeId: string, positionId: string, data: SeaPositionsModels.UpdateSeaPositionRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, positionId, data }) => { 
       checkAcl(SeaPositionsAcl.canUseUpdate({ officeId } ));
-      return SeaPositionsApi.update(officeId, positionId, data, config)
+      return SeaPositionsApi.update(officeId, positionId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

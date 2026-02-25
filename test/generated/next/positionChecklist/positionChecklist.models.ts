@@ -7,7 +7,7 @@ export namespace PositionChecklistModels {
  * @property { string } id  
  * @property { string } name  
  */
-export const PositionChecklistCompletedByResponseDtoSchema = z.object({ id: z.string(), name: z.string().nullable() }).readonly();
+export const PositionChecklistCompletedByResponseDtoSchema = z.object({ id: z.string(), name: z.string().nullable() });
 export type PositionChecklistCompletedByResponseDto = z.infer<typeof PositionChecklistCompletedByResponseDtoSchema>;
 
 /** 
@@ -24,7 +24,7 @@ export type PositionChecklistCompletedByResponseDto = z.infer<typeof PositionChe
  * @property { string } notes  
  * @property { string } name  
  */
-export const PositionChecklistItemResponseDtoSchema = z.object({ id: z.string(), positionId: z.string(), checklistItemId: z.string(), templateId: z.string().nullable(), order: z.number(), completed: z.boolean(), completedAt: z.iso.datetime({ offset: true }).nullable(), completedBy: PositionChecklistCompletedByResponseDtoSchema.nullable(), notes: z.string().nullable(), name: z.string().nullable() }).readonly();
+export const PositionChecklistItemResponseDtoSchema = z.object({ id: z.string(), positionId: z.string(), checklistItemId: z.string(), templateId: z.string().nullable(), order: z.number(), completed: z.boolean(), completedAt: z.iso.datetime({ offset: true }).nullable(), completedBy: PositionChecklistCompletedByResponseDtoSchema.nullable(), notes: z.string().nullable(), name: z.string().nullable() });
 export type PositionChecklistItemResponseDto = z.infer<typeof PositionChecklistItemResponseDtoSchema>;
 
 /** 
@@ -33,7 +33,7 @@ export type PositionChecklistItemResponseDto = z.infer<typeof PositionChecklistI
  * @property { PositionChecklistItemResponseDto[] } items  
  * @property { string[] } appliedTemplateIds  
  */
-export const PositionChecklistResponseDtoSchema = z.object({ items: z.array(PositionChecklistItemResponseDtoSchema).readonly(), appliedTemplateIds: z.array(z.string()).readonly() }).readonly();
+export const PositionChecklistResponseDtoSchema = z.object({ items: z.array(PositionChecklistItemResponseDtoSchema), appliedTemplateIds: z.array(z.string()) });
 export type PositionChecklistResponseDto = z.infer<typeof PositionChecklistResponseDtoSchema>;
 
 /** 
@@ -41,7 +41,7 @@ export type PositionChecklistResponseDto = z.infer<typeof PositionChecklistRespo
  * @type { object }
  * @property { string[] } templateIds  
  */
-export const ApplyTemplatesRequestDtoSchema = z.object({ templateIds: z.array(z.string()).readonly() }).readonly();
+export const ApplyTemplatesRequestDtoSchema = z.object({ templateIds: z.array(z.string()) });
 export type ApplyTemplatesRequestDto = z.infer<typeof ApplyTemplatesRequestDtoSchema>;
 
 /** 
@@ -49,7 +49,7 @@ export type ApplyTemplatesRequestDto = z.infer<typeof ApplyTemplatesRequestDtoSc
  * @type { object }
  * @property { string } notes Max Length: `512` 
  */
-export const UpdatePositionChecklistItemDtoSchema = z.object({ notes: z.string().max(512) }).readonly();
+export const UpdatePositionChecklistItemDtoSchema = z.object({ notes: z.string().max(512).nullable() }).partial();
 export type UpdatePositionChecklistItemDto = z.infer<typeof UpdatePositionChecklistItemDtoSchema>;
 
 /** 
@@ -57,21 +57,21 @@ export type UpdatePositionChecklistItemDto = z.infer<typeof UpdatePositionCheckl
  * @type { object }
  * @property { string[] } itemIds  
  */
-export const ReorderPositionChecklistDtoSchema = z.object({ itemIds: z.array(z.string()).readonly() }).readonly();
+export const ReorderPositionChecklistDtoSchema = z.object({ itemIds: z.array(z.string()) });
 export type ReorderPositionChecklistDto = z.infer<typeof ReorderPositionChecklistDtoSchema>;
 
 /** 
  * ApplyTemplatesResponseSchema 
  * @type { array }
  */
-export const ApplyTemplatesResponseSchema = z.array(PositionChecklistItemResponseDtoSchema).readonly();
+export const ApplyTemplatesResponseSchema = z.array(PositionChecklistItemResponseDtoSchema);
 export type ApplyTemplatesResponse = z.infer<typeof ApplyTemplatesResponseSchema>;
 
 /** 
  * PositionChecklistReorderResponseSchema 
  * @type { array }
  */
-export const PositionChecklistReorderResponseSchema = z.array(PositionChecklistItemResponseDtoSchema).readonly();
+export const PositionChecklistReorderResponseSchema = z.array(PositionChecklistItemResponseDtoSchema);
 export type PositionChecklistReorderResponse = z.infer<typeof PositionChecklistReorderResponseSchema>;
 
 }

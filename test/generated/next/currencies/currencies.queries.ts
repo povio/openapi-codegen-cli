@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -35,14 +34,14 @@ export const keys = {
  * @returns { UseQueryResult<CurrenciesModels.CurrenciesListResponse> } 
  * @statusCodes [200, 401]
  */
-export const useList = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: CurrenciesModels.CurrencyPaginationFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof CurrenciesApi.list, TData>, config?: AxiosRequestConfig) => {
+export const useList = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: CurrenciesModels.CurrencyPaginationFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof CurrenciesApi.list, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.list(limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(CurrenciesAcl.canUseList());
-    return CurrenciesApi.list(limit, order, filter, page, cursor, config) },
+    return CurrenciesApi.list(limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -60,14 +59,14 @@ export const useList = <TData>({ limit, order, filter, page, cursor }: { limit: 
  * @returns { UseInfiniteQueryResult<CurrenciesModels.CurrenciesListResponse> } 
  * @statusCodes [200, 401]
  */
-export const useListInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: CurrenciesModels.CurrencyPaginationFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof CurrenciesApi.list, TData>, config?: AxiosRequestConfig) => {
+export const useListInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: CurrenciesModels.CurrencyPaginationFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof CurrenciesApi.list, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.listInfinite(limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(CurrenciesAcl.canUseList());
-    return CurrenciesApi.list(limit, order, filter, pageParam, cursor, config) },
+    return CurrenciesApi.list(limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -86,14 +85,14 @@ export const useListInfinite = <TData>({ limit, order, filter, cursor }: { limit
  * @returns { UseMutationResult<CurrenciesModels.CurrencyResponseDto> } 
  * @statusCodes [201, 401]
  */
-export const useCreateCurrency = (options?: AppMutationOptions<typeof CurrenciesApi.createCurrency, { data: CurrenciesModels.CreateCurrencyRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreateCurrency = (options?: AppMutationOptions<typeof CurrenciesApi.createCurrency, { data: CurrenciesModels.CreateCurrencyRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ data }) => { 
       checkAcl(CurrenciesAcl.canUseCreateCurrency());
-      return CurrenciesApi.createCurrency(data, config)
+      return CurrenciesApi.createCurrency(data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -116,14 +115,14 @@ export const useCreateCurrency = (options?: AppMutationOptions<typeof Currencies
  * @returns { UseQueryResult<CurrenciesModels.PaginateCurrencyLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateCurrencyLabels = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: CurrenciesModels.CurrencyPaginationFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof CurrenciesApi.paginateCurrencyLabels, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateCurrencyLabels = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: CurrenciesModels.CurrencyPaginationFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof CurrenciesApi.paginateCurrencyLabels, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.paginateCurrencyLabels(limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(CurrenciesAcl.canUsePaginateCurrencyLabels());
-    return CurrenciesApi.paginateCurrencyLabels(limit, order, filter, page, cursor, config) },
+    return CurrenciesApi.paginateCurrencyLabels(limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -141,14 +140,14 @@ export const usePaginateCurrencyLabels = <TData>({ limit, order, filter, page, c
  * @returns { UseInfiniteQueryResult<CurrenciesModels.PaginateCurrencyLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateCurrencyLabelsInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: CurrenciesModels.CurrencyPaginationFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof CurrenciesApi.paginateCurrencyLabels, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateCurrencyLabelsInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: CurrenciesModels.CurrencyPaginationFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof CurrenciesApi.paginateCurrencyLabels, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.paginateCurrencyLabelsInfinite(limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(CurrenciesAcl.canUsePaginateCurrencyLabels());
-    return CurrenciesApi.paginateCurrencyLabels(limit, order, filter, pageParam, cursor, config) },
+    return CurrenciesApi.paginateCurrencyLabels(limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -167,14 +166,14 @@ export const usePaginateCurrencyLabelsInfinite = <TData>({ limit, order, filter,
  * @returns { UseQueryResult<CurrenciesModels.CurrencyResponseDto> } 
  * @statusCodes [200, 401]
  */
-export const useGetCurrencyById = <TData>({ isoCode }: { isoCode: string }, options?: AppQueryOptions<typeof CurrenciesApi.getCurrencyById, TData>, config?: AxiosRequestConfig) => {
+export const useGetCurrencyById = <TData>({ isoCode }: { isoCode: string }, options?: AppQueryOptions<typeof CurrenciesApi.getCurrencyById, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.getCurrencyById(isoCode),
     queryFn: () => { 
     checkAcl(CurrenciesAcl.canUseGetCurrencyById());
-    return CurrenciesApi.getCurrencyById(isoCode, config) },
+    return CurrenciesApi.getCurrencyById(isoCode) },
     ...options,
   });
 };
@@ -189,14 +188,14 @@ export const useGetCurrencyById = <TData>({ isoCode }: { isoCode: string }, opti
  * @returns { UseMutationResult<CurrenciesModels.CurrencyResponseDto> } 
  * @statusCodes [200, 401]
  */
-export const useUpdateCurrency = (options?: AppMutationOptions<typeof CurrenciesApi.updateCurrency, { isoCode: string, data: CurrenciesModels.UpdateCurrencyRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdateCurrency = (options?: AppMutationOptions<typeof CurrenciesApi.updateCurrency, { isoCode: string, data: CurrenciesModels.UpdateCurrencyRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ isoCode, data }) => { 
       checkAcl(CurrenciesAcl.canUseUpdateCurrency());
-      return CurrenciesApi.updateCurrency(isoCode, data, config)
+      return CurrenciesApi.updateCurrency(isoCode, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -222,14 +221,14 @@ export const useUpdateCurrency = (options?: AppMutationOptions<typeof Currencies
  * @returns { UseQueryResult<CurrenciesModels.PaginateCurrencyLabelsByOfficeResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateCurrencyLabelsByOffice = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: CurrenciesModels.CurrencyPaginationFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof CurrenciesApi.paginateCurrencyLabelsByOffice, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateCurrencyLabelsByOffice = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: CurrenciesModels.CurrencyPaginationFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof CurrenciesApi.paginateCurrencyLabelsByOffice, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.paginateCurrencyLabelsByOffice(officeId, limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(CurrenciesAcl.canUsePaginateCurrencyLabelsByOffice());
-    return CurrenciesApi.paginateCurrencyLabelsByOffice(officeId, limit, order, filter, page, cursor, config) },
+    return CurrenciesApi.paginateCurrencyLabelsByOffice(officeId, limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -248,14 +247,14 @@ export const usePaginateCurrencyLabelsByOffice = <TData>({ officeId, limit, orde
  * @returns { UseInfiniteQueryResult<CurrenciesModels.PaginateCurrencyLabelsByOfficeResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateCurrencyLabelsByOfficeInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: CurrenciesModels.CurrencyPaginationFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof CurrenciesApi.paginateCurrencyLabelsByOffice, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateCurrencyLabelsByOfficeInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: CurrenciesModels.CurrencyPaginationFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof CurrenciesApi.paginateCurrencyLabelsByOffice, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.paginateCurrencyLabelsByOfficeInfinite(officeId, limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(CurrenciesAcl.canUsePaginateCurrencyLabelsByOffice());
-    return CurrenciesApi.paginateCurrencyLabelsByOffice(officeId, limit, order, filter, pageParam, cursor, config) },
+    return CurrenciesApi.paginateCurrencyLabelsByOffice(officeId, limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;

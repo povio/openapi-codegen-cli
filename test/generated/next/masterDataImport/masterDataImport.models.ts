@@ -24,7 +24,7 @@ export const ImportTypeEnum = ImportTypeEnumSchema.enum;
  * @property { string } mediaId Media ID of the uploaded file 
  * @property { ImportTypeEnum } type Type of data to import 
  */
-export const MasterDataImportRequestDtoSchema = z.object({ mediaId: z.string().describe("Media ID of the uploaded file"), type: ImportTypeEnumSchema.describe("Type of data to import") }).readonly();
+export const MasterDataImportRequestDtoSchema = z.object({ mediaId: z.string(), type: ImportTypeEnumSchema });
 export type MasterDataImportRequestDto = z.infer<typeof MasterDataImportRequestDtoSchema>;
 
 /** 
@@ -35,7 +35,7 @@ export type MasterDataImportRequestDto = z.infer<typeof MasterDataImportRequestD
  * @property { string } expiresAt Download URL expiration time 
  * @property { string } errorCode  
  */
-export const ImportResultDtoSchema = z.object({ importStatus: ImportStatusEnumSchema.describe("Import result status").nullish(), downloadUrl: z.string().describe("S3 presigned URL for result file download"), expiresAt: z.iso.datetime({ offset: true }).describe("Download URL expiration time").nullish(), errorCode: z.string().nullish() }).readonly();
+export const ImportResultDtoSchema = z.object({ importStatus: ImportStatusEnumSchema.nullish(), downloadUrl: z.string(), expiresAt: z.iso.datetime({ offset: true }).nullish(), errorCode: z.string().nullish() });
 export type ImportResultDto = z.infer<typeof ImportResultDtoSchema>;
 
 /** 
@@ -44,7 +44,7 @@ export type ImportResultDto = z.infer<typeof ImportResultDtoSchema>;
  * @property { string } status Current job status 
  * @property { ImportResultDto } result Import result data when job is completed 
  */
-export const ImportStatusResponseDtoSchema = z.object({ status: z.string().describe("Current job status").nullable(), result: ImportResultDtoSchema.describe("Import result data when job is completed").nullish() }).readonly();
+export const ImportStatusResponseDtoSchema = z.object({ status: z.string().nullable(), result: ImportResultDtoSchema.nullish() });
 export type ImportStatusResponseDto = z.infer<typeof ImportStatusResponseDtoSchema>;
 
 /** 
@@ -54,7 +54,7 @@ export type ImportStatusResponseDto = z.infer<typeof ImportStatusResponseDtoSche
  * @property { string } contentType Content type of the file 
  * @property { number } fileSize File size in bytes. Minimum: `1` 
  */
-export const MasterDataImportUploadRequestDtoSchema = z.object({ filename: z.string().describe("File name"), contentType: z.string().describe("Content type of the file"), fileSize: z.number().gte(1).describe("File size in bytes") }).readonly();
+export const MasterDataImportUploadRequestDtoSchema = z.object({ filename: z.string(), contentType: z.string(), fileSize: z.number().gte(1) });
 export type MasterDataImportUploadRequestDto = z.infer<typeof MasterDataImportUploadRequestDtoSchema>;
 
 /** 
@@ -63,7 +63,7 @@ export type MasterDataImportUploadRequestDto = z.infer<typeof MasterDataImportUp
  * @property { string } mediaId Media ID for the uploaded file 
  * @property { string } url S3 presigned upload URL 
  */
-export const MasterDataImportUploadResponseDtoSchema = z.object({ mediaId: z.string().describe("Media ID for the uploaded file"), url: z.string().describe("S3 presigned upload URL") }).readonly();
+export const MasterDataImportUploadResponseDtoSchema = z.object({ mediaId: z.string(), url: z.string() });
 export type MasterDataImportUploadResponseDto = z.infer<typeof MasterDataImportUploadResponseDtoSchema>;
 
 /** 
@@ -72,7 +72,7 @@ export type MasterDataImportUploadResponseDto = z.infer<typeof MasterDataImportU
  * @property { string } jobId PG Boss job ID 
  * @property { string } status Initial job status 
  */
-export const MasterDataImportResponseDtoSchema = z.object({ jobId: z.string().describe("PG Boss job ID"), status: z.string().describe("Initial job status").nullish() }).readonly();
+export const MasterDataImportResponseDtoSchema = z.object({ jobId: z.string(), status: z.string().nullish() });
 export type MasterDataImportResponseDto = z.infer<typeof MasterDataImportResponseDtoSchema>;
 
 }

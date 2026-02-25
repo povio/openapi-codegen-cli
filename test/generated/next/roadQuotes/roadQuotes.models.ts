@@ -11,7 +11,7 @@ export namespace RoadQuotesModels {
  * @property { string } buyServiceContract Service contract for buying 
  * @property { string } sellServiceContract Service contract for selling 
  */
-export const RoadQuoteResponseDTOSchema = z.object({ id: z.string().describe("Unique identifier for the road quote"), bookingMatchingCode: z.string().describe("Code for matching bookings"), validFrom: z.iso.datetime({ offset: true }).describe("Start date of quote validity").nullable(), validUntil: z.iso.datetime({ offset: true }).describe("End date of quote validity").nullable(), buyServiceContract: z.string().describe("Service contract for buying"), sellServiceContract: z.string().describe("Service contract for selling") }).readonly();
+export const RoadQuoteResponseDTOSchema = z.object({ id: z.string(), bookingMatchingCode: z.string(), validFrom: z.iso.datetime({ offset: true }).nullable(), validUntil: z.iso.datetime({ offset: true }).nullable(), buyServiceContract: z.string(), sellServiceContract: z.string() });
 export type RoadQuoteResponseDTO = z.infer<typeof RoadQuoteResponseDTOSchema>;
 
 /** 
@@ -23,7 +23,7 @@ export type RoadQuoteResponseDTO = z.infer<typeof RoadQuoteResponseDTOSchema>;
  * @property { string } buyServiceContract Service contract for buying 
  * @property { string } sellServiceContract Service contract for selling 
  */
-export const UpdateRoadQuoteRequestDTOSchema = z.object({ bookingMatchingCode: z.string().describe("Code for matching bookings"), validFrom: z.iso.datetime({ offset: true }).describe("Start date of quote validity"), validUntil: z.iso.datetime({ offset: true }).describe("End date of quote validity"), buyServiceContract: z.string().describe("Service contract for buying"), sellServiceContract: z.string().describe("Service contract for selling") }).readonly();
+export const UpdateRoadQuoteRequestDTOSchema = z.object({ bookingMatchingCode: z.string().nullable(), validFrom: z.iso.datetime({ offset: true }).nullable(), validUntil: z.iso.datetime({ offset: true }).nullable(), buyServiceContract: z.string().nullable(), sellServiceContract: z.string().nullable() }).partial();
 export type UpdateRoadQuoteRequestDTO = z.infer<typeof UpdateRoadQuoteRequestDTOSchema>;
 
 }

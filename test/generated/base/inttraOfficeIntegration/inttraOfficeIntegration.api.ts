@@ -1,36 +1,28 @@
 import { AppRestClient } from "@/data/app-rest-client";
-import { AxiosRequestConfig } from "axios";
 import { ZodExtended } from "@/data/zod.extended";
 import { InttraOfficeIntegrationModels } from "./inttraOfficeIntegration.models";
 
 export namespace InttraOfficeIntegrationApi {
-  export const get = (officeId: string, config?: AxiosRequestConfig) => {
+export const get = (officeId: string, ) => {
     return AppRestClient.get(
-      { resSchema: InttraOfficeIntegrationModels.OfficeInttraCredentialsResponseDtoSchema },
-      `/offices/${officeId}/inttra/credentials`,
-      config,
-    );
-  };
-
-  export const generate = (officeId: string, config?: AxiosRequestConfig) => {
+        { resSchema: InttraOfficeIntegrationModels.OfficeInttraCredentialsResponseDtoSchema },
+        `/offices/${officeId}/inttra/credentials`,
+        
+    )
+};
+export const generate = (officeId: string, ) => {
     return AppRestClient.post(
-      { resSchema: InttraOfficeIntegrationModels.GenerateInttraCredentialsResponseDtoSchema },
-      `/offices/${officeId}/inttra/credentials`,
-      undefined,
-      config,
-    );
-  };
-
-  export const update = (
-    officeId: string,
-    data: InttraOfficeIntegrationModels.UpdateInttraCredentialsRequestDto,
-    config?: AxiosRequestConfig,
-  ) => {
+        { resSchema: InttraOfficeIntegrationModels.GenerateInttraCredentialsResponseDtoSchema },
+        `/offices/${officeId}/inttra/credentials`,
+        
+    )
+};
+export const update = (officeId: string, data: InttraOfficeIntegrationModels.UpdateInttraCredentialsRequestDto, ) => {
     return AppRestClient.patch(
-      { resSchema: InttraOfficeIntegrationModels.UpdateInttraCredentialsResponseDtoSchema },
-      `/offices/${officeId}/inttra/credentials`,
-      ZodExtended.parse(InttraOfficeIntegrationModels.UpdateInttraCredentialsRequestDtoSchema, data),
-      config,
-    );
-  };
+        { resSchema: InttraOfficeIntegrationModels.UpdateInttraCredentialsResponseDtoSchema },
+        `/offices/${officeId}/inttra/credentials`,
+        ZodExtended.parse(InttraOfficeIntegrationModels.UpdateInttraCredentialsRequestDtoSchema, data),
+        
+    )
+};
 }

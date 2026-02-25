@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -33,14 +32,14 @@ export const keys = {
  * @returns { UseQueryResult<AirportsModels.AirportsPaginateResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: AirportsModels.AirportPaginationFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof AirportsApi.paginate, TData>, config?: AxiosRequestConfig) => {
+export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: AirportsModels.AirportPaginationFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof AirportsApi.paginate, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.paginate(limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(AirportsAcl.canUsePaginate());
-    return AirportsApi.paginate(limit, order, filter, page, cursor, config) },
+    return AirportsApi.paginate(limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -58,14 +57,14 @@ export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { lim
  * @returns { UseInfiniteQueryResult<AirportsModels.AirportsPaginateResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: AirportsModels.AirportPaginationFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof AirportsApi.paginate, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: AirportsModels.AirportPaginationFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof AirportsApi.paginate, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.paginateInfinite(limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(AirportsAcl.canUsePaginate());
-    return AirportsApi.paginate(limit, order, filter, pageParam, cursor, config) },
+    return AirportsApi.paginate(limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -84,14 +83,14 @@ export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { l
  * @returns { UseMutationResult<AirportsModels.AirportResponseDTO> } 
  * @statusCodes [200, 201, 401]
  */
-export const useCreate = (options?: AppMutationOptions<typeof AirportsApi.create, { data: AirportsModels.CreateAirportRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreate = (options?: AppMutationOptions<typeof AirportsApi.create, { data: AirportsModels.CreateAirportRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ data }) => { 
       checkAcl(AirportsAcl.canUseCreate());
-      return AirportsApi.create(data, config)
+      return AirportsApi.create(data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -114,14 +113,14 @@ export const useCreate = (options?: AppMutationOptions<typeof AirportsApi.create
  * @returns { UseQueryResult<AirportsModels.AirportsPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: AirportsModels.AirportLabelFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof AirportsApi.paginateLabels, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: AirportsModels.AirportLabelFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof AirportsApi.paginateLabels, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.paginateLabels(limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(AirportsAcl.canUsePaginateLabels());
-    return AirportsApi.paginateLabels(limit, order, filter, page, cursor, config) },
+    return AirportsApi.paginateLabels(limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -139,14 +138,14 @@ export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }:
  * @returns { UseInfiniteQueryResult<AirportsModels.AirportsPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: AirportsModels.AirportLabelFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof AirportsApi.paginateLabels, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: AirportsModels.AirportLabelFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof AirportsApi.paginateLabels, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.paginateLabelsInfinite(limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(AirportsAcl.canUsePaginateLabels());
-    return AirportsApi.paginateLabels(limit, order, filter, pageParam, cursor, config) },
+    return AirportsApi.paginateLabels(limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -166,14 +165,14 @@ export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor 
  * @returns { UseMutationResult<AirportsModels.AirportResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useUpdate = (options?: AppMutationOptions<typeof AirportsApi.update, { id: string, data: AirportsModels.UpdateAirportRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdate = (options?: AppMutationOptions<typeof AirportsApi.update, { id: string, data: AirportsModels.UpdateAirportRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ id, data }) => { 
       checkAcl(AirportsAcl.canUseUpdate());
-      return AirportsApi.update(id, data, config)
+      return AirportsApi.update(id, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -194,14 +193,14 @@ export const useUpdate = (options?: AppMutationOptions<typeof AirportsApi.update
  * @returns { UseQueryResult<AirportsModels.AirportResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useFindById = <TData>({ id }: { id: string }, options?: AppQueryOptions<typeof AirportsApi.findById, TData>, config?: AxiosRequestConfig) => {
+export const useFindById = <TData>({ id }: { id: string }, options?: AppQueryOptions<typeof AirportsApi.findById, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.findById(id),
     queryFn: () => { 
     checkAcl(AirportsAcl.canUseFindById());
-    return AirportsApi.findById(id, config) },
+    return AirportsApi.findById(id) },
     ...options,
   });
 };

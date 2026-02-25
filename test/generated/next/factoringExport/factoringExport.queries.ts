@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -26,14 +25,14 @@ export const keys = {
  * @returns { UseMutationResult<FactoringExportModels.FactoringExportBatchResponseDto> } 
  * @statusCodes [201, 401]
  */
-export const useCreate = (options?: AppMutationOptions<typeof FactoringExportApi.create, { officeId: string, data: FactoringExportModels.CreateFactoringExportRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreate = (options?: AppMutationOptions<typeof FactoringExportApi.create, { officeId: string, data: FactoringExportModels.CreateFactoringExportRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, data }) => { 
       checkAcl(FactoringExportAcl.canUseCreate({ officeId } ));
-      return FactoringExportApi.create(officeId, data, config)
+      return FactoringExportApi.create(officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -53,14 +52,14 @@ export const useCreate = (options?: AppMutationOptions<typeof FactoringExportApi
  * @returns { UseQueryResult<FactoringExportModels.FactoringExportBatchResponseDto> } 
  * @statusCodes [200, 401]
  */
-export const useGetBatch = <TData>({ batchId, officeId }: { batchId: string, officeId: string }, options?: AppQueryOptions<typeof FactoringExportApi.getBatch, TData>, config?: AxiosRequestConfig) => {
+export const useGetBatch = <TData>({ batchId, officeId }: { batchId: string, officeId: string }, options?: AppQueryOptions<typeof FactoringExportApi.getBatch, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.getBatch(batchId, officeId),
     queryFn: () => { 
     checkAcl(FactoringExportAcl.canUseGetBatch({ officeId } ));
-    return FactoringExportApi.getBatch(batchId, officeId, config) },
+    return FactoringExportApi.getBatch(batchId, officeId) },
     ...options,
   });
 };

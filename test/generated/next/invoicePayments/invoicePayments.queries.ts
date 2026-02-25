@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -34,14 +33,14 @@ export const keys = {
  * @returns { UseQueryResult<InvoicePaymentsModels.ListOfficePaymentsResponse> } 
  * @statusCodes [200, 401]
  */
-export const useListOfficePayments = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: InvoicePaymentsModels.OfficeInvoicePaymentFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof InvoicePaymentsApi.listOfficePayments, TData>, config?: AxiosRequestConfig) => {
+export const useListOfficePayments = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: InvoicePaymentsModels.OfficeInvoicePaymentFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof InvoicePaymentsApi.listOfficePayments, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.listOfficePayments(officeId, limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(InvoicePaymentsAcl.canUseListOfficePayments({ officeId } ));
-    return InvoicePaymentsApi.listOfficePayments(officeId, limit, order, filter, page, cursor, config) },
+    return InvoicePaymentsApi.listOfficePayments(officeId, limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -60,14 +59,14 @@ export const useListOfficePayments = <TData>({ officeId, limit, order, filter, p
  * @returns { UseInfiniteQueryResult<InvoicePaymentsModels.ListOfficePaymentsResponse> } 
  * @statusCodes [200, 401]
  */
-export const useListOfficePaymentsInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: InvoicePaymentsModels.OfficeInvoicePaymentFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof InvoicePaymentsApi.listOfficePayments, TData>, config?: AxiosRequestConfig) => {
+export const useListOfficePaymentsInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: InvoicePaymentsModels.OfficeInvoicePaymentFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof InvoicePaymentsApi.listOfficePayments, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.listOfficePaymentsInfinite(officeId, limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(InvoicePaymentsAcl.canUseListOfficePayments({ officeId } ));
-    return InvoicePaymentsApi.listOfficePayments(officeId, limit, order, filter, pageParam, cursor, config) },
+    return InvoicePaymentsApi.listOfficePayments(officeId, limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -87,14 +86,14 @@ export const useListOfficePaymentsInfinite = <TData>({ officeId, limit, order, f
  * @returns { UseMutationResult<InvoicePaymentsModels.BulkCreatePaymentsResponseDto> } 
  * @statusCodes [201, 401]
  */
-export const useBulkCreatePayments = (options?: AppMutationOptions<typeof InvoicePaymentsApi.bulkCreatePayments, { officeId: string, data: InvoicePaymentsModels.BulkCreatePaymentsRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useBulkCreatePayments = (options?: AppMutationOptions<typeof InvoicePaymentsApi.bulkCreatePayments, { officeId: string, data: InvoicePaymentsModels.BulkCreatePaymentsRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, data }) => { 
       checkAcl(InvoicePaymentsAcl.canUseBulkCreatePayments({ officeId } ));
-      return InvoicePaymentsApi.bulkCreatePayments(officeId, data, config)
+      return InvoicePaymentsApi.bulkCreatePayments(officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -114,14 +113,14 @@ export const useBulkCreatePayments = (options?: AppMutationOptions<typeof Invoic
  * @returns { UseMutationResult<InvoicePaymentsModels.CalculatePaymentsResponseDto> } 
  * @statusCodes [200, 401]
  */
-export const useCalculatePayments = (options?: AppMutationOptions<typeof InvoicePaymentsApi.calculatePayments, { officeId: string, data: InvoicePaymentsModels.CalculatePaymentsRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCalculatePayments = (options?: AppMutationOptions<typeof InvoicePaymentsApi.calculatePayments, { officeId: string, data: InvoicePaymentsModels.CalculatePaymentsRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, data }) => { 
       checkAcl(InvoicePaymentsAcl.canUseCalculatePayments({ officeId } ));
-      return InvoicePaymentsApi.calculatePayments(officeId, data, config)
+      return InvoicePaymentsApi.calculatePayments(officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -141,14 +140,14 @@ export const useCalculatePayments = (options?: AppMutationOptions<typeof Invoice
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 201, 401]
  */
-export const useExportOfficePayments = (options?: AppMutationOptions<typeof InvoicePaymentsApi.exportOfficePayments, { officeId: string, data: InvoicePaymentsModels.OfficeInvoicePaymentExportRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useExportOfficePayments = (options?: AppMutationOptions<typeof InvoicePaymentsApi.exportOfficePayments, { officeId: string, data: InvoicePaymentsModels.OfficeInvoicePaymentExportRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, data }) => { 
       checkAcl(InvoicePaymentsAcl.canUseExportOfficePayments({ officeId } ));
-      return InvoicePaymentsApi.exportOfficePayments(officeId, data, config)
+      return InvoicePaymentsApi.exportOfficePayments(officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -171,14 +170,14 @@ export const useExportOfficePayments = (options?: AppMutationOptions<typeof Invo
  * @returns { UseQueryResult<InvoicePaymentsModels.InvoicePaymentsListResponse> } 
  * @statusCodes [200, 401]
  */
-export const useList = <TData>({ officeId, invoiceId, limit, page, cursor }: { officeId: string, invoiceId: string, limit: number, page?: number, cursor?: string }, options?: AppQueryOptions<typeof InvoicePaymentsApi.list, TData>, config?: AxiosRequestConfig) => {
+export const useList = <TData>({ officeId, invoiceId, limit, page, cursor }: { officeId: string, invoiceId: string, limit: number, page?: number, cursor?: string }, options?: AppQueryOptions<typeof InvoicePaymentsApi.list, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.list(officeId, invoiceId, limit, page, cursor),
     queryFn: () => { 
     checkAcl(InvoicePaymentsAcl.canUseList({ officeId } ));
-    return InvoicePaymentsApi.list(officeId, invoiceId, limit, page, cursor, config) },
+    return InvoicePaymentsApi.list(officeId, invoiceId, limit, page, cursor) },
     ...options,
   });
 };
@@ -196,14 +195,14 @@ export const useList = <TData>({ officeId, invoiceId, limit, page, cursor }: { o
  * @returns { UseInfiniteQueryResult<InvoicePaymentsModels.InvoicePaymentsListResponse> } 
  * @statusCodes [200, 401]
  */
-export const useListInfinite = <TData>({ officeId, invoiceId, limit, cursor }: { officeId: string, invoiceId: string, limit: number, cursor?: string }, options?: AppInfiniteQueryOptions<typeof InvoicePaymentsApi.list, TData>, config?: AxiosRequestConfig) => {
+export const useListInfinite = <TData>({ officeId, invoiceId, limit, cursor }: { officeId: string, invoiceId: string, limit: number, cursor?: string }, options?: AppInfiniteQueryOptions<typeof InvoicePaymentsApi.list, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.listInfinite(officeId, invoiceId, limit, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(InvoicePaymentsAcl.canUseList({ officeId } ));
-    return InvoicePaymentsApi.list(officeId, invoiceId, limit, pageParam, cursor, config) },
+    return InvoicePaymentsApi.list(officeId, invoiceId, limit, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -224,14 +223,14 @@ export const useListInfinite = <TData>({ officeId, invoiceId, limit, cursor }: {
  * @returns { UseMutationResult<InvoicePaymentsModels.PaymentResponseDto> } 
  * @statusCodes [201, 401]
  */
-export const useCreate = (options?: AppMutationOptions<typeof InvoicePaymentsApi.create, { officeId: string, invoiceId: string, data: InvoicePaymentsModels.CreateInvoicePaymentRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreate = (options?: AppMutationOptions<typeof InvoicePaymentsApi.create, { officeId: string, invoiceId: string, data: InvoicePaymentsModels.CreateInvoicePaymentRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, invoiceId, data }) => { 
       checkAcl(InvoicePaymentsAcl.canUseCreate({ officeId } ));
-      return InvoicePaymentsApi.create(officeId, invoiceId, data, config)
+      return InvoicePaymentsApi.create(officeId, invoiceId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -252,14 +251,14 @@ export const useCreate = (options?: AppMutationOptions<typeof InvoicePaymentsApi
  * @returns { UseQueryResult<InvoicePaymentsModels.PaymentResponseDto> } 
  * @statusCodes [200, 401]
  */
-export const useGetPaymentById = <TData>({ officeId, invoiceId, paymentId }: { officeId: string, invoiceId: string, paymentId: string }, options?: AppQueryOptions<typeof InvoicePaymentsApi.getPaymentById, TData>, config?: AxiosRequestConfig) => {
+export const useGetPaymentById = <TData>({ officeId, invoiceId, paymentId }: { officeId: string, invoiceId: string, paymentId: string }, options?: AppQueryOptions<typeof InvoicePaymentsApi.getPaymentById, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.getPaymentById(officeId, invoiceId, paymentId),
     queryFn: () => { 
     checkAcl(InvoicePaymentsAcl.canUseGetPaymentById({ officeId } ));
-    return InvoicePaymentsApi.getPaymentById(officeId, invoiceId, paymentId, config) },
+    return InvoicePaymentsApi.getPaymentById(officeId, invoiceId, paymentId) },
     ...options,
   });
 };
@@ -276,14 +275,14 @@ export const useGetPaymentById = <TData>({ officeId, invoiceId, paymentId }: { o
  * @returns { UseMutationResult<InvoicePaymentsModels.PaymentResponseDto> } 
  * @statusCodes [200, 401]
  */
-export const useUpdate = (options?: AppMutationOptions<typeof InvoicePaymentsApi.update, { officeId: string, invoiceId: string, paymentId: string, data: InvoicePaymentsModels.UpdateInvoicePaymentRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdate = (options?: AppMutationOptions<typeof InvoicePaymentsApi.update, { officeId: string, invoiceId: string, paymentId: string, data: InvoicePaymentsModels.UpdateInvoicePaymentRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, invoiceId, paymentId, data }) => { 
       checkAcl(InvoicePaymentsAcl.canUseUpdate({ officeId } ));
-      return InvoicePaymentsApi.update(officeId, invoiceId, paymentId, data, config)
+      return InvoicePaymentsApi.update(officeId, invoiceId, paymentId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -306,14 +305,14 @@ export const useUpdate = (options?: AppMutationOptions<typeof InvoicePaymentsApi
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
  */
-export const useDeleteInvoicePayment = (options?: AppMutationOptions<typeof InvoicePaymentsApi.deleteInvoicePayment, { officeId: string, invoiceId: string, paymentId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useDeleteInvoicePayment = (options?: AppMutationOptions<typeof InvoicePaymentsApi.deleteInvoicePayment, { officeId: string, invoiceId: string, paymentId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, invoiceId, paymentId }) => { 
       checkAcl(InvoicePaymentsAcl.canUseDeleteInvoicePayment({ officeId } ));
-      return InvoicePaymentsApi.deleteInvoicePayment(officeId, invoiceId, paymentId, config)
+      return InvoicePaymentsApi.deleteInvoicePayment(officeId, invoiceId, paymentId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

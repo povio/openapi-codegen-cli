@@ -13,7 +13,7 @@ export namespace EmployeeProfileModels {
  * @property { string } defaultUrl Employee default URL 
  * @property { CommonModels.LocaleEnum } locale Employee locale 
  */
-export const EmployeeProfileResponseDTOSchema = z.object({ id: z.string(), firstName: z.string().describe("Employee first name"), lastName: z.string().describe("Employee last name"), email: z.string().describe("Employee email"), phone: z.string().describe("Employee phone number").nullish(), defaultUrl: z.string().describe("Employee default URL").nullish(), locale: CommonModels.LocaleEnumSchema.describe("Employee locale").nullish() }).readonly();
+export const EmployeeProfileResponseDTOSchema = z.object({ id: z.string(), firstName: z.string(), lastName: z.string(), email: z.string(), phone: z.string().nullish(), defaultUrl: z.string().nullish(), locale: CommonModels.LocaleEnumSchema.nullish() });
 export type EmployeeProfileResponseDTO = z.infer<typeof EmployeeProfileResponseDTOSchema>;
 
 /** 
@@ -27,7 +27,7 @@ export type EmployeeProfileResponseDTO = z.infer<typeof EmployeeProfileResponseD
  * @property { string } costCenter Employee cost center 
  * @property { CommonModels.LocaleEnum } locale Employee locale preference. Example: `en-US` 
  */
-export const UpdateEmployeeProfileRequestDTOSchema = z.object({ firstName: z.string().describe("Employee first name"), lastName: z.string().describe("Employee last name"), email: z.email().describe("Employee email address"), phone: z.string().describe("Employee phone number"), defaultUrl: z.url().describe("Default URL for the employee profile"), costCenter: z.string().describe("Employee cost center"), locale: CommonModels.LocaleEnumSchema.describe("Employee locale preference") }).readonly();
+export const UpdateEmployeeProfileRequestDTOSchema = z.object({ firstName: z.string().nullable(), lastName: z.string().nullable(), email: z.email().nullable(), phone: z.string().nullable(), defaultUrl: z.url().nullable(), costCenter: z.string().nullable(), locale: CommonModels.LocaleEnumSchema.nullable() }).partial();
 export type UpdateEmployeeProfileRequestDTO = z.infer<typeof UpdateEmployeeProfileRequestDTOSchema>;
 
 }

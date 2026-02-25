@@ -17,7 +17,7 @@ export const TypeEnum = TypeEnumSchema.enum;
  * @property { string } id Employee ID 
  * @property { string } name Employee name 
  */
-export const WorkingDocumentCreatedByResponseDTOSchema = z.object({ id: z.string().describe("Employee ID"), name: z.string().describe("Employee name").nullable() }).readonly();
+export const WorkingDocumentCreatedByResponseDTOSchema = z.object({ id: z.string(), name: z.string().nullable() });
 export type WorkingDocumentCreatedByResponseDTO = z.infer<typeof WorkingDocumentCreatedByResponseDTOSchema>;
 
 /** 
@@ -34,7 +34,7 @@ export type WorkingDocumentCreatedByResponseDTO = z.infer<typeof WorkingDocument
  * @property { string } createdAt Created at 
  * @property { WorkingDocumentCreatedByResponseDTO } createdBy Created by 
  */
-export const WorkingDocumentResponseDTOSchema = z.object({ id: z.string(), positionId: z.string().describe("Position ID"), name: z.string().describe("Working document name"), nameSuffix: z.string().describe("Working document name suffix").nullish(), type: TypeEnumSchema.describe("Working document type"), referenceTable: z.string().describe("Reference table"), referenceId: z.string().describe("Reference ID"), createdById: z.string().describe("Created by"), createdAt: z.iso.datetime({ offset: true }).describe("Created at"), createdBy: WorkingDocumentCreatedByResponseDTOSchema.describe("Created by") }).readonly();
+export const WorkingDocumentResponseDTOSchema = z.object({ id: z.string(), positionId: z.string(), name: z.string(), nameSuffix: z.string().nullish(), type: TypeEnumSchema, referenceTable: z.string(), referenceId: z.string(), createdById: z.string(), createdAt: z.iso.datetime({ offset: true }), createdBy: WorkingDocumentCreatedByResponseDTOSchema });
 export type WorkingDocumentResponseDTO = z.infer<typeof WorkingDocumentResponseDTOSchema>;
 
 /** 
@@ -43,7 +43,7 @@ export type WorkingDocumentResponseDTO = z.infer<typeof WorkingDocumentResponseD
  * @property { string } search  
  * @property { string } type  
  */
-export const WorkingDocumentFilterDtoSchema = z.object({ search: z.string(), type: z.string() }).readonly();
+export const WorkingDocumentFilterDtoSchema = z.object({ search: z.string().nullable(), type: z.string().nullable() }).partial();
 export type WorkingDocumentFilterDto = z.infer<typeof WorkingDocumentFilterDtoSchema>;
 
 /** 
@@ -64,7 +64,7 @@ export const WorkingDocumentsListOrderParamEnum = WorkingDocumentsListOrderParam
  * @property { number } totalItems Total available items 
  * @property { WorkingDocumentResponseDTO[] } items  
  */
-export const WorkingDocumentsListResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(WorkingDocumentResponseDTOSchema).readonly() }).readonly().shape });
+export const WorkingDocumentsListResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(WorkingDocumentResponseDTOSchema).nullable() }).partial().shape });
 export type WorkingDocumentsListResponse = z.infer<typeof WorkingDocumentsListResponseSchema>;
 
 }

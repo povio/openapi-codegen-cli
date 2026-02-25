@@ -16,7 +16,7 @@ export const CmrDocumentLanguage = CmrDocumentLanguageSchema.enum;
  * @property { CmrDocumentLanguage } primaryLanguage Primary language 
  * @property { CmrDocumentLanguage } secondaryLanguage Secondary language 
  */
-export const CmrDocumentSettingsDtoDTOSchema = z.object({ primaryLanguage: CmrDocumentLanguageSchema.describe("Primary language"), secondaryLanguage: CmrDocumentLanguageSchema.describe("Secondary language") }).readonly();
+export const CmrDocumentSettingsDtoDTOSchema = z.object({ primaryLanguage: CmrDocumentLanguageSchema.nullable(), secondaryLanguage: CmrDocumentLanguageSchema.nullable() }).partial();
 export type CmrDocumentSettingsDtoDTO = z.infer<typeof CmrDocumentSettingsDtoDTOSchema>;
 
 /** 
@@ -26,7 +26,7 @@ export type CmrDocumentSettingsDtoDTO = z.infer<typeof CmrDocumentSettingsDtoDTO
  * @property { string } name Name of the business partner 
  * @property { string } address Address of the business partner 
  */
-export const CmrDocumentBusinessPartnerResponseDTOSchema = z.object({ id: z.string().describe("ID of the business partner"), name: z.string().describe("Name of the business partner"), address: z.string().describe("Address of the business partner") }).readonly();
+export const CmrDocumentBusinessPartnerResponseDTOSchema = z.object({ id: z.string().nullable(), name: z.string().nullable(), address: z.string().nullable() }).partial();
 export type CmrDocumentBusinessPartnerResponseDTO = z.infer<typeof CmrDocumentBusinessPartnerResponseDTOSchema>;
 
 /** 
@@ -37,7 +37,7 @@ export type CmrDocumentBusinessPartnerResponseDTO = z.infer<typeof CmrDocumentBu
  * @property { string } date Date of delivery/takeover 
  * @property { string } countryName Country name 
  */
-export const CmrDocumentCityResponseDTOSchema = z.object({ cityId: z.string().describe("ID of the city"), cityName: z.string().describe("Name of the city"), date: z.iso.datetime({ offset: true }).describe("Date of delivery/takeover").nullish(), countryName: z.string().describe("Country name").nullish() }).readonly();
+export const CmrDocumentCityResponseDTOSchema = z.object({ cityId: z.string(), cityName: z.string(), date: z.iso.datetime({ offset: true }).nullish(), countryName: z.string().nullish() });
 export type CmrDocumentCityResponseDTO = z.infer<typeof CmrDocumentCityResponseDTOSchema>;
 
 /** 
@@ -50,7 +50,7 @@ export type CmrDocumentCityResponseDTO = z.infer<typeof CmrDocumentCityResponseD
  * @property { number } miscellaneous Miscellaneous charges 
  * @property { number } total Total amount 
  */
-export const CmrDocumentCostsResponseDTOSchema = z.object({ carriageCharges: z.number().describe("Carriage charges"), reductions: z.number().describe("Reductions"), balance: z.number().describe("Balance"), supplements: z.number().describe("Supplements"), miscellaneous: z.number().describe("Miscellaneous charges"), total: z.number().describe("Total amount") }).readonly();
+export const CmrDocumentCostsResponseDTOSchema = z.object({ carriageCharges: z.number().nullable(), reductions: z.number().nullable(), balance: z.number().nullable(), supplements: z.number().nullable(), miscellaneous: z.number().nullable(), total: z.number().nullable() }).partial();
 export type CmrDocumentCostsResponseDTO = z.infer<typeof CmrDocumentCostsResponseDTOSchema>;
 
 /** 
@@ -68,7 +68,7 @@ export type CmrDocumentCostsResponseDTO = z.infer<typeof CmrDocumentCostsRespons
  * @property { string } seal1 Seal number 1 of the cargo 
  * @property { string } seal2 Seal number 2 of the cargo 
  */
-export const CmrDocumentCargoResponseDTOSchema = z.object({ caseMarks: z.string().describe("Case marks of the cargo"), quantity: z.number().describe("Quantity of packages"), description: z.string().describe("Description of the cargo"), packageType: z.string(), statisticNumber: z.string(), positionNumber: z.string().describe("Position number of the cargo"), grossWeight: z.number().describe("Gross weight of the cargo"), volume: z.number().describe("Volume of the cargo"), containerNumber: z.string().describe("Container number of the cargo"), seal1: z.string().describe("Seal number 1 of the cargo"), seal2: z.string().describe("Seal number 2 of the cargo") }).readonly();
+export const CmrDocumentCargoResponseDTOSchema = z.object({ caseMarks: z.string().nullable(), quantity: z.number().nullable(), description: z.string().nullable(), packageType: z.string().nullable(), statisticNumber: z.string().nullable(), positionNumber: z.string().nullable(), grossWeight: z.number().nullable(), volume: z.number().nullable(), containerNumber: z.string().nullable(), seal1: z.string().nullable(), seal2: z.string().nullable() }).partial();
 export type CmrDocumentCargoResponseDTO = z.infer<typeof CmrDocumentCargoResponseDTOSchema>;
 
 /** 
@@ -108,7 +108,7 @@ export type CmrDocumentCargoResponseDTO = z.infer<typeof CmrDocumentCargoRespons
  * @property { CommonModels.EditorContentResponseDto } footerRemarks Footer remarks 
  * @property { CmrDocumentSettingsDtoDTO } settings Settings for the BL Instructions document 
  */
-export const CmrDocumentResponseDTOSchema = z.object({ id: z.string().describe("ID of the document"), name: z.string().describe("Name of the document"), positionNumber: z.string().describe("Position number"), nameSuffix: z.string().describe("Name suffix of the document").nullish(), defaultFileName: z.string(), positionId: z.string().describe("Position ID"), versionNumber: z.number().describe("Version number of the document"), cmrNumber: z.string().describe("CMR number").nullish(), consignee: CmrDocumentBusinessPartnerResponseDTOSchema.describe("Consignee information").nullish(), shipper: CmrDocumentBusinessPartnerResponseDTOSchema.describe("Shipper information").nullish(), carrier: CmrDocumentBusinessPartnerResponseDTOSchema.describe("Carrier information").nullish(), successiveCarrier: CmrDocumentBusinessPartnerResponseDTOSchema.describe("Successive carrier information").nullish(), delivery: CmrDocumentCityResponseDTOSchema.describe("Delivery information").nullish(), takeover: CmrDocumentCityResponseDTOSchema.describe("Takeover information").nullish(), annexedDocuments: z.string().describe("Annexed documents").nullish(), carriersObservations: z.string().describe("Carriers observations").nullish(), senderInstructions: z.string().describe("Sender instructions").nullish(), reimbursement: z.string().describe("Reimbursement information").nullish(), specialAgreements: z.string().describe("Special agreements").nullish(), suppressWeight: z.boolean().describe("Whether to suppress weight information"), suppressMeasurement: z.boolean().describe("Whether to suppress measurement information"), freightPaid: z.boolean().describe("Whether freight is paid"), freightToBePaid: z.boolean().describe("Whether freight is to be paid"), creationPlace: z.string().describe("Place of creation"), creationDate: z.string().describe("Date of creation"), costsForShipper: CmrDocumentCostsResponseDTOSchema.describe("Costs for shipper").nullish(), costsForConsignee: CmrDocumentCostsResponseDTOSchema.describe("Costs for consignee").nullish(), selectedCargoIds: z.array(z.string()).readonly().describe("List of selected cargo IDs"), cargo: z.array(CmrDocumentCargoResponseDTOSchema).readonly().describe("List of cargo information").nullish(), config: CommonModels.HBLDocumentConfigDtoSchema.describe("Configuration settings for the document"), bodyRemarks: CommonModels.EditorContentResponseDtoSchema.describe("Body remarks").nullish(), footerRemarks: CommonModels.EditorContentResponseDtoSchema.describe("Footer remarks").nullish(), settings: CmrDocumentSettingsDtoDTOSchema.describe("Settings for the BL Instructions document").nullish() }).readonly();
+export const CmrDocumentResponseDTOSchema = z.object({ id: z.string(), name: z.string(), positionNumber: z.string(), nameSuffix: z.string().nullish(), defaultFileName: z.string(), positionId: z.string(), versionNumber: z.number(), cmrNumber: z.string().nullish(), consignee: CmrDocumentBusinessPartnerResponseDTOSchema.nullish(), shipper: CmrDocumentBusinessPartnerResponseDTOSchema.nullish(), carrier: CmrDocumentBusinessPartnerResponseDTOSchema.nullish(), successiveCarrier: CmrDocumentBusinessPartnerResponseDTOSchema.nullish(), delivery: CmrDocumentCityResponseDTOSchema.nullish(), takeover: CmrDocumentCityResponseDTOSchema.nullish(), annexedDocuments: z.string().nullish(), carriersObservations: z.string().nullish(), senderInstructions: z.string().nullish(), reimbursement: z.string().nullish(), specialAgreements: z.string().nullish(), suppressWeight: z.boolean(), suppressMeasurement: z.boolean(), freightPaid: z.boolean(), freightToBePaid: z.boolean(), creationPlace: z.string(), creationDate: z.string(), costsForShipper: CmrDocumentCostsResponseDTOSchema.nullish(), costsForConsignee: CmrDocumentCostsResponseDTOSchema.nullish(), selectedCargoIds: z.array(z.string()), cargo: z.array(CmrDocumentCargoResponseDTOSchema).nullish(), config: CommonModels.HBLDocumentConfigDtoSchema, bodyRemarks: CommonModels.EditorContentResponseDtoSchema.nullish(), footerRemarks: CommonModels.EditorContentResponseDtoSchema.nullish(), settings: CmrDocumentSettingsDtoDTOSchema.nullish() });
 export type CmrDocumentResponseDTO = z.infer<typeof CmrDocumentResponseDTOSchema>;
 
 /** 
@@ -117,7 +117,7 @@ export type CmrDocumentResponseDTO = z.infer<typeof CmrDocumentResponseDTOSchema
  * @property { CmrDocumentLanguage } primaryLanguage Primary language 
  * @property { CmrDocumentLanguage } secondaryLanguage Secondary language 
  */
-export const UpdateCmrDocumentSettingsRequestDTOSchema = z.object({ primaryLanguage: CmrDocumentLanguageSchema.describe("Primary language"), secondaryLanguage: CmrDocumentLanguageSchema.describe("Secondary language") }).readonly();
+export const UpdateCmrDocumentSettingsRequestDTOSchema = z.object({ primaryLanguage: CmrDocumentLanguageSchema.nullable(), secondaryLanguage: CmrDocumentLanguageSchema.nullable() }).partial();
 export type UpdateCmrDocumentSettingsRequestDTO = z.infer<typeof UpdateCmrDocumentSettingsRequestDTOSchema>;
 
 /** 
@@ -126,7 +126,7 @@ export type UpdateCmrDocumentSettingsRequestDTO = z.infer<typeof UpdateCmrDocume
  * @property { string } id Business partner ID 
  * @property { string } address Business partner address 
  */
-export const UpdateCmrDocumentBusinessPartnerRequestDTOSchema = z.object({ id: z.string().describe("Business partner ID"), address: z.string().describe("Business partner address") }).readonly();
+export const UpdateCmrDocumentBusinessPartnerRequestDTOSchema = z.object({ id: z.string().nullable(), address: z.string().nullable() }).partial();
 export type UpdateCmrDocumentBusinessPartnerRequestDTO = z.infer<typeof UpdateCmrDocumentBusinessPartnerRequestDTOSchema>;
 
 /** 
@@ -136,7 +136,7 @@ export type UpdateCmrDocumentBusinessPartnerRequestDTO = z.infer<typeof UpdateCm
  * @property { string } cityName City name 
  * @property { string } date Date 
  */
-export const UpdateCmrDocumentDeliveryRequestDTOSchema = z.object({ cityId: z.string().describe("City ID"), cityName: z.string().describe("City name"), date: z.iso.datetime({ offset: true }).describe("Date") }).readonly();
+export const UpdateCmrDocumentDeliveryRequestDTOSchema = z.object({ cityId: z.string().nullable(), cityName: z.string().nullable(), date: z.iso.datetime({ offset: true }).nullable() }).partial();
 export type UpdateCmrDocumentDeliveryRequestDTO = z.infer<typeof UpdateCmrDocumentDeliveryRequestDTOSchema>;
 
 /** 
@@ -149,7 +149,7 @@ export type UpdateCmrDocumentDeliveryRequestDTO = z.infer<typeof UpdateCmrDocume
  * @property { number } miscellaneous Miscellaneous 
  * @property { number } total Total 
  */
-export const UpdateCmrDocumentCostsRequestDTOSchema = z.object({ carriageCharges: z.number().describe("Carriage charges"), reductions: z.number().describe("Reductions"), balance: z.number().describe("Balance"), supplements: z.number().describe("Supplements"), miscellaneous: z.number().describe("Miscellaneous"), total: z.number().describe("Total") }).readonly();
+export const UpdateCmrDocumentCostsRequestDTOSchema = z.object({ carriageCharges: z.number().nullable(), reductions: z.number().nullable(), balance: z.number().nullable(), supplements: z.number().nullable(), miscellaneous: z.number().nullable(), total: z.number().nullable() }).partial();
 export type UpdateCmrDocumentCostsRequestDTO = z.infer<typeof UpdateCmrDocumentCostsRequestDTOSchema>;
 
 /** 
@@ -181,7 +181,7 @@ export type UpdateCmrDocumentCostsRequestDTO = z.infer<typeof UpdateCmrDocumentC
  * @property { CommonModels.EditorContentUpdateDto } footerRemarks Footer remarks 
  * @property { UpdateCmrDocumentSettingsRequestDTO } settings Settings 
  */
-export const UpdateCmrDocumentRequestDTOSchema = z.object({ nameSuffix: z.string().describe("Name suffix"), cmrNumber: z.string().describe("CMR number"), consignee: UpdateCmrDocumentBusinessPartnerRequestDTOSchema.describe("Consignee information"), shipper: UpdateCmrDocumentBusinessPartnerRequestDTOSchema.describe("Shipper information"), carrier: UpdateCmrDocumentBusinessPartnerRequestDTOSchema.describe("Carrier information"), successiveCarrier: UpdateCmrDocumentBusinessPartnerRequestDTOSchema.describe("Successive carrier information"), delivery: UpdateCmrDocumentDeliveryRequestDTOSchema.describe("Delivery information"), takeover: UpdateCmrDocumentDeliveryRequestDTOSchema.describe("Takeover information"), annexedDocuments: z.string().describe("Annexed documents"), carriersObservations: z.string().describe("Carriers observations"), senderInstructions: z.string().describe("Sender instructions"), reimbursement: z.string().describe("Reimbursement"), specialAgreements: z.string().describe("Special agreements"), suppressWeight: z.boolean().describe("Whether to suppress weight information"), suppressMeasurement: z.boolean().describe("Whether to suppress measurement information"), freightPaid: z.boolean().describe("Whether freight is paid"), freightToBePaid: z.boolean().describe("Whether freight is to be paid"), creationPlace: z.string().describe("Place of creation"), creationDate: z.string().describe("Date of creation"), costsForShipper: UpdateCmrDocumentCostsRequestDTOSchema.describe("Costs for shipper"), costsForConsignee: UpdateCmrDocumentCostsRequestDTOSchema.describe("Costs for consignee"), selectedCargoIds: z.array(z.string()).readonly().describe("Selected cargo IDs"), bodyRemarks: CommonModels.EditorContentUpdateDtoSchema.describe("Body remarks"), footerRemarks: CommonModels.EditorContentUpdateDtoSchema.describe("Footer remarks"), settings: UpdateCmrDocumentSettingsRequestDTOSchema.describe("Settings") }).readonly();
+export const UpdateCmrDocumentRequestDTOSchema = z.object({ nameSuffix: z.string().nullable(), cmrNumber: z.string().nullable(), consignee: UpdateCmrDocumentBusinessPartnerRequestDTOSchema.nullable(), shipper: UpdateCmrDocumentBusinessPartnerRequestDTOSchema.nullable(), carrier: UpdateCmrDocumentBusinessPartnerRequestDTOSchema.nullable(), successiveCarrier: UpdateCmrDocumentBusinessPartnerRequestDTOSchema.nullable(), delivery: UpdateCmrDocumentDeliveryRequestDTOSchema.nullable(), takeover: UpdateCmrDocumentDeliveryRequestDTOSchema.nullable(), annexedDocuments: z.string().nullable(), carriersObservations: z.string().nullable(), senderInstructions: z.string().nullable(), reimbursement: z.string().nullable(), specialAgreements: z.string().nullable(), suppressWeight: z.boolean().nullable(), suppressMeasurement: z.boolean().nullable(), freightPaid: z.boolean().nullable(), freightToBePaid: z.boolean().nullable(), creationPlace: z.string().nullable(), creationDate: z.string().nullable(), costsForShipper: UpdateCmrDocumentCostsRequestDTOSchema.nullable(), costsForConsignee: UpdateCmrDocumentCostsRequestDTOSchema.nullable(), selectedCargoIds: z.array(z.string()).nullable(), bodyRemarks: CommonModels.EditorContentUpdateDtoSchema.nullable(), footerRemarks: CommonModels.EditorContentUpdateDtoSchema.nullable(), settings: UpdateCmrDocumentSettingsRequestDTOSchema.nullable() }).partial();
 export type UpdateCmrDocumentRequestDTO = z.infer<typeof UpdateCmrDocumentRequestDTOSchema>;
 
 }

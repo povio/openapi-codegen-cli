@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -28,14 +27,14 @@ export const keys = {
  * @returns { UseMutationResult<WorkingDocumentsBlInstructionsModels.BlInstructionsDocumentResponseDTO> } 
  * @statusCodes [201, 401]
  */
-export const useCreate = (options?: AppMutationOptions<typeof WorkingDocumentsBlInstructionsApi.create, { positionId: string, officeId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreate = (options?: AppMutationOptions<typeof WorkingDocumentsBlInstructionsApi.create, { positionId: string, officeId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, officeId }) => { 
       checkAcl(WorkingDocumentsBlInstructionsAcl.canUseCreate({ officeId } ));
-      return WorkingDocumentsBlInstructionsApi.create(positionId, officeId, config)
+      return WorkingDocumentsBlInstructionsApi.create(positionId, officeId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -56,14 +55,14 @@ export const useCreate = (options?: AppMutationOptions<typeof WorkingDocumentsBl
  * @returns { UseQueryResult<WorkingDocumentsBlInstructionsModels.BlInstructionsDocumentResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useGetBlInstructionsData = <TData>({ positionId, blInstructionsId, officeId }: { positionId: string, blInstructionsId: string, officeId: string }, options?: AppQueryOptions<typeof WorkingDocumentsBlInstructionsApi.getBlInstructionsData, TData>, config?: AxiosRequestConfig) => {
+export const useGetBlInstructionsData = <TData>({ positionId, blInstructionsId, officeId }: { positionId: string, blInstructionsId: string, officeId: string }, options?: AppQueryOptions<typeof WorkingDocumentsBlInstructionsApi.getBlInstructionsData, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.getBlInstructionsData(positionId, blInstructionsId, officeId),
     queryFn: () => { 
     checkAcl(WorkingDocumentsBlInstructionsAcl.canUseGetBlInstructionsData({ officeId } ));
-    return WorkingDocumentsBlInstructionsApi.getBlInstructionsData(positionId, blInstructionsId, officeId, config) },
+    return WorkingDocumentsBlInstructionsApi.getBlInstructionsData(positionId, blInstructionsId, officeId) },
     ...options,
   });
 };
@@ -80,14 +79,14 @@ export const useGetBlInstructionsData = <TData>({ positionId, blInstructionsId, 
  * @returns { UseMutationResult<WorkingDocumentsBlInstructionsModels.BlInstructionsDocumentResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useUpdateBlInstructionsData = (options?: AppMutationOptions<typeof WorkingDocumentsBlInstructionsApi.updateBlInstructionsData, { positionId: string, blInstructionsId: string, officeId: string, data: WorkingDocumentsBlInstructionsModels.UpdateBlInstructionsDocumentRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdateBlInstructionsData = (options?: AppMutationOptions<typeof WorkingDocumentsBlInstructionsApi.updateBlInstructionsData, { positionId: string, blInstructionsId: string, officeId: string, data: WorkingDocumentsBlInstructionsModels.UpdateBlInstructionsDocumentRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, blInstructionsId, officeId, data }) => { 
       checkAcl(WorkingDocumentsBlInstructionsAcl.canUseUpdateBlInstructionsData({ officeId } ));
-      return WorkingDocumentsBlInstructionsApi.updateBlInstructionsData(positionId, blInstructionsId, officeId, data, config)
+      return WorkingDocumentsBlInstructionsApi.updateBlInstructionsData(positionId, blInstructionsId, officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -110,14 +109,14 @@ export const useUpdateBlInstructionsData = (options?: AppMutationOptions<typeof 
  * @returns { UseMutationResult<void> } BL Instructions document deleted
  * @statusCodes [204, 401, 404]
  */
-export const useDeleteBlInstructions = (options?: AppMutationOptions<typeof WorkingDocumentsBlInstructionsApi.deleteBlInstructions, { positionId: string, blInstructionsId: string, officeId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useDeleteBlInstructions = (options?: AppMutationOptions<typeof WorkingDocumentsBlInstructionsApi.deleteBlInstructions, { positionId: string, blInstructionsId: string, officeId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, blInstructionsId, officeId }) => { 
       checkAcl(WorkingDocumentsBlInstructionsAcl.canUseDeleteBlInstructions({ officeId } ));
-      return WorkingDocumentsBlInstructionsApi.deleteBlInstructions(positionId, blInstructionsId, officeId, config)
+      return WorkingDocumentsBlInstructionsApi.deleteBlInstructions(positionId, blInstructionsId, officeId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -138,14 +137,14 @@ export const useDeleteBlInstructions = (options?: AppMutationOptions<typeof Work
  * @returns { UseQueryResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
  */
-export const usePreviewBlInstructions = <TData>({ positionId, blInstructionsId, officeId }: { positionId: string, blInstructionsId: string, officeId: string }, options?: AppQueryOptions<typeof WorkingDocumentsBlInstructionsApi.previewBlInstructions, TData>, config?: AxiosRequestConfig) => {
+export const usePreviewBlInstructions = <TData>({ positionId, blInstructionsId, officeId }: { positionId: string, blInstructionsId: string, officeId: string }, options?: AppQueryOptions<typeof WorkingDocumentsBlInstructionsApi.previewBlInstructions, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.previewBlInstructions(positionId, blInstructionsId, officeId),
     queryFn: () => { 
     checkAcl(WorkingDocumentsBlInstructionsAcl.canUsePreviewBlInstructions({ officeId } ));
-    return WorkingDocumentsBlInstructionsApi.previewBlInstructions(positionId, blInstructionsId, officeId, config) },
+    return WorkingDocumentsBlInstructionsApi.previewBlInstructions(positionId, blInstructionsId, officeId) },
     ...options,
   });
 };
@@ -161,14 +160,14 @@ export const usePreviewBlInstructions = <TData>({ positionId, blInstructionsId, 
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
  */
-export const usePreviewBlInstructionsMutation = (options?: AppMutationOptions<typeof WorkingDocumentsBlInstructionsApi.previewBlInstructions, { positionId: string, blInstructionsId: string, officeId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const usePreviewBlInstructionsMutation = (options?: AppMutationOptions<typeof WorkingDocumentsBlInstructionsApi.previewBlInstructions, { positionId: string, blInstructionsId: string, officeId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, blInstructionsId, officeId }) => { 
       checkAcl(WorkingDocumentsBlInstructionsAcl.canUsePreviewBlInstructions({ officeId } ));
-      return WorkingDocumentsBlInstructionsApi.previewBlInstructions(positionId, blInstructionsId, officeId, config)
+      return WorkingDocumentsBlInstructionsApi.previewBlInstructions(positionId, blInstructionsId, officeId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -192,14 +191,14 @@ export const usePreviewBlInstructionsMutation = (options?: AppMutationOptions<ty
  * @returns { UseMutationResult<void> } 
  * @statusCodes [201, 401]
  */
-export const useGenerateBlInstructions = (options?: AppMutationOptions<typeof WorkingDocumentsBlInstructionsApi.generateBlInstructions, { positionId: string, blInstructionsId: string, officeId: string, data: CommonModels.GenerateWorkingDocumentRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useGenerateBlInstructions = (options?: AppMutationOptions<typeof WorkingDocumentsBlInstructionsApi.generateBlInstructions, { positionId: string, blInstructionsId: string, officeId: string, data: CommonModels.GenerateWorkingDocumentRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, blInstructionsId, officeId, data }) => { 
       checkAcl(WorkingDocumentsBlInstructionsAcl.canUseGenerateBlInstructions({ officeId } ));
-      return WorkingDocumentsBlInstructionsApi.generateBlInstructions(positionId, blInstructionsId, officeId, data, config)
+      return WorkingDocumentsBlInstructionsApi.generateBlInstructions(positionId, blInstructionsId, officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -221,14 +220,14 @@ export const useGenerateBlInstructions = (options?: AppMutationOptions<typeof Wo
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
  */
-export const useGenerateDocumentEml = (options?: AppMutationOptions<typeof WorkingDocumentsBlInstructionsApi.generateDocumentEml, { positionId: string, blInstructionsId: string, officeId: string, data: CommonModels.GenerateWorkingDocumentRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useGenerateDocumentEml = (options?: AppMutationOptions<typeof WorkingDocumentsBlInstructionsApi.generateDocumentEml, { positionId: string, blInstructionsId: string, officeId: string, data: CommonModels.GenerateWorkingDocumentRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, blInstructionsId, officeId, data }) => { 
       checkAcl(WorkingDocumentsBlInstructionsAcl.canUseGenerateDocumentEml({ officeId } ));
-      return WorkingDocumentsBlInstructionsApi.generateDocumentEml(positionId, blInstructionsId, officeId, data, config)
+      return WorkingDocumentsBlInstructionsApi.generateDocumentEml(positionId, blInstructionsId, officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

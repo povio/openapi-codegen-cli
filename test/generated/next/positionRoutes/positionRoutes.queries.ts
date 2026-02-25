@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -26,14 +25,14 @@ export const keys = {
  * @returns { UseQueryResult<CommonModels.RouteListResponseDto> } 
  * @statusCodes [200, 401]
  */
-export const useListRoutes = <TData>({ officeId, positionId }: { officeId: string, positionId: string }, options?: AppQueryOptions<typeof PositionRoutesApi.listRoutes, TData>, config?: AxiosRequestConfig) => {
+export const useListRoutes = <TData>({ officeId, positionId }: { officeId: string, positionId: string }, options?: AppQueryOptions<typeof PositionRoutesApi.listRoutes, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.listRoutes(officeId, positionId),
     queryFn: () => { 
     checkAcl(PositionRoutesAcl.canUseListRoutes({ officeId } ));
-    return PositionRoutesApi.listRoutes(officeId, positionId, config) },
+    return PositionRoutesApi.listRoutes(officeId, positionId) },
     ...options,
   });
 };
@@ -50,14 +49,14 @@ export const useListRoutes = <TData>({ officeId, positionId }: { officeId: strin
  * @returns { UseMutationResult<CommonModels.RoutePointResponseDto> } 
  * @statusCodes [201, 401]
  */
-export const useCreateRoutePoint = (options?: AppMutationOptions<typeof PositionRoutesApi.createRoutePoint, { officeId: string, positionId: string, routeId: string, data: CommonModels.CreateRoutePointRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreateRoutePoint = (options?: AppMutationOptions<typeof PositionRoutesApi.createRoutePoint, { officeId: string, positionId: string, routeId: string, data: CommonModels.CreateRoutePointRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, positionId, routeId, data }) => { 
       checkAcl(PositionRoutesAcl.canUseCreateRoutePoint({ officeId } ));
-      return PositionRoutesApi.createRoutePoint(officeId, positionId, routeId, data, config)
+      return PositionRoutesApi.createRoutePoint(officeId, positionId, routeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -80,14 +79,14 @@ export const useCreateRoutePoint = (options?: AppMutationOptions<typeof Position
  * @returns { UseMutationResult<CommonModels.RoutePointResponseDto> } 
  * @statusCodes [200, 401]
  */
-export const useUpdateRoutePoint = (options?: AppMutationOptions<typeof PositionRoutesApi.updateRoutePoint, { officeId: string, positionId: string, routeId: string, pointId: string, data: CommonModels.UpdateRoutePointRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdateRoutePoint = (options?: AppMutationOptions<typeof PositionRoutesApi.updateRoutePoint, { officeId: string, positionId: string, routeId: string, pointId: string, data: CommonModels.UpdateRoutePointRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, positionId, routeId, pointId, data }) => { 
       checkAcl(PositionRoutesAcl.canUseUpdateRoutePoint({ officeId } ));
-      return PositionRoutesApi.updateRoutePoint(officeId, positionId, routeId, pointId, data, config)
+      return PositionRoutesApi.updateRoutePoint(officeId, positionId, routeId, pointId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -109,14 +108,14 @@ export const useUpdateRoutePoint = (options?: AppMutationOptions<typeof Position
  * @returns { UseMutationResult<void> } 
  * @statusCodes [204, 401]
  */
-export const useDeleteRoutePoint = (options?: AppMutationOptions<typeof PositionRoutesApi.deleteRoutePoint, { officeId: string, positionId: string, routeId: string, pointId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useDeleteRoutePoint = (options?: AppMutationOptions<typeof PositionRoutesApi.deleteRoutePoint, { officeId: string, positionId: string, routeId: string, pointId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, positionId, routeId, pointId }) => { 
       checkAcl(PositionRoutesAcl.canUseDeleteRoutePoint({ officeId } ));
-      return PositionRoutesApi.deleteRoutePoint(officeId, positionId, routeId, pointId, config)
+      return PositionRoutesApi.deleteRoutePoint(officeId, positionId, routeId, pointId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -136,14 +135,14 @@ export const useDeleteRoutePoint = (options?: AppMutationOptions<typeof Position
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
  */
-export const useSplitRoutes = (options?: AppMutationOptions<typeof PositionRoutesApi.splitRoutes, { officeId: string, positionId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useSplitRoutes = (options?: AppMutationOptions<typeof PositionRoutesApi.splitRoutes, { officeId: string, positionId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, positionId }) => { 
       checkAcl(PositionRoutesAcl.canUseSplitRoutes({ officeId } ));
-      return PositionRoutesApi.splitRoutes(officeId, positionId, config)
+      return PositionRoutesApi.splitRoutes(officeId, positionId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -164,14 +163,14 @@ export const useSplitRoutes = (options?: AppMutationOptions<typeof PositionRoute
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
  */
-export const useMergeRoutes = (options?: AppMutationOptions<typeof PositionRoutesApi.mergeRoutes, { officeId: string, positionId: string, data: CommonModels.MergeRoutesRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useMergeRoutes = (options?: AppMutationOptions<typeof PositionRoutesApi.mergeRoutes, { officeId: string, positionId: string, data: CommonModels.MergeRoutesRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, positionId, data }) => { 
       checkAcl(PositionRoutesAcl.canUseMergeRoutes({ officeId } ));
-      return PositionRoutesApi.mergeRoutes(officeId, positionId, data, config)
+      return PositionRoutesApi.mergeRoutes(officeId, positionId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -193,14 +192,14 @@ export const useMergeRoutes = (options?: AppMutationOptions<typeof PositionRoute
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
  */
-export const useCopyRoute = (options?: AppMutationOptions<typeof PositionRoutesApi.copyRoute, { officeId: string, positionId: string, routeId: string, data: CommonModels.CopyRouteRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCopyRoute = (options?: AppMutationOptions<typeof PositionRoutesApi.copyRoute, { officeId: string, positionId: string, routeId: string, data: CommonModels.CopyRouteRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, positionId, routeId, data }) => { 
       checkAcl(PositionRoutesAcl.canUseCopyRoute({ officeId } ));
-      return PositionRoutesApi.copyRoute(officeId, positionId, routeId, data, config)
+      return PositionRoutesApi.copyRoute(officeId, positionId, routeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -28,14 +27,14 @@ export const keys = {
  * @returns { UseMutationResult<WorkingDocumentsFcrFormModels.FcrDocumentResponseDTO> } 
  * @statusCodes [201, 401]
  */
-export const useCreate = (options?: AppMutationOptions<typeof WorkingDocumentsFcrFormApi.create, { positionId: string, officeId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreate = (options?: AppMutationOptions<typeof WorkingDocumentsFcrFormApi.create, { positionId: string, officeId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, officeId }) => { 
       checkAcl(WorkingDocumentsFcrFormAcl.canUseCreate({ officeId } ));
-      return WorkingDocumentsFcrFormApi.create(positionId, officeId, config)
+      return WorkingDocumentsFcrFormApi.create(positionId, officeId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -56,14 +55,14 @@ export const useCreate = (options?: AppMutationOptions<typeof WorkingDocumentsFc
  * @returns { UseQueryResult<WorkingDocumentsFcrFormModels.FcrDocumentResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useGetFcrData = <TData>({ positionId, fcrId, officeId }: { positionId: string, fcrId: string, officeId: string }, options?: AppQueryOptions<typeof WorkingDocumentsFcrFormApi.getFcrData, TData>, config?: AxiosRequestConfig) => {
+export const useGetFcrData = <TData>({ positionId, fcrId, officeId }: { positionId: string, fcrId: string, officeId: string }, options?: AppQueryOptions<typeof WorkingDocumentsFcrFormApi.getFcrData, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.getFcrData(positionId, fcrId, officeId),
     queryFn: () => { 
     checkAcl(WorkingDocumentsFcrFormAcl.canUseGetFcrData({ officeId } ));
-    return WorkingDocumentsFcrFormApi.getFcrData(positionId, fcrId, officeId, config) },
+    return WorkingDocumentsFcrFormApi.getFcrData(positionId, fcrId, officeId) },
     ...options,
   });
 };
@@ -80,14 +79,14 @@ export const useGetFcrData = <TData>({ positionId, fcrId, officeId }: { position
  * @returns { UseMutationResult<WorkingDocumentsFcrFormModels.FcrDocumentResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useUpdateFcrData = (options?: AppMutationOptions<typeof WorkingDocumentsFcrFormApi.updateFcrData, { positionId: string, fcrId: string, officeId: string, data: WorkingDocumentsFcrFormModels.UpdateFcrDocumentRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdateFcrData = (options?: AppMutationOptions<typeof WorkingDocumentsFcrFormApi.updateFcrData, { positionId: string, fcrId: string, officeId: string, data: WorkingDocumentsFcrFormModels.UpdateFcrDocumentRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, fcrId, officeId, data }) => { 
       checkAcl(WorkingDocumentsFcrFormAcl.canUseUpdateFcrData({ officeId } ));
-      return WorkingDocumentsFcrFormApi.updateFcrData(positionId, fcrId, officeId, data, config)
+      return WorkingDocumentsFcrFormApi.updateFcrData(positionId, fcrId, officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -110,14 +109,14 @@ export const useUpdateFcrData = (options?: AppMutationOptions<typeof WorkingDocu
  * @returns { UseMutationResult<void> } FCR document deleted
  * @statusCodes [204, 401, 404]
  */
-export const useDeleteFcr = (options?: AppMutationOptions<typeof WorkingDocumentsFcrFormApi.deleteFcr, { positionId: string, fcrId: string, officeId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useDeleteFcr = (options?: AppMutationOptions<typeof WorkingDocumentsFcrFormApi.deleteFcr, { positionId: string, fcrId: string, officeId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, fcrId, officeId }) => { 
       checkAcl(WorkingDocumentsFcrFormAcl.canUseDeleteFcr({ officeId } ));
-      return WorkingDocumentsFcrFormApi.deleteFcr(positionId, fcrId, officeId, config)
+      return WorkingDocumentsFcrFormApi.deleteFcr(positionId, fcrId, officeId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -138,14 +137,14 @@ export const useDeleteFcr = (options?: AppMutationOptions<typeof WorkingDocument
  * @returns { UseQueryResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
  */
-export const usePreviewFcr = <TData>({ positionId, fcrId, officeId }: { positionId: string, fcrId: string, officeId: string }, options?: AppQueryOptions<typeof WorkingDocumentsFcrFormApi.previewFcr, TData>, config?: AxiosRequestConfig) => {
+export const usePreviewFcr = <TData>({ positionId, fcrId, officeId }: { positionId: string, fcrId: string, officeId: string }, options?: AppQueryOptions<typeof WorkingDocumentsFcrFormApi.previewFcr, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.previewFcr(positionId, fcrId, officeId),
     queryFn: () => { 
     checkAcl(WorkingDocumentsFcrFormAcl.canUsePreviewFcr({ officeId } ));
-    return WorkingDocumentsFcrFormApi.previewFcr(positionId, fcrId, officeId, config) },
+    return WorkingDocumentsFcrFormApi.previewFcr(positionId, fcrId, officeId) },
     ...options,
   });
 };
@@ -161,14 +160,14 @@ export const usePreviewFcr = <TData>({ positionId, fcrId, officeId }: { position
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
  */
-export const usePreviewFcrMutation = (options?: AppMutationOptions<typeof WorkingDocumentsFcrFormApi.previewFcr, { positionId: string, fcrId: string, officeId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const usePreviewFcrMutation = (options?: AppMutationOptions<typeof WorkingDocumentsFcrFormApi.previewFcr, { positionId: string, fcrId: string, officeId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, fcrId, officeId }) => { 
       checkAcl(WorkingDocumentsFcrFormAcl.canUsePreviewFcr({ officeId } ));
-      return WorkingDocumentsFcrFormApi.previewFcr(positionId, fcrId, officeId, config)
+      return WorkingDocumentsFcrFormApi.previewFcr(positionId, fcrId, officeId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -192,14 +191,14 @@ export const usePreviewFcrMutation = (options?: AppMutationOptions<typeof Workin
  * @returns { UseMutationResult<void> } 
  * @statusCodes [201, 401]
  */
-export const useGenerateFcr = (options?: AppMutationOptions<typeof WorkingDocumentsFcrFormApi.generateFcr, { positionId: string, fcrId: string, officeId: string, data: CommonModels.GenerateWorkingDocumentRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useGenerateFcr = (options?: AppMutationOptions<typeof WorkingDocumentsFcrFormApi.generateFcr, { positionId: string, fcrId: string, officeId: string, data: CommonModels.GenerateWorkingDocumentRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, fcrId, officeId, data }) => { 
       checkAcl(WorkingDocumentsFcrFormAcl.canUseGenerateFcr({ officeId } ));
-      return WorkingDocumentsFcrFormApi.generateFcr(positionId, fcrId, officeId, data, config)
+      return WorkingDocumentsFcrFormApi.generateFcr(positionId, fcrId, officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

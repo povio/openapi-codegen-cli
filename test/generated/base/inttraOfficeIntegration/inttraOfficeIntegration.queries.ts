@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -9,100 +8,85 @@ import { InttraOfficeIntegrationModels } from "./inttraOfficeIntegration.models"
 import { InttraOfficeIntegrationApi } from "./inttraOfficeIntegration.api";
 
 export namespace InttraOfficeIntegrationQueries {
-  export const moduleName = QueryModule.InttraOfficeIntegration;
+export const moduleName = QueryModule.InttraOfficeIntegration;
 
-  export const keys = {
+export const keys = {
     all: [moduleName] as const,
     get: (officeId: string) => [...keys.all, "/offices/:officeId/inttra/credentials", officeId] as const,
-  };
+};
 
-  /**
-   * Query `useGet`
-   * @summary Get INTTRA credentials for an office
-   * @permission Requires `canUseGet` ability
-   * @param { string } object.officeId Path parameter
-   * @param { AppQueryOptions } options Query options
-   * @returns { UseQueryResult<InttraOfficeIntegrationModels.OfficeInttraCredentialsResponseDto> }
-   * @statusCodes [200, 401]
-   */
-  export const useGet = <TData>(
-    { officeId }: { officeId: string },
-    options?: AppQueryOptions<typeof InttraOfficeIntegrationApi.get, TData>,
-    config?: AxiosRequestConfig,
-  ) => {
-    const { checkAcl } = useAclCheck();
+/** 
+ * Query `useGet`
+ * @summary Get INTTRA credentials for an office
+ * @permission Requires `canUseGet` ability 
+ * @param { string } object.officeId Path parameter
+ * @param { AppQueryOptions } options Query options
+ * @returns { UseQueryResult<InttraOfficeIntegrationModels.OfficeInttraCredentialsResponseDto> } 
+ * @statusCodes [200, 401]
+ */
+export const useGet = <TData>({ officeId }: { officeId: string }, options?: AppQueryOptions<typeof InttraOfficeIntegrationApi.get, TData>) => {
+  const { checkAcl } = useAclCheck();
+  
+  return useQuery({
+    queryKey: keys.get(officeId),
+    queryFn: () => { 
+    checkAcl(InttraOfficeIntegrationAcl.canUseGet({ officeId } ));
+    return InttraOfficeIntegrationApi.get(officeId) },
+    ...options,
+  });
+};
 
-    return useQuery({
-      queryKey: keys.get(officeId),
-      queryFn: () => {
-        checkAcl(InttraOfficeIntegrationAcl.canUseGet({ officeId }));
-        return InttraOfficeIntegrationApi.get(officeId, config);
-      },
-      ...options,
-    });
-  };
+/** 
+ * Mutation `useGenerate`
+ * @summary Generate and persist INTTRA SFTP RSA key pair for an office
+ * @permission Requires `canUseGenerate` ability 
+ * @param { string } mutation.officeId Path parameter
+ * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
+ * @returns { UseMutationResult<InttraOfficeIntegrationModels.GenerateInttraCredentialsResponseDto> } 
+ * @statusCodes [200, 401]
+ */
+export const useGenerate = (options?: AppMutationOptions<typeof InttraOfficeIntegrationApi.generate, { officeId: string }> & MutationEffectsOptions) => {
+  const { checkAcl } = useAclCheck();
+  const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
-  /**
-   * Mutation `useGenerate`
-   * @summary Generate and persist INTTRA SFTP RSA key pair for an office
-   * @permission Requires `canUseGenerate` ability
-   * @param { string } mutation.officeId Path parameter
-   * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
-   * @returns { UseMutationResult<InttraOfficeIntegrationModels.GenerateInttraCredentialsResponseDto> }
-   * @statusCodes [200, 401]
-   */
-  export const useGenerate = (
-    options?: AppMutationOptions<typeof InttraOfficeIntegrationApi.generate, { officeId: string }> &
-      MutationEffectsOptions,
-    config?: AxiosRequestConfig,
-  ) => {
-    const { checkAcl } = useAclCheck();
-    const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
+  return useMutation({
+    mutationFn: ({ officeId }) => { 
+      checkAcl(InttraOfficeIntegrationAcl.canUseGenerate({ officeId } ));
+      return InttraOfficeIntegrationApi.generate(officeId)
+    },
+    ...options,
+    onSuccess: async (resData, variables, onMutateResult, context) => {
+      await runMutationEffects(resData, variables, options);
+      options?.onSuccess?.(resData, variables, onMutateResult, context);
+    },
+  });
+};
 
-    return useMutation({
-      mutationFn: ({ officeId }) => {
-        checkAcl(InttraOfficeIntegrationAcl.canUseGenerate({ officeId }));
-        return InttraOfficeIntegrationApi.generate(officeId, config);
-      },
-      ...options,
-      onSuccess: async (resData, variables, onMutateResult, context) => {
-        await runMutationEffects(resData, variables, options);
-        options?.onSuccess?.(resData, variables, onMutateResult, context);
-      },
-    });
-  };
+/** 
+ * Mutation `useUpdate`
+ * @summary Manually update INTTRA credentials (username/password/passphrase)
+ * @permission Requires `canUseUpdate` ability 
+ * @param { string } mutation.officeId Path parameter
+ * @param { InttraOfficeIntegrationModels.UpdateInttraCredentialsRequestDto } mutation.data Body parameter
+ * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
+ * @returns { UseMutationResult<InttraOfficeIntegrationModels.UpdateInttraCredentialsResponseDto> } 
+ * @statusCodes [200, 401]
+ */
+export const useUpdate = (options?: AppMutationOptions<typeof InttraOfficeIntegrationApi.update, { officeId: string, data: InttraOfficeIntegrationModels.UpdateInttraCredentialsRequestDto }> & MutationEffectsOptions) => {
+  const { checkAcl } = useAclCheck();
+  const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
-  /**
-   * Mutation `useUpdate`
-   * @summary Manually update INTTRA credentials (username/password/passphrase)
-   * @permission Requires `canUseUpdate` ability
-   * @param { string } mutation.officeId Path parameter
-   * @param { InttraOfficeIntegrationModels.UpdateInttraCredentialsRequestDto } mutation.data Body parameter
-   * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
-   * @returns { UseMutationResult<InttraOfficeIntegrationModels.UpdateInttraCredentialsResponseDto> }
-   * @statusCodes [200, 401]
-   */
-  export const useUpdate = (
-    options?: AppMutationOptions<
-      typeof InttraOfficeIntegrationApi.update,
-      { officeId: string; data: InttraOfficeIntegrationModels.UpdateInttraCredentialsRequestDto }
-    > &
-      MutationEffectsOptions,
-    config?: AxiosRequestConfig,
-  ) => {
-    const { checkAcl } = useAclCheck();
-    const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
+  return useMutation({
+    mutationFn: ({ officeId, data }) => { 
+      checkAcl(InttraOfficeIntegrationAcl.canUseUpdate({ officeId } ));
+      return InttraOfficeIntegrationApi.update(officeId, data)
+    },
+    ...options,
+    onSuccess: async (resData, variables, onMutateResult, context) => {
+      await runMutationEffects(resData, variables, options);
+      options?.onSuccess?.(resData, variables, onMutateResult, context);
+    },
+  });
+};
 
-    return useMutation({
-      mutationFn: ({ officeId, data }) => {
-        checkAcl(InttraOfficeIntegrationAcl.canUseUpdate({ officeId }));
-        return InttraOfficeIntegrationApi.update(officeId, data, config);
-      },
-      ...options,
-      onSuccess: async (resData, variables, onMutateResult, context) => {
-        await runMutationEffects(resData, variables, options);
-        options?.onSuccess?.(resData, variables, onMutateResult, context);
-      },
-    });
-  };
 }

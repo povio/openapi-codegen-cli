@@ -8,7 +8,7 @@ export namespace ProjectLiteModels {
  * @property { string } id  
  * @property { string } name  
  */
-export const ProjectLiteEmployeeDTOSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const ProjectLiteEmployeeDTOSchema = z.object({ id: z.string(), name: z.string() });
 export type ProjectLiteEmployeeDTO = z.infer<typeof ProjectLiteEmployeeDTOSchema>;
 
 /** 
@@ -25,7 +25,7 @@ export type ProjectLiteEmployeeDTO = z.infer<typeof ProjectLiteEmployeeDTOSchema
  * @property { ProjectLiteEmployeeDTO } updatedBy Employee who last updated this project 
  * @property { string } updatedAt Updated at 
  */
-export const ProjectLiteResponseDTOSchema = z.object({ id: z.string().describe("Project ID"), name: z.string().describe("Project name"), officeId: z.string().describe("Office ID"), archived: z.boolean().describe("Is archived"), createdById: z.string().describe("ID of the employee who created this project").nullish(), createdBy: ProjectLiteEmployeeDTOSchema.describe("Employee who created this project").nullish(), createdAt: z.iso.datetime({ offset: true }).describe("Created at"), updatedById: z.string().describe("ID of the employee who last updated this project").nullish(), updatedBy: ProjectLiteEmployeeDTOSchema.describe("Employee who last updated this project").nullish(), updatedAt: z.iso.datetime({ offset: true }).describe("Updated at") }).readonly();
+export const ProjectLiteResponseDTOSchema = z.object({ id: z.string(), name: z.string(), officeId: z.string(), archived: z.boolean(), createdById: z.string().nullish(), createdBy: ProjectLiteEmployeeDTOSchema.nullish(), createdAt: z.iso.datetime({ offset: true }), updatedById: z.string().nullish(), updatedBy: ProjectLiteEmployeeDTOSchema.nullish(), updatedAt: z.iso.datetime({ offset: true }) });
 export type ProjectLiteResponseDTO = z.infer<typeof ProjectLiteResponseDTOSchema>;
 
 /** 
@@ -33,7 +33,7 @@ export type ProjectLiteResponseDTO = z.infer<typeof ProjectLiteResponseDTOSchema
  * @type { object }
  * @property { string } name Project name 
  */
-export const CreateProjectLiteRequestDTOSchema = z.object({ name: z.string().describe("Project name") }).readonly();
+export const CreateProjectLiteRequestDTOSchema = z.object({ name: z.string() });
 export type CreateProjectLiteRequestDTO = z.infer<typeof CreateProjectLiteRequestDTOSchema>;
 
 /** 
@@ -42,7 +42,7 @@ export type CreateProjectLiteRequestDTO = z.infer<typeof CreateProjectLiteReques
  * @property { string } search  
  * @property { boolean } archived  
  */
-export const ProjectLiteFilterDtoSchema = z.object({ search: z.string(), archived: z.boolean() }).readonly();
+export const ProjectLiteFilterDtoSchema = z.object({ search: z.string().nullable(), archived: z.boolean().nullable() }).partial();
 export type ProjectLiteFilterDto = z.infer<typeof ProjectLiteFilterDtoSchema>;
 
 /** 
@@ -50,7 +50,7 @@ export type ProjectLiteFilterDto = z.infer<typeof ProjectLiteFilterDtoSchema>;
  * @type { object }
  * @property { string } name Project name 
  */
-export const UpdateProjectLiteRequestDTOSchema = z.object({ name: z.string().describe("Project name") }).readonly();
+export const UpdateProjectLiteRequestDTOSchema = z.object({ name: z.string().nullable() }).partial();
 export type UpdateProjectLiteRequestDTO = z.infer<typeof UpdateProjectLiteRequestDTOSchema>;
 
 /** 
@@ -71,7 +71,7 @@ export const ProjectLitePaginateOrderParamEnum = ProjectLitePaginateOrderParamEn
  * @property { number } totalItems Total available items 
  * @property { ProjectLiteResponseDTO[] } items  
  */
-export const ProjectLitePaginateResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(ProjectLiteResponseDTOSchema).readonly() }).readonly().shape });
+export const ProjectLitePaginateResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(ProjectLiteResponseDTOSchema).nullable() }).partial().shape });
 export type ProjectLitePaginateResponse = z.infer<typeof ProjectLitePaginateResponseSchema>;
 
 /** 
@@ -92,7 +92,7 @@ export const PaginateProjectLabelsOrderParamEnum = PaginateProjectLabelsOrderPar
  * @property { number } totalItems Total available items 
  * @property { CommonModels.LabelResponseDTO[] } items  
  */
-export const PaginateProjectLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).readonly() }).readonly().shape });
+export const PaginateProjectLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).nullable() }).partial().shape });
 export type PaginateProjectLabelsResponse = z.infer<typeof PaginateProjectLabelsResponseSchema>;
 
 }

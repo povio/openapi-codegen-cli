@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { useAclCheck } from "@/data/acl/useAclCheck";
@@ -7,136 +6,91 @@ import { AppQueryOptions, AppInfiniteQueryOptions } from "@povio/openapi-codegen
 import { QuoteProfitChangeTrackingApi } from "./quoteProfitChangeTracking.api";
 
 export namespace QuoteProfitChangeTrackingQueries {
-  export const moduleName = QueryModule.QuoteProfitChangeTracking;
+export const moduleName = QueryModule.QuoteProfitChangeTracking;
 
-  export const keys = {
+export const keys = {
     all: [moduleName] as const,
-    findProfitChangeGroups: (officeId: string, quoteId: string, limit?: number, page?: number, cursor?: string) =>
-      [
-        ...keys.all,
-        "/offices/:officeId/quotes/:quoteId/account/profit-change-groups",
-        officeId,
-        quoteId,
-        limit,
-        page,
-        cursor,
-      ] as const,
-    findProfitChangeGroupsInfinite: (officeId: string, quoteId: string, limit?: number, cursor?: string) =>
-      [
-        ...keys.all,
-        "/offices/:officeId/quotes/:quoteId/account/profit-change-groups",
-        "infinite",
-        officeId,
-        quoteId,
-        limit,
-        cursor,
-      ] as const,
-    findProfitChangeGroupDetail: (groupId: string, officeId: string, quoteId: string) =>
-      [
-        ...keys.all,
-        "/offices/:officeId/quotes/:quoteId/account/profit-change-groups/:groupId",
-        groupId,
-        officeId,
-        quoteId,
-      ] as const,
-  };
+    findProfitChangeGroups: (officeId: string, quoteId: string, limit?: number, page?: number, cursor?: string) => [...keys.all, "/offices/:officeId/quotes/:quoteId/account/profit-change-groups", officeId, quoteId, limit, page, cursor] as const,
+    findProfitChangeGroupsInfinite: (officeId: string, quoteId: string, limit?: number, cursor?: string) => [...keys.all, "/offices/:officeId/quotes/:quoteId/account/profit-change-groups", "infinite", officeId, quoteId, limit, cursor] as const,
+    findProfitChangeGroupDetail: (groupId: string, officeId: string, quoteId: string) => [...keys.all, "/offices/:officeId/quotes/:quoteId/account/profit-change-groups/:groupId", groupId, officeId, quoteId] as const,
+};
 
-  /**
-   * Query `useFindProfitChangeGroups`
-   * @summary List quote profit change groups
-   * @permission Requires `canUseFindProfitChangeGroups` ability
-   * @param { string } object.officeId Path parameter
-   * @param { string } object.quoteId Path parameter
-   * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
-   * @param { number } object.page Query parameter. 1-indexed page number to begin from
-   * @param { string } object.cursor Query parameter. ID of item to start after
-   * @param { AppQueryOptions } options Query options
-   * @returns { UseQueryResult<QuoteProfitChangeTrackingModels.QuoteProfitChangeTrackingFindProfitChangeGroupsResponse> }
-   * @statusCodes [200, 401]
-   */
-  export const useFindProfitChangeGroups = <TData>(
-    {
-      officeId,
-      quoteId,
-      limit,
-      page,
-      cursor,
-    }: { officeId: string; quoteId: string; limit: number; page?: number; cursor?: string },
-    options?: AppQueryOptions<typeof QuoteProfitChangeTrackingApi.findProfitChangeGroups, TData>,
-    config?: AxiosRequestConfig,
-  ) => {
-    const { checkAcl } = useAclCheck();
+/** 
+ * Query `useFindProfitChangeGroups`
+ * @summary List quote profit change groups
+ * @permission Requires `canUseFindProfitChangeGroups` ability 
+ * @param { string } object.officeId Path parameter
+ * @param { string } object.quoteId Path parameter
+ * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { number } object.page Query parameter. 1-indexed page number to begin from
+ * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { AppQueryOptions } options Query options
+ * @returns { UseQueryResult<QuoteProfitChangeTrackingModels.QuoteProfitChangeTrackingFindProfitChangeGroupsResponse> } 
+ * @statusCodes [200, 401]
+ */
+export const useFindProfitChangeGroups = <TData>({ officeId, quoteId, limit, page, cursor }: { officeId: string, quoteId: string, limit: number, page?: number, cursor?: string }, options?: AppQueryOptions<typeof QuoteProfitChangeTrackingApi.findProfitChangeGroups, TData>) => {
+  const { checkAcl } = useAclCheck();
+  
+  return useQuery({
+    queryKey: keys.findProfitChangeGroups(officeId, quoteId, limit, page, cursor),
+    queryFn: () => { 
+    checkAcl(QuoteProfitChangeTrackingAcl.canUseFindProfitChangeGroups({ officeId, quoteId } ));
+    return QuoteProfitChangeTrackingApi.findProfitChangeGroups(officeId, quoteId, limit, page, cursor) },
+    ...options,
+  });
+};
 
-    return useQuery({
-      queryKey: keys.findProfitChangeGroups(officeId, quoteId, limit, page, cursor),
-      queryFn: () => {
-        checkAcl(QuoteProfitChangeTrackingAcl.canUseFindProfitChangeGroups({ officeId, quoteId }));
-        return QuoteProfitChangeTrackingApi.findProfitChangeGroups(officeId, quoteId, limit, page, cursor, config);
-      },
-      ...options,
-    });
-  };
+/** 
+ * Infinite query `useFindProfitChangeGroupsInfinite
+ * @summary List quote profit change groups
+ * @permission Requires `canUseFindProfitChangeGroups` ability 
+ * @param { string } object.officeId Path parameter
+ * @param { string } object.quoteId Path parameter
+ * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { number } object.page Query parameter. 1-indexed page number to begin from
+ * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { AppInfiniteQueryOptions } options Infinite query options
+ * @returns { UseInfiniteQueryResult<QuoteProfitChangeTrackingModels.QuoteProfitChangeTrackingFindProfitChangeGroupsResponse> } 
+ * @statusCodes [200, 401]
+ */
+export const useFindProfitChangeGroupsInfinite = <TData>({ officeId, quoteId, limit, cursor }: { officeId: string, quoteId: string, limit: number, cursor?: string }, options?: AppInfiniteQueryOptions<typeof QuoteProfitChangeTrackingApi.findProfitChangeGroups, TData>) => {
+  const { checkAcl } = useAclCheck();
 
-  /**
-   * Infinite query `useFindProfitChangeGroupsInfinite
-   * @summary List quote profit change groups
-   * @permission Requires `canUseFindProfitChangeGroups` ability
-   * @param { string } object.officeId Path parameter
-   * @param { string } object.quoteId Path parameter
-   * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
-   * @param { number } object.page Query parameter. 1-indexed page number to begin from
-   * @param { string } object.cursor Query parameter. ID of item to start after
-   * @param { AppInfiniteQueryOptions } options Infinite query options
-   * @returns { UseInfiniteQueryResult<QuoteProfitChangeTrackingModels.QuoteProfitChangeTrackingFindProfitChangeGroupsResponse> }
-   * @statusCodes [200, 401]
-   */
-  export const useFindProfitChangeGroupsInfinite = <TData>(
-    { officeId, quoteId, limit, cursor }: { officeId: string; quoteId: string; limit: number; cursor?: string },
-    options?: AppInfiniteQueryOptions<typeof QuoteProfitChangeTrackingApi.findProfitChangeGroups, TData>,
-    config?: AxiosRequestConfig,
-  ) => {
-    const { checkAcl } = useAclCheck();
+  return useInfiniteQuery({
+    queryKey: keys.findProfitChangeGroupsInfinite(officeId, quoteId, limit, cursor),
+    queryFn: ({ pageParam }) => { 
+    checkAcl(QuoteProfitChangeTrackingAcl.canUseFindProfitChangeGroups({ officeId, quoteId } ));
+    return QuoteProfitChangeTrackingApi.findProfitChangeGroups(officeId, quoteId, limit, pageParam, cursor) },
+    initialPageParam: 1,
+    getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
+      const pageParam = page ?? 1;
+      return pageParam * limitParam < totalItems ? pageParam + 1 : null;
+    },
+    ...options,
+  });
+};
 
-    return useInfiniteQuery({
-      queryKey: keys.findProfitChangeGroupsInfinite(officeId, quoteId, limit, cursor),
-      queryFn: ({ pageParam }) => {
-        checkAcl(QuoteProfitChangeTrackingAcl.canUseFindProfitChangeGroups({ officeId, quoteId }));
-        return QuoteProfitChangeTrackingApi.findProfitChangeGroups(officeId, quoteId, limit, pageParam, cursor, config);
-      },
-      initialPageParam: 1,
-      getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
-        const pageParam = page ?? 1;
-        return pageParam * limitParam < totalItems ? pageParam + 1 : null;
-      },
-      ...options,
-    });
-  };
+/** 
+ * Query `useFindProfitChangeGroupDetail`
+ * @summary Get quote profit change group details
+ * @permission Requires `canUseFindProfitChangeGroupDetail` ability 
+ * @param { string } object.groupId Path parameter
+ * @param { string } object.officeId Path parameter
+ * @param { string } object.quoteId Path parameter
+ * @param { AppQueryOptions } options Query options
+ * @returns { UseQueryResult<QuoteProfitChangeTrackingModels.QuoteAccountProfitChangeGroupDetailDto> } 
+ * @statusCodes [200, 401]
+ */
+export const useFindProfitChangeGroupDetail = <TData>({ groupId, officeId, quoteId }: { groupId: string, officeId: string, quoteId: string }, options?: AppQueryOptions<typeof QuoteProfitChangeTrackingApi.findProfitChangeGroupDetail, TData>) => {
+  const { checkAcl } = useAclCheck();
+  
+  return useQuery({
+    queryKey: keys.findProfitChangeGroupDetail(groupId, officeId, quoteId),
+    queryFn: () => { 
+    checkAcl(QuoteProfitChangeTrackingAcl.canUseFindProfitChangeGroupDetail({ officeId, quoteId } ));
+    return QuoteProfitChangeTrackingApi.findProfitChangeGroupDetail(groupId, officeId, quoteId) },
+    ...options,
+  });
+};
 
-  /**
-   * Query `useFindProfitChangeGroupDetail`
-   * @summary Get quote profit change group details
-   * @permission Requires `canUseFindProfitChangeGroupDetail` ability
-   * @param { string } object.groupId Path parameter
-   * @param { string } object.officeId Path parameter
-   * @param { string } object.quoteId Path parameter
-   * @param { AppQueryOptions } options Query options
-   * @returns { UseQueryResult<QuoteProfitChangeTrackingModels.QuoteAccountProfitChangeGroupDetailDto> }
-   * @statusCodes [200, 401]
-   */
-  export const useFindProfitChangeGroupDetail = <TData>(
-    { groupId, officeId, quoteId }: { groupId: string; officeId: string; quoteId: string },
-    options?: AppQueryOptions<typeof QuoteProfitChangeTrackingApi.findProfitChangeGroupDetail, TData>,
-    config?: AxiosRequestConfig,
-  ) => {
-    const { checkAcl } = useAclCheck();
-
-    return useQuery({
-      queryKey: keys.findProfitChangeGroupDetail(groupId, officeId, quoteId),
-      queryFn: () => {
-        checkAcl(QuoteProfitChangeTrackingAcl.canUseFindProfitChangeGroupDetail({ officeId, quoteId }));
-        return QuoteProfitChangeTrackingApi.findProfitChangeGroupDetail(groupId, officeId, quoteId, config);
-      },
-      ...options,
-    });
-  };
 }

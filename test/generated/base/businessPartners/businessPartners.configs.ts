@@ -5,144 +5,145 @@ import { BusinessPartnersQueries } from "./businessPartners.queries";
 import { BusinessPartnersAcl } from "./businessPartners.acl";
 
 export namespace BusinessPartnersConfigs {
-  export const businessPartnersConfig = {
+export const businessPartnersConfig = {
     meta: {
-      title: "Business Partners",
+        title: "Business Partners",
     },
     readAll: {
-      acl: BusinessPartnersAcl.canUsePaginate,
-      schema: BusinessPartnersModels.BusinessPartnerListResponseDTOSchema,
-      paginated: BusinessPartnersQueries.usePaginate,
-      infinite: BusinessPartnersQueries.usePaginateInfinite,
-      filters: {
-        schema: BusinessPartnersModels.BusinessPartnerFilterDtoSchema,
-        filterDefs: dynamicInputs({
-          schema: BusinessPartnersModels.BusinessPartnerFilterDtoSchema,
-          options: {
-            inputs: {
-              search: true,
-              types: true,
-              shortName: true,
-              name: true,
-              vat: true,
-              debtorId: true,
-              creditorId: true,
-              matchCode: true,
-              archived: true,
-            },
-          },
-        }),
-      },
-      columns: dynamicColumns({
+        acl: BusinessPartnersAcl.canUsePaginate,
         schema: BusinessPartnersModels.BusinessPartnerListResponseDTOSchema,
-        options: {
-          columns: {
-            id: true,
-            name: true,
-            matchCode: true,
-            address: true,
-            types: true,
-            archived: true,
-            shortName: true,
-            vat: true,
-            debtorId: true,
-            creditorId: true,
-            locked: true,
-            currency: true,
-            remarks: true,
-            createdById: true,
-            createdBy: true,
-            createdAt: true,
-            updatedById: true,
-            updatedBy: true,
-            updatedAt: true,
-          },
-          sortable: BusinessPartnersModels.BusinessPartnersPaginateOrderParamEnumSchema,
+        paginated: BusinessPartnersQueries.usePaginate,
+        infinite: BusinessPartnersQueries.usePaginateInfinite,
+        filters: {
+            schema: BusinessPartnersModels.BusinessPartnerFilterDtoSchema,
+            filterDefs: dynamicInputs({
+  schema: BusinessPartnersModels.BusinessPartnerFilterDtoSchema,
+  options: {
+    inputs: {
+      search: true,
+      types: true,
+      shortName: true,
+      name: true,
+      vat: true,
+      debtorId: true,
+      creditorId: true,
+      matchCode: true,
+      archived: true,
+    },
+  },
+})
         },
-      }),
+        columns: dynamicColumns({
+  schema: BusinessPartnersModels.BusinessPartnerListResponseDTOSchema,
+  options: {
+    columns: {
+      id: true,
+      name: true,
+      matchCode: true,
+      address: true,
+      types: true,
+      archived: true,
+      shortName: true,
+      vat: true,
+      debtorId: true,
+      creditorId: true,
+      locked: true,
+      currency: true,
+      remarks: true,
+      createdById: true,
+      createdBy: true,
+      createdAt: true,
+      updatedById: true,
+      updatedBy: true,
+      updatedAt: true,
+    },
+    sortable: BusinessPartnersModels.BusinessPartnersPaginateOrderParamEnumSchema,
+  },
+}),
     },
     read: {
-      acl: BusinessPartnersAcl.canUseGetById,
-      schema: BusinessPartnersModels.BusinessPartnerDetailResponseDTOSchema,
-      query: BusinessPartnersQueries.useGetById,
+        acl: BusinessPartnersAcl.canUseGetById,
+        schema: BusinessPartnersModels.BusinessPartnerDetailResponseDTOSchema,
+        query: BusinessPartnersQueries.useGetById,
     },
     create: {
-      acl: BusinessPartnersAcl.canUseCreate,
-      schema: BusinessPartnersModels.CreateBusinessPartnerRequestDTOSchema,
-      mutation: BusinessPartnersQueries.useCreate,
-      inputDefs: dynamicInputs({
+        acl: BusinessPartnersAcl.canUseCreate,
         schema: BusinessPartnersModels.CreateBusinessPartnerRequestDTOSchema,
-        options: {
-          inputs: {
-            name: true,
-            secondaryName: true,
-            types: true,
-            matchCode: true,
-            shortName: true,
-            address: true,
-          },
-        },
-      }),
+        mutation: BusinessPartnersQueries.useCreate,
+        inputDefs: dynamicInputs({
+  schema: BusinessPartnersModels.CreateBusinessPartnerRequestDTOSchema,
+  options: {
+    inputs: {
+      name: true,
+      secondaryName: true,
+      types: true,
+      matchCode: true,
+      shortName: true,
+      address: true,
+    },
+  },
+})
     },
     update: {
-      acl: BusinessPartnersAcl.canUseUpdate,
-      schema: BusinessPartnersModels.UpdateBusinessPartnerRequestDTOSchema,
-      mutation: BusinessPartnersQueries.useUpdate,
-      inputDefs: dynamicInputs({
+        acl: BusinessPartnersAcl.canUseUpdate,
         schema: BusinessPartnersModels.UpdateBusinessPartnerRequestDTOSchema,
-        options: {
-          inputs: {
-            matchCode: true,
-            shortName: true,
-            name: true,
-            secondaryName: true,
-            types: true,
-            address: true,
-            blAddress: true,
-            belongsToId: true,
-            salesRepId: true,
-            operationsId: true,
-            addressIsDifferentForBl: true,
-          },
-        },
-      }),
+        mutation: BusinessPartnersQueries.useUpdate,
+        inputDefs: dynamicInputs({
+  schema: BusinessPartnersModels.UpdateBusinessPartnerRequestDTOSchema,
+  options: {
+    inputs: {
+      matchCode: true,
+      shortName: true,
+      name: true,
+      secondaryName: true,
+      types: true,
+      address: true,
+      blAddress: true,
+      belongsToId: true,
+      salesRepId: true,
+      operationsId: true,
+      addressIsDifferentForBl: true,
     },
-  };
+  },
+})
+    },
+};
 
-  export const labelsConfig = {
+export const labelsConfig = {
     meta: {
-      title: "Labels",
+        title: "Labels",
     },
     readAll: {
-      acl: BusinessPartnersAcl.canUsePaginateLabels,
-      schema: BusinessPartnersModels.BusinessPartnerPaginatedLabelResponseDTOSchema,
-      paginated: BusinessPartnersQueries.usePaginateLabels,
-      infinite: BusinessPartnersQueries.usePaginateLabelsInfinite,
-      filters: {
-        schema: BusinessPartnersModels.BusinessPartnerLabelsFilterDtoSchema,
-        filterDefs: dynamicInputs({
-          schema: BusinessPartnersModels.BusinessPartnerLabelsFilterDtoSchema,
-          options: {
-            inputs: {
-              search: true,
-              ids: true,
-              types: true,
-              archived: true,
-            },
-          },
-        }),
-      },
-      columns: dynamicColumns({
+        acl: BusinessPartnersAcl.canUsePaginateLabels,
         schema: BusinessPartnersModels.BusinessPartnerPaginatedLabelResponseDTOSchema,
-        options: {
-          columns: {
-            id: true,
-            label: true,
-            types: true,
-          },
-          sortable: BusinessPartnersModels.BusinessPartnersPaginateLabelsOrderParamEnumSchema,
-        },
-      }),
+        paginated: BusinessPartnersQueries.usePaginateLabels,
+        infinite: BusinessPartnersQueries.usePaginateLabelsInfinite,
+        filters: {
+            schema: BusinessPartnersModels.BusinessPartnerLabelsFilterDtoSchema,
+            filterDefs: dynamicInputs({
+  schema: BusinessPartnersModels.BusinessPartnerLabelsFilterDtoSchema,
+  options: {
+    inputs: {
+      search: true,
+      ids: true,
+      types: true,
+      archived: true,
     },
-  };
+  },
+})
+        },
+        columns: dynamicColumns({
+  schema: BusinessPartnersModels.BusinessPartnerPaginatedLabelResponseDTOSchema,
+  options: {
+    columns: {
+      id: true,
+      label: true,
+      types: true,
+    },
+    sortable: BusinessPartnersModels.BusinessPartnersPaginateLabelsOrderParamEnumSchema,
+  },
+}),
+    },
+};
+
 }

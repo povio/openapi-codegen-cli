@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -34,14 +33,14 @@ export const keys = {
  * @returns { UseQueryResult<DocumentTemplatesModels.DocumentTemplatesPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateLabels = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: DocumentTemplatesModels.DocumentTemplateLabelFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof DocumentTemplatesApi.paginateLabels, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateLabels = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: DocumentTemplatesModels.DocumentTemplateLabelFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof DocumentTemplatesApi.paginateLabels, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.paginateLabels(officeId, limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(DocumentTemplatesAcl.canUsePaginateLabels({ officeId } ));
-    return DocumentTemplatesApi.paginateLabels(officeId, limit, order, filter, page, cursor, config) },
+    return DocumentTemplatesApi.paginateLabels(officeId, limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -60,14 +59,14 @@ export const usePaginateLabels = <TData>({ officeId, limit, order, filter, page,
  * @returns { UseInfiniteQueryResult<DocumentTemplatesModels.DocumentTemplatesPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateLabelsInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: DocumentTemplatesModels.DocumentTemplateLabelFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof DocumentTemplatesApi.paginateLabels, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateLabelsInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: DocumentTemplatesModels.DocumentTemplateLabelFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof DocumentTemplatesApi.paginateLabels, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.paginateLabelsInfinite(officeId, limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(DocumentTemplatesAcl.canUsePaginateLabels({ officeId } ));
-    return DocumentTemplatesApi.paginateLabels(officeId, limit, order, filter, pageParam, cursor, config) },
+    return DocumentTemplatesApi.paginateLabels(officeId, limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -91,14 +90,14 @@ export const usePaginateLabelsInfinite = <TData>({ officeId, limit, order, filte
  * @returns { UseQueryResult<DocumentTemplatesModels.DocumentTemplatesListResponse> } 
  * @statusCodes [200, 401]
  */
-export const useList = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: DocumentTemplatesModels.DocumentTemplateFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof DocumentTemplatesApi.list, TData>, config?: AxiosRequestConfig) => {
+export const useList = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: DocumentTemplatesModels.DocumentTemplateFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof DocumentTemplatesApi.list, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.list(officeId, limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(DocumentTemplatesAcl.canUseList({ officeId } ));
-    return DocumentTemplatesApi.list(officeId, limit, order, filter, page, cursor, config) },
+    return DocumentTemplatesApi.list(officeId, limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -117,14 +116,14 @@ export const useList = <TData>({ officeId, limit, order, filter, page, cursor }:
  * @returns { UseInfiniteQueryResult<DocumentTemplatesModels.DocumentTemplatesListResponse> } 
  * @statusCodes [200, 401]
  */
-export const useListInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: DocumentTemplatesModels.DocumentTemplateFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof DocumentTemplatesApi.list, TData>, config?: AxiosRequestConfig) => {
+export const useListInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: DocumentTemplatesModels.DocumentTemplateFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof DocumentTemplatesApi.list, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.listInfinite(officeId, limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(DocumentTemplatesAcl.canUseList({ officeId } ));
-    return DocumentTemplatesApi.list(officeId, limit, order, filter, pageParam, cursor, config) },
+    return DocumentTemplatesApi.list(officeId, limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -144,14 +143,14 @@ export const useListInfinite = <TData>({ officeId, limit, order, filter, cursor 
  * @returns { UseMutationResult<DocumentTemplatesModels.DocumentTemplateResponseDTO> } 
  * @statusCodes [201, 401, 409]
  */
-export const useCreate = (options?: AppMutationOptions<typeof DocumentTemplatesApi.create, { officeId: string, data: DocumentTemplatesModels.CreateDocumentTemplateRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreate = (options?: AppMutationOptions<typeof DocumentTemplatesApi.create, { officeId: string, data: DocumentTemplatesModels.CreateDocumentTemplateRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, data }) => { 
       checkAcl(DocumentTemplatesAcl.canUseCreate({ officeId } ));
-      return DocumentTemplatesApi.create(officeId, data, config)
+      return DocumentTemplatesApi.create(officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -171,14 +170,14 @@ export const useCreate = (options?: AppMutationOptions<typeof DocumentTemplatesA
  * @returns { UseQueryResult<DocumentTemplatesModels.DocumentTemplateResponseDTO> } 
  * @statusCodes [200, 401, 404]
  */
-export const useFindById = <TData>({ documentTemplateId, officeId }: { documentTemplateId: string, officeId: string }, options?: AppQueryOptions<typeof DocumentTemplatesApi.findById, TData>, config?: AxiosRequestConfig) => {
+export const useFindById = <TData>({ documentTemplateId, officeId }: { documentTemplateId: string, officeId: string }, options?: AppQueryOptions<typeof DocumentTemplatesApi.findById, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.findById(documentTemplateId, officeId),
     queryFn: () => { 
     checkAcl(DocumentTemplatesAcl.canUseFindById({ officeId } ));
-    return DocumentTemplatesApi.findById(documentTemplateId, officeId, config) },
+    return DocumentTemplatesApi.findById(documentTemplateId, officeId) },
     ...options,
   });
 };
@@ -194,14 +193,14 @@ export const useFindById = <TData>({ documentTemplateId, officeId }: { documentT
  * @returns { UseMutationResult<DocumentTemplatesModels.DocumentTemplateResponseDTO> } 
  * @statusCodes [200, 401, 404, 409]
  */
-export const useUpdate = (options?: AppMutationOptions<typeof DocumentTemplatesApi.update, { documentTemplateId: string, officeId: string, data: DocumentTemplatesModels.UpdateDocumentTemplateRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdate = (options?: AppMutationOptions<typeof DocumentTemplatesApi.update, { documentTemplateId: string, officeId: string, data: DocumentTemplatesModels.UpdateDocumentTemplateRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ documentTemplateId, officeId, data }) => { 
       checkAcl(DocumentTemplatesAcl.canUseUpdate({ officeId } ));
-      return DocumentTemplatesApi.update(documentTemplateId, officeId, data, config)
+      return DocumentTemplatesApi.update(documentTemplateId, officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -224,14 +223,14 @@ export const useUpdate = (options?: AppMutationOptions<typeof DocumentTemplatesA
  * @returns { UseMutationResult<DocumentTemplatesModels.DocumentTemplateResponseDTO> } 
  * @statusCodes [201, 401]
  */
-export const useAddRemarkBlock = (options?: AppMutationOptions<typeof DocumentTemplatesApi.addRemarkBlock, { documentTemplateId: string, officeId: string, data: DocumentTemplatesModels.CreateRemarkBlockRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useAddRemarkBlock = (options?: AppMutationOptions<typeof DocumentTemplatesApi.addRemarkBlock, { documentTemplateId: string, officeId: string, data: DocumentTemplatesModels.CreateRemarkBlockRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ documentTemplateId, officeId, data }) => { 
       checkAcl(DocumentTemplatesAcl.canUseAddRemarkBlock({ officeId } ));
-      return DocumentTemplatesApi.addRemarkBlock(documentTemplateId, officeId, data, config)
+      return DocumentTemplatesApi.addRemarkBlock(documentTemplateId, officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -254,14 +253,14 @@ export const useAddRemarkBlock = (options?: AppMutationOptions<typeof DocumentTe
  * @returns { UseMutationResult<DocumentTemplatesModels.DocumentTemplateResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useDeleteRemarkBlock = (options?: AppMutationOptions<typeof DocumentTemplatesApi.deleteRemarkBlock, { documentTemplateId: string, remarkBlockId: string, officeId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useDeleteRemarkBlock = (options?: AppMutationOptions<typeof DocumentTemplatesApi.deleteRemarkBlock, { documentTemplateId: string, remarkBlockId: string, officeId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ documentTemplateId, remarkBlockId, officeId }) => { 
       checkAcl(DocumentTemplatesAcl.canUseDeleteRemarkBlock({ officeId } ));
-      return DocumentTemplatesApi.deleteRemarkBlock(documentTemplateId, remarkBlockId, officeId, config)
+      return DocumentTemplatesApi.deleteRemarkBlock(documentTemplateId, remarkBlockId, officeId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -283,14 +282,14 @@ export const useDeleteRemarkBlock = (options?: AppMutationOptions<typeof Documen
  * @returns { UseMutationResult<DocumentTemplatesModels.DocumentTemplateResponseDTO> } 
  * @statusCodes [200, 401, 404, 409]
  */
-export const useArchive = (options?: AppMutationOptions<typeof DocumentTemplatesApi.archive, { documentTemplateId: string, officeId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useArchive = (options?: AppMutationOptions<typeof DocumentTemplatesApi.archive, { documentTemplateId: string, officeId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ documentTemplateId, officeId }) => { 
       checkAcl(DocumentTemplatesAcl.canUseArchive({ officeId } ));
-      return DocumentTemplatesApi.archive(documentTemplateId, officeId, config)
+      return DocumentTemplatesApi.archive(documentTemplateId, officeId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -312,14 +311,14 @@ export const useArchive = (options?: AppMutationOptions<typeof DocumentTemplates
  * @returns { UseMutationResult<DocumentTemplatesModels.DocumentTemplateResponseDTO> } 
  * @statusCodes [200, 401, 404, 409]
  */
-export const useUnarchive = (options?: AppMutationOptions<typeof DocumentTemplatesApi.unarchive, { documentTemplateId: string, officeId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUnarchive = (options?: AppMutationOptions<typeof DocumentTemplatesApi.unarchive, { documentTemplateId: string, officeId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ documentTemplateId, officeId }) => { 
       checkAcl(DocumentTemplatesAcl.canUseUnarchive({ officeId } ));
-      return DocumentTemplatesApi.unarchive(documentTemplateId, officeId, config)
+      return DocumentTemplatesApi.unarchive(documentTemplateId, officeId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

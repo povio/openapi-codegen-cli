@@ -8,7 +8,7 @@ export namespace HsCodesModels {
  * @property { string } id  
  * @property { string } name  
  */
-export const HsCodeEmployeeDTOSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const HsCodeEmployeeDTOSchema = z.object({ id: z.string(), name: z.string() });
 export type HsCodeEmployeeDTO = z.infer<typeof HsCodeEmployeeDTOSchema>;
 
 /** 
@@ -26,7 +26,7 @@ export type HsCodeEmployeeDTO = z.infer<typeof HsCodeEmployeeDTOSchema>;
  * @property { HsCodeEmployeeDTO } updatedBy  
  * @property { string } updatedAt  
  */
-export const HsCodeResponseDTOSchema = z.object({ id: z.string().describe("Unique identifier for the HS Code"), name: z.string().describe("Name of the HS Code"), description: z.string().describe("Description of the HS Code"), customArea: z.string().describe("Custom area associated with the HS Code"), archived: z.boolean().describe("Indicates if the HS Code is archived"), createdById: z.string().nullish(), createdBy: HsCodeEmployeeDTOSchema.nullish(), createdAt: z.iso.datetime({ offset: true }), updatedById: z.string().nullish(), updatedBy: HsCodeEmployeeDTOSchema.nullish(), updatedAt: z.iso.datetime({ offset: true }) }).readonly();
+export const HsCodeResponseDTOSchema = z.object({ id: z.string(), name: z.string(), description: z.string(), customArea: z.string(), archived: z.boolean(), createdById: z.string().nullish(), createdBy: HsCodeEmployeeDTOSchema.nullish(), createdAt: z.iso.datetime({ offset: true }), updatedById: z.string().nullish(), updatedBy: HsCodeEmployeeDTOSchema.nullish(), updatedAt: z.iso.datetime({ offset: true }) });
 export type HsCodeResponseDTO = z.infer<typeof HsCodeResponseDTOSchema>;
 
 /** 
@@ -35,7 +35,7 @@ export type HsCodeResponseDTO = z.infer<typeof HsCodeResponseDTOSchema>;
  * @property { boolean } archived Archived status 
  * @property { string } search  
  */
-export const HsCodePaginationFilterDtoSchema = z.object({ archived: z.boolean().describe("Archived status"), search: z.string() }).readonly();
+export const HsCodePaginationFilterDtoSchema = z.object({ archived: z.boolean().nullable(), search: z.string().nullable() }).partial();
 export type HsCodePaginationFilterDto = z.infer<typeof HsCodePaginationFilterDtoSchema>;
 
 /** 
@@ -43,7 +43,7 @@ export type HsCodePaginationFilterDto = z.infer<typeof HsCodePaginationFilterDto
  * @type { object }
  * @property { string } search  
  */
-export const HsCodeLabelFilterDtoSchema = z.object({ search: z.string() }).readonly();
+export const HsCodeLabelFilterDtoSchema = z.object({ search: z.string().nullable() }).partial();
 export type HsCodeLabelFilterDto = z.infer<typeof HsCodeLabelFilterDtoSchema>;
 
 /** 
@@ -53,7 +53,7 @@ export type HsCodeLabelFilterDto = z.infer<typeof HsCodeLabelFilterDtoSchema>;
  * @property { string } description Description of the HS Code 
  * @property { string } customArea Custom area associated with the HS Code 
  */
-export const CreateHsCodeRequestDTOSchema = z.object({ name: z.string().describe("Unique name for the HS Code"), description: z.string().describe("Description of the HS Code"), customArea: z.string().describe("Custom area associated with the HS Code") }).readonly();
+export const CreateHsCodeRequestDTOSchema = z.object({ name: z.string(), description: z.string(), customArea: z.string() });
 export type CreateHsCodeRequestDTO = z.infer<typeof CreateHsCodeRequestDTOSchema>;
 
 /** 
@@ -63,7 +63,7 @@ export type CreateHsCodeRequestDTO = z.infer<typeof CreateHsCodeRequestDTOSchema
  * @property { string } description Updated description of the HS Code. 
  * @property { string } customArea Updated custom area associated with the HS Code. 
  */
-export const UpdateHsCodeRequestDTOSchema = z.object({ name: z.string().describe("Updated name of the HS Code."), description: z.string().describe("Updated description of the HS Code."), customArea: z.string().describe("Updated custom area associated with the HS Code.") }).readonly();
+export const UpdateHsCodeRequestDTOSchema = z.object({ name: z.string().nullable(), description: z.string().nullable(), customArea: z.string().nullable() }).partial();
 export type UpdateHsCodeRequestDTO = z.infer<typeof UpdateHsCodeRequestDTOSchema>;
 
 /** 
@@ -84,7 +84,7 @@ export const HsCodesPaginateOrderParamEnum = HsCodesPaginateOrderParamEnumSchema
  * @property { number } totalItems Total available items 
  * @property { HsCodeResponseDTO[] } items  
  */
-export const HsCodesPaginateResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(HsCodeResponseDTOSchema).readonly() }).readonly().shape });
+export const HsCodesPaginateResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(HsCodeResponseDTOSchema).nullable() }).partial().shape });
 export type HsCodesPaginateResponse = z.infer<typeof HsCodesPaginateResponseSchema>;
 
 /** 
@@ -105,7 +105,7 @@ export const HsCodesPaginateLabelsOrderParamEnum = HsCodesPaginateLabelsOrderPar
  * @property { number } totalItems Total available items 
  * @property { CommonModels.LabelResponseDTO[] } items  
  */
-export const HsCodesPaginateLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).readonly() }).readonly().shape });
+export const HsCodesPaginateLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).nullable() }).partial().shape });
 export type HsCodesPaginateLabelsResponse = z.infer<typeof HsCodesPaginateLabelsResponseSchema>;
 
 }

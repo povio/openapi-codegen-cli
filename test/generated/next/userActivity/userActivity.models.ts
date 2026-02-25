@@ -16,7 +16,7 @@ export const ActivityTypeEnum = ActivityTypeEnumSchema.enum;
  * @property { ActivityTypeEnum } activityType Type of activity 
  * @property { string } lastSeen Last seen timestamp 
  */
-export const UserSectionActivityDtoSchema = z.object({ section: z.string().describe("Section name"), activityType: ActivityTypeEnumSchema.describe("Type of activity"), lastSeen: z.iso.datetime({ offset: true }).describe("Last seen timestamp") }).readonly();
+export const UserSectionActivityDtoSchema = z.object({ section: z.string(), activityType: ActivityTypeEnumSchema, lastSeen: z.iso.datetime({ offset: true }) });
 export type UserSectionActivityDto = z.infer<typeof UserSectionActivityDtoSchema>;
 
 /** 
@@ -30,7 +30,7 @@ export type UserSectionActivityDto = z.infer<typeof UserSectionActivityDtoSchema
  * @property { string } lastSeen Last seen timestamp 
  * @property { boolean } isCurrentlyActive Is currently active 
  */
-export const ActiveUserDtoSchema = z.object({ userId: z.string().describe("User ID"), firstName: z.string().describe("User first name"), lastName: z.string().describe("User last name"), userAvatar: z.string().describe("User avatar URL").nullish(), section: UserSectionActivityDtoSchema.describe("User section activity"), lastSeen: z.iso.datetime({ offset: true }).describe("Last seen timestamp"), isCurrentlyActive: z.boolean().describe("Is currently active") }).readonly();
+export const ActiveUserDtoSchema = z.object({ userId: z.string(), firstName: z.string(), lastName: z.string(), userAvatar: z.string().nullish(), section: UserSectionActivityDtoSchema, lastSeen: z.iso.datetime({ offset: true }), isCurrentlyActive: z.boolean() });
 export type ActiveUserDto = z.infer<typeof ActiveUserDtoSchema>;
 
 /** 
@@ -49,7 +49,7 @@ export const ActivityEntityTypeEnum = ActivityEntityTypeEnumSchema.enum;
  * @property { ActivityEntityTypeEnum } entityType Entity type 
  * @property { number } activeThresholdMinutes Active threshold in minutes 
  */
-export const ActivityMetadataDtoSchema = z.object({ totalActiveUsers: z.number().describe("Total number of active users"), entityId: z.string().describe("Entity ID"), entityType: ActivityEntityTypeEnumSchema.describe("Entity type"), activeThresholdMinutes: z.number().describe("Active threshold in minutes") }).readonly();
+export const ActivityMetadataDtoSchema = z.object({ totalActiveUsers: z.number(), entityId: z.string(), entityType: ActivityEntityTypeEnumSchema, activeThresholdMinutes: z.number() });
 export type ActivityMetadataDto = z.infer<typeof ActivityMetadataDtoSchema>;
 
 /** 
@@ -58,7 +58,7 @@ export type ActivityMetadataDto = z.infer<typeof ActivityMetadataDtoSchema>;
  * @property { ActiveUserDto[] } activeUsers List of active users 
  * @property { ActivityMetadataDto } metadata Activity metadata 
  */
-export const UserActivityResponseDtoSchema = z.object({ activeUsers: z.array(ActiveUserDtoSchema).readonly().describe("List of active users"), metadata: ActivityMetadataDtoSchema.describe("Activity metadata") }).readonly();
+export const UserActivityResponseDtoSchema = z.object({ activeUsers: z.array(ActiveUserDtoSchema), metadata: ActivityMetadataDtoSchema });
 export type UserActivityResponseDto = z.infer<typeof UserActivityResponseDtoSchema>;
 
 }

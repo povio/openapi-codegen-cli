@@ -13,7 +13,7 @@ export namespace QuoteProfitChangeTrackingModels {
  * @property { string } profit.currencyCode  
  * @property { number } changeCount  
  */
-export const QuoteAccountProfitChangeGroupDtoSchema = z.object({ id: z.string(), timestamp: z.iso.datetime({ offset: true }), users: z.array(CommonModels.UserPreviewDtoSchema).readonly(), profit: z.object({ amount: z.number(), currencyCode: z.string() }).readonly(), changeCount: z.number() }).readonly();
+export const QuoteAccountProfitChangeGroupDtoSchema = z.object({ id: z.string(), timestamp: z.iso.datetime({ offset: true }), users: z.array(CommonModels.UserPreviewDtoSchema), profit: z.object({ amount: z.number(), currencyCode: z.string() }), changeCount: z.number() });
 export type QuoteAccountProfitChangeGroupDto = z.infer<typeof QuoteAccountProfitChangeGroupDtoSchema>;
 
 /** 
@@ -26,7 +26,7 @@ export type QuoteAccountProfitChangeGroupDto = z.infer<typeof QuoteAccountProfit
  * @property { number } newProfit  
  * @property { string } currencyCode  
  */
-export const QuoteAccountProfitChangeEntryDtoSchema = z.object({ timestamp: z.iso.datetime({ offset: true }), user: CommonModels.UserPreviewDtoSchema, changeNumber: z.number(), oldProfit: z.number(), newProfit: z.number(), currencyCode: z.string() }).readonly();
+export const QuoteAccountProfitChangeEntryDtoSchema = z.object({ timestamp: z.iso.datetime({ offset: true }), user: CommonModels.UserPreviewDtoSchema, changeNumber: z.number(), oldProfit: z.number(), newProfit: z.number(), currencyCode: z.string() });
 export type QuoteAccountProfitChangeEntryDto = z.infer<typeof QuoteAccountProfitChangeEntryDtoSchema>;
 
 /** 
@@ -37,7 +37,7 @@ export type QuoteAccountProfitChangeEntryDto = z.infer<typeof QuoteAccountProfit
  * @property { string } currencyCode  
  * @property { QuoteAccountProfitChangeEntryDto[] } entries  
  */
-export const QuoteAccountProfitChangeGroupDetailDtoSchema = z.object({ id: z.string(), timestamp: z.iso.datetime({ offset: true }), currencyCode: z.string(), entries: z.array(QuoteAccountProfitChangeEntryDtoSchema).readonly() }).readonly();
+export const QuoteAccountProfitChangeGroupDetailDtoSchema = z.object({ id: z.string(), timestamp: z.iso.datetime({ offset: true }), currencyCode: z.string(), entries: z.array(QuoteAccountProfitChangeEntryDtoSchema) });
 export type QuoteAccountProfitChangeGroupDetailDto = z.infer<typeof QuoteAccountProfitChangeGroupDetailDtoSchema>;
 
 /** 
@@ -50,7 +50,7 @@ export type QuoteAccountProfitChangeGroupDetailDto = z.infer<typeof QuoteAccount
  * @property { number } totalItems Total available items 
  * @property { QuoteAccountProfitChangeGroupDto[] } items  
  */
-export const QuoteProfitChangeTrackingFindProfitChangeGroupsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(QuoteAccountProfitChangeGroupDtoSchema).readonly() }).readonly().shape });
+export const QuoteProfitChangeTrackingFindProfitChangeGroupsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(QuoteAccountProfitChangeGroupDtoSchema).nullable() }).partial().shape });
 export type QuoteProfitChangeTrackingFindProfitChangeGroupsResponse = z.infer<typeof QuoteProfitChangeTrackingFindProfitChangeGroupsResponseSchema>;
 
 }

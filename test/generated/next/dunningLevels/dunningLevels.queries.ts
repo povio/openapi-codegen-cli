@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -34,14 +33,14 @@ export const keys = {
  * @returns { UseQueryResult<DunningLevelsModels.DunningLevelsPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateLabels = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: DunningLevelsModels.DunningLevelLabelFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof DunningLevelsApi.paginateLabels, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateLabels = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: DunningLevelsModels.DunningLevelLabelFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof DunningLevelsApi.paginateLabels, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.paginateLabels(officeId, limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(DunningLevelsAcl.canUsePaginateLabels({ officeId } ));
-    return DunningLevelsApi.paginateLabels(officeId, limit, order, filter, page, cursor, config) },
+    return DunningLevelsApi.paginateLabels(officeId, limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -60,14 +59,14 @@ export const usePaginateLabels = <TData>({ officeId, limit, order, filter, page,
  * @returns { UseInfiniteQueryResult<DunningLevelsModels.DunningLevelsPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateLabelsInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: DunningLevelsModels.DunningLevelLabelFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof DunningLevelsApi.paginateLabels, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateLabelsInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: DunningLevelsModels.DunningLevelLabelFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof DunningLevelsApi.paginateLabels, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.paginateLabelsInfinite(officeId, limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(DunningLevelsAcl.canUsePaginateLabels({ officeId } ));
-    return DunningLevelsApi.paginateLabels(officeId, limit, order, filter, pageParam, cursor, config) },
+    return DunningLevelsApi.paginateLabels(officeId, limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -91,14 +90,14 @@ export const usePaginateLabelsInfinite = <TData>({ officeId, limit, order, filte
  * @returns { UseQueryResult<DunningLevelsModels.DunningLevelsListResponse> } 
  * @statusCodes [200, 401]
  */
-export const useList = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: DunningLevelsModels.DunningLevelFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof DunningLevelsApi.list, TData>, config?: AxiosRequestConfig) => {
+export const useList = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: DunningLevelsModels.DunningLevelFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof DunningLevelsApi.list, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.list(officeId, limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(DunningLevelsAcl.canUseList({ officeId } ));
-    return DunningLevelsApi.list(officeId, limit, order, filter, page, cursor, config) },
+    return DunningLevelsApi.list(officeId, limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -117,14 +116,14 @@ export const useList = <TData>({ officeId, limit, order, filter, page, cursor }:
  * @returns { UseInfiniteQueryResult<DunningLevelsModels.DunningLevelsListResponse> } 
  * @statusCodes [200, 401]
  */
-export const useListInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: DunningLevelsModels.DunningLevelFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof DunningLevelsApi.list, TData>, config?: AxiosRequestConfig) => {
+export const useListInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: DunningLevelsModels.DunningLevelFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof DunningLevelsApi.list, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.listInfinite(officeId, limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(DunningLevelsAcl.canUseList({ officeId } ));
-    return DunningLevelsApi.list(officeId, limit, order, filter, pageParam, cursor, config) },
+    return DunningLevelsApi.list(officeId, limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -144,14 +143,14 @@ export const useListInfinite = <TData>({ officeId, limit, order, filter, cursor 
  * @returns { UseMutationResult<DunningLevelsModels.DunningLevelResponseDTO> } 
  * @statusCodes [201, 401]
  */
-export const useCreate = (options?: AppMutationOptions<typeof DunningLevelsApi.create, { officeId: string, data: DunningLevelsModels.CreateDunningLevelRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreate = (options?: AppMutationOptions<typeof DunningLevelsApi.create, { officeId: string, data: DunningLevelsModels.CreateDunningLevelRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, data }) => { 
       checkAcl(DunningLevelsAcl.canUseCreate({ officeId } ));
-      return DunningLevelsApi.create(officeId, data, config)
+      return DunningLevelsApi.create(officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -171,14 +170,14 @@ export const useCreate = (options?: AppMutationOptions<typeof DunningLevelsApi.c
  * @returns { UseQueryResult<DunningLevelsModels.DunningLevelResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useFindById = <TData>({ id, officeId }: { id: string, officeId: string }, options?: AppQueryOptions<typeof DunningLevelsApi.findById, TData>, config?: AxiosRequestConfig) => {
+export const useFindById = <TData>({ id, officeId }: { id: string, officeId: string }, options?: AppQueryOptions<typeof DunningLevelsApi.findById, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.findById(id, officeId),
     queryFn: () => { 
     checkAcl(DunningLevelsAcl.canUseFindById({ officeId } ));
-    return DunningLevelsApi.findById(id, officeId, config) },
+    return DunningLevelsApi.findById(id, officeId) },
     ...options,
   });
 };
@@ -194,14 +193,14 @@ export const useFindById = <TData>({ id, officeId }: { id: string, officeId: str
  * @returns { UseMutationResult<DunningLevelsModels.DunningLevelResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useUpdate = (options?: AppMutationOptions<typeof DunningLevelsApi.update, { id: string, officeId: string, data: DunningLevelsModels.UpdateDunningLevelRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdate = (options?: AppMutationOptions<typeof DunningLevelsApi.update, { id: string, officeId: string, data: DunningLevelsModels.UpdateDunningLevelRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ id, officeId, data }) => { 
       checkAcl(DunningLevelsAcl.canUseUpdate({ officeId } ));
-      return DunningLevelsApi.update(id, officeId, data, config)
+      return DunningLevelsApi.update(id, officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -223,14 +222,14 @@ export const useUpdate = (options?: AppMutationOptions<typeof DunningLevelsApi.u
  * @returns { UseMutationResult<DunningLevelsModels.DunningLevelResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useArchive = (options?: AppMutationOptions<typeof DunningLevelsApi.archive, { id: string, officeId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useArchive = (options?: AppMutationOptions<typeof DunningLevelsApi.archive, { id: string, officeId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ id, officeId }) => { 
       checkAcl(DunningLevelsAcl.canUseArchive({ officeId } ));
-      return DunningLevelsApi.archive(id, officeId, config)
+      return DunningLevelsApi.archive(id, officeId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -252,14 +251,14 @@ export const useArchive = (options?: AppMutationOptions<typeof DunningLevelsApi.
  * @returns { UseMutationResult<DunningLevelsModels.DunningLevelResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useUnarchive = (options?: AppMutationOptions<typeof DunningLevelsApi.unarchive, { id: string, officeId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUnarchive = (options?: AppMutationOptions<typeof DunningLevelsApi.unarchive, { id: string, officeId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ id, officeId }) => { 
       checkAcl(DunningLevelsAcl.canUseUnarchive({ officeId } ));
-      return DunningLevelsApi.unarchive(id, officeId, config)
+      return DunningLevelsApi.unarchive(id, officeId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

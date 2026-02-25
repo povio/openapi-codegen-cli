@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -24,14 +23,14 @@ export const moduleName = QueryModule.QuoteConversion;
  * @returns { UseMutationResult<CommonModels.PositionCoreResponseDto> } Quote converted to position successfully
  * @statusCodes [201, 400, 401, 404]
  */
-export const useConvertQuoteToPosition = (options?: AppMutationOptions<typeof QuoteConversionApi.convertQuoteToPosition, { officeId: string, quoteId: string, data: QuoteConversionModels.ConvertQuoteToPositionRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useConvertQuoteToPosition = (options?: AppMutationOptions<typeof QuoteConversionApi.convertQuoteToPosition, { officeId: string, quoteId: string, data: QuoteConversionModels.ConvertQuoteToPositionRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, quoteId, data }) => { 
       checkAcl(QuoteConversionAcl.canUseConvertQuoteToPosition({ officeId } ));
-      return QuoteConversionApi.convertQuoteToPosition(officeId, quoteId, data, config)
+      return QuoteConversionApi.convertQuoteToPosition(officeId, quoteId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

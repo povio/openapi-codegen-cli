@@ -1,4 +1,4 @@
-import axios, { AxiosRequestConfig } from "axios";
+import axios, {  } from "axios";
 import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -33,12 +33,12 @@ export const keys = {
  * @returns { UseQueryResult<OfficesModels.OfficesPaginateResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: OfficesModels.OfficeFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof OfficesApi.paginate, TData>, config?: AxiosRequestConfig) => {
+export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: OfficesModels.OfficeFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof OfficesApi.paginate, TData>) => {
   
   return useQuery({
     queryKey: keys.paginate(limit, order, filter, page, cursor),
     queryFn: () => 
-    OfficesApi.paginate(limit, order, filter, page, cursor, config),
+    OfficesApi.paginate(limit, order, filter, page, cursor),
     ...options,
   });
 };
@@ -55,12 +55,12 @@ export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { lim
  * @returns { UseInfiniteQueryResult<OfficesModels.OfficesPaginateResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: OfficesModels.OfficeFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof OfficesApi.paginate, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: OfficesModels.OfficeFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof OfficesApi.paginate, TData>) => {
 
   return useInfiniteQuery({
     queryKey: keys.paginateInfinite(limit, order, filter, cursor),
     queryFn: ({ pageParam }) => 
-    OfficesApi.paginate(limit, order, filter, pageParam, cursor, config),
+    OfficesApi.paginate(limit, order, filter, pageParam, cursor),
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -79,14 +79,14 @@ export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { l
  * @returns { UseMutationResult<OfficesModels.OfficeResponseDto> } 
  * @statusCodes [201, 401]
  */
-export const useCreate = (options?: AppMutationOptions<typeof OfficesApi.create, { data: OfficesModels.CreateOfficeRequest }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreate = (options?: AppMutationOptions<typeof OfficesApi.create, { data: OfficesModels.CreateOfficeRequest }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ data }) => { 
       checkAcl(OfficesAcl.canUseCreate());
-      return OfficesApi.create(data, config)
+      return OfficesApi.create(data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -104,12 +104,12 @@ export const useCreate = (options?: AppMutationOptions<typeof OfficesApi.create,
  * @returns { UseQueryResult<OfficesModels.FindAllLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const useFindAllLabels = <TData>({ search }: { search?: string }, options?: AppQueryOptions<typeof OfficesApi.findAllLabels, TData>, config?: AxiosRequestConfig) => {
+export const useFindAllLabels = <TData>({ search }: { search?: string }, options?: AppQueryOptions<typeof OfficesApi.findAllLabels, TData>) => {
   
   return useQuery({
     queryKey: keys.findAllLabels(search),
     queryFn: () => 
-    OfficesApi.findAllLabels(search, config),
+    OfficesApi.findAllLabels(search),
     ...options,
   });
 };
@@ -126,12 +126,12 @@ export const useFindAllLabels = <TData>({ search }: { search?: string }, options
  * @returns { UseQueryResult<OfficesModels.OfficesPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: OfficesModels.OfficeLabelFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof OfficesApi.paginateLabels, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: OfficesModels.OfficeLabelFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof OfficesApi.paginateLabels, TData>) => {
   
   return useQuery({
     queryKey: keys.paginateLabels(limit, order, filter, page, cursor),
     queryFn: () => 
-    OfficesApi.paginateLabels(limit, order, filter, page, cursor, config),
+    OfficesApi.paginateLabels(limit, order, filter, page, cursor),
     ...options,
   });
 };
@@ -148,12 +148,12 @@ export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }:
  * @returns { UseInfiniteQueryResult<OfficesModels.OfficesPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: OfficesModels.OfficeLabelFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof OfficesApi.paginateLabels, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: OfficesModels.OfficeLabelFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof OfficesApi.paginateLabels, TData>) => {
 
   return useInfiniteQuery({
     queryKey: keys.paginateLabelsInfinite(limit, order, filter, cursor),
     queryFn: ({ pageParam }) => 
-    OfficesApi.paginateLabels(limit, order, filter, pageParam, cursor, config),
+    OfficesApi.paginateLabels(limit, order, filter, pageParam, cursor),
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -172,14 +172,14 @@ export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor 
  * @returns { UseQueryResult<OfficesModels.OfficeDetailResponseDto> } 
  * @statusCodes [200, 401]
  */
-export const useGet = <TData>({ id }: { id: string }, options?: AppQueryOptions<typeof OfficesApi.get, TData>, config?: AxiosRequestConfig) => {
+export const useGet = <TData>({ id }: { id: string }, options?: AppQueryOptions<typeof OfficesApi.get, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.get(id),
     queryFn: () => { 
     checkAcl(OfficesAcl.canUseGet());
-    return OfficesApi.get(id, config) },
+    return OfficesApi.get(id) },
     ...options,
   });
 };
@@ -194,14 +194,14 @@ export const useGet = <TData>({ id }: { id: string }, options?: AppQueryOptions<
  * @returns { UseMutationResult<OfficesModels.OfficeResponseDto> } 
  * @statusCodes [200, 401]
  */
-export const useUpdate = (options?: AppMutationOptions<typeof OfficesApi.update, { id: string, data: OfficesModels.UpdateOfficeRequest }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdate = (options?: AppMutationOptions<typeof OfficesApi.update, { id: string, data: OfficesModels.UpdateOfficeRequest }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ id, data }) => { 
       checkAcl(OfficesAcl.canUseUpdate());
-      return OfficesApi.update(id, data, config)
+      return OfficesApi.update(id, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -222,14 +222,14 @@ export const useUpdate = (options?: AppMutationOptions<typeof OfficesApi.update,
  * @returns { UseMutationResult<OfficesModels.DocumentImageUploadInstructionsDto> } 
  * @statusCodes [201, 401]
  */
-export const useUploadDocumentImage = (options?: AppMutationOptions<typeof OfficesApi.uploadDocumentImage, { officeId: string, data: OfficesModels.UploadOfficeDocumentRequestDto, file?: File; abortController?: AbortController; onUploadProgress?: (progress: { loaded: number; total: number }) => void }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUploadDocumentImage = (options?: AppMutationOptions<typeof OfficesApi.uploadDocumentImage, { officeId: string, data: OfficesModels.UploadOfficeDocumentRequestDto, file?: File; abortController?: AbortController; onUploadProgress?: (progress: { loaded: number; total: number }) => void }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: async ({ officeId, data, file, abortController, onUploadProgress }) => { 
       checkAcl(OfficesAcl.canUseUploadDocumentImage({ officeId } ));
-      const uploadInstructions = await OfficesApi.uploadDocumentImage(officeId, data, config);
+      const uploadInstructions = await OfficesApi.uploadDocumentImage(officeId, data);
       
       if (file && uploadInstructions.url) {
         const method = (data?.method?.toLowerCase() ?? "put") as "put" | "post";
@@ -274,14 +274,14 @@ export const useUploadDocumentImage = (options?: AppMutationOptions<typeof Offic
  * @returns { UseMutationResult<OfficesModels.OfficeBankAccountResponseDto> } 
  * @statusCodes [201, 401]
  */
-export const useCreateBankAccount = (options?: AppMutationOptions<typeof OfficesApi.createBankAccount, { officeId: string, data: OfficesModels.CreateOfficeBankAccountDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreateBankAccount = (options?: AppMutationOptions<typeof OfficesApi.createBankAccount, { officeId: string, data: OfficesModels.CreateOfficeBankAccountDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, data }) => { 
       checkAcl(OfficesAcl.canUseCreateBankAccount({ officeId } ));
-      return OfficesApi.createBankAccount(officeId, data, config)
+      return OfficesApi.createBankAccount(officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -302,14 +302,14 @@ export const useCreateBankAccount = (options?: AppMutationOptions<typeof Offices
  * @returns { UseMutationResult<OfficesModels.OfficeBankAccountResponseDto> } 
  * @statusCodes [200, 401]
  */
-export const useUpdateBankAccount = (options?: AppMutationOptions<typeof OfficesApi.updateBankAccount, { accountId: string, officeId: string, data: OfficesModels.UpdateOfficeBankAccountDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdateBankAccount = (options?: AppMutationOptions<typeof OfficesApi.updateBankAccount, { accountId: string, officeId: string, data: OfficesModels.UpdateOfficeBankAccountDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ accountId, officeId, data }) => { 
       checkAcl(OfficesAcl.canUseUpdateBankAccount({ officeId } ));
-      return OfficesApi.updateBankAccount(accountId, officeId, data, config)
+      return OfficesApi.updateBankAccount(accountId, officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -329,14 +329,14 @@ export const useUpdateBankAccount = (options?: AppMutationOptions<typeof Offices
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
  */
-export const useDeleteBankAccount = (options?: AppMutationOptions<typeof OfficesApi.deleteBankAccount, { accountId: string, officeId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useDeleteBankAccount = (options?: AppMutationOptions<typeof OfficesApi.deleteBankAccount, { accountId: string, officeId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ accountId, officeId }) => { 
       checkAcl(OfficesAcl.canUseDeleteBankAccount({ officeId } ));
-      return OfficesApi.deleteBankAccount(accountId, officeId, config)
+      return OfficesApi.deleteBankAccount(accountId, officeId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -358,14 +358,14 @@ export const useDeleteBankAccount = (options?: AppMutationOptions<typeof Offices
  * @returns { UseMutationResult<OfficesModels.DocumentImageUploadInstructionsDto> } 
  * @statusCodes [201, 401]
  */
-export const useUploadBankAccountFooter = (options?: AppMutationOptions<typeof OfficesApi.uploadBankAccountFooter, { accountId: string, officeId: string, data: OfficesModels.UploadOfficeBankAccountFooterRequestDto, file?: File; abortController?: AbortController; onUploadProgress?: (progress: { loaded: number; total: number }) => void }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUploadBankAccountFooter = (options?: AppMutationOptions<typeof OfficesApi.uploadBankAccountFooter, { accountId: string, officeId: string, data: OfficesModels.UploadOfficeBankAccountFooterRequestDto, file?: File; abortController?: AbortController; onUploadProgress?: (progress: { loaded: number; total: number }) => void }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: async ({ accountId, officeId, data, file, abortController, onUploadProgress }) => { 
       checkAcl(OfficesAcl.canUseUploadBankAccountFooter({ officeId } ));
-      const uploadInstructions = await OfficesApi.uploadBankAccountFooter(accountId, officeId, data, config);
+      const uploadInstructions = await OfficesApi.uploadBankAccountFooter(accountId, officeId, data);
       
       if (file && uploadInstructions.url) {
         const method = (data?.method?.toLowerCase() ?? "put") as "put" | "post";

@@ -10,7 +10,7 @@ export namespace CitiesModels {
  * @property { string } isoCode2 2 character iso code of the country 
  * @property { string } isoCode3 3 character iso code of the country 
  */
-export const CityCountryDtoSchema = z.object({ id: z.string().describe("Unique identifier of the country"), name: z.string().describe("Name of the country"), isoCode2: z.string().describe("2 character iso code of the country"), isoCode3: z.string().describe("3 character iso code of the country") }).readonly();
+export const CityCountryDtoSchema = z.object({ id: z.string(), name: z.string(), isoCode2: z.string(), isoCode3: z.string() });
 export type CityCountryDto = z.infer<typeof CityCountryDtoSchema>;
 
 /** 
@@ -19,7 +19,7 @@ export type CityCountryDto = z.infer<typeof CityCountryDtoSchema>;
  * @property { string } id  
  * @property { string } name  
  */
-export const CityEmployeeDTOSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const CityEmployeeDTOSchema = z.object({ id: z.string(), name: z.string() });
 export type CityEmployeeDTO = z.infer<typeof CityEmployeeDTOSchema>;
 
 /** 
@@ -39,7 +39,7 @@ export type CityEmployeeDTO = z.infer<typeof CityEmployeeDTOSchema>;
  * @property { CityEmployeeDTO } updatedBy  
  * @property { string } updatedAt  
  */
-export const CityResponseDTOSchema = z.object({ id: z.string().describe("Unique identifier of the city"), name: z.string().describe("Name of the city"), isoCode: z.string().describe("ISO code of the city").nullish(), stateCode: z.string().describe("State code of the city").nullish(), archived: z.boolean().describe("Whether the city is archived").nullish(), countryId: z.string().describe("Country ID").nullish(), country: CityCountryDtoSchema.nullish(), createdById: z.string().nullish(), createdBy: CityEmployeeDTOSchema.nullish(), createdAt: z.iso.datetime({ offset: true }), updatedById: z.string().nullish(), updatedBy: CityEmployeeDTOSchema.nullish(), updatedAt: z.iso.datetime({ offset: true }) }).readonly();
+export const CityResponseDTOSchema = z.object({ id: z.string(), name: z.string(), isoCode: z.string().nullish(), stateCode: z.string().nullish(), archived: z.boolean().nullish(), countryId: z.string().nullish(), country: CityCountryDtoSchema.nullish(), createdById: z.string().nullish(), createdBy: CityEmployeeDTOSchema.nullish(), createdAt: z.iso.datetime({ offset: true }), updatedById: z.string().nullish(), updatedBy: CityEmployeeDTOSchema.nullish(), updatedAt: z.iso.datetime({ offset: true }) });
 export type CityResponseDTO = z.infer<typeof CityResponseDTOSchema>;
 
 /** 
@@ -48,7 +48,7 @@ export type CityResponseDTO = z.infer<typeof CityResponseDTOSchema>;
  * @property { string } id  
  * @property { string } name  
  */
-export const CityLabelCountryDtoSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const CityLabelCountryDtoSchema = z.object({ id: z.string(), name: z.string() });
 export type CityLabelCountryDto = z.infer<typeof CityLabelCountryDtoSchema>;
 
 /** 
@@ -58,7 +58,7 @@ export type CityLabelCountryDto = z.infer<typeof CityLabelCountryDtoSchema>;
  * @property { string } label  
  * @property { CityLabelCountryDto } country  
  */
-export const CityLabelResponseDTOSchema = z.object({ id: z.string(), label: z.string(), country: CityLabelCountryDtoSchema.nullish() }).readonly();
+export const CityLabelResponseDTOSchema = z.object({ id: z.string(), label: z.string(), country: CityLabelCountryDtoSchema.nullish() });
 export type CityLabelResponseDTO = z.infer<typeof CityLabelResponseDTOSchema>;
 
 /** 
@@ -67,7 +67,7 @@ export type CityLabelResponseDTO = z.infer<typeof CityLabelResponseDTOSchema>;
  * @property { string } search Free search 
  * @property { boolean } archived  
  */
-export const CityPaginationFilterDtoSchema = z.object({ search: z.string().describe("Free search"), archived: z.boolean() }).readonly();
+export const CityPaginationFilterDtoSchema = z.object({ search: z.string().nullable(), archived: z.boolean().nullable() }).partial();
 export type CityPaginationFilterDto = z.infer<typeof CityPaginationFilterDtoSchema>;
 
 /** 
@@ -75,7 +75,7 @@ export type CityPaginationFilterDto = z.infer<typeof CityPaginationFilterDtoSche
  * @type { object }
  * @property { string } search  
  */
-export const CityLabelFilterDtoSchema = z.object({ search: z.string() }).readonly();
+export const CityLabelFilterDtoSchema = z.object({ search: z.string().nullable() }).partial();
 export type CityLabelFilterDto = z.infer<typeof CityLabelFilterDtoSchema>;
 
 /** 
@@ -86,7 +86,7 @@ export type CityLabelFilterDto = z.infer<typeof CityLabelFilterDtoSchema>;
  * @property { string } stateCode State code of the city 
  * @property { string } countryId Country ID 
  */
-export const CreateCityRequestDTOSchema = z.object({ name: z.string().describe("Name of the city"), isoCode: z.string().describe("ISO code of the city").nullish(), stateCode: z.string().describe("State code of the city").nullish(), countryId: z.string().describe("Country ID") }).readonly();
+export const CreateCityRequestDTOSchema = z.object({ name: z.string(), isoCode: z.string().nullish(), stateCode: z.string().nullish(), countryId: z.string() });
 export type CreateCityRequestDTO = z.infer<typeof CreateCityRequestDTOSchema>;
 
 /** 
@@ -97,7 +97,7 @@ export type CreateCityRequestDTO = z.infer<typeof CreateCityRequestDTOSchema>;
  * @property { string } stateCode State code of the city 
  * @property { string } countryId Country ID 
  */
-export const UpdateCityRequestDTOSchema = z.object({ name: z.string().describe("Name of the city"), isoCode: z.string().describe("ISO code of the city"), stateCode: z.string().describe("State code of the city"), countryId: z.string().describe("Country ID") }).readonly();
+export const UpdateCityRequestDTOSchema = z.object({ name: z.string().nullable(), isoCode: z.string().nullable(), stateCode: z.string().nullable(), countryId: z.string().nullable() }).partial();
 export type UpdateCityRequestDTO = z.infer<typeof UpdateCityRequestDTOSchema>;
 
 /** 
@@ -118,7 +118,7 @@ export const CitiesPaginateOrderParamEnum = CitiesPaginateOrderParamEnumSchema.e
  * @property { number } totalItems Total available items 
  * @property { CityResponseDTO[] } items  
  */
-export const CitiesPaginateResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CityResponseDTOSchema).readonly() }).readonly().shape });
+export const CitiesPaginateResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CityResponseDTOSchema).nullable() }).partial().shape });
 export type CitiesPaginateResponse = z.infer<typeof CitiesPaginateResponseSchema>;
 
 /** 
@@ -139,7 +139,7 @@ export const ListCityLabelsOrderParamEnum = ListCityLabelsOrderParamEnumSchema.e
  * @property { number } totalItems Total available items 
  * @property { CityLabelResponseDTO[] } items  
  */
-export const ListCityLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CityLabelResponseDTOSchema).readonly() }).readonly().shape });
+export const ListCityLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CityLabelResponseDTOSchema).nullable() }).partial().shape });
 export type ListCityLabelsResponse = z.infer<typeof ListCityLabelsResponseSchema>;
 
 }

@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -33,14 +32,14 @@ export const keys = {
  * @returns { UseQueryResult<DunningManagementModels.ListDunningsResponse> } 
  * @statusCodes [200, 401]
  */
-export const useListDunnings = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: DunningManagementModels.DunningFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof DunningManagementApi.listDunnings, TData>, config?: AxiosRequestConfig) => {
+export const useListDunnings = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: DunningManagementModels.DunningFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof DunningManagementApi.listDunnings, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.listDunnings(officeId, limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(DunningManagementAcl.canUseListDunnings({ officeId } ));
-    return DunningManagementApi.listDunnings(officeId, limit, order, filter, page, cursor, config) },
+    return DunningManagementApi.listDunnings(officeId, limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -59,14 +58,14 @@ export const useListDunnings = <TData>({ officeId, limit, order, filter, page, c
  * @returns { UseInfiniteQueryResult<DunningManagementModels.ListDunningsResponse> } 
  * @statusCodes [200, 401]
  */
-export const useListDunningsInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: DunningManagementModels.DunningFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof DunningManagementApi.listDunnings, TData>, config?: AxiosRequestConfig) => {
+export const useListDunningsInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: DunningManagementModels.DunningFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof DunningManagementApi.listDunnings, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.listDunningsInfinite(officeId, limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(DunningManagementAcl.canUseListDunnings({ officeId } ));
-    return DunningManagementApi.listDunnings(officeId, limit, order, filter, pageParam, cursor, config) },
+    return DunningManagementApi.listDunnings(officeId, limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -87,14 +86,14 @@ export const useListDunningsInfinite = <TData>({ officeId, limit, order, filter,
  * @returns { UseMutationResult<DunningManagementModels.DunningResponseDto> } 
  * @statusCodes [201, 401]
  */
-export const useCreateDunningWithInvoices = (options?: AppMutationOptions<typeof DunningManagementApi.createDunningWithInvoices, { partnerId: string, officeId: string, data: DunningManagementModels.CreateDunningWithInvoicesRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreateDunningWithInvoices = (options?: AppMutationOptions<typeof DunningManagementApi.createDunningWithInvoices, { partnerId: string, officeId: string, data: DunningManagementModels.CreateDunningWithInvoicesRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ partnerId, officeId, data }) => { 
       checkAcl(DunningManagementAcl.canUseCreateDunningWithInvoices({ officeId } ));
-      return DunningManagementApi.createDunningWithInvoices(partnerId, officeId, data, config)
+      return DunningManagementApi.createDunningWithInvoices(partnerId, officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -111,12 +110,11 @@ export const useCreateDunningWithInvoices = (options?: AppMutationOptions<typeof
  * @returns { UseQueryResult<DunningManagementModels.DunningPdfPayloadDTO> } 
  * @statusCodes [200, 401]
  */
-export const useDataGenFake = <TData>(options?: AppQueryOptions<typeof DunningManagementApi.dataGenFake, TData>, config?: AxiosRequestConfig) => {
+export const useDataGenFake = <TData>(options?: AppQueryOptions<typeof DunningManagementApi.dataGenFake, TData>) => {
   
   return useQuery({
     queryKey: keys.dataGenFake(),
-    queryFn: () => 
-    DunningManagementApi.dataGenFake(config),
+    queryFn: DunningManagementApi.dataGenFake,
     ...options,
   });
 };
@@ -131,14 +129,14 @@ export const useDataGenFake = <TData>(options?: AppQueryOptions<typeof DunningMa
  * @returns { UseQueryResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
  */
-export const useGetDunningEml = <TData>({ officeId, dunningId }: { officeId: string, dunningId: string }, options?: AppQueryOptions<typeof DunningManagementApi.getDunningEml, TData>, config?: AxiosRequestConfig) => {
+export const useGetDunningEml = <TData>({ officeId, dunningId }: { officeId: string, dunningId: string }, options?: AppQueryOptions<typeof DunningManagementApi.getDunningEml, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.getDunningEml(officeId, dunningId),
     queryFn: () => { 
     checkAcl(DunningManagementAcl.canUseGetDunningEml({ officeId } ));
-    return DunningManagementApi.getDunningEml(officeId, dunningId, config) },
+    return DunningManagementApi.getDunningEml(officeId, dunningId) },
     ...options,
   });
 };
@@ -153,14 +151,14 @@ export const useGetDunningEml = <TData>({ officeId, dunningId }: { officeId: str
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
  */
-export const useGetDunningEmlMutation = (options?: AppMutationOptions<typeof DunningManagementApi.getDunningEml, { officeId: string, dunningId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useGetDunningEmlMutation = (options?: AppMutationOptions<typeof DunningManagementApi.getDunningEml, { officeId: string, dunningId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, dunningId }) => { 
       checkAcl(DunningManagementAcl.canUseGetDunningEml({ officeId } ));
-      return DunningManagementApi.getDunningEml(officeId, dunningId, config)
+      return DunningManagementApi.getDunningEml(officeId, dunningId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

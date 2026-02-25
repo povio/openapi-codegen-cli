@@ -1,24 +1,22 @@
 import { AppRestClient } from "@/data/app-rest-client";
-import { AxiosRequestConfig } from "axios";
 import { ZodExtended } from "@/data/zod.extended";
 import { ControlTowerAuthModels } from "./controlTowerAuth.models";
 
 export namespace ControlTowerAuthApi {
-  export const login = (data: ControlTowerAuthModels.LoginRequestDto, config?: AxiosRequestConfig) => {
+export const login = (data: ControlTowerAuthModels.LoginRequestDto, ) => {
     return AppRestClient.post(
-      { resSchema: ControlTowerAuthModels.LoginResponseDtoSchema },
-      `/auth/move/login`,
-      ZodExtended.parse(ControlTowerAuthModels.LoginRequestDtoSchema, data),
-      config,
-    );
-  };
-
-  export const resetPassword = (data: ControlTowerAuthModels.PasswordResetDto, config?: AxiosRequestConfig) => {
+        { resSchema: ControlTowerAuthModels.LoginResponseDtoSchema },
+        `/auth/move/login`,
+        ZodExtended.parse(ControlTowerAuthModels.LoginRequestDtoSchema, data),
+        
+    )
+};
+export const resetPassword = (data: ControlTowerAuthModels.PasswordResetDto, ) => {
     return AppRestClient.post(
-      { resSchema: ControlTowerAuthModels.LoginResponseDtoSchema },
-      `/auth/reset-password`,
-      ZodExtended.parse(ControlTowerAuthModels.PasswordResetDtoSchema, data),
-      config,
-    );
-  };
+        { resSchema: ControlTowerAuthModels.LoginResponseDtoSchema },
+        `/auth/reset-password`,
+        ZodExtended.parse(ControlTowerAuthModels.PasswordResetDtoSchema, data),
+        
+    )
+};
 }

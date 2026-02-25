@@ -8,7 +8,7 @@ export namespace DepotsModels {
  * @property { string } id  
  * @property { string } name  
  */
-export const DepotCityDtoSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const DepotCityDtoSchema = z.object({ id: z.string(), name: z.string() });
 export type DepotCityDto = z.infer<typeof DepotCityDtoSchema>;
 
 /** 
@@ -19,7 +19,7 @@ export type DepotCityDto = z.infer<typeof DepotCityDtoSchema>;
  * @property { string } isoCode2  
  * @property { string } isoCode3  
  */
-export const DepotCountryDtoSchema = z.object({ id: z.string(), name: z.string(), isoCode2: z.string(), isoCode3: z.string() }).readonly();
+export const DepotCountryDtoSchema = z.object({ id: z.string(), name: z.string(), isoCode2: z.string(), isoCode3: z.string() });
 export type DepotCountryDto = z.infer<typeof DepotCountryDtoSchema>;
 
 /** 
@@ -31,7 +31,7 @@ export type DepotCountryDto = z.infer<typeof DepotCountryDtoSchema>;
  * @property { string } district District name 
  * @property { DepotCountryDto } country  
  */
-export const AddressDTOSchema = z.object({ street: z.string().describe("Street address"), zip: z.string().describe("ZIP/Postal code"), city: DepotCityDtoSchema.nullish(), district: z.string().describe("District name").nullish(), country: DepotCountryDtoSchema.nullish() }).readonly();
+export const AddressDTOSchema = z.object({ street: z.string(), zip: z.string(), city: DepotCityDtoSchema.nullish(), district: z.string().nullish(), country: DepotCountryDtoSchema.nullish() });
 export type AddressDTO = z.infer<typeof AddressDTOSchema>;
 
 /** 
@@ -40,7 +40,7 @@ export type AddressDTO = z.infer<typeof AddressDTOSchema>;
  * @property { string } id  
  * @property { string } name  
  */
-export const DepotEmployeeDTOSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const DepotEmployeeDTOSchema = z.object({ id: z.string(), name: z.string() });
 export type DepotEmployeeDTO = z.infer<typeof DepotEmployeeDTOSchema>;
 
 /** 
@@ -60,7 +60,7 @@ export type DepotEmployeeDTO = z.infer<typeof DepotEmployeeDTOSchema>;
  * @property { DepotEmployeeDTO } updatedBy  
  * @property { string } updatedAt  
  */
-export const DepotResponseDTOSchema = z.object({ id: z.string().describe("Unique identifier of the depot"), matchCode: z.string().describe("Match code for the depot"), name: z.string().describe("Name of the depot"), shortName: z.string().describe("Short name of the depot").nullish(), additionalInformation: z.string().describe("Additional info of the depot").nullish(), address: AddressDTOSchema.describe("Address details of the depot"), archived: z.boolean(), createdById: z.string().nullish(), createdBy: DepotEmployeeDTOSchema.nullish(), createdAt: z.iso.datetime({ offset: true }), updatedById: z.string().nullish(), updatedBy: DepotEmployeeDTOSchema.nullish(), updatedAt: z.iso.datetime({ offset: true }) }).readonly();
+export const DepotResponseDTOSchema = z.object({ id: z.string(), matchCode: z.string(), name: z.string(), shortName: z.string().nullish(), additionalInformation: z.string().nullish(), address: AddressDTOSchema, archived: z.boolean(), createdById: z.string().nullish(), createdBy: DepotEmployeeDTOSchema.nullish(), createdAt: z.iso.datetime({ offset: true }), updatedById: z.string().nullish(), updatedBy: DepotEmployeeDTOSchema.nullish(), updatedAt: z.iso.datetime({ offset: true }) });
 export type DepotResponseDTO = z.infer<typeof DepotResponseDTOSchema>;
 
 /** 
@@ -76,7 +76,7 @@ export type DepotResponseDTO = z.infer<typeof DepotResponseDTOSchema>;
  * @property { string } cityId City id 
  * @property { string } countryId Country code 
  */
-export const CreateDepotRequestDTOSchema = z.object({ matchCode: z.string().describe("Unique identifier code for the depot"), shortName: z.string().describe("Optional short name for the depot").nullish(), additionalInformation: z.string().nullish(), name: z.string().describe("Full name of the depot"), street: z.string().describe("Street address of the depot"), zip: z.string().describe("ZIP/Postal code"), district: z.string().describe("District information").nullish(), cityId: z.string().describe("City id"), countryId: z.string().describe("Country code") }).readonly();
+export const CreateDepotRequestDTOSchema = z.object({ matchCode: z.string(), shortName: z.string().nullish(), additionalInformation: z.string().nullish(), name: z.string(), street: z.string(), zip: z.string(), district: z.string().nullish(), cityId: z.string(), countryId: z.string() });
 export type CreateDepotRequestDTO = z.infer<typeof CreateDepotRequestDTOSchema>;
 
 /** 
@@ -85,7 +85,7 @@ export type CreateDepotRequestDTO = z.infer<typeof CreateDepotRequestDTOSchema>;
  * @property { string } search Search term to filter depots by name, matchCode, or shortName 
  * @property { boolean } archived  
  */
-export const DepotPaginationFilterDtoSchema = z.object({ search: z.string().describe("Search term to filter depots by name, matchCode, or shortName"), archived: z.boolean() }).readonly();
+export const DepotPaginationFilterDtoSchema = z.object({ search: z.string().nullable(), archived: z.boolean().nullable() }).partial();
 export type DepotPaginationFilterDto = z.infer<typeof DepotPaginationFilterDtoSchema>;
 
 /** 
@@ -93,7 +93,7 @@ export type DepotPaginationFilterDto = z.infer<typeof DepotPaginationFilterDtoSc
  * @type { object }
  * @property { string } search  
  */
-export const DepotLabelFilterDtoSchema = z.object({ search: z.string() }).readonly();
+export const DepotLabelFilterDtoSchema = z.object({ search: z.string().nullable() }).partial();
 export type DepotLabelFilterDto = z.infer<typeof DepotLabelFilterDtoSchema>;
 
 /** 
@@ -109,7 +109,7 @@ export type DepotLabelFilterDto = z.infer<typeof DepotLabelFilterDtoSchema>;
  * @property { string } cityId Updated city id 
  * @property { string } countryId Updated country code 
  */
-export const UpdateDepotRequestDTOSchema = z.object({ matchCode: z.string().describe("Updated match code for the depot"), shortName: z.string().describe("Updated short name"), additionalInformation: z.string().describe("Updated short name"), name: z.string().describe("Updated full name"), street: z.string().describe("Updated street address"), zip: z.string().describe("Updated ZIP/Postal code"), district: z.string().describe("Updated district information"), cityId: z.string().describe("Updated city id"), countryId: z.string().describe("Updated country code") }).readonly();
+export const UpdateDepotRequestDTOSchema = z.object({ matchCode: z.string().nullable(), shortName: z.string().nullable(), additionalInformation: z.string().nullable(), name: z.string().nullable(), street: z.string().nullable(), zip: z.string().nullable(), district: z.string().nullable(), cityId: z.string().nullable(), countryId: z.string().nullable() }).partial();
 export type UpdateDepotRequestDTO = z.infer<typeof UpdateDepotRequestDTOSchema>;
 
 /** 
@@ -130,7 +130,7 @@ export const DepotsPaginateOrderParamEnum = DepotsPaginateOrderParamEnumSchema.e
  * @property { number } totalItems Total available items 
  * @property { DepotResponseDTO[] } items  
  */
-export const DepotsPaginateResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(DepotResponseDTOSchema).readonly() }).readonly().shape });
+export const DepotsPaginateResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(DepotResponseDTOSchema).nullable() }).partial().shape });
 export type DepotsPaginateResponse = z.infer<typeof DepotsPaginateResponseSchema>;
 
 /** 
@@ -151,7 +151,7 @@ export const DepotsPaginateLabelsOrderParamEnum = DepotsPaginateLabelsOrderParam
  * @property { number } totalItems Total available items 
  * @property { CommonModels.LabelResponseDTO[] } items  
  */
-export const DepotsPaginateLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).readonly() }).readonly().shape });
+export const DepotsPaginateLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).nullable() }).partial().shape });
 export type DepotsPaginateLabelsResponse = z.infer<typeof DepotsPaginateLabelsResponseSchema>;
 
 }

@@ -19,7 +19,7 @@ export const BusinessPartnerContactRoleEnum = BusinessPartnerContactRoleEnumSche
  * @property { string } email Contact email 
  * @property { string } phone Contact phone 
  */
-export const BusinessPartnerContactResponseDTOSchema = z.object({ id: z.string().describe("Contact ID"), role: BusinessPartnerContactRoleEnumSchema.nullish(), name: z.string().describe("Contact name").nullish(), email: z.string().describe("Contact email").nullish(), phone: z.string().describe("Contact phone").nullish() }).readonly();
+export const BusinessPartnerContactResponseDTOSchema = z.object({ id: z.string(), role: BusinessPartnerContactRoleEnumSchema.nullish(), name: z.string().nullish(), email: z.string().nullish(), phone: z.string().nullish() });
 export type BusinessPartnerContactResponseDTO = z.infer<typeof BusinessPartnerContactResponseDTOSchema>;
 
 /** 
@@ -27,7 +27,7 @@ export type BusinessPartnerContactResponseDTO = z.infer<typeof BusinessPartnerCo
  * @type { object }
  * @property { BusinessPartnerContactResponseDTO[] } contacts List of contacts 
  */
-export const BusinessPartnerContactListResponseDTOSchema = z.object({ contacts: z.array(BusinessPartnerContactResponseDTOSchema).readonly().describe("List of contacts") }).readonly();
+export const BusinessPartnerContactListResponseDTOSchema = z.object({ contacts: z.array(BusinessPartnerContactResponseDTOSchema) });
 export type BusinessPartnerContactListResponseDTO = z.infer<typeof BusinessPartnerContactListResponseDTOSchema>;
 
 /** 
@@ -38,7 +38,7 @@ export type BusinessPartnerContactListResponseDTO = z.infer<typeof BusinessPartn
  * @property { string } email Contact email 
  * @property { string } phone Contact phone 
  */
-export const CreateBusinessPartnerContactRequestDTOSchema = z.object({ role: BusinessPartnerContactRoleEnumSchema, name: z.string().describe("Contact name"), email: z.string().describe("Contact email"), phone: z.string().describe("Contact phone") }).readonly();
+export const CreateBusinessPartnerContactRequestDTOSchema = z.object({ role: BusinessPartnerContactRoleEnumSchema.nullable(), name: z.string().nullable(), email: z.string().nullable(), phone: z.string().nullable() }).partial();
 export type CreateBusinessPartnerContactRequestDTO = z.infer<typeof CreateBusinessPartnerContactRequestDTOSchema>;
 
 /** 
@@ -49,7 +49,7 @@ export type CreateBusinessPartnerContactRequestDTO = z.infer<typeof CreateBusine
  * @property { string } email Contact email 
  * @property { string } phone Contact phone 
  */
-export const UpdateBusinessPartnerContactRequestDTOSchema = z.object({ role: BusinessPartnerContactRoleEnumSchema, name: z.string().describe("Contact name"), email: z.string().describe("Contact email"), phone: z.string().describe("Contact phone") }).readonly();
+export const UpdateBusinessPartnerContactRequestDTOSchema = z.object({ role: BusinessPartnerContactRoleEnumSchema.nullable(), name: z.string().nullable(), email: z.string().nullable(), phone: z.string().nullable() }).partial();
 export type UpdateBusinessPartnerContactRequestDTO = z.infer<typeof UpdateBusinessPartnerContactRequestDTOSchema>;
 
 /** 
@@ -57,7 +57,7 @@ export type UpdateBusinessPartnerContactRequestDTO = z.infer<typeof UpdateBusine
  * @type { object }
  * @property { string } search Search by name, email, or phone 
  */
-export const BusinessPartnerContactFilterDtoSchema = z.object({ search: z.string().describe("Search by name, email, or phone") }).readonly();
+export const BusinessPartnerContactFilterDtoSchema = z.object({ search: z.string().nullable() }).partial();
 export type BusinessPartnerContactFilterDto = z.infer<typeof BusinessPartnerContactFilterDtoSchema>;
 
 /** 
@@ -78,7 +78,7 @@ export const PaginateContactLabelsOrderParamEnum = PaginateContactLabelsOrderPar
  * @property { number } totalItems Total available items 
  * @property { CommonModels.LabelResponseDTO[] } items  
  */
-export const PaginateContactLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).readonly() }).readonly().shape });
+export const PaginateContactLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).nullable() }).partial().shape });
 export type PaginateContactLabelsResponse = z.infer<typeof PaginateContactLabelsResponseSchema>;
 
 }

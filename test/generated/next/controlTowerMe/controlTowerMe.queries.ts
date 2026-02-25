@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -21,12 +20,11 @@ export const keys = {
  * @returns { UseQueryResult<ControlTowerMeModels.GetUserProfileResponse> } 
  * @statusCodes [200]
  */
-export const useGetUserProfile = <TData>(options?: AppQueryOptions<typeof ControlTowerMeApi.getUserProfile, TData>, config?: AxiosRequestConfig) => {
+export const useGetUserProfile = <TData>(options?: AppQueryOptions<typeof ControlTowerMeApi.getUserProfile, TData>) => {
   
   return useQuery({
     queryKey: keys.getUserProfile(),
-    queryFn: () => 
-    ControlTowerMeApi.getUserProfile(config),
+    queryFn: ControlTowerMeApi.getUserProfile,
     ...options,
   });
 };
@@ -39,12 +37,12 @@ export const useGetUserProfile = <TData>(options?: AppQueryOptions<typeof Contro
  * @returns { UseMutationResult<ControlTowerMeModels.UpdateUserDataResponse> } 
  * @statusCodes [200]
  */
-export const useUpdateUserData = (options?: AppMutationOptions<typeof ControlTowerMeApi.updateUserData, { data: ControlTowerMeModels.UserUpdateDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdateUserData = (options?: AppMutationOptions<typeof ControlTowerMeApi.updateUserData, { data: ControlTowerMeModels.UserUpdateDto }> & MutationEffectsOptions) => {
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ data }) => 
-      ControlTowerMeApi.updateUserData(data, config)
+      ControlTowerMeApi.updateUserData(data)
 ,
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -62,12 +60,12 @@ export const useUpdateUserData = (options?: AppMutationOptions<typeof ControlTow
  * @returns { UseMutationResult<ControlTowerMeModels.UpdateUserProfileResponse> } 
  * @statusCodes [200]
  */
-export const useUpdateUserProfile = (options?: AppMutationOptions<typeof ControlTowerMeApi.updateUserProfile, { data: ControlTowerMeModels.UserBasicUpdateDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdateUserProfile = (options?: AppMutationOptions<typeof ControlTowerMeApi.updateUserProfile, { data: ControlTowerMeModels.UserBasicUpdateDto }> & MutationEffectsOptions) => {
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ data }) => 
-      ControlTowerMeApi.updateUserProfile(data, config)
+      ControlTowerMeApi.updateUserProfile(data)
 ,
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -85,12 +83,12 @@ export const useUpdateUserProfile = (options?: AppMutationOptions<typeof Control
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200]
  */
-export const useUpdatePassword = (options?: AppMutationOptions<typeof ControlTowerMeApi.updatePassword, { data: ControlTowerMeModels.UserPasswordUpdateDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdatePassword = (options?: AppMutationOptions<typeof ControlTowerMeApi.updatePassword, { data: ControlTowerMeModels.UserPasswordUpdateDto }> & MutationEffectsOptions) => {
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ data }) => 
-      ControlTowerMeApi.updatePassword(data, config)
+      ControlTowerMeApi.updatePassword(data)
 ,
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -108,12 +106,12 @@ export const useUpdatePassword = (options?: AppMutationOptions<typeof ControlTow
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200]
  */
-export const useUpdateEmailPreferences = (options?: AppMutationOptions<typeof ControlTowerMeApi.updateEmailPreferences, { data: ControlTowerMeModels.UserEmailPreferencesUpdateDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdateEmailPreferences = (options?: AppMutationOptions<typeof ControlTowerMeApi.updateEmailPreferences, { data: ControlTowerMeModels.UserEmailPreferencesUpdateDto }> & MutationEffectsOptions) => {
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ data }) => 
-      ControlTowerMeApi.updateEmailPreferences(data, config)
+      ControlTowerMeApi.updateEmailPreferences(data)
 ,
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -130,12 +128,12 @@ export const useUpdateEmailPreferences = (options?: AppMutationOptions<typeof Co
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200]
  */
-export const useUpdateProjectAccess = (options?: AppMutationOptions<typeof ControlTowerMeApi.updateProjectAccess, {  }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdateProjectAccess = (options?: AppMutationOptions<typeof ControlTowerMeApi.updateProjectAccess, {  }> & MutationEffectsOptions) => {
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: () => 
-      ControlTowerMeApi.updateProjectAccess(config)
+      ControlTowerMeApi.updateProjectAccess()
 ,
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

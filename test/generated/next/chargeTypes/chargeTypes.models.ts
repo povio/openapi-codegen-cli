@@ -9,7 +9,7 @@ export namespace ChargeTypesModels {
  * @property { CommonModels.TransportModeEnum[] } transportModes  
  * @property { string } search  
  */
-export const ChargeTypeLabelFilterDtoSchema = z.object({ direction: CommonModels.DirectionEnumSchema, transportModes: z.array(CommonModels.TransportModeEnumSchema).readonly(), search: z.string() }).readonly();
+export const ChargeTypeLabelFilterDtoSchema = z.object({ direction: CommonModels.DirectionEnumSchema.nullable(), transportModes: z.array(CommonModels.TransportModeEnumSchema).nullable(), search: z.string().nullable() }).partial();
 export type ChargeTypeLabelFilterDto = z.infer<typeof ChargeTypeLabelFilterDtoSchema>;
 
 /** 
@@ -18,7 +18,7 @@ export type ChargeTypeLabelFilterDto = z.infer<typeof ChargeTypeLabelFilterDtoSc
  * @property { CommonModels.LanguageEnum } language  
  * @property { string } value  
  */
-export const ChargeTypeTranslationDtoSchema = z.object({ language: CommonModels.LanguageEnumSchema, value: z.string() }).readonly();
+export const ChargeTypeTranslationDtoSchema = z.object({ language: CommonModels.LanguageEnumSchema, value: z.string() });
 export type ChargeTypeTranslationDto = z.infer<typeof ChargeTypeTranslationDtoSchema>;
 
 /** 
@@ -27,7 +27,7 @@ export type ChargeTypeTranslationDto = z.infer<typeof ChargeTypeTranslationDtoSc
  * @property { string } id  
  * @property { string } name  
  */
-export const ChargeTypeEmployeeDTOSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const ChargeTypeEmployeeDTOSchema = z.object({ id: z.string(), name: z.string() });
 export type ChargeTypeEmployeeDTO = z.infer<typeof ChargeTypeEmployeeDTOSchema>;
 
 /** 
@@ -48,7 +48,7 @@ export type ChargeTypeEmployeeDTO = z.infer<typeof ChargeTypeEmployeeDTOSchema>;
  * @property { ChargeTypeEmployeeDTO } updatedBy  
  * @property { string } updatedAt  
  */
-export const ChargeTypeResponseDTOSchema = z.object({ id: z.string(), matchCode: z.string(), englishName: z.string(), archived: z.boolean(), description: z.string().nullish(), modules: z.array(CommonModels.TransportModeEnumSchema).readonly(), directions: z.array(CommonModels.DirectionEnumSchema).readonly(), translations: z.array(ChargeTypeTranslationDtoSchema).readonly(), createdById: z.string().nullish(), createdBy: ChargeTypeEmployeeDTOSchema.nullish(), createdAt: z.iso.datetime({ offset: true }), updatedById: z.string().nullish(), updatedBy: ChargeTypeEmployeeDTOSchema.nullish(), updatedAt: z.iso.datetime({ offset: true }) }).readonly();
+export const ChargeTypeResponseDTOSchema = z.object({ id: z.string(), matchCode: z.string(), englishName: z.string(), archived: z.boolean(), description: z.string().nullish(), modules: z.array(CommonModels.TransportModeEnumSchema), directions: z.array(CommonModels.DirectionEnumSchema), translations: z.array(ChargeTypeTranslationDtoSchema), createdById: z.string().nullish(), createdBy: ChargeTypeEmployeeDTOSchema.nullish(), createdAt: z.iso.datetime({ offset: true }), updatedById: z.string().nullish(), updatedBy: ChargeTypeEmployeeDTOSchema.nullish(), updatedAt: z.iso.datetime({ offset: true }) });
 export type ChargeTypeResponseDTO = z.infer<typeof ChargeTypeResponseDTOSchema>;
 
 /** 
@@ -60,7 +60,7 @@ export type ChargeTypeResponseDTO = z.infer<typeof ChargeTypeResponseDTOSchema>;
  * @property { CommonModels.DirectionEnum } direction  
  * @property { CommonModels.TransportModeEnum[] } transportModes  
  */
-export const ChargeTypePaginationFilterDtoSchema = z.object({ name: z.string(), search: z.string(), archived: z.boolean(), direction: CommonModels.DirectionEnumSchema, transportModes: z.array(CommonModels.TransportModeEnumSchema).readonly() }).readonly();
+export const ChargeTypePaginationFilterDtoSchema = z.object({ name: z.string().nullable(), search: z.string().nullable(), archived: z.boolean().nullable(), direction: CommonModels.DirectionEnumSchema.nullable(), transportModes: z.array(CommonModels.TransportModeEnumSchema).nullable() }).partial();
 export type ChargeTypePaginationFilterDto = z.infer<typeof ChargeTypePaginationFilterDtoSchema>;
 
 /** 
@@ -69,7 +69,7 @@ export type ChargeTypePaginationFilterDto = z.infer<typeof ChargeTypePaginationF
  * @property { CommonModels.LanguageEnum } language  
  * @property { string } value  
  */
-export const CreateChargeTypeTranslationDtoSchema = z.object({ language: CommonModels.LanguageEnumSchema, value: z.string() }).readonly();
+export const CreateChargeTypeTranslationDtoSchema = z.object({ language: CommonModels.LanguageEnumSchema, value: z.string() });
 export type CreateChargeTypeTranslationDto = z.infer<typeof CreateChargeTypeTranslationDtoSchema>;
 
 /** 
@@ -83,7 +83,7 @@ export type CreateChargeTypeTranslationDto = z.infer<typeof CreateChargeTypeTran
  * @property { CommonModels.DirectionEnum[] } directions  
  * @property { CreateChargeTypeTranslationDto[] } translations  
  */
-export const CreateChargeTypeRequestDTOSchema = z.object({ matchCode: z.string(), englishName: z.string().nullish(), archived: z.boolean().nullish(), description: z.string().nullish(), modules: z.array(CommonModels.TransportModeEnumSchema).readonly(), directions: z.array(CommonModels.DirectionEnumSchema).readonly(), translations: z.array(CreateChargeTypeTranslationDtoSchema).readonly().nullish() }).readonly();
+export const CreateChargeTypeRequestDTOSchema = z.object({ matchCode: z.string(), englishName: z.string().nullish(), archived: z.boolean().nullish(), description: z.string().nullish(), modules: z.array(CommonModels.TransportModeEnumSchema), directions: z.array(CommonModels.DirectionEnumSchema), translations: z.array(CreateChargeTypeTranslationDtoSchema).nullish() });
 export type CreateChargeTypeRequestDTO = z.infer<typeof CreateChargeTypeRequestDTOSchema>;
 
 /** 
@@ -92,7 +92,7 @@ export type CreateChargeTypeRequestDTO = z.infer<typeof CreateChargeTypeRequestD
  * @property { CommonModels.LanguageEnum } language  
  * @property { string } value  
  */
-export const UpdateChargeTypeTranslationDtoSchema = z.object({ language: CommonModels.LanguageEnumSchema, value: z.string() }).readonly();
+export const UpdateChargeTypeTranslationDtoSchema = z.object({ language: CommonModels.LanguageEnumSchema, value: z.string() });
 export type UpdateChargeTypeTranslationDto = z.infer<typeof UpdateChargeTypeTranslationDtoSchema>;
 
 /** 
@@ -106,7 +106,7 @@ export type UpdateChargeTypeTranslationDto = z.infer<typeof UpdateChargeTypeTran
  * @property { CommonModels.DirectionEnum[] } directions  
  * @property { UpdateChargeTypeTranslationDto[] } translations  
  */
-export const UpdateChargeTypeRequestDTOSchema = z.object({ matchCode: z.string(), englishName: z.string(), archived: z.boolean(), description: z.string(), modules: z.array(CommonModels.TransportModeEnumSchema).readonly(), directions: z.array(CommonModels.DirectionEnumSchema).readonly(), translations: z.array(UpdateChargeTypeTranslationDtoSchema).readonly() }).readonly();
+export const UpdateChargeTypeRequestDTOSchema = z.object({ matchCode: z.string().nullable(), englishName: z.string().nullable(), archived: z.boolean().nullable(), description: z.string().nullable(), modules: z.array(CommonModels.TransportModeEnumSchema).nullable(), directions: z.array(CommonModels.DirectionEnumSchema).nullable(), translations: z.array(UpdateChargeTypeTranslationDtoSchema).nullable() }).partial();
 export type UpdateChargeTypeRequestDTO = z.infer<typeof UpdateChargeTypeRequestDTOSchema>;
 
 /** 
@@ -127,7 +127,7 @@ export const ChargeTypesFindAllOrderParamEnum = ChargeTypesFindAllOrderParamEnum
  * @property { number } totalItems Total available items 
  * @property { CommonModels.LabelResponseDTO[] } items  
  */
-export const ChargeTypesFindAllResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).readonly() }).readonly().shape });
+export const ChargeTypesFindAllResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).nullable() }).partial().shape });
 export type ChargeTypesFindAllResponse = z.infer<typeof ChargeTypesFindAllResponseSchema>;
 
 /** 
@@ -148,7 +148,7 @@ export const ChargeTypesPaginateOrderParamEnum = ChargeTypesPaginateOrderParamEn
  * @property { number } totalItems Total available items 
  * @property { ChargeTypeResponseDTO[] } items  
  */
-export const ChargeTypesPaginateResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(ChargeTypeResponseDTOSchema).readonly() }).readonly().shape });
+export const ChargeTypesPaginateResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(ChargeTypeResponseDTOSchema).nullable() }).partial().shape });
 export type ChargeTypesPaginateResponse = z.infer<typeof ChargeTypesPaginateResponseSchema>;
 
 }

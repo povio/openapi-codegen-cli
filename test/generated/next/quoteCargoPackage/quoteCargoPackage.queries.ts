@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -25,14 +24,14 @@ export const moduleName = QueryModule.QuoteCargoPackage;
  * @returns { UseMutationResult<CommonModels.PositionCargoPackageResponseDTO> } 
  * @statusCodes [201, 401]
  */
-export const useCreatePackage = (options?: AppMutationOptions<typeof QuoteCargoPackageApi.createPackage, { officeId: string, quoteId: string, cargoId: string, data: CommonModels.CreatePositionCargoPackageDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreatePackage = (options?: AppMutationOptions<typeof QuoteCargoPackageApi.createPackage, { officeId: string, quoteId: string, cargoId: string, data: CommonModels.CreatePositionCargoPackageDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, quoteId, cargoId, data }) => { 
       checkAcl(QuoteCargoPackageAcl.canUseCreatePackage({ officeId } ));
-      return QuoteCargoPackageApi.createPackage(officeId, quoteId, cargoId, data, config)
+      return QuoteCargoPackageApi.createPackage(officeId, quoteId, cargoId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -55,14 +54,14 @@ export const useCreatePackage = (options?: AppMutationOptions<typeof QuoteCargoP
  * @returns { UseMutationResult<CommonModels.PositionCargoPackageResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useUpdatePackage = (options?: AppMutationOptions<typeof QuoteCargoPackageApi.updatePackage, { officeId: string, quoteId: string, cargoId: string, packageId: string, data: CommonModels.UpdatePositionCargoPackageDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdatePackage = (options?: AppMutationOptions<typeof QuoteCargoPackageApi.updatePackage, { officeId: string, quoteId: string, cargoId: string, packageId: string, data: CommonModels.UpdatePositionCargoPackageDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, quoteId, cargoId, packageId, data }) => { 
       checkAcl(QuoteCargoPackageAcl.canUseUpdatePackage({ officeId } ));
-      return QuoteCargoPackageApi.updatePackage(officeId, quoteId, cargoId, packageId, data, config)
+      return QuoteCargoPackageApi.updatePackage(officeId, quoteId, cargoId, packageId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -84,14 +83,14 @@ export const useUpdatePackage = (options?: AppMutationOptions<typeof QuoteCargoP
  * @returns { UseMutationResult<void> } 
  * @statusCodes [204, 401]
  */
-export const useDeletePackage = (options?: AppMutationOptions<typeof QuoteCargoPackageApi.deletePackage, { officeId: string, quoteId: string, cargoId: string, packageId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useDeletePackage = (options?: AppMutationOptions<typeof QuoteCargoPackageApi.deletePackage, { officeId: string, quoteId: string, cargoId: string, packageId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, quoteId, cargoId, packageId }) => { 
       checkAcl(QuoteCargoPackageAcl.canUseDeletePackage({ officeId } ));
-      return QuoteCargoPackageApi.deletePackage(officeId, quoteId, cargoId, packageId, config)
+      return QuoteCargoPackageApi.deletePackage(officeId, quoteId, cargoId, packageId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -113,14 +112,14 @@ export const useDeletePackage = (options?: AppMutationOptions<typeof QuoteCargoP
  * @returns { UseMutationResult<CommonModels.PositionCargoPackageResponseDTO> } 
  * @statusCodes [201, 401]
  */
-export const useDuplicatePackage = (options?: AppMutationOptions<typeof QuoteCargoPackageApi.duplicatePackage, { officeId: string, quoteId: string, cargoId: string, packageId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useDuplicatePackage = (options?: AppMutationOptions<typeof QuoteCargoPackageApi.duplicatePackage, { officeId: string, quoteId: string, cargoId: string, packageId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, quoteId, cargoId, packageId }) => { 
       checkAcl(QuoteCargoPackageAcl.canUseDuplicatePackage({ officeId } ));
-      return QuoteCargoPackageApi.duplicatePackage(officeId, quoteId, cargoId, packageId, config)
+      return QuoteCargoPackageApi.duplicatePackage(officeId, quoteId, cargoId, packageId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -143,14 +142,14 @@ export const useDuplicatePackage = (options?: AppMutationOptions<typeof QuoteCar
  * @returns { UseMutationResult<CommonModels.PositionCargoPackageResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useMovePackage = (options?: AppMutationOptions<typeof QuoteCargoPackageApi.movePackage, { officeId: string, quoteId: string, cargoId: string, packageId: string, data: CommonModels.MovePositionCargoPackageRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useMovePackage = (options?: AppMutationOptions<typeof QuoteCargoPackageApi.movePackage, { officeId: string, quoteId: string, cargoId: string, packageId: string, data: CommonModels.MovePositionCargoPackageRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, quoteId, cargoId, packageId, data }) => { 
       checkAcl(QuoteCargoPackageAcl.canUseMovePackage({ officeId } ));
-      return QuoteCargoPackageApi.movePackage(officeId, quoteId, cargoId, packageId, data, config)
+      return QuoteCargoPackageApi.movePackage(officeId, quoteId, cargoId, packageId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

@@ -9,7 +9,7 @@ export namespace WorkingDocumentsHouseAwbModels {
  * @property { number } sellRate Sell rate 
  * @property { string } name Name 
  */
-export const HouseAwbDocumentOtherChargeDTOSchema = z.object({ chargeTypeId: z.string().describe("Charge type ID").nullish(), sellRate: z.number().describe("Sell rate"), name: z.string().describe("Name").nullish() }).readonly();
+export const HouseAwbDocumentOtherChargeDTOSchema = z.object({ chargeTypeId: z.string().nullish(), sellRate: z.number(), name: z.string().nullish() });
 export type HouseAwbDocumentOtherChargeDTO = z.infer<typeof HouseAwbDocumentOtherChargeDTOSchema>;
 
 /** 
@@ -20,7 +20,7 @@ export type HouseAwbDocumentOtherChargeDTO = z.infer<typeof HouseAwbDocumentOthe
  * @property { number } total Total 
  * @property { HouseAwbDocumentOtherChargeDTO[] } otherCharges Other charges 
  */
-export const HouseAwbDocumentChargesDTOSchema = z.object({ weightCharge: z.number().describe("Weight charge"), totalOtherCharges: z.number().describe("Total other charges"), total: z.number().describe("Total"), otherCharges: z.array(HouseAwbDocumentOtherChargeDTOSchema).readonly().describe("Other charges") }).readonly();
+export const HouseAwbDocumentChargesDTOSchema = z.object({ weightCharge: z.number(), totalOtherCharges: z.number(), total: z.number(), otherCharges: z.array(HouseAwbDocumentOtherChargeDTOSchema) });
 export type HouseAwbDocumentChargesDTO = z.infer<typeof HouseAwbDocumentChargesDTOSchema>;
 
 /** 
@@ -34,7 +34,7 @@ export type HouseAwbDocumentChargesDTO = z.infer<typeof HouseAwbDocumentChargesD
  * @property { number } total Total 
  * @property { string } description Description 
  */
-export const HouseAwbDocumentCargoDTOSchema = z.object({ quantity: z.number().describe("Quantity"), grossWeight: z.number().describe("Gross weight").nullish(), rateClass: z.string().describe("Rate class").nullish(), commodityItemNo: z.string().describe("Commodity item number").nullish(), rateOrCharge: z.number().describe("Rate or charge").nullish(), total: z.number().describe("Total").nullish(), description: z.string().describe("Description").nullish() }).readonly();
+export const HouseAwbDocumentCargoDTOSchema = z.object({ quantity: z.number(), grossWeight: z.number().nullish(), rateClass: z.string().nullish(), commodityItemNo: z.string().nullish(), rateOrCharge: z.number().nullish(), total: z.number().nullish(), description: z.string().nullish() });
 export type HouseAwbDocumentCargoDTO = z.infer<typeof HouseAwbDocumentCargoDTOSchema>;
 
 /** 
@@ -53,7 +53,7 @@ export type HouseAwbDocumentCargoDTO = z.infer<typeof HouseAwbDocumentCargoDTOSc
  * @property { string } flightNumber2 Flight number 2 
  * @property { string } flightDay2 Flight day 2 
  */
-export const HouseAwbDocumentRouteDTOSchema = z.object({ airportOfDeparture: z.string().describe("Airport of departure"), airportOfDestination: z.string().describe("Airport of destination"), toAirport1: z.string().describe("To airport 1").nullish(), byCarrier1: z.string().describe("By carrier 1").nullish(), toAirport2: z.string().describe("To airport 2").nullish(), byCarrier2: z.string().describe("By carrier 2").nullish(), toAirport3: z.string().describe("To airport 3").nullish(), byCarrier3: z.string().describe("By carrier 3").nullish(), flightNumber1: z.string().describe("Flight number 1").nullish(), flightDay1: z.string().describe("Flight day 1").nullish(), flightNumber2: z.string().describe("Flight number 2").nullish(), flightDay2: z.string().describe("Flight day 2").nullish() }).readonly();
+export const HouseAwbDocumentRouteDTOSchema = z.object({ airportOfDeparture: z.string(), airportOfDestination: z.string(), toAirport1: z.string().nullish(), byCarrier1: z.string().nullish(), toAirport2: z.string().nullish(), byCarrier2: z.string().nullish(), toAirport3: z.string().nullish(), byCarrier3: z.string().nullish(), flightNumber1: z.string().nullish(), flightDay1: z.string().nullish(), flightNumber2: z.string().nullish(), flightDay2: z.string().nullish() });
 export type HouseAwbDocumentRouteDTO = z.infer<typeof HouseAwbDocumentRouteDTOSchema>;
 
 /** 
@@ -63,7 +63,7 @@ export type HouseAwbDocumentRouteDTO = z.infer<typeof HouseAwbDocumentRouteDTOSc
  * @property { string } name Name of the business partner 
  * @property { string } address Address of the business partner 
  */
-export const HouseAwbDocumentBusinessPartnerResponseDTOSchema = z.object({ id: z.string().describe("ID of the business partner"), name: z.string().describe("Name of the business partner"), address: z.string().describe("Address of the business partner") }).readonly();
+export const HouseAwbDocumentBusinessPartnerResponseDTOSchema = z.object({ id: z.string().nullable(), name: z.string().nullable(), address: z.string().nullable() }).partial();
 export type HouseAwbDocumentBusinessPartnerResponseDTO = z.infer<typeof HouseAwbDocumentBusinessPartnerResponseDTOSchema>;
 
 /** 
@@ -108,7 +108,7 @@ export type HouseAwbDocumentBusinessPartnerResponseDTO = z.infer<typeof HouseAwb
  * @property { string } updatedAt Updated at 
  * @property { CommonModels.DocumentConfigDTO } config Config 
  */
-export const HouseAwbDocumentResponseDTOSchema = z.object({ id: z.string().describe("Unique identifier of the House AWB document"), positionId: z.string().describe("Unique identifier of the position this document belongs to"), positionNumber: z.string().describe("Position number for reference"), name: z.string().describe("Name of the House AWB document"), nameSuffix: z.string().describe("Suffix to be added to the document name").nullish(), defaultFileName: z.string(), currency: z.string().describe("Currency").nullish(), versionNumber: z.number().describe("Version number of the document"), hawbNumber: z.string().describe("HAWB number").nullish(), sciReference: z.string().describe("SCI reference").nullish(), reference1: z.string().describe("Reference 1").nullish(), reference2: z.string().describe("Reference 2").nullish(), reference3: z.string().describe("Reference 3").nullish(), exchangeRate: z.number().describe("Exchange rate").nullish(), additionalText: CommonModels.EditorContentResponseDtoSchema.describe("Additional text for the document").nullish(), handlingInstructions: z.string().describe("Handling instructions").nullish(), accountInformation: CommonModels.AccountInformationEnumSchema.describe("Account information").nullish(), additionalAccountingNotes: z.string().describe("Additional accounting notes").nullish(), isSecured: z.boolean().describe("Is secured"), suppressContainerWeight: z.boolean().describe("Suppress container weight"), suppressCargoMeasurement: z.boolean().describe("Suppress cargo measurement"), cargo: z.array(HouseAwbDocumentCargoDTOSchema).readonly().describe("Cargo packages").nullish(), charges: HouseAwbDocumentChargesDTOSchema.describe("Charges").nullish(), shipperSigner: z.string().describe("Shipper signer").nullish(), shipperSignerUserName: z.string().describe("Shipper signer user name").nullish(), signer: z.string().describe("Signer").nullish(), signingDate: z.iso.datetime({ offset: true }).describe("Signing date").nullish(), signingLocation: z.string().describe("Signing location").nullish(), issuerIataCode: z.string().describe("Issuer IATA code").nullish(), route: HouseAwbDocumentRouteDTOSchema.describe("Route").nullish(), issuer: HouseAwbDocumentBusinessPartnerResponseDTOSchema.describe("Issuer").nullish(), consignee: HouseAwbDocumentBusinessPartnerResponseDTOSchema.describe("Consignee").nullish(), shipper: HouseAwbDocumentBusinessPartnerResponseDTOSchema.describe("Shipper").nullish(), bodyRemarks: CommonModels.EditorContentResponseDtoSchema.describe("Body remarks").nullish(), footerRemarks: CommonModels.EditorContentResponseDtoSchema.describe("Footer remarks").nullish(), createdAt: z.iso.datetime({ offset: true }).describe("Created at"), updatedAt: z.iso.datetime({ offset: true }).describe("Updated at"), config: CommonModels.DocumentConfigDTOSchema.describe("Config").nullish() }).readonly();
+export const HouseAwbDocumentResponseDTOSchema = z.object({ id: z.string(), positionId: z.string(), positionNumber: z.string(), name: z.string(), nameSuffix: z.string().nullish(), defaultFileName: z.string(), currency: z.string().nullish(), versionNumber: z.number(), hawbNumber: z.string().nullish(), sciReference: z.string().nullish(), reference1: z.string().nullish(), reference2: z.string().nullish(), reference3: z.string().nullish(), exchangeRate: z.number().nullish(), additionalText: CommonModels.EditorContentResponseDtoSchema.nullish(), handlingInstructions: z.string().nullish(), accountInformation: CommonModels.AccountInformationEnumSchema.nullish(), additionalAccountingNotes: z.string().nullish(), isSecured: z.boolean(), suppressContainerWeight: z.boolean(), suppressCargoMeasurement: z.boolean(), cargo: z.array(HouseAwbDocumentCargoDTOSchema).nullish(), charges: HouseAwbDocumentChargesDTOSchema.nullish(), shipperSigner: z.string().nullish(), shipperSignerUserName: z.string().nullish(), signer: z.string().nullish(), signingDate: z.iso.datetime({ offset: true }).nullish(), signingLocation: z.string().nullish(), issuerIataCode: z.string().nullish(), route: HouseAwbDocumentRouteDTOSchema.nullish(), issuer: HouseAwbDocumentBusinessPartnerResponseDTOSchema.nullish(), consignee: HouseAwbDocumentBusinessPartnerResponseDTOSchema.nullish(), shipper: HouseAwbDocumentBusinessPartnerResponseDTOSchema.nullish(), bodyRemarks: CommonModels.EditorContentResponseDtoSchema.nullish(), footerRemarks: CommonModels.EditorContentResponseDtoSchema.nullish(), createdAt: z.iso.datetime({ offset: true }), updatedAt: z.iso.datetime({ offset: true }), config: CommonModels.DocumentConfigDTOSchema.nullish() });
 export type HouseAwbDocumentResponseDTO = z.infer<typeof HouseAwbDocumentResponseDTOSchema>;
 
 /** 
@@ -117,7 +117,7 @@ export type HouseAwbDocumentResponseDTO = z.infer<typeof HouseAwbDocumentRespons
  * @property { string } chargeTypeId Charge type ID 
  * @property { number } sellRate Sell rate 
  */
-export const UpdateHouseAwbDocumentChargesOtherChargeDTOSchema = z.object({ chargeTypeId: z.string().describe("Charge type ID"), sellRate: z.number().describe("Sell rate") }).readonly();
+export const UpdateHouseAwbDocumentChargesOtherChargeDTOSchema = z.object({ chargeTypeId: z.string().nullable(), sellRate: z.number().nullable() }).partial();
 export type UpdateHouseAwbDocumentChargesOtherChargeDTO = z.infer<typeof UpdateHouseAwbDocumentChargesOtherChargeDTOSchema>;
 
 /** 
@@ -126,7 +126,7 @@ export type UpdateHouseAwbDocumentChargesOtherChargeDTO = z.infer<typeof UpdateH
  * @property { number } weightCharge Weight charge 
  * @property { UpdateHouseAwbDocumentChargesOtherChargeDTO[] } otherCharges Other charges 
  */
-export const UpdateHouseAwbDocumentChargesDTOSchema = z.object({ weightCharge: z.number().describe("Weight charge"), otherCharges: z.array(UpdateHouseAwbDocumentChargesOtherChargeDTOSchema).readonly().describe("Other charges") }).readonly();
+export const UpdateHouseAwbDocumentChargesDTOSchema = z.object({ weightCharge: z.number().nullable(), otherCharges: z.array(UpdateHouseAwbDocumentChargesOtherChargeDTOSchema).nullable() }).partial();
 export type UpdateHouseAwbDocumentChargesDTO = z.infer<typeof UpdateHouseAwbDocumentChargesDTOSchema>;
 
 /** 
@@ -135,7 +135,7 @@ export type UpdateHouseAwbDocumentChargesDTO = z.infer<typeof UpdateHouseAwbDocu
  * @property { string } id Business partner ID 
  * @property { string } address Business partner address 
  */
-export const UpdateHouseAwbDocumentBusinessPartnerRequestDTOSchema = z.object({ id: z.string().describe("Business partner ID"), address: z.string().describe("Business partner address") }).readonly();
+export const UpdateHouseAwbDocumentBusinessPartnerRequestDTOSchema = z.object({ id: z.string().nullable(), address: z.string().nullable() }).partial();
 export type UpdateHouseAwbDocumentBusinessPartnerRequestDTO = z.infer<typeof UpdateHouseAwbDocumentBusinessPartnerRequestDTOSchema>;
 
 /** 
@@ -168,7 +168,7 @@ export type UpdateHouseAwbDocumentBusinessPartnerRequestDTO = z.infer<typeof Upd
  * @property { CommonModels.EditorContentUpdateDto } bodyRemarks Body remarks 
  * @property { CommonModels.EditorContentUpdateDto } footerRemarks Footer remarks 
  */
-export const UpdateHouseAwbDocumentRequestDTOSchema = z.object({ nameSuffix: z.string().describe("Document name suffix"), hawbNumber: z.string().describe("HAWB number"), sciReference: z.string().describe("SCI reference"), reference1: z.string().describe("Reference 1"), reference2: z.string().describe("Reference 2"), reference3: z.string().describe("Reference 3"), exchangeRate: z.number().describe("Exchange rate"), additionalText: CommonModels.EditorContentUpdateDtoSchema.describe("Additional text"), handlingInstructions: z.string().describe("Handling instructions"), accountInformation: CommonModels.AccountInformationEnumSchema.describe("Account information"), additionalAccountingNotes: z.string().describe("Additional accounting notes"), isSecured: z.boolean().describe("Is secured"), suppressContainerWeight: z.boolean().describe("Suppress container weight"), suppressCargoMeasurement: z.boolean().describe("Suppress cargo measurement"), charges: UpdateHouseAwbDocumentChargesDTOSchema.describe("Charges"), shipperSigner: z.string().describe("Shipper signer"), shipperSignerUserName: z.string().describe("Shipper signer user name"), signer: z.string().describe("Signer"), signingDate: z.iso.datetime({ offset: true }).describe("Signing date"), issuerId: z.string().describe("Issuer ID"), issuerName: z.string().describe("Issuer name"), issuerAddress: z.string().describe("Issuer address"), consignee: UpdateHouseAwbDocumentBusinessPartnerRequestDTOSchema.describe("Consignee"), shipper: UpdateHouseAwbDocumentBusinessPartnerRequestDTOSchema.describe("Shipper"), bodyRemarks: CommonModels.EditorContentUpdateDtoSchema.describe("Body remarks"), footerRemarks: CommonModels.EditorContentUpdateDtoSchema.describe("Footer remarks") }).readonly();
+export const UpdateHouseAwbDocumentRequestDTOSchema = z.object({ nameSuffix: z.string().nullable(), hawbNumber: z.string().nullable(), sciReference: z.string().nullable(), reference1: z.string().nullable(), reference2: z.string().nullable(), reference3: z.string().nullable(), exchangeRate: z.number().nullable(), additionalText: CommonModels.EditorContentUpdateDtoSchema.nullable(), handlingInstructions: z.string().nullable(), accountInformation: CommonModels.AccountInformationEnumSchema.nullable(), additionalAccountingNotes: z.string().nullable(), isSecured: z.boolean().nullable(), suppressContainerWeight: z.boolean().nullable(), suppressCargoMeasurement: z.boolean().nullable(), charges: UpdateHouseAwbDocumentChargesDTOSchema.nullable(), shipperSigner: z.string().nullable(), shipperSignerUserName: z.string().nullable(), signer: z.string().nullable(), signingDate: z.iso.datetime({ offset: true }).nullable(), issuerId: z.string().nullable(), issuerName: z.string().nullable(), issuerAddress: z.string().nullable(), consignee: UpdateHouseAwbDocumentBusinessPartnerRequestDTOSchema.nullable(), shipper: UpdateHouseAwbDocumentBusinessPartnerRequestDTOSchema.nullable(), bodyRemarks: CommonModels.EditorContentUpdateDtoSchema.nullable(), footerRemarks: CommonModels.EditorContentUpdateDtoSchema.nullable() }).partial();
 export type UpdateHouseAwbDocumentRequestDTO = z.infer<typeof UpdateHouseAwbDocumentRequestDTOSchema>;
 
 }

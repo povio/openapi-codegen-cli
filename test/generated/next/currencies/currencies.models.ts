@@ -8,7 +8,7 @@ export namespace CurrenciesModels {
  * @property { string } id  
  * @property { string } name  
  */
-export const CurrencyEmployeeDTOSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const CurrencyEmployeeDTOSchema = z.object({ id: z.string(), name: z.string() });
 export type CurrencyEmployeeDTO = z.infer<typeof CurrencyEmployeeDTOSchema>;
 
 /** 
@@ -25,7 +25,7 @@ export type CurrencyEmployeeDTO = z.infer<typeof CurrencyEmployeeDTOSchema>;
  * @property { CurrencyEmployeeDTO } updatedBy Employee who last updated this currency 
  * @property { string } updatedAt Date when the currency was last updated 
  */
-export const CurrencyResponseDtoSchema = z.object({ isoCode: z.string().describe("isoCode of the currency"), name: z.string().describe("Name of the currency"), symbol: z.string().describe("Symbol of the currency").nullish(), alignment: z.string().describe("Alignment of the currency").nullish(), createdById: z.string().describe("ID of the employee who created this currency").nullish(), createdBy: CurrencyEmployeeDTOSchema.describe("Employee who created this currency").nullish(), createdAt: z.iso.datetime({ offset: true }).describe("Date when the currency was created"), updatedById: z.string().describe("ID of the employee who last updated this currency").nullish(), updatedBy: CurrencyEmployeeDTOSchema.describe("Employee who last updated this currency").nullish(), updatedAt: z.iso.datetime({ offset: true }).describe("Date when the currency was last updated") }).readonly();
+export const CurrencyResponseDtoSchema = z.object({ isoCode: z.string(), name: z.string(), symbol: z.string().nullish(), alignment: z.string().nullish(), createdById: z.string().nullish(), createdBy: CurrencyEmployeeDTOSchema.nullish(), createdAt: z.iso.datetime({ offset: true }), updatedById: z.string().nullish(), updatedBy: CurrencyEmployeeDTOSchema.nullish(), updatedAt: z.iso.datetime({ offset: true }) });
 export type CurrencyResponseDto = z.infer<typeof CurrencyResponseDtoSchema>;
 
 /** 
@@ -34,7 +34,7 @@ export type CurrencyResponseDto = z.infer<typeof CurrencyResponseDtoSchema>;
  * @property { string } officeId  
  * @property { string } search  
  */
-export const CurrencyPaginationFilterDtoSchema = z.object({ officeId: z.string(), search: z.string() }).readonly();
+export const CurrencyPaginationFilterDtoSchema = z.object({ officeId: z.string().nullable(), search: z.string().nullable() }).partial();
 export type CurrencyPaginationFilterDto = z.infer<typeof CurrencyPaginationFilterDtoSchema>;
 
 /** 
@@ -45,7 +45,7 @@ export type CurrencyPaginationFilterDto = z.infer<typeof CurrencyPaginationFilte
  * @property { string } symbol Symbol of the currency 
  * @property { string } alignment Alignment of the currency 
  */
-export const CreateCurrencyRequestDTOSchema = z.object({ isoCode: z.string().describe("Unique identifier for the currency"), name: z.string().describe("Name of the currency"), symbol: z.string().describe("Symbol of the currency"), alignment: z.string().describe("Alignment of the currency") }).readonly();
+export const CreateCurrencyRequestDTOSchema = z.object({ isoCode: z.string(), name: z.string(), symbol: z.string(), alignment: z.string() });
 export type CreateCurrencyRequestDTO = z.infer<typeof CreateCurrencyRequestDTOSchema>;
 
 /** 
@@ -53,7 +53,7 @@ export type CreateCurrencyRequestDTO = z.infer<typeof CreateCurrencyRequestDTOSc
  * @type { object }
  * @property { string } name Name of the currency 
  */
-export const UpdateCurrencyRequestDTOSchema = z.object({ name: z.string().describe("Name of the currency") }).readonly();
+export const UpdateCurrencyRequestDTOSchema = z.object({ name: z.string().nullable() }).partial();
 export type UpdateCurrencyRequestDTO = z.infer<typeof UpdateCurrencyRequestDTOSchema>;
 
 /** 
@@ -74,7 +74,7 @@ export const CurrenciesListOrderParamEnum = CurrenciesListOrderParamEnumSchema.e
  * @property { number } totalItems Total available items 
  * @property { CurrencyResponseDto[] } items  
  */
-export const CurrenciesListResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CurrencyResponseDtoSchema).readonly() }).readonly().shape });
+export const CurrenciesListResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CurrencyResponseDtoSchema).nullable() }).partial().shape });
 export type CurrenciesListResponse = z.infer<typeof CurrenciesListResponseSchema>;
 
 /** 
@@ -95,7 +95,7 @@ export const PaginateCurrencyLabelsOrderParamEnum = PaginateCurrencyLabelsOrderP
  * @property { number } totalItems Total available items 
  * @property { CommonModels.LabelResponseDTO[] } items  
  */
-export const PaginateCurrencyLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).readonly() }).readonly().shape });
+export const PaginateCurrencyLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).nullable() }).partial().shape });
 export type PaginateCurrencyLabelsResponse = z.infer<typeof PaginateCurrencyLabelsResponseSchema>;
 
 /** 
@@ -116,7 +116,7 @@ export const PaginateCurrencyLabelsByOfficeOrderParamEnum = PaginateCurrencyLabe
  * @property { number } totalItems Total available items 
  * @property { CommonModels.LabelResponseDTO[] } items  
  */
-export const PaginateCurrencyLabelsByOfficeResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).readonly() }).readonly().shape });
+export const PaginateCurrencyLabelsByOfficeResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).nullable() }).partial().shape });
 export type PaginateCurrencyLabelsByOfficeResponse = z.infer<typeof PaginateCurrencyLabelsByOfficeResponseSchema>;
 
 }

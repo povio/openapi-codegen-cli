@@ -8,7 +8,7 @@ export namespace FilesModels {
  * @property { string } mimeType  
  * @property { number } fileSize Minimum: `0` 
  */
-export const CreateFileRequestDTOSchema = z.object({ name: z.string(), mimeType: z.string(), fileSize: z.number().gte(0) }).readonly();
+export const CreateFileRequestDTOSchema = z.object({ name: z.string(), mimeType: z.string(), fileSize: z.number().gte(0) });
 export type CreateFileRequestDTO = z.infer<typeof CreateFileRequestDTOSchema>;
 
 /** 
@@ -18,7 +18,7 @@ export type CreateFileRequestDTO = z.infer<typeof CreateFileRequestDTOSchema>;
  * @property { string } method  
  * @property { string } url  
  */
-export const FileUploadResponseDTOSchema = z.object({ fileId: z.string(), method: z.string(), url: z.string() }).readonly();
+export const FileUploadResponseDTOSchema = z.object({ fileId: z.string(), method: z.string(), url: z.string() });
 export type FileUploadResponseDTO = z.infer<typeof FileUploadResponseDTOSchema>;
 
 /** 
@@ -26,7 +26,7 @@ export type FileUploadResponseDTO = z.infer<typeof FileUploadResponseDTOSchema>;
  * @type { object }
  * @property { string[] } ids Min Items: `1` 
  */
-export const GetFilesEmlRequestDTOSchema = z.object({ ids: z.array(z.string()).readonly().min(1) }).readonly();
+export const GetFilesEmlRequestDTOSchema = z.object({ ids: z.array(z.string()).min(1) });
 export type GetFilesEmlRequestDTO = z.infer<typeof GetFilesEmlRequestDTOSchema>;
 
 /** 
@@ -34,7 +34,7 @@ export type GetFilesEmlRequestDTO = z.infer<typeof GetFilesEmlRequestDTOSchema>;
  * @type { object }
  * @property { string } name  
  */
-export const RenameFileRequestDTOSchema = z.object({ name: z.string() }).readonly();
+export const RenameFileRequestDTOSchema = z.object({ name: z.string() });
 export type RenameFileRequestDTO = z.infer<typeof RenameFileRequestDTOSchema>;
 
 /** 
@@ -43,7 +43,7 @@ export type RenameFileRequestDTO = z.infer<typeof RenameFileRequestDTOSchema>;
  * @property { string[] } fileIds Min Items: `1` 
  * @property { string } targetFolderId  
  */
-export const MoveFilesRequestDTOSchema = z.object({ fileIds: z.array(z.string()).readonly().min(1), targetFolderId: z.string() }).readonly();
+export const MoveFilesRequestDTOSchema = z.object({ fileIds: z.array(z.string()).min(1), targetFolderId: z.string() });
 export type MoveFilesRequestDTO = z.infer<typeof MoveFilesRequestDTOSchema>;
 
 /** 
@@ -51,7 +51,7 @@ export type MoveFilesRequestDTO = z.infer<typeof MoveFilesRequestDTOSchema>;
  * @type { object }
  * @property { string[] } ids Min Items: `1` 
  */
-export const SetFilesArchivedRequestDTOSchema = z.object({ ids: z.array(z.string()).readonly().min(1) }).readonly();
+export const SetFilesArchivedRequestDTOSchema = z.object({ ids: z.array(z.string()).min(1) });
 export type SetFilesArchivedRequestDTO = z.infer<typeof SetFilesArchivedRequestDTOSchema>;
 
 }

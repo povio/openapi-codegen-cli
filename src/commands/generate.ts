@@ -12,6 +12,7 @@ import { Profiler } from "@/helpers/profile.helper";
 export type GenerateParams = {
   config?: string;
   excludeTags?: string;
+  inlineEndpointsExcludeModules?: string;
   prettier?: boolean;
   verbose?: boolean;
 } & Partial<
@@ -34,8 +35,11 @@ export type GenerateParams = {
     | "infiniteQueries"
     | "axiosRequestConfig"
     | "mutationEffects"
+    | "workspaceContext"
     | "parseRequestParams"
+    | "inlineEndpoints"
     | "builderConfigs"
+    | "modelsOnly"
   >
 >;
 

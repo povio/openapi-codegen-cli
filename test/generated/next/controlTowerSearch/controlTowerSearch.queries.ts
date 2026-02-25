@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -20,12 +19,12 @@ export const moduleName = QueryModule.ControlTowerSearch;
  * @returns { UseMutationResult<ControlTowerSearchModels.SearchResponseDto> } 
  * @statusCodes [201, 401]
  */
-export const useSearch = (options?: AppMutationOptions<typeof ControlTowerSearchApi.search, { data: ControlTowerSearchModels.SearchRequestDto, type?: ControlTowerSearchModels.SearchItemTypeEnum, limit?: number }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useSearch = (options?: AppMutationOptions<typeof ControlTowerSearchApi.search, { data: ControlTowerSearchModels.SearchRequestDto, type?: ControlTowerSearchModels.SearchItemTypeEnum, limit?: number }> & MutationEffectsOptions) => {
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ data, type, limit }) => 
-      ControlTowerSearchApi.search(data, type, limit, config)
+      ControlTowerSearchApi.search(data, type, limit)
 ,
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

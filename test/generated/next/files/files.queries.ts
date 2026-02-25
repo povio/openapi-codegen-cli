@@ -1,4 +1,4 @@
-import axios, { AxiosRequestConfig } from "axios";
+import axios, {  } from "axios";
 import { useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -22,12 +22,12 @@ export const moduleName = QueryModule.Files;
  * @returns { UseMutationResult<FilesModels.FileUploadResponseDTO> } 
  * @statusCodes [201, 401]
  */
-export const useCreateUpload = (options?: AppMutationOptions<typeof FilesApi.createUpload, { officeId: string, folderId: string, data: FilesModels.CreateFileRequestDTO, file?: File; abortController?: AbortController; onUploadProgress?: (progress: { loaded: number; total: number }) => void }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreateUpload = (options?: AppMutationOptions<typeof FilesApi.createUpload, { officeId: string, folderId: string, data: FilesModels.CreateFileRequestDTO, file?: File; abortController?: AbortController; onUploadProgress?: (progress: { loaded: number; total: number }) => void }> & MutationEffectsOptions) => {
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: async ({ officeId, folderId, data, file, abortController, onUploadProgress }) => { 
-      const uploadInstructions = await FilesApi.createUpload(officeId, folderId, data, config);
+      const uploadInstructions = await FilesApi.createUpload(officeId, folderId, data);
       
       if (file && uploadInstructions.url) {
         const method = (data?.method?.toLowerCase() ?? "put") as "put" | "post";
@@ -71,12 +71,12 @@ export const useCreateUpload = (options?: AppMutationOptions<typeof FilesApi.cre
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
  */
-export const useGetEml = (options?: AppMutationOptions<typeof FilesApi.getEml, { officeId: string, data: FilesModels.GetFilesEmlRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useGetEml = (options?: AppMutationOptions<typeof FilesApi.getEml, { officeId: string, data: FilesModels.GetFilesEmlRequestDTO }> & MutationEffectsOptions) => {
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, data }) => 
-      FilesApi.getEml(officeId, data, config)
+      FilesApi.getEml(officeId, data)
 ,
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -96,12 +96,12 @@ export const useGetEml = (options?: AppMutationOptions<typeof FilesApi.getEml, {
  * @returns { UseMutationResult<CommonModels.FileResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useRename = (options?: AppMutationOptions<typeof FilesApi.rename, { officeId: string, fileId: string, data: FilesModels.RenameFileRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useRename = (options?: AppMutationOptions<typeof FilesApi.rename, { officeId: string, fileId: string, data: FilesModels.RenameFileRequestDTO }> & MutationEffectsOptions) => {
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, fileId, data }) => 
-      FilesApi.rename(officeId, fileId, data, config)
+      FilesApi.rename(officeId, fileId, data)
 ,
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -120,12 +120,12 @@ export const useRename = (options?: AppMutationOptions<typeof FilesApi.rename, {
  * @returns { UseMutationResult<void> } 
  * @statusCodes [204, 401]
  */
-export const useMove = (options?: AppMutationOptions<typeof FilesApi.move, { officeId: string, data: FilesModels.MoveFilesRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useMove = (options?: AppMutationOptions<typeof FilesApi.move, { officeId: string, data: FilesModels.MoveFilesRequestDTO }> & MutationEffectsOptions) => {
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, data }) => 
-      FilesApi.move(officeId, data, config)
+      FilesApi.move(officeId, data)
 ,
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -144,12 +144,12 @@ export const useMove = (options?: AppMutationOptions<typeof FilesApi.move, { off
  * @returns { UseMutationResult<void> } 
  * @statusCodes [204, 401]
  */
-export const useCopy = (options?: AppMutationOptions<typeof FilesApi.copy, { officeId: string, data: FilesModels.MoveFilesRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCopy = (options?: AppMutationOptions<typeof FilesApi.copy, { officeId: string, data: FilesModels.MoveFilesRequestDTO }> & MutationEffectsOptions) => {
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, data }) => 
-      FilesApi.copy(officeId, data, config)
+      FilesApi.copy(officeId, data)
 ,
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -168,12 +168,12 @@ export const useCopy = (options?: AppMutationOptions<typeof FilesApi.copy, { off
  * @returns { UseMutationResult<void> } 
  * @statusCodes [204, 401]
  */
-export const useArchive = (options?: AppMutationOptions<typeof FilesApi.archive, { officeId: string, data: FilesModels.SetFilesArchivedRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useArchive = (options?: AppMutationOptions<typeof FilesApi.archive, { officeId: string, data: FilesModels.SetFilesArchivedRequestDTO }> & MutationEffectsOptions) => {
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, data }) => 
-      FilesApi.archive(officeId, data, config)
+      FilesApi.archive(officeId, data)
 ,
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -192,12 +192,12 @@ export const useArchive = (options?: AppMutationOptions<typeof FilesApi.archive,
  * @returns { UseMutationResult<void> } 
  * @statusCodes [204, 401]
  */
-export const useUnarchive = (options?: AppMutationOptions<typeof FilesApi.unarchive, { officeId: string, data: FilesModels.SetFilesArchivedRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUnarchive = (options?: AppMutationOptions<typeof FilesApi.unarchive, { officeId: string, data: FilesModels.SetFilesArchivedRequestDTO }> & MutationEffectsOptions) => {
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, data }) => 
-      FilesApi.unarchive(officeId, data, config)
+      FilesApi.unarchive(officeId, data)
 ,
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

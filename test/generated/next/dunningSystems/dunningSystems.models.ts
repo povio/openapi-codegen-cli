@@ -8,7 +8,7 @@ export namespace DunningSystemsModels {
  * @property { string } id  
  * @property { string } name  
  */
-export const DunningSystemEmployeeDTOSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const DunningSystemEmployeeDTOSchema = z.object({ id: z.string(), name: z.string() });
 export type DunningSystemEmployeeDTO = z.infer<typeof DunningSystemEmployeeDTOSchema>;
 
 /** 
@@ -27,7 +27,7 @@ export type DunningSystemEmployeeDTO = z.infer<typeof DunningSystemEmployeeDTOSc
  * @property { DunningSystemEmployeeDTO } updatedBy  
  * @property { string } updatedAt  
  */
-export const DunningSystemResponseDTOSchema = z.object({ id: z.string(), officeId: z.string(), name: z.string(), isDefault: z.boolean(), archived: z.boolean(), archivedAt: z.iso.datetime({ offset: true }).nullish(), createdById: z.string().nullish(), createdBy: DunningSystemEmployeeDTOSchema.nullish(), createdAt: z.iso.datetime({ offset: true }), updatedById: z.string().nullish(), updatedBy: DunningSystemEmployeeDTOSchema.nullish(), updatedAt: z.iso.datetime({ offset: true }) }).readonly();
+export const DunningSystemResponseDTOSchema = z.object({ id: z.string(), officeId: z.string(), name: z.string(), isDefault: z.boolean(), archived: z.boolean(), archivedAt: z.iso.datetime({ offset: true }).nullish(), createdById: z.string().nullish(), createdBy: DunningSystemEmployeeDTOSchema.nullish(), createdAt: z.iso.datetime({ offset: true }), updatedById: z.string().nullish(), updatedBy: DunningSystemEmployeeDTOSchema.nullish(), updatedAt: z.iso.datetime({ offset: true }) });
 export type DunningSystemResponseDTO = z.infer<typeof DunningSystemResponseDTOSchema>;
 
 /** 
@@ -35,7 +35,7 @@ export type DunningSystemResponseDTO = z.infer<typeof DunningSystemResponseDTOSc
  * @type { object }
  * @property { string } search  
  */
-export const DunningSystemLabelFilterDtoSchema = z.object({ search: z.string() }).readonly();
+export const DunningSystemLabelFilterDtoSchema = z.object({ search: z.string().nullable() }).partial();
 export type DunningSystemLabelFilterDto = z.infer<typeof DunningSystemLabelFilterDtoSchema>;
 
 /** 
@@ -45,7 +45,7 @@ export type DunningSystemLabelFilterDto = z.infer<typeof DunningSystemLabelFilte
  * @property { boolean } archived  
  * @property { boolean } isDefault  
  */
-export const DunningSystemFilterDtoSchema = z.object({ search: z.string(), archived: z.boolean(), isDefault: z.boolean() }).readonly();
+export const DunningSystemFilterDtoSchema = z.object({ search: z.string().nullable(), archived: z.boolean().nullable(), isDefault: z.boolean().nullable() }).partial();
 export type DunningSystemFilterDto = z.infer<typeof DunningSystemFilterDtoSchema>;
 
 /** 
@@ -54,7 +54,7 @@ export type DunningSystemFilterDto = z.infer<typeof DunningSystemFilterDtoSchema
  * @property { string } name Dunning system name. Min Length: `3`. Max Length: `100` 
  * @property { boolean } isDefault Is default dunning system 
  */
-export const CreateDunningSystemRequestDTOSchema = z.object({ name: z.string().min(3).max(100).describe("Dunning system name"), isDefault: z.boolean().describe("Is default dunning system").nullish() }).readonly();
+export const CreateDunningSystemRequestDTOSchema = z.object({ name: z.string().min(3).max(100), isDefault: z.boolean().nullish() });
 export type CreateDunningSystemRequestDTO = z.infer<typeof CreateDunningSystemRequestDTOSchema>;
 
 /** 
@@ -63,7 +63,7 @@ export type CreateDunningSystemRequestDTO = z.infer<typeof CreateDunningSystemRe
  * @property { string } name Dunning system name. Min Length: `3`. Max Length: `100` 
  * @property { boolean } isDefault Is default dunning system 
  */
-export const UpdateDunningSystemRequestDTOSchema = z.object({ name: z.string().min(3).max(100).describe("Dunning system name"), isDefault: z.boolean().describe("Is default dunning system") }).readonly();
+export const UpdateDunningSystemRequestDTOSchema = z.object({ name: z.string().min(3).max(100).nullable(), isDefault: z.boolean().nullable() }).partial();
 export type UpdateDunningSystemRequestDTO = z.infer<typeof UpdateDunningSystemRequestDTOSchema>;
 
 /** 
@@ -84,7 +84,7 @@ export const DunningSystemsPaginateLabelsOrderParamEnum = DunningSystemsPaginate
  * @property { number } totalItems Total available items 
  * @property { CommonModels.LabelResponseDTO[] } items  
  */
-export const DunningSystemsPaginateLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).readonly() }).readonly().shape });
+export const DunningSystemsPaginateLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(CommonModels.LabelResponseDTOSchema).nullable() }).partial().shape });
 export type DunningSystemsPaginateLabelsResponse = z.infer<typeof DunningSystemsPaginateLabelsResponseSchema>;
 
 /** 
@@ -105,7 +105,7 @@ export const DunningSystemsPaginateOrderParamEnum = DunningSystemsPaginateOrderP
  * @property { number } totalItems Total available items 
  * @property { DunningSystemResponseDTO[] } items  
  */
-export const DunningSystemsPaginateResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(DunningSystemResponseDTOSchema).readonly() }).readonly().shape });
+export const DunningSystemsPaginateResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(DunningSystemResponseDTOSchema).nullable() }).partial().shape });
 export type DunningSystemsPaginateResponse = z.infer<typeof DunningSystemsPaginateResponseSchema>;
 
 }

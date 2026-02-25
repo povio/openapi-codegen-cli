@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -37,14 +36,14 @@ export const keys = {
  * @returns { UseQueryResult<EmployeeModels.EmployeePaginateResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginate = <TData>({ limit, order, populate, filter, page, cursor }: { limit: number, order?: string, populate?: EmployeeModels.EmployeePaginatePopulateParam, filter?: EmployeeModels.EmployeeFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof EmployeeApi.paginate, TData>, config?: AxiosRequestConfig) => {
+export const usePaginate = <TData>({ limit, order, populate, filter, page, cursor }: { limit: number, order?: string, populate?: EmployeeModels.EmployeePaginatePopulateParam, filter?: EmployeeModels.EmployeeFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof EmployeeApi.paginate, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.paginate(limit, order, populate, filter, page, cursor),
     queryFn: () => { 
     checkAcl(EmployeeAcl.canUsePaginate());
-    return EmployeeApi.paginate(limit, order, populate, filter, page, cursor, config) },
+    return EmployeeApi.paginate(limit, order, populate, filter, page, cursor) },
     ...options,
   });
 };
@@ -63,14 +62,14 @@ export const usePaginate = <TData>({ limit, order, populate, filter, page, curso
  * @returns { UseInfiniteQueryResult<EmployeeModels.EmployeePaginateResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateInfinite = <TData>({ limit, order, populate, filter, cursor }: { limit: number, order?: string, populate?: EmployeeModels.EmployeePaginatePopulateParam, filter?: EmployeeModels.EmployeeFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof EmployeeApi.paginate, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateInfinite = <TData>({ limit, order, populate, filter, cursor }: { limit: number, order?: string, populate?: EmployeeModels.EmployeePaginatePopulateParam, filter?: EmployeeModels.EmployeeFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof EmployeeApi.paginate, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.paginateInfinite(limit, order, populate, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(EmployeeAcl.canUsePaginate());
-    return EmployeeApi.paginate(limit, order, populate, filter, pageParam, cursor, config) },
+    return EmployeeApi.paginate(limit, order, populate, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -89,14 +88,14 @@ export const usePaginateInfinite = <TData>({ limit, order, populate, filter, cur
  * @returns { UseMutationResult<EmployeeModels.EmployeeResponse> } 
  * @statusCodes [201, 401]
  */
-export const useCreate = (options?: AppMutationOptions<typeof EmployeeApi.create, { data: EmployeeModels.EmployeeCreateRequest }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreate = (options?: AppMutationOptions<typeof EmployeeApi.create, { data: EmployeeModels.EmployeeCreateRequest }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ data }) => { 
       checkAcl(EmployeeAcl.canUseCreate());
-      return EmployeeApi.create(data, config)
+      return EmployeeApi.create(data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -119,12 +118,12 @@ export const useCreate = (options?: AppMutationOptions<typeof EmployeeApi.create
  * @returns { UseMutationResult<EmployeeModels.EmployeeResponse> } 
  * @statusCodes [201, 401]
  */
-export const useSingeStepCreate = (options?: AppMutationOptions<typeof EmployeeApi.singeStepCreate, { data: EmployeeModels.EmployeeOneStepCreateRequest }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useSingeStepCreate = (options?: AppMutationOptions<typeof EmployeeApi.singeStepCreate, { data: EmployeeModels.EmployeeOneStepCreateRequest }> & MutationEffectsOptions) => {
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ data }) => 
-      EmployeeApi.singeStepCreate(data, config)
+      EmployeeApi.singeStepCreate(data)
 ,
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -143,14 +142,14 @@ export const useSingeStepCreate = (options?: AppMutationOptions<typeof EmployeeA
  * @returns { UseQueryResult<EmployeeModels.EmployeeFindAllResponse> } 
  * @statusCodes [200, 401]
  */
-export const useFindAll = <TData>({ search }: { search?: string }, options?: AppQueryOptions<typeof EmployeeApi.findAll, TData>, config?: AxiosRequestConfig) => {
+export const useFindAll = <TData>({ search }: { search?: string }, options?: AppQueryOptions<typeof EmployeeApi.findAll, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.findAll(search),
     queryFn: () => { 
     checkAcl(EmployeeAcl.canUseFindAll());
-    return EmployeeApi.findAll(search, config) },
+    return EmployeeApi.findAll(search) },
     ...options,
   });
 };
@@ -168,14 +167,14 @@ export const useFindAll = <TData>({ search }: { search?: string }, options?: App
  * @returns { UseQueryResult<EmployeeModels.EmployeePaginateLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: EmployeeModels.EmployeeLabelFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof EmployeeApi.paginateLabels, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: EmployeeModels.EmployeeLabelFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof EmployeeApi.paginateLabels, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.paginateLabels(limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(EmployeeAcl.canUsePaginateLabels());
-    return EmployeeApi.paginateLabels(limit, order, filter, page, cursor, config) },
+    return EmployeeApi.paginateLabels(limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -193,14 +192,14 @@ export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }:
  * @returns { UseInfiniteQueryResult<EmployeeModels.EmployeePaginateLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: EmployeeModels.EmployeeLabelFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof EmployeeApi.paginateLabels, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: EmployeeModels.EmployeeLabelFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof EmployeeApi.paginateLabels, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.paginateLabelsInfinite(limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(EmployeeAcl.canUsePaginateLabels());
-    return EmployeeApi.paginateLabels(limit, order, filter, pageParam, cursor, config) },
+    return EmployeeApi.paginateLabels(limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -218,12 +217,12 @@ export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor 
  * @returns { UseMutationResult<CommonModels.StatusResponseDto> } 
  * @statusCodes [201, 401]
  */
-export const useResendOnboarding = (options?: AppMutationOptions<typeof EmployeeApi.resendOnboarding, { employeeId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useResendOnboarding = (options?: AppMutationOptions<typeof EmployeeApi.resendOnboarding, { employeeId: string }> & MutationEffectsOptions) => {
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ employeeId }) => 
-      EmployeeApi.resendOnboarding(employeeId, config)
+      EmployeeApi.resendOnboarding(employeeId)
 ,
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -242,14 +241,14 @@ export const useResendOnboarding = (options?: AppMutationOptions<typeof Employee
  * @returns { UseMutationResult<CommonModels.StatusResponseDto> } 
  * @statusCodes [201, 401]
  */
-export const useResendOnboardingWithOffice = (options?: AppMutationOptions<typeof EmployeeApi.resendOnboardingWithOffice, { officeId: string, employeeId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useResendOnboardingWithOffice = (options?: AppMutationOptions<typeof EmployeeApi.resendOnboardingWithOffice, { officeId: string, employeeId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, employeeId }) => { 
       checkAcl(EmployeeAcl.canUseResendOnboardingWithOffice({ officeId } ));
-      return EmployeeApi.resendOnboardingWithOffice(officeId, employeeId, config)
+      return EmployeeApi.resendOnboardingWithOffice(officeId, employeeId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -270,14 +269,14 @@ export const useResendOnboardingWithOffice = (options?: AppMutationOptions<typeo
  * @returns { UseQueryResult<EmployeeModels.EmployeeResponse> } 
  * @statusCodes [200, 401]
  */
-export const useGet = <TData>({ employeeId, populate }: { employeeId: string, populate?: EmployeeModels.EmployeeGetPopulateParam }, options?: AppQueryOptions<typeof EmployeeApi.get, TData>, config?: AxiosRequestConfig) => {
+export const useGet = <TData>({ employeeId, populate }: { employeeId: string, populate?: EmployeeModels.EmployeeGetPopulateParam }, options?: AppQueryOptions<typeof EmployeeApi.get, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.get(employeeId, populate),
     queryFn: () => { 
     checkAcl(EmployeeAcl.canUseGet());
-    return EmployeeApi.get(employeeId, populate, config) },
+    return EmployeeApi.get(employeeId, populate) },
     ...options,
   });
 };
@@ -293,14 +292,14 @@ export const useGet = <TData>({ employeeId, populate }: { employeeId: string, po
  * @returns { UseMutationResult<EmployeeModels.EmployeeResponse> } 
  * @statusCodes [200, 401]
  */
-export const useUpdate = (options?: AppMutationOptions<typeof EmployeeApi.update, { employeeId: string, data: EmployeeModels.EmployeeUpdateRequest }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdate = (options?: AppMutationOptions<typeof EmployeeApi.update, { employeeId: string, data: EmployeeModels.EmployeeUpdateRequest }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ employeeId, data }) => { 
       checkAcl(EmployeeAcl.canUseUpdate());
-      return EmployeeApi.update(employeeId, data, config)
+      return EmployeeApi.update(employeeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -322,14 +321,14 @@ export const useUpdate = (options?: AppMutationOptions<typeof EmployeeApi.update
  * @returns { UseQueryResult<EmployeeModels.EmployeeResponse> } 
  * @statusCodes [200, 401]
  */
-export const useGetWithOffice = <TData>({ officeId, employeeId, populate }: { officeId: string, employeeId: string, populate?: EmployeeModels.GetWithOfficePopulateParam }, options?: AppQueryOptions<typeof EmployeeApi.getWithOffice, TData>, config?: AxiosRequestConfig) => {
+export const useGetWithOffice = <TData>({ officeId, employeeId, populate }: { officeId: string, employeeId: string, populate?: EmployeeModels.GetWithOfficePopulateParam }, options?: AppQueryOptions<typeof EmployeeApi.getWithOffice, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.getWithOffice(officeId, employeeId, populate),
     queryFn: () => { 
     checkAcl(EmployeeAcl.canUseGetWithOffice({ officeId } ));
-    return EmployeeApi.getWithOffice(officeId, employeeId, populate, config) },
+    return EmployeeApi.getWithOffice(officeId, employeeId, populate) },
     ...options,
   });
 };
@@ -344,14 +343,14 @@ export const useGetWithOffice = <TData>({ officeId, employeeId, populate }: { of
  * @returns { UseMutationResult<EmployeeModels.EmployeeResponse> } 
  * @statusCodes [200, 401]
  */
-export const useUpdateWithOffice = (options?: AppMutationOptions<typeof EmployeeApi.updateWithOffice, { officeId: string, employeeId: string, data: EmployeeModels.EmployeeUpdateRequest }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdateWithOffice = (options?: AppMutationOptions<typeof EmployeeApi.updateWithOffice, { officeId: string, employeeId: string, data: EmployeeModels.EmployeeUpdateRequest }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, employeeId, data }) => { 
       checkAcl(EmployeeAcl.canUseUpdateWithOffice({ officeId } ));
-      return EmployeeApi.updateWithOffice(officeId, employeeId, data, config)
+      return EmployeeApi.updateWithOffice(officeId, employeeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -372,14 +371,14 @@ export const useUpdateWithOffice = (options?: AppMutationOptions<typeof Employee
  * @returns { UseQueryResult<EmployeeModels.EmployeeListRolesResponse> } 
  * @statusCodes [200, 401]
  */
-export const useListRoles = <TData>({ employeeId }: { employeeId: string }, options?: AppQueryOptions<typeof EmployeeApi.listRoles, TData>, config?: AxiosRequestConfig) => {
+export const useListRoles = <TData>({ employeeId }: { employeeId: string }, options?: AppQueryOptions<typeof EmployeeApi.listRoles, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.listRoles(employeeId),
     queryFn: () => { 
     checkAcl(EmployeeAcl.canUseListRoles());
-    return EmployeeApi.listRoles(employeeId, config) },
+    return EmployeeApi.listRoles(employeeId) },
     ...options,
   });
 };
@@ -394,14 +393,14 @@ export const useListRoles = <TData>({ employeeId }: { employeeId: string }, opti
  * @returns { UseMutationResult<EmployeeModels.EmployeeUpdateRolesResponse> } 
  * @statusCodes [200, 401]
  */
-export const useUpdateRoles = (options?: AppMutationOptions<typeof EmployeeApi.updateRoles, { employeeId: string, data: EmployeeModels.EmployeeRoleMembershipsUpdateRequest }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdateRoles = (options?: AppMutationOptions<typeof EmployeeApi.updateRoles, { employeeId: string, data: EmployeeModels.EmployeeRoleMembershipsUpdateRequest }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ employeeId, data }) => { 
       checkAcl(EmployeeAcl.canUseUpdateRoles());
-      return EmployeeApi.updateRoles(employeeId, data, config)
+      return EmployeeApi.updateRoles(employeeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -420,14 +419,14 @@ export const useUpdateRoles = (options?: AppMutationOptions<typeof EmployeeApi.u
  * @returns { UseMutationResult<EmployeeModels.EmployeeResponse> } 
  * @statusCodes [200, 401]
  */
-export const useArchive = (options?: AppMutationOptions<typeof EmployeeApi.archive, { employeeId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useArchive = (options?: AppMutationOptions<typeof EmployeeApi.archive, { employeeId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ employeeId }) => { 
       checkAcl(EmployeeAcl.canUseArchive());
-      return EmployeeApi.archive(employeeId, config)
+      return EmployeeApi.archive(employeeId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -448,14 +447,14 @@ export const useArchive = (options?: AppMutationOptions<typeof EmployeeApi.archi
  * @returns { UseMutationResult<EmployeeModels.EmployeeResponse> } 
  * @statusCodes [200, 401]
  */
-export const useUnarchive = (options?: AppMutationOptions<typeof EmployeeApi.unarchive, { employeeId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUnarchive = (options?: AppMutationOptions<typeof EmployeeApi.unarchive, { employeeId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ employeeId }) => { 
       checkAcl(EmployeeAcl.canUseUnarchive());
-      return EmployeeApi.unarchive(employeeId, config)
+      return EmployeeApi.unarchive(employeeId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

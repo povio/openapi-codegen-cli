@@ -18,7 +18,7 @@ export namespace ControlTowerContainersModels {
  * @property { string } journeyTo  
  * @property { CommonModels.VesselDto } vessel  
  */
-export const ContainerListItemDtoSchema = z.object({ containerNumber: z.string().nullable(), id: z.string(), ets: z.iso.datetime({ offset: true }).nullable(), eta: z.iso.datetime({ offset: true }).nullable(), supplierName: z.string().nullable(), supplierAddress: z.string().nullable(), lastEvent: z.string().nullable(), lastEventLocation: z.string().nullable(), lastEventDate: z.iso.datetime({ offset: true }).nullable(), journeyFrom: z.string().nullable(), journeyTo: z.string().nullable(), vessel: CommonModels.VesselDtoSchema.nullable() }).readonly();
+export const ContainerListItemDtoSchema = z.object({ containerNumber: z.string().nullable(), id: z.string(), ets: z.iso.datetime({ offset: true }).nullable(), eta: z.iso.datetime({ offset: true }).nullable(), supplierName: z.string().nullable(), supplierAddress: z.string().nullable(), lastEvent: z.string().nullable(), lastEventLocation: z.string().nullable(), lastEventDate: z.iso.datetime({ offset: true }).nullable(), journeyFrom: z.string().nullable(), journeyTo: z.string().nullable(), vessel: CommonModels.VesselDtoSchema.nullable() });
 export type ContainerListItemDto = z.infer<typeof ContainerListItemDtoSchema>;
 
 /** 
@@ -29,7 +29,7 @@ export type ContainerListItemDto = z.infer<typeof ContainerListItemDtoSchema>;
  * @property { string } date  
  * @property { boolean } checkedIn  
  */
-export const ContainerEventDtoSchema = z.object({ vessel: CommonModels.VesselDtoSchema.nullable(), name: z.string(), date: z.iso.datetime({ offset: true }).nullable(), checkedIn: z.boolean() }).readonly();
+export const ContainerEventDtoSchema = z.object({ vessel: CommonModels.VesselDtoSchema.nullable(), name: z.string(), date: z.iso.datetime({ offset: true }).nullable(), checkedIn: z.boolean() });
 export type ContainerEventDto = z.infer<typeof ContainerEventDtoSchema>;
 
 /** 
@@ -41,7 +41,7 @@ export type ContainerEventDto = z.infer<typeof ContainerEventDtoSchema>;
  * @property { boolean } checkedIn  
  * @property { ContainerEventDto[] } events  
  */
-export const ContainerJourneyDtoSchema = z.object({ id: z.string(), country: z.string().nullable(), terminal: z.string().nullable(), checkedIn: z.boolean(), events: z.array(ContainerEventDtoSchema).readonly() }).readonly();
+export const ContainerJourneyDtoSchema = z.object({ id: z.string(), country: z.string().nullable(), terminal: z.string().nullable(), checkedIn: z.boolean(), events: z.array(ContainerEventDtoSchema) });
 export type ContainerJourneyDto = z.infer<typeof ContainerJourneyDtoSchema>;
 
 /** 
@@ -51,7 +51,7 @@ export type ContainerJourneyDto = z.infer<typeof ContainerJourneyDtoSchema>;
  * @property { string } type  
  * @property { string } description  
  */
-export const PackageNumberDtoSchema = z.object({ id: z.string(), type: z.string().nullable(), description: z.string() }).readonly();
+export const PackageNumberDtoSchema = z.object({ id: z.string(), type: z.string().nullable(), description: z.string() });
 export type PackageNumberDto = z.infer<typeof PackageNumberDtoSchema>;
 
 /** 
@@ -86,7 +86,7 @@ export type PackageNumberDto = z.infer<typeof PackageNumberDtoSchema>;
  * @property { string } journeyTo  
  * @property { CommonModels.VesselDto } vessel  
  */
-export const ContainerResponseDtoSchema = z.object({ id: z.string(), containerNumber: z.string().nullable(), poNumber: z.string().nullable(), bookingNumber: z.string().nullable(), blNumber: z.string().nullable(), stuffedInContainer: z.iso.datetime({ offset: true }).nullable(), containerType: z.string().nullable(), loadType: z.string().nullable(), hsCode: z.array(z.string()).readonly().nullable(), totalVolume: z.number().nullable(), totalWeight: z.number().nullable(), cargoDescription: z.string().nullable(), noS: z.number().nullable(), journeys: z.array(ContainerJourneyDtoSchema).readonly().nullish(), packages: z.array(PackageNumberDtoSchema).readonly().nullish(), bookingId: z.string().nullable(), destination: z.string().nullable(), files: z.array(z.string()).readonly().nullable(), ets: z.iso.datetime({ offset: true }).nullable(), eta: z.iso.datetime({ offset: true }).nullable(), supplierName: z.string().nullable(), supplierAddress: z.string().nullable(), lastEvent: z.string().nullable(), lastEventLocation: z.string().nullable(), lastEventDate: z.iso.datetime({ offset: true }).nullable(), journeyFrom: z.string().nullable(), journeyTo: z.string().nullable(), vessel: CommonModels.VesselDtoSchema.nullable() }).readonly();
+export const ContainerResponseDtoSchema = z.object({ id: z.string(), containerNumber: z.string().nullable(), poNumber: z.string().nullable(), bookingNumber: z.string().nullable(), blNumber: z.string().nullable(), stuffedInContainer: z.iso.datetime({ offset: true }).nullable(), containerType: z.string().nullable(), loadType: z.string().nullable(), hsCode: z.array(z.string()).nullable(), totalVolume: z.number().nullable(), totalWeight: z.number().nullable(), cargoDescription: z.string().nullable(), noS: z.number().nullable(), journeys: z.array(ContainerJourneyDtoSchema).nullish(), packages: z.array(PackageNumberDtoSchema).nullish(), bookingId: z.string().nullable(), destination: z.string().nullable(), files: z.array(z.string()).nullable(), ets: z.iso.datetime({ offset: true }).nullable(), eta: z.iso.datetime({ offset: true }).nullable(), supplierName: z.string().nullable(), supplierAddress: z.string().nullable(), lastEvent: z.string().nullable(), lastEventLocation: z.string().nullable(), lastEventDate: z.iso.datetime({ offset: true }).nullable(), journeyFrom: z.string().nullable(), journeyTo: z.string().nullable(), vessel: CommonModels.VesselDtoSchema.nullable() });
 export type ContainerResponseDto = z.infer<typeof ContainerResponseDtoSchema>;
 
 /** 
@@ -97,7 +97,7 @@ export type ContainerResponseDto = z.infer<typeof ContainerResponseDtoSchema>;
  * @property { ContainerJourneyDto[] } journeys  
  * @property { string[] } packageNumbers  
  */
-export const ContainerJourneyResponseDtoSchema = z.object({ id: z.string(), number: z.string(), journeys: z.array(ContainerJourneyDtoSchema).readonly(), packageNumbers: z.array(z.string()).readonly() }).readonly();
+export const ContainerJourneyResponseDtoSchema = z.object({ id: z.string(), number: z.string(), journeys: z.array(ContainerJourneyDtoSchema), packageNumbers: z.array(z.string()) });
 export type ContainerJourneyResponseDto = z.infer<typeof ContainerJourneyResponseDtoSchema>;
 
 /** 
@@ -106,7 +106,7 @@ export type ContainerJourneyResponseDto = z.infer<typeof ContainerJourneyRespons
  * @property { number[] } companyIds  
  * @property { string } search  
  */
-export const ContainerFilterDtoSchema = z.object({ companyIds: z.array(z.number()).readonly(), search: z.string() }).readonly();
+export const ContainerFilterDtoSchema = z.object({ companyIds: z.array(z.number()).nullable(), search: z.string().nullable() }).partial();
 export type ContainerFilterDto = z.infer<typeof ContainerFilterDtoSchema>;
 
 /** 
@@ -127,7 +127,7 @@ export const ControlTowerContainersFindAllOrderParamEnum = ControlTowerContainer
  * @property { number } totalItems Total available items 
  * @property { ContainerListItemDto[] } items  
  */
-export const ControlTowerContainersFindAllResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(ContainerListItemDtoSchema).readonly() }).readonly().shape });
+export const ControlTowerContainersFindAllResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(ContainerListItemDtoSchema).nullable() }).partial().shape });
 export type ControlTowerContainersFindAllResponse = z.infer<typeof ControlTowerContainersFindAllResponseSchema>;
 
 }

@@ -9,7 +9,7 @@ export namespace RemarkTemplatesModels {
  * @property { string } label  
  * @property { CommonModels.EditorContentResponseDto } content Remark template content 
  */
-export const RemarkTemplateLabelResponseDTOSchema = z.object({ id: z.string(), label: z.string(), content: CommonModels.EditorContentResponseDtoSchema.describe("Remark template content") }).readonly();
+export const RemarkTemplateLabelResponseDTOSchema = z.object({ id: z.string(), label: z.string(), content: CommonModels.EditorContentResponseDtoSchema });
 export type RemarkTemplateLabelResponseDTO = z.infer<typeof RemarkTemplateLabelResponseDTOSchema>;
 
 /** 
@@ -18,7 +18,7 @@ export type RemarkTemplateLabelResponseDTO = z.infer<typeof RemarkTemplateLabelR
  * @property { string } id  
  * @property { string } name  
  */
-export const RemarkTemplateEmployeeDTOSchema = z.object({ id: z.string(), name: z.string() }).readonly();
+export const RemarkTemplateEmployeeDTOSchema = z.object({ id: z.string(), name: z.string() });
 export type RemarkTemplateEmployeeDTO = z.infer<typeof RemarkTemplateEmployeeDTOSchema>;
 
 /** 
@@ -45,7 +45,7 @@ export const OnlyUsedForEnum = OnlyUsedForEnumSchema.enum;
  * @property { RemarkTemplateEmployeeDTO } updatedBy  
  * @property { string } updatedAt  
  */
-export const RemarkTemplateResponseDTOSchema = z.object({ id: z.string(), officeId: z.string(), name: z.string().describe("Template name"), content: CommonModels.EditorContentResponseDtoSchema.describe("Template content"), onlyUsedFor: z.array(OnlyUsedForEnumSchema).readonly().describe("Restrict template usage to specific document types").nullish(), archived: z.boolean(), createdById: z.string().nullish(), createdBy: RemarkTemplateEmployeeDTOSchema.nullish(), createdAt: z.iso.datetime({ offset: true }), updatedById: z.string().nullish(), updatedBy: RemarkTemplateEmployeeDTOSchema.nullish(), updatedAt: z.iso.datetime({ offset: true }) }).readonly();
+export const RemarkTemplateResponseDTOSchema = z.object({ id: z.string(), officeId: z.string(), name: z.string(), content: CommonModels.EditorContentResponseDtoSchema, onlyUsedFor: z.array(OnlyUsedForEnumSchema).nullish(), archived: z.boolean(), createdById: z.string().nullish(), createdBy: RemarkTemplateEmployeeDTOSchema.nullish(), createdAt: z.iso.datetime({ offset: true }), updatedById: z.string().nullish(), updatedBy: RemarkTemplateEmployeeDTOSchema.nullish(), updatedAt: z.iso.datetime({ offset: true }) });
 export type RemarkTemplateResponseDTO = z.infer<typeof RemarkTemplateResponseDTOSchema>;
 
 /** 
@@ -55,7 +55,7 @@ export type RemarkTemplateResponseDTO = z.infer<typeof RemarkTemplateResponseDTO
  * @property { CommonModels.EditorContentUpdateDto } content Template content 
  * @property { OnlyUsedForEnum[] } onlyUsedFor Restrict template usage to specific document types 
  */
-export const CreateRemarkTemplateRequestDTOSchema = z.object({ name: z.string().describe("Template name"), content: CommonModels.EditorContentUpdateDtoSchema.describe("Template content"), onlyUsedFor: z.array(OnlyUsedForEnumSchema).readonly().describe("Restrict template usage to specific document types").nullish() }).readonly();
+export const CreateRemarkTemplateRequestDTOSchema = z.object({ name: z.string(), content: CommonModels.EditorContentUpdateDtoSchema, onlyUsedFor: z.array(OnlyUsedForEnumSchema).nullish() });
 export type CreateRemarkTemplateRequestDTO = z.infer<typeof CreateRemarkTemplateRequestDTOSchema>;
 
 /** 
@@ -66,7 +66,7 @@ export type CreateRemarkTemplateRequestDTO = z.infer<typeof CreateRemarkTemplate
  * @property { string[] } onlyUsedFor Restrict template usage to specific document types 
  * @property { boolean } archived Archive status 
  */
-export const UpdateRemarkTemplateRequestDTOSchema = z.object({ name: z.string().describe("Template name"), content: CommonModels.EditorContentUpdateDtoSchema.describe("Template content"), onlyUsedFor: z.array(OnlyUsedForEnumSchema).readonly().describe("Restrict template usage to specific document types"), archived: z.boolean().describe("Archive status") }).readonly();
+export const UpdateRemarkTemplateRequestDTOSchema = z.object({ name: z.string().nullable(), content: CommonModels.EditorContentUpdateDtoSchema.nullable(), onlyUsedFor: z.array(OnlyUsedForEnumSchema).nullable(), archived: z.boolean().nullable() }).partial();
 export type UpdateRemarkTemplateRequestDTO = z.infer<typeof UpdateRemarkTemplateRequestDTOSchema>;
 
 /** 
@@ -76,7 +76,7 @@ export type UpdateRemarkTemplateRequestDTO = z.infer<typeof UpdateRemarkTemplate
  * @property { string } search  
  * @property { string } onlyUsedFor Filter by document type 
  */
-export const RemarkTemplateFilterDtoSchema = z.object({ archived: z.boolean(), search: z.string(), onlyUsedFor: OnlyUsedForEnumSchema.describe("Filter by document type") }).readonly();
+export const RemarkTemplateFilterDtoSchema = z.object({ archived: z.boolean().nullable(), search: z.string().nullable(), onlyUsedFor: OnlyUsedForEnumSchema.nullable() }).partial();
 export type RemarkTemplateFilterDto = z.infer<typeof RemarkTemplateFilterDtoSchema>;
 
 /** 
@@ -84,7 +84,7 @@ export type RemarkTemplateFilterDto = z.infer<typeof RemarkTemplateFilterDtoSche
  * @type { object }
  * @property { string } search  
  */
-export const RemarkTemplateLabelFilterDtoSchema = z.object({ search: z.string() }).readonly();
+export const RemarkTemplateLabelFilterDtoSchema = z.object({ search: z.string().nullable() }).partial();
 export type RemarkTemplateLabelFilterDto = z.infer<typeof RemarkTemplateLabelFilterDtoSchema>;
 
 /** 
@@ -105,7 +105,7 @@ export const RemarkTemplatesPaginateLabelsOrderParamEnum = RemarkTemplatesPagina
  * @property { number } totalItems Total available items 
  * @property { RemarkTemplateLabelResponseDTO[] } items  
  */
-export const RemarkTemplatesPaginateLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(RemarkTemplateLabelResponseDTOSchema).readonly() }).readonly().shape });
+export const RemarkTemplatesPaginateLabelsResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(RemarkTemplateLabelResponseDTOSchema).nullable() }).partial().shape });
 export type RemarkTemplatesPaginateLabelsResponse = z.infer<typeof RemarkTemplatesPaginateLabelsResponseSchema>;
 
 /** 
@@ -126,7 +126,7 @@ export const RemarkTemplatesListOrderParamEnum = RemarkTemplatesListOrderParamEn
  * @property { number } totalItems Total available items 
  * @property { RemarkTemplateResponseDTO[] } items  
  */
-export const RemarkTemplatesListResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(RemarkTemplateResponseDTOSchema).readonly() }).readonly().shape });
+export const RemarkTemplatesListResponseSchema = z.object({ ...CommonModels.PaginationDtoSchema.shape, ...z.object({ items: z.array(RemarkTemplateResponseDTOSchema).nullable() }).partial().shape });
 export type RemarkTemplatesListResponse = z.infer<typeof RemarkTemplatesListResponseSchema>;
 
 }

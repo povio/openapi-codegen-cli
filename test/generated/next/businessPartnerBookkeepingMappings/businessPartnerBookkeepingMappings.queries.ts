@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -26,14 +25,14 @@ export const keys = {
  * @returns { UseQueryResult<BusinessPartnerBookkeepingMappingsModels.BusinessPartnerBookkeepingMappingsResponseDto> } 
  * @statusCodes [200, 401]
  */
-export const useGetBookkeepingMappings = <TData>({ officeId, businessPartnerId }: { officeId: string, businessPartnerId: string }, options?: AppQueryOptions<typeof BusinessPartnerBookkeepingMappingsApi.getBookkeepingMappings, TData>, config?: AxiosRequestConfig) => {
+export const useGetBookkeepingMappings = <TData>({ officeId, businessPartnerId }: { officeId: string, businessPartnerId: string }, options?: AppQueryOptions<typeof BusinessPartnerBookkeepingMappingsApi.getBookkeepingMappings, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.getBookkeepingMappings(officeId, businessPartnerId),
     queryFn: () => { 
     checkAcl(BusinessPartnerBookkeepingMappingsAcl.canUseGetBookkeepingMappings({ officeId } ));
-    return BusinessPartnerBookkeepingMappingsApi.getBookkeepingMappings(officeId, businessPartnerId, config) },
+    return BusinessPartnerBookkeepingMappingsApi.getBookkeepingMappings(officeId, businessPartnerId) },
     ...options,
   });
 };
@@ -49,14 +48,14 @@ export const useGetBookkeepingMappings = <TData>({ officeId, businessPartnerId }
  * @returns { UseMutationResult<BusinessPartnerBookkeepingMappingsModels.BusinessPartnerBookkeepingMappingResponseDto> } 
  * @statusCodes [201, 401]
  */
-export const useCreateBookkeepingMapping = (options?: AppMutationOptions<typeof BusinessPartnerBookkeepingMappingsApi.createBookkeepingMapping, { officeId: string, businessPartnerId: string, data: BusinessPartnerBookkeepingMappingsModels.CreateBookkeepingMappingDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreateBookkeepingMapping = (options?: AppMutationOptions<typeof BusinessPartnerBookkeepingMappingsApi.createBookkeepingMapping, { officeId: string, businessPartnerId: string, data: BusinessPartnerBookkeepingMappingsModels.CreateBookkeepingMappingDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, businessPartnerId, data }) => { 
       checkAcl(BusinessPartnerBookkeepingMappingsAcl.canUseCreateBookkeepingMapping({ officeId } ));
-      return BusinessPartnerBookkeepingMappingsApi.createBookkeepingMapping(officeId, businessPartnerId, data, config)
+      return BusinessPartnerBookkeepingMappingsApi.createBookkeepingMapping(officeId, businessPartnerId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -77,14 +76,14 @@ export const useCreateBookkeepingMapping = (options?: AppMutationOptions<typeof 
  * @returns { UseMutationResult<BusinessPartnerBookkeepingMappingsModels.UpdateBookkeepingMappingResponse> } 
  * @statusCodes [200, 401]
  */
-export const useUpdateBookkeepingMapping = (options?: AppMutationOptions<typeof BusinessPartnerBookkeepingMappingsApi.updateBookkeepingMapping, { officeId: string, businessPartnerId: string, data: BusinessPartnerBookkeepingMappingsModels.UpdateBookkeepingMappingRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdateBookkeepingMapping = (options?: AppMutationOptions<typeof BusinessPartnerBookkeepingMappingsApi.updateBookkeepingMapping, { officeId: string, businessPartnerId: string, data: BusinessPartnerBookkeepingMappingsModels.UpdateBookkeepingMappingRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, businessPartnerId, data }) => { 
       checkAcl(BusinessPartnerBookkeepingMappingsAcl.canUseUpdateBookkeepingMapping({ officeId } ));
-      return BusinessPartnerBookkeepingMappingsApi.updateBookkeepingMapping(officeId, businessPartnerId, data, config)
+      return BusinessPartnerBookkeepingMappingsApi.updateBookkeepingMapping(officeId, businessPartnerId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -106,14 +105,14 @@ export const useUpdateBookkeepingMapping = (options?: AppMutationOptions<typeof 
  * @returns { UseMutationResult<BusinessPartnerBookkeepingMappingsModels.BusinessPartnerBookkeepingMappingResponseDto> } 
  * @statusCodes [200, 401]
  */
-export const useUpdateBookkeepingMappingById = (options?: AppMutationOptions<typeof BusinessPartnerBookkeepingMappingsApi.updateBookkeepingMappingById, { officeId: string, businessPartnerId: string, id: string, data: BusinessPartnerBookkeepingMappingsModels.UpdateBookkeepingMappingDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdateBookkeepingMappingById = (options?: AppMutationOptions<typeof BusinessPartnerBookkeepingMappingsApi.updateBookkeepingMappingById, { officeId: string, businessPartnerId: string, id: string, data: BusinessPartnerBookkeepingMappingsModels.UpdateBookkeepingMappingDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, businessPartnerId, id, data }) => { 
       checkAcl(BusinessPartnerBookkeepingMappingsAcl.canUseUpdateBookkeepingMappingById({ officeId } ));
-      return BusinessPartnerBookkeepingMappingsApi.updateBookkeepingMappingById(officeId, businessPartnerId, id, data, config)
+      return BusinessPartnerBookkeepingMappingsApi.updateBookkeepingMappingById(officeId, businessPartnerId, id, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -134,14 +133,14 @@ export const useUpdateBookkeepingMappingById = (options?: AppMutationOptions<typ
  * @returns { UseMutationResult<void> } 
  * @statusCodes [204, 401]
  */
-export const useDeleteBookkeepingMapping = (options?: AppMutationOptions<typeof BusinessPartnerBookkeepingMappingsApi.deleteBookkeepingMapping, { officeId: string, businessPartnerId: string, id: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useDeleteBookkeepingMapping = (options?: AppMutationOptions<typeof BusinessPartnerBookkeepingMappingsApi.deleteBookkeepingMapping, { officeId: string, businessPartnerId: string, id: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, businessPartnerId, id }) => { 
       checkAcl(BusinessPartnerBookkeepingMappingsAcl.canUseDeleteBookkeepingMapping({ officeId } ));
-      return BusinessPartnerBookkeepingMappingsApi.deleteBookkeepingMapping(officeId, businessPartnerId, id, config)
+      return BusinessPartnerBookkeepingMappingsApi.deleteBookkeepingMapping(officeId, businessPartnerId, id)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

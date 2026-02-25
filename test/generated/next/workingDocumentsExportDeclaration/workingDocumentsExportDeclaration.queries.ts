@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -28,14 +27,14 @@ export const keys = {
  * @returns { UseMutationResult<WorkingDocumentsExportDeclarationModels.ExportDeclarationDocumentResponseDTO> } 
  * @statusCodes [201, 401]
  */
-export const useCreate = (options?: AppMutationOptions<typeof WorkingDocumentsExportDeclarationApi.create, { positionId: string, officeId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreate = (options?: AppMutationOptions<typeof WorkingDocumentsExportDeclarationApi.create, { positionId: string, officeId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, officeId }) => { 
       checkAcl(WorkingDocumentsExportDeclarationAcl.canUseCreate({ officeId } ));
-      return WorkingDocumentsExportDeclarationApi.create(positionId, officeId, config)
+      return WorkingDocumentsExportDeclarationApi.create(positionId, officeId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -56,14 +55,14 @@ export const useCreate = (options?: AppMutationOptions<typeof WorkingDocumentsEx
  * @returns { UseQueryResult<WorkingDocumentsExportDeclarationModels.ExportDeclarationDocumentResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useGetExportDeclarationData = <TData>({ officeId, positionId, exportDeclarationId }: { officeId: string, positionId: string, exportDeclarationId: string }, options?: AppQueryOptions<typeof WorkingDocumentsExportDeclarationApi.getExportDeclarationData, TData>, config?: AxiosRequestConfig) => {
+export const useGetExportDeclarationData = <TData>({ officeId, positionId, exportDeclarationId }: { officeId: string, positionId: string, exportDeclarationId: string }, options?: AppQueryOptions<typeof WorkingDocumentsExportDeclarationApi.getExportDeclarationData, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.getExportDeclarationData(officeId, positionId, exportDeclarationId),
     queryFn: () => { 
     checkAcl(WorkingDocumentsExportDeclarationAcl.canUseGetExportDeclarationData({ officeId } ));
-    return WorkingDocumentsExportDeclarationApi.getExportDeclarationData(officeId, positionId, exportDeclarationId, config) },
+    return WorkingDocumentsExportDeclarationApi.getExportDeclarationData(officeId, positionId, exportDeclarationId) },
     ...options,
   });
 };
@@ -80,14 +79,14 @@ export const useGetExportDeclarationData = <TData>({ officeId, positionId, expor
  * @returns { UseMutationResult<WorkingDocumentsExportDeclarationModels.ExportDeclarationDocumentResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useUpdateExportDeclarationData = (options?: AppMutationOptions<typeof WorkingDocumentsExportDeclarationApi.updateExportDeclarationData, { officeId: string, positionId: string, exportDeclarationId: string, data: WorkingDocumentsExportDeclarationModels.UpdateExportDeclarationDocumentRequestDTO }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdateExportDeclarationData = (options?: AppMutationOptions<typeof WorkingDocumentsExportDeclarationApi.updateExportDeclarationData, { officeId: string, positionId: string, exportDeclarationId: string, data: WorkingDocumentsExportDeclarationModels.UpdateExportDeclarationDocumentRequestDTO }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, positionId, exportDeclarationId, data }) => { 
       checkAcl(WorkingDocumentsExportDeclarationAcl.canUseUpdateExportDeclarationData({ officeId } ));
-      return WorkingDocumentsExportDeclarationApi.updateExportDeclarationData(officeId, positionId, exportDeclarationId, data, config)
+      return WorkingDocumentsExportDeclarationApi.updateExportDeclarationData(officeId, positionId, exportDeclarationId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -110,14 +109,14 @@ export const useUpdateExportDeclarationData = (options?: AppMutationOptions<type
  * @returns { UseMutationResult<void> } Export declaration document deleted
  * @statusCodes [204, 401, 404]
  */
-export const useDeleteExportDeclaration = (options?: AppMutationOptions<typeof WorkingDocumentsExportDeclarationApi.deleteExportDeclaration, { positionId: string, exportDeclarationId: string, officeId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useDeleteExportDeclaration = (options?: AppMutationOptions<typeof WorkingDocumentsExportDeclarationApi.deleteExportDeclaration, { positionId: string, exportDeclarationId: string, officeId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, exportDeclarationId, officeId }) => { 
       checkAcl(WorkingDocumentsExportDeclarationAcl.canUseDeleteExportDeclaration({ officeId } ));
-      return WorkingDocumentsExportDeclarationApi.deleteExportDeclaration(positionId, exportDeclarationId, officeId, config)
+      return WorkingDocumentsExportDeclarationApi.deleteExportDeclaration(positionId, exportDeclarationId, officeId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -138,14 +137,14 @@ export const useDeleteExportDeclaration = (options?: AppMutationOptions<typeof W
  * @returns { UseQueryResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
  */
-export const usePreviewExportDeclaration = <TData>({ officeId, positionId, exportDeclarationId }: { officeId: string, positionId: string, exportDeclarationId: string }, options?: AppQueryOptions<typeof WorkingDocumentsExportDeclarationApi.previewExportDeclaration, TData>, config?: AxiosRequestConfig) => {
+export const usePreviewExportDeclaration = <TData>({ officeId, positionId, exportDeclarationId }: { officeId: string, positionId: string, exportDeclarationId: string }, options?: AppQueryOptions<typeof WorkingDocumentsExportDeclarationApi.previewExportDeclaration, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.previewExportDeclaration(officeId, positionId, exportDeclarationId),
     queryFn: () => { 
     checkAcl(WorkingDocumentsExportDeclarationAcl.canUsePreviewExportDeclaration({ officeId } ));
-    return WorkingDocumentsExportDeclarationApi.previewExportDeclaration(officeId, positionId, exportDeclarationId, config) },
+    return WorkingDocumentsExportDeclarationApi.previewExportDeclaration(officeId, positionId, exportDeclarationId) },
     ...options,
   });
 };
@@ -161,14 +160,14 @@ export const usePreviewExportDeclaration = <TData>({ officeId, positionId, expor
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
  */
-export const usePreviewExportDeclarationMutation = (options?: AppMutationOptions<typeof WorkingDocumentsExportDeclarationApi.previewExportDeclaration, { officeId: string, positionId: string, exportDeclarationId: string }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const usePreviewExportDeclarationMutation = (options?: AppMutationOptions<typeof WorkingDocumentsExportDeclarationApi.previewExportDeclaration, { officeId: string, positionId: string, exportDeclarationId: string }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, positionId, exportDeclarationId }) => { 
       checkAcl(WorkingDocumentsExportDeclarationAcl.canUsePreviewExportDeclaration({ officeId } ));
-      return WorkingDocumentsExportDeclarationApi.previewExportDeclaration(officeId, positionId, exportDeclarationId, config)
+      return WorkingDocumentsExportDeclarationApi.previewExportDeclaration(officeId, positionId, exportDeclarationId)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -192,14 +191,14 @@ export const usePreviewExportDeclarationMutation = (options?: AppMutationOptions
  * @returns { UseMutationResult<void> } 
  * @statusCodes [201, 401]
  */
-export const useGenerateExportDeclaration = (options?: AppMutationOptions<typeof WorkingDocumentsExportDeclarationApi.generateExportDeclaration, { officeId: string, positionId: string, exportDeclarationId: string, data: CommonModels.GenerateWorkingDocumentRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useGenerateExportDeclaration = (options?: AppMutationOptions<typeof WorkingDocumentsExportDeclarationApi.generateExportDeclaration, { officeId: string, positionId: string, exportDeclarationId: string, data: CommonModels.GenerateWorkingDocumentRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ officeId, positionId, exportDeclarationId, data }) => { 
       checkAcl(WorkingDocumentsExportDeclarationAcl.canUseGenerateExportDeclaration({ officeId } ));
-      return WorkingDocumentsExportDeclarationApi.generateExportDeclaration(officeId, positionId, exportDeclarationId, data, config)
+      return WorkingDocumentsExportDeclarationApi.generateExportDeclaration(officeId, positionId, exportDeclarationId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

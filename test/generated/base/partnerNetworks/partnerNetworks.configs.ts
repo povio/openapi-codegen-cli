@@ -6,108 +6,109 @@ import { PartnerNetworksQueries } from "./partnerNetworks.queries";
 import { PartnerNetworksAcl } from "./partnerNetworks.acl";
 
 export namespace PartnerNetworksConfigs {
-  export const partnerNetworksConfig = {
+export const partnerNetworksConfig = {
     meta: {
-      title: "Partner Networks",
+        title: "Partner Networks",
     },
     readAll: {
-      acl: PartnerNetworksAcl.canUsePaginate,
-      schema: PartnerNetworksModels.PartnerNetworkResponseDTOSchema,
-      paginated: PartnerNetworksQueries.usePaginate,
-      infinite: PartnerNetworksQueries.usePaginateInfinite,
-      filters: {
-        schema: PartnerNetworksModels.PartnerNetworkPaginationFilterDtoSchema,
-        filterDefs: dynamicInputs({
-          schema: PartnerNetworksModels.PartnerNetworkPaginationFilterDtoSchema,
-          options: {
-            inputs: {
-              search: true,
-              archived: true,
-            },
-          },
-        }),
-      },
-      columns: dynamicColumns({
+        acl: PartnerNetworksAcl.canUsePaginate,
         schema: PartnerNetworksModels.PartnerNetworkResponseDTOSchema,
-        options: {
-          columns: {
-            id: true,
-            name: true,
-            archived: true,
-            createdById: true,
-            createdBy: true,
-            createdAt: true,
-            updatedById: true,
-            updatedBy: true,
-            updatedAt: true,
-          },
-          sortable: PartnerNetworksModels.PartnerNetworksPaginateOrderParamEnumSchema,
+        paginated: PartnerNetworksQueries.usePaginate,
+        infinite: PartnerNetworksQueries.usePaginateInfinite,
+        filters: {
+            schema: PartnerNetworksModels.PartnerNetworkPaginationFilterDtoSchema,
+            filterDefs: dynamicInputs({
+  schema: PartnerNetworksModels.PartnerNetworkPaginationFilterDtoSchema,
+  options: {
+    inputs: {
+      search: true,
+      archived: true,
+    },
+  },
+})
         },
-      }),
+        columns: dynamicColumns({
+  schema: PartnerNetworksModels.PartnerNetworkResponseDTOSchema,
+  options: {
+    columns: {
+      id: true,
+      name: true,
+      archived: true,
+      createdById: true,
+      createdBy: true,
+      createdAt: true,
+      updatedById: true,
+      updatedBy: true,
+      updatedAt: true,
+    },
+    sortable: PartnerNetworksModels.PartnerNetworksPaginateOrderParamEnumSchema,
+  },
+}),
     },
     read: {
-      acl: PartnerNetworksAcl.canUseFindById,
-      schema: PartnerNetworksModels.PartnerNetworkResponseDTOSchema,
-      query: PartnerNetworksQueries.useFindById,
+        acl: PartnerNetworksAcl.canUseFindById,
+        schema: PartnerNetworksModels.PartnerNetworkResponseDTOSchema,
+        query: PartnerNetworksQueries.useFindById,
     },
     create: {
-      acl: PartnerNetworksAcl.canUseCreate,
-      schema: PartnerNetworksModels.CreatePartnerNetworkRequestDTOSchema,
-      mutation: PartnerNetworksQueries.useCreate,
-      inputDefs: dynamicInputs({
+        acl: PartnerNetworksAcl.canUseCreate,
         schema: PartnerNetworksModels.CreatePartnerNetworkRequestDTOSchema,
-        options: {
-          inputs: {
-            name: true,
-          },
-        },
-      }),
+        mutation: PartnerNetworksQueries.useCreate,
+        inputDefs: dynamicInputs({
+  schema: PartnerNetworksModels.CreatePartnerNetworkRequestDTOSchema,
+  options: {
+    inputs: {
+      name: true,
+    },
+  },
+})
     },
     update: {
-      acl: PartnerNetworksAcl.canUseUpdate,
-      schema: PartnerNetworksModels.UpdatePartnerNetworkRequestDTOSchema,
-      mutation: PartnerNetworksQueries.useUpdate,
-      inputDefs: dynamicInputs({
+        acl: PartnerNetworksAcl.canUseUpdate,
         schema: PartnerNetworksModels.UpdatePartnerNetworkRequestDTOSchema,
-        options: {
-          inputs: {
-            name: true,
-          },
-        },
-      }),
+        mutation: PartnerNetworksQueries.useUpdate,
+        inputDefs: dynamicInputs({
+  schema: PartnerNetworksModels.UpdatePartnerNetworkRequestDTOSchema,
+  options: {
+    inputs: {
+      name: true,
     },
-  };
+  },
+})
+    },
+};
 
-  export const paginateConfig = {
+export const paginateConfig = {
     meta: {
-      title: "Paginate",
+        title: "Paginate",
     },
     readAll: {
-      acl: PartnerNetworksAcl.canUsePaginateLabels,
-      schema: CommonModels.LabelResponseDTOSchema,
-      paginated: PartnerNetworksQueries.usePaginateLabels,
-      infinite: PartnerNetworksQueries.usePaginateLabelsInfinite,
-      filters: {
-        schema: PartnerNetworksModels.PartnerNetworkLabelFilterDtoSchema,
-        filterDefs: dynamicInputs({
-          schema: PartnerNetworksModels.PartnerNetworkLabelFilterDtoSchema,
-          options: {
-            inputs: {
-              search: true,
-            },
-          },
-        }),
-      },
-      columns: dynamicColumns({
+        acl: PartnerNetworksAcl.canUsePaginateLabels,
         schema: CommonModels.LabelResponseDTOSchema,
-        options: {
-          columns: {
-            id: true,
-            label: true,
-          },
-          sortable: PartnerNetworksModels.PartnerNetworksPaginateLabelsOrderParamEnumSchema,
-        },
-      }),
+        paginated: PartnerNetworksQueries.usePaginateLabels,
+        infinite: PartnerNetworksQueries.usePaginateLabelsInfinite,
+        filters: {
+            schema: PartnerNetworksModels.PartnerNetworkLabelFilterDtoSchema,
+            filterDefs: dynamicInputs({
+  schema: PartnerNetworksModels.PartnerNetworkLabelFilterDtoSchema,
+  options: {
+    inputs: {
+      search: true,
     },
-  };
+  },
+})
+        },
+        columns: dynamicColumns({
+  schema: CommonModels.LabelResponseDTOSchema,
+  options: {
+    columns: {
+      id: true,
+      label: true,
+    },
+    sortable: PartnerNetworksModels.PartnerNetworksPaginateLabelsOrderParamEnumSchema,
+  },
+}),
+    },
+};
+
 }

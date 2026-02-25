@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useMutation } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
@@ -24,14 +23,14 @@ export const moduleName = QueryModule.PositionAccountItems;
  * @returns { UseMutationResult<PositionAccountItemsModels.PositionAccountItemsCreateResponse> } 
  * @statusCodes [201, 401]
  */
-export const useCreate = (options?: AppMutationOptions<typeof PositionAccountItemsApi.create, { positionId: string, officeId: string, data: PositionAccountItemsModels.CreatePositionAccountItemsRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useCreate = (options?: AppMutationOptions<typeof PositionAccountItemsApi.create, { positionId: string, officeId: string, data: PositionAccountItemsModels.CreatePositionAccountItemsRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, officeId, data }) => { 
       checkAcl(PositionAccountItemsAcl.canUseCreate({ officeId } ));
-      return PositionAccountItemsApi.create(positionId, officeId, data, config)
+      return PositionAccountItemsApi.create(positionId, officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -52,14 +51,14 @@ export const useCreate = (options?: AppMutationOptions<typeof PositionAccountIte
  * @returns { UseMutationResult<void> } 
  * @statusCodes [204, 401]
  */
-export const useDeletePositionAccountItems = (options?: AppMutationOptions<typeof PositionAccountItemsApi.deletePositionAccountItems, { positionId: string, officeId: string, data: PositionAccountItemsModels.DeletePositionAccountItemsRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useDeletePositionAccountItems = (options?: AppMutationOptions<typeof PositionAccountItemsApi.deletePositionAccountItems, { positionId: string, officeId: string, data: PositionAccountItemsModels.DeletePositionAccountItemsRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, officeId, data }) => { 
       checkAcl(PositionAccountItemsAcl.canUseDeletePositionAccountItems({ officeId } ));
-      return PositionAccountItemsApi.deletePositionAccountItems(positionId, officeId, data, config)
+      return PositionAccountItemsApi.deletePositionAccountItems(positionId, officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -80,14 +79,14 @@ export const useDeletePositionAccountItems = (options?: AppMutationOptions<typeo
  * @returns { UseMutationResult<PositionAccountItemsModels.PositionAccountItemsUpdateResponse> } 
  * @statusCodes [200, 401]
  */
-export const useUpdate = (options?: AppMutationOptions<typeof PositionAccountItemsApi.update, { positionId: string, officeId: string, data: PositionAccountItemsModels.UpdatePositionAccountItemsRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useUpdate = (options?: AppMutationOptions<typeof PositionAccountItemsApi.update, { positionId: string, officeId: string, data: PositionAccountItemsModels.UpdatePositionAccountItemsRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, officeId, data }) => { 
       checkAcl(PositionAccountItemsAcl.canUseUpdate({ officeId } ));
-      return PositionAccountItemsApi.update(positionId, officeId, data, config)
+      return PositionAccountItemsApi.update(positionId, officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -108,14 +107,14 @@ export const useUpdate = (options?: AppMutationOptions<typeof PositionAccountIte
  * @returns { UseMutationResult<PositionAccountItemsModels.PositionAccountItemsDuplicateResponse> } 
  * @statusCodes [201, 401]
  */
-export const useDuplicate = (options?: AppMutationOptions<typeof PositionAccountItemsApi.duplicate, { positionId: string, officeId: string, data: PositionAccountItemsModels.DuplicatePositionAccountItemsRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useDuplicate = (options?: AppMutationOptions<typeof PositionAccountItemsApi.duplicate, { positionId: string, officeId: string, data: PositionAccountItemsModels.DuplicatePositionAccountItemsRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, officeId, data }) => { 
       checkAcl(PositionAccountItemsAcl.canUseDuplicate({ officeId } ));
-      return PositionAccountItemsApi.duplicate(positionId, officeId, data, config)
+      return PositionAccountItemsApi.duplicate(positionId, officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -136,14 +135,14 @@ export const useDuplicate = (options?: AppMutationOptions<typeof PositionAccount
  * @returns { UseMutationResult<PositionAccountItemsModels.ReassignResponse> } 
  * @statusCodes [200, 401]
  */
-export const useReassign = (options?: AppMutationOptions<typeof PositionAccountItemsApi.reassign, { positionId: string, officeId: string, data: PositionAccountItemsModels.ReassignPositionAccountItemsRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useReassign = (options?: AppMutationOptions<typeof PositionAccountItemsApi.reassign, { positionId: string, officeId: string, data: PositionAccountItemsModels.ReassignPositionAccountItemsRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, officeId, data }) => { 
       checkAcl(PositionAccountItemsAcl.canUseReassign({ officeId } ));
-      return PositionAccountItemsApi.reassign(positionId, officeId, data, config)
+      return PositionAccountItemsApi.reassign(positionId, officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {
@@ -165,14 +164,14 @@ export const useReassign = (options?: AppMutationOptions<typeof PositionAccountI
  * @returns { UseMutationResult<void> } 
  * @statusCodes [204, 401]
  */
-export const useReorder = (options?: AppMutationOptions<typeof PositionAccountItemsApi.reorder, { positionId: string, itemId: string, officeId: string, data: PositionAccountItemsModels.ReorderPositionAccountItemRequestDto }> & MutationEffectsOptions, config?: AxiosRequestConfig) => {
+export const useReorder = (options?: AppMutationOptions<typeof PositionAccountItemsApi.reorder, { positionId: string, itemId: string, officeId: string, data: PositionAccountItemsModels.ReorderPositionAccountItemRequestDto }> & MutationEffectsOptions) => {
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
 
   return useMutation({
     mutationFn: ({ positionId, itemId, officeId, data }) => { 
       checkAcl(PositionAccountItemsAcl.canUseReorder({ officeId } ));
-      return PositionAccountItemsApi.reorder(positionId, itemId, officeId, data, config)
+      return PositionAccountItemsApi.reorder(positionId, itemId, officeId, data)
     },
     ...options,
     onSuccess: async (resData, variables, onMutateResult, context) => {

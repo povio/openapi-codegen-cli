@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { useAclCheck } from "@/data/acl/useAclCheck";
@@ -32,14 +31,14 @@ export const keys = {
  * @returns { UseQueryResult<CountriesModels.CountriesPaginateResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: CountriesModels.CountryPaginationFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof CountriesApi.paginate, TData>, config?: AxiosRequestConfig) => {
+export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: CountriesModels.CountryPaginationFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof CountriesApi.paginate, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.paginate(limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(CountriesAcl.canUsePaginate());
-    return CountriesApi.paginate(limit, order, filter, page, cursor, config) },
+    return CountriesApi.paginate(limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -57,14 +56,14 @@ export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { lim
  * @returns { UseInfiniteQueryResult<CountriesModels.CountriesPaginateResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: CountriesModels.CountryPaginationFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof CountriesApi.paginate, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: CountriesModels.CountryPaginationFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof CountriesApi.paginate, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.paginateInfinite(limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(CountriesAcl.canUsePaginate());
-    return CountriesApi.paginate(limit, order, filter, pageParam, cursor, config) },
+    return CountriesApi.paginate(limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -87,14 +86,14 @@ export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { l
  * @returns { UseQueryResult<CountriesModels.PaginateCountryLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateCountryLabels = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: CountriesModels.CountryPaginationFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof CountriesApi.paginateCountryLabels, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateCountryLabels = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: CountriesModels.CountryPaginationFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof CountriesApi.paginateCountryLabels, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.paginateCountryLabels(limit, order, filter, page, cursor),
     queryFn: () => { 
     checkAcl(CountriesAcl.canUsePaginateCountryLabels());
-    return CountriesApi.paginateCountryLabels(limit, order, filter, page, cursor, config) },
+    return CountriesApi.paginateCountryLabels(limit, order, filter, page, cursor) },
     ...options,
   });
 };
@@ -112,14 +111,14 @@ export const usePaginateCountryLabels = <TData>({ limit, order, filter, page, cu
  * @returns { UseInfiniteQueryResult<CountriesModels.PaginateCountryLabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const usePaginateCountryLabelsInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: CountriesModels.CountryPaginationFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof CountriesApi.paginateCountryLabels, TData>, config?: AxiosRequestConfig) => {
+export const usePaginateCountryLabelsInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: CountriesModels.CountryPaginationFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof CountriesApi.paginateCountryLabels, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
     queryKey: keys.paginateCountryLabelsInfinite(limit, order, filter, cursor),
     queryFn: ({ pageParam }) => { 
     checkAcl(CountriesAcl.canUsePaginateCountryLabels());
-    return CountriesApi.paginateCountryLabels(limit, order, filter, pageParam, cursor, config) },
+    return CountriesApi.paginateCountryLabels(limit, order, filter, pageParam, cursor) },
     initialPageParam: 1,
     getNextPageParam: ({ page, totalItems, limit: limitParam }) => {
       const pageParam = page ?? 1;
@@ -138,14 +137,14 @@ export const usePaginateCountryLabelsInfinite = <TData>({ limit, order, filter, 
  * @returns { UseQueryResult<CountriesModels.CountryResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useGetCountryById = <TData>({ id }: { id: string }, options?: AppQueryOptions<typeof CountriesApi.getCountryById, TData>, config?: AxiosRequestConfig) => {
+export const useGetCountryById = <TData>({ id }: { id: string }, options?: AppQueryOptions<typeof CountriesApi.getCountryById, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
     queryKey: keys.getCountryById(id),
     queryFn: () => { 
     checkAcl(CountriesAcl.canUseGetCountryById());
-    return CountriesApi.getCountryById(id, config) },
+    return CountriesApi.getCountryById(id) },
     ...options,
   });
 };
