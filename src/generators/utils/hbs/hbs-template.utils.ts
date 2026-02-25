@@ -11,8 +11,14 @@ import { registerPartialsHbsHelpers } from "./hbs.partials.utils";
 import { registerQueryHbsHelpers } from "./hbs.query.utils";
 import { registerZodHbsHelpers } from "./hbs.zod.utils";
 
-export function getHbsTemplateDelegate(resolver: SchemaResolver, templateName: string) {
-  const template = readHbsTemplateSync(templateName);
+const registeredResolvers = new WeakSet<SchemaResolver>();
+const templateDelegateCache = new Map<string, Handlebars.TemplateDelegate>();
+const partialTemplateDelegateCache = new Map<string, Handlebars.TemplateDelegate>();
+
+function registerHelpersIfNeeded(resolver: SchemaResolver) {
+  if (registeredResolvers.has(resolver)) {
+    return;
+  }
 
   registerCommonHbsHelpers();
   registerImportsHbsHelpers();
@@ -22,10 +28,31 @@ export function getHbsTemplateDelegate(resolver: SchemaResolver, templateName: s
   registerAclHbsHelpers(resolver);
   registerPartialsHbsHelpers(resolver);
 
-  return Handlebars.compile(template);
+  registeredResolvers.add(resolver);
+}
+
+export function getHbsTemplateDelegate(resolver: SchemaResolver, templateName: string) {
+  registerHelpersIfNeeded(resolver);
+
+  const cachedTemplateDelegate = templateDelegateCache.get(templateName);
+  if (cachedTemplateDelegate) {
+    return cachedTemplateDelegate;
+  }
+
+  const template = readHbsTemplateSync(templateName);
+  const templateDelegate = Handlebars.compile(template);
+  templateDelegateCache.set(templateName, templateDelegate);
+  return templateDelegate;
 }
 
 export function getHbsPartialTemplateDelegate(templateName: string) {
+  const cachedTemplateDelegate = partialTemplateDelegateCache.get(templateName);
+  if (cachedTemplateDelegate) {
+    return cachedTemplateDelegate;
+  }
+
   const template = readHbsTemplateSync(`partials/${templateName}`);
-  return Handlebars.compile(template);
+  const templateDelegate = Handlebars.compile(template);
+  partialTemplateDelegateCache.set(templateName, templateDelegate);
+  return templateDelegate;
 }

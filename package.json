@@ -52,6 +52,10 @@
     "build:cli": "node ./esbuild.mjs && chmod +x ./dist/sh.js",
     "build": "yarn build:clean && yarn build:cli && yarn build:client",
     "start:dist": "node ./dist/sh.js",
+    "gen:base": "rm -rf ./test/generated/base && mkdir -p ./test/generated/base && yarn start generate --config ./test/config.mjs --output ./test/generated/base --no-prettier",
+    "gen:next": "rm -rf ./test/generated/next && mkdir -p ./test/generated/next && yarn start generate --config ./test/config.mjs --output ./test/generated/next --no-prettier",
+    "test:generated-eq": "vitest run ./src/generators/generated-output-eq.test.ts",
+    "gen:verify": "yarn gen:base && yarn gen:next && yarn test:generated-eq",
     "typecheck": "tsc --noEmit",
     "lint": "oxlint --type-aware --fix",
     "lint:check": "oxlint --type-aware",
@@ -59,12 +63,13 @@
     "format:check": "oxfmt --check",
     "check": "yarn typecheck && yarn lint && yarn test",
     "push": "yarn exec ./scripts/publish.sh",
-    "dev:generate": "rm -rf ./output && yarn start generate --config ./test/config.ts",
-    "dev:check": "yarn start check --config ./test/config.ts"
+    "dev:generate": "rm -rf ./output && yarn start generate --config ./test/config.mjs",
+    "dev:check": "yarn start check --config ./test/config.mjs"
   },
   "dependencies": {
     "i18next": "^25.8.11",
-    "import-fresh": "^3.3.1"
+    "import-fresh": "^3.3.1",
+    "yargs": "^18.0.0"
   },
   "devDependencies": {
     "@apidevtools/swagger-parser": "^10.1.0",
@@ -93,7 +98,6 @@
     "vite": "^7.3.1",
     "vite-plugin-dts": "^4.5.4",
     "vitest": "4.0.18",
-    "yargs": "^18.0.0",
     "zod": "^4.3.6"
   },
   "peerDependencies": {

@@ -53,6 +53,10 @@ export function getQueryModulesImportPath(options: GenerateOptions) {
   return `${getImportPath(options)}${QUERY_MODULES_FILE.fileName}`;
 }
 
+export function getQueryTypesImportPath(options: GenerateOptions) {
+  return options.queryTypesImportPath;
+}
+
 export function getMutationEffectsImportPath(options: GenerateOptions) {
   return `${getImportPath(options)}${MUTATION_EFFECTS_FILE.fileName}`;
 }

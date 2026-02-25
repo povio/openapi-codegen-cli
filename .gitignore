@@ -19,3 +19,9 @@ node_modules
 test/*
 !test/petstore.yaml
 !test/config.ts
+!test/generated/
+!test/generated/.gitkeep
+!test/generated/base/
+!test/generated/base/.gitkeep
+!test/generated/next/
+!test/generated/next/.gitkeep

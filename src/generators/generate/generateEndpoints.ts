@@ -1,12 +1,21 @@
 import { APP_REST_CLIENT_NAME, ZOD_EXTENDED } from "@/generators/const/deps.const";
 import { AXIOS_IMPORT, AXIOS_REQUEST_CONFIG_NAME, AXIOS_REQUEST_CONFIG_TYPE } from "@/generators/const/endpoints.const";
 import { ZOD_IMPORT } from "@/generators/const/zod.const";
-import { EndpointParameter } from "@/generators/types/endpoint";
+import { Endpoint, EndpointParameter } from "@/generators/types/endpoint";
 import { GenerateType, GenerateTypeParams, Import } from "@/generators/types/generate";
 import { getUniqueArray } from "@/generators/utils/array.utils";
 import { getModelsImports } from "@/generators/utils/generate/generate.imports.utils";
+import {
+  getEndpointBody,
+  getEndpointConfig,
+  getEndpointName,
+  getEndpointPath,
+  hasEndpointConfig,
+  mapEndpointParamsToFunctionParams,
+  requiresBody,
+} from "@/generators/utils/generate/generate.endpoints.utils";
 import { getAppRestClientImportPath, getZodExtendedImportPath } from "@/generators/utils/generate/generate.utils";
-import { getHbsTemplateDelegate } from "@/generators/utils/hbs/hbs-template.utils";
+import { getImportedZodSchemaName } from "@/generators/utils/generate/generate.zod.utils";
 import { getNamespaceName } from "@/generators/utils/namespace.utils";
 import { isNamedZodSchema } from "@/generators/utils/zod-schema.utils";
 
@@ -30,7 +39,7 @@ export function generateEndpoints({ resolver, data, tag }: GenerateTypeParams) {
 
   const generateParse = resolver.options.parseRequestParams;
 
-  const endpointParams = endpoints.reduce((prev, curr) => [...prev, ...curr.parameters], [] as EndpointParameter[]);
+  const endpointParams = endpoints.flatMap((endpoint) => endpoint.parameters) as EndpointParameter[];
   const endpointParamsParseSchemas = endpointParams
     .filter((param) => !["Path", "Header"].includes(param.type))
     .map((param) => param.parameterSortingEnumSchemaName ?? param.zodSchema);
@@ -52,24 +61,143 @@ export function generateEndpoints({ resolver, data, tag }: GenerateTypeParams) {
     zodSchemasAsTypes: getUniqueArray(endpointParams.map((param) => param.zodSchema).filter(isNamedZodSchema)),
   });
 
-  const hbsTemplate = getHbsTemplateDelegate(resolver, "endpoints");
+  const lines: string[] = [];
+  lines.push(renderImport(appRestClientImport));
+  if (hasAxiosImport) {
+    lines.push(renderImport(axiosImport));
+  }
+  if (hasZodImport) {
+    lines.push(renderImport(ZOD_IMPORT));
+  }
+  if (hasZodExtendedImport) {
+    lines.push(renderImport(zodExtendedImport));
+  }
+  for (const modelsImport of modelsImports) {
+    lines.push(renderImport(modelsImport));
+  }
+  lines.push("");
 
-  return hbsTemplate({
-    appRestClientImport,
-    hasAxiosImport,
-    axiosImport,
-    hasZodImport,
-    zodImport: ZOD_IMPORT,
-    hasZodExtendedImport,
-    zodExtendedImport,
-    modelsImports,
-    includeNamespace: resolver.options.tsNamespaces,
-    namespace: getNamespaceName({ type: GenerateType.Endpoints, tag, options: resolver.options }),
-    restClientName: APP_REST_CLIENT_NAME,
-    hasAxiosRequestConfig,
-    axiosRequestConfigName: AXIOS_REQUEST_CONFIG_NAME,
-    axiosRequestConfigType: AXIOS_REQUEST_CONFIG_TYPE,
-    endpoints,
-    generateParse,
-  });
+  if (resolver.options.tsNamespaces) {
+    lines.push(
+      `export namespace ${getNamespaceName({ type: GenerateType.Endpoints, tag, options: resolver.options })} {`,
+    );
+  }
+
+  for (const endpoint of endpoints) {
+    const endpointParams = renderEndpointParams(resolver, endpoint, {});
+    const endpointArgs = renderEndpointArgs(resolver, endpoint, {});
+    const endpointBody = getEndpointBody(endpoint);
+    const hasUndefinedEndpointBody = requiresBody(endpoint) && !endpointBody && hasEndpointConfig(endpoint, resolver);
+    const endpointConfig = renderEndpointConfig(resolver, endpoint);
+
+    lines.push(
+      `export const ${getEndpointName(endpoint)} = (${endpointParams}${hasAxiosRequestConfig ? `${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => {`,
+    );
+    lines.push(`    return ${APP_REST_CLIENT_NAME}.${endpoint.method}(`);
+    lines.push(`        { resSchema: ${getImportedZodSchemaName(resolver, endpoint.response)} },`);
+    lines.push(`        \`${getEndpointPath(endpoint)}\`,`);
+
+    if (endpointBody) {
+      lines.push(
+        `        ${generateParse ? renderEndpointParamParse(resolver, endpointBody, endpointBody.name) : endpointBody.name},`,
+      );
+    } else if (hasUndefinedEndpointBody) {
+      lines.push("        undefined,");
+    }
+
+    lines.push(`        ${endpointConfig}`);
+    lines.push("    )");
+    lines.push("};");
+  }
+
+  if (resolver.options.tsNamespaces) {
+    lines.push("}");
+  }
+
+  return lines.join("\n").trimEnd() + "\n";
+}
+
+function renderImport(importData: Import) {
+  const names = [
+    ...(importData.defaultImport ? [importData.defaultImport] : []),
+    ...(importData.bindings ? [`{ ${importData.bindings.join(", ")} }`] : []),
+  ].join(", ");
+  return `import ${names} from "${importData.from}";`;
+}
+
+function renderEndpointParams(
+  resolver: GenerateTypeParams["resolver"],
+  endpoint: Parameters<typeof mapEndpointParamsToFunctionParams>[1],
+  options: Parameters<typeof mapEndpointParamsToFunctionParams>[2],
+) {
+  return mapEndpointParamsToFunctionParams(resolver, endpoint, options)
+    .map((param) => `${param.name}${param.required ? "" : "?"}: ${param.type}, `)
+    .join("");
+}
+
+function renderEndpointArgs(
+  resolver: GenerateTypeParams["resolver"],
+  endpoint: Parameters<typeof mapEndpointParamsToFunctionParams>[1],
+  options: Parameters<typeof mapEndpointParamsToFunctionParams>[2],
+) {
+  return mapEndpointParamsToFunctionParams(resolver, endpoint, options)
+    .map((param) => param.name)
+    .join(", ");
+}
+
+function renderEndpointParamParse(
+  resolver: GenerateTypeParams["resolver"],
+  param: EndpointParameter,
+  paramName: string,
+) {
+  const addOptional =
+    !(param.parameterObject ?? param.bodyObject)?.required &&
+    (Boolean(param.parameterSortingEnumSchemaName) || isNamedZodSchema(param.zodSchema));
+  const schemaValue = param.parameterSortingEnumSchemaName
+    ? `${ZOD_EXTENDED.namespace}.${ZOD_EXTENDED.exports.sortExp}(${getImportedZodSchemaName(
+        resolver,
+        param.parameterSortingEnumSchemaName,
+      )})${addOptional ? ".optional()" : ""}`
+    : `${getImportedZodSchemaName(resolver, param.zodSchema)}${addOptional ? ".optional()" : ""}`;
+  const queryArgs = param.type === "Query" ? `, { type: "query", name: "${paramName}" }` : "";
+  return `${ZOD_EXTENDED.namespace}.${ZOD_EXTENDED.exports.parse}(${schemaValue}, ${paramName}${queryArgs})`;
+}
+
+function renderEndpointConfig(resolver: GenerateTypeParams["resolver"], endpoint: Endpoint) {
+  const endpointConfig = getEndpointConfig(endpoint);
+  const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
+  if (Object.keys(endpointConfig).length === 0) {
+    return hasAxiosRequestConfig ? AXIOS_REQUEST_CONFIG_NAME : "";
+  }
+
+  const lines: string[] = [];
+  lines.push("{");
+  if (hasAxiosRequestConfig) {
+    lines.push(`    ...${AXIOS_REQUEST_CONFIG_NAME},`);
+  }
+  if (endpointConfig.params) {
+    lines.push("    params: {");
+    for (const param of endpointConfig.params) {
+      const value = resolver.options.parseRequestParams
+        ? renderEndpointParamParse(resolver, param, param.value)
+        : param.value;
+      lines.push(`        ${param.name}: ${value},`);
+    }
+    lines.push("    },");
+  }
+  if (endpointConfig.headers) {
+    lines.push("    headers: {");
+    for (const [key, value] of Object.entries(endpointConfig.headers)) {
+      lines.push(`        '${key}': ${value},`);
+    }
+    lines.push("    },");
+  }
+  if (endpoint.response === "z.instanceof(Blob)") {
+    lines.push('    responseType: "blob",');
+  }
+  if (endpoint.mediaDownload) {
+    lines.push("    rawResponse: true,");
+  }
+  lines.push("}");
+  return lines.join("\n        ");
 }

@@ -6,7 +6,7 @@ import { OpenAPICodegenConfig } from "@/generators/types/config";
 
 import { logError } from "./cli.helper";
 
-const CONFIG_FILE_NAMES = ["openapi-codegen.config.ts"];
+const CONFIG_FILE_NAMES = ["openapi-codegen.config.mjs", "openapi-codegen.config.ts"];
 
 export async function loadConfig(configPath?: string): Promise<OpenAPICodegenConfig | null> {
   try {
@@ -36,11 +36,24 @@ async function loadConfigFromPath(filePath: string): Promise<OpenAPICodegenConfi
   }
 
   const ext = path.extname(absolutePath).toLowerCase();
+  if (ext === ".mjs") {
+    return loadMjsConfig(absolutePath);
+  }
   if (ext !== ".ts") {
-    throw new Error(`Only TypeScript configuration files are supported. Found: ${ext}`);
+    throw new Error(`Only ESM (.mjs) and TypeScript (.ts) configuration files are supported. Found: ${ext}`);
   }
 
   return loadTsConfig(absolutePath);
+}
+
+async function loadMjsConfig(filePath: string): Promise<OpenAPICodegenConfig> {
+  const imported = (await import(`${pathToFileURL(filePath).href}?t=${Date.now()}`)) as {
+    default?: OpenAPICodegenConfig;
+  };
+  if (!imported.default) {
+    throw new Error(`ESM config must have a default export: ${filePath}`);
+  }
+  return imported.default;
 }
 
 let importFresh: typeof import("import-fresh");
@@ -99,4 +112,13 @@ function resolveTsConfig(directory: string) {
   }
 
   return config;
+}
+
+function pathToFileURL(filePath: string) {
+  const resolvedPath = path.resolve(filePath);
+  const normalizedPath = resolvedPath.replace(/\\/g, "/");
+  const hasLeadingSlash = normalizedPath.startsWith("/");
+  return {
+    href: hasLeadingSlash ? `file://${normalizedPath}` : `file:///${normalizedPath}`,
+  };
 }

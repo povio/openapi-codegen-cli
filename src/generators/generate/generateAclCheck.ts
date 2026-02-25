@@ -1,47 +1,39 @@
+import { ACL_APP_ABILITIES, ACL_CHECK_HOOK, CASL_ABILITY_BINDING } from "@/generators/const/acl.const";
 import {
-  ACL_APP_ABILITIES,
-  ACL_CHECK_HOOK,
-  CASL_ABILITY_BINDING,
-  CASL_ABILITY_IMPORT,
-} from "@/generators/const/acl.const";
-import { ABILITY_CONTEXT, ABILITY_CONTEXT_IMPORT, ERROR_HANDLERS } from "@/generators/const/deps.const";
-import { PACKAGE_IMPORT_PATH } from "@/generators/const/package.const";
+  ABILITY_CONTEXT,
+  ABILITY_CONTEXT_IMPORT,
+  ERROR_HANDLERS,
+  ERROR_HANDLING_IMPORT,
+} from "@/generators/const/deps.const";
 import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
-import { Import } from "@/generators/types/generate";
 import { getAppAbilitiesImportPath } from "@/generators/utils/generate/generate.utils";
-import { getHbsTemplateDelegate } from "@/generators/utils/hbs/hbs-template.utils";
 
 export function generateAclCheck(resolver: SchemaResolver) {
-  const hbsTemplate = getHbsTemplateDelegate(resolver, "acl-check");
+  const abilityContextImportPath = resolver.options.abilityContextImportPath ?? ABILITY_CONTEXT_IMPORT.from;
+  const appAbilitiesImportPath = getAppAbilitiesImportPath(resolver.options);
+  const errorHandlingImportPath = resolver.options.errorHandlingImportPath ?? ERROR_HANDLING_IMPORT.from;
 
-  const abilityTupleImport: Import = {
-    bindings: [CASL_ABILITY_BINDING.abilityTuple],
-    from: CASL_ABILITY_IMPORT.from,
-    typeOnly: true,
-  };
+  const genericAppAbilities = resolver.options.abilityContextGenericAppAbilities ? `<${ACL_APP_ABILITIES}>` : "";
+  return `import { ${CASL_ABILITY_BINDING.abilityTuple} } from "@casl/ability";
+import { type ${ERROR_HANDLERS.ErrorHandler}, ${ERROR_HANDLERS.SharedErrorHandler} } from "${errorHandlingImportPath}";
+import { ${ABILITY_CONTEXT} } from "${abilityContextImportPath}";
+import { useCallback } from "react";
+import { ${ACL_APP_ABILITIES} } from "${appAbilitiesImportPath}";
 
-  const errorHandlingImport: Import = {
-    bindings: [`type ${ERROR_HANDLERS.ErrorHandler}`, ERROR_HANDLERS.SharedErrorHandler],
-    from: PACKAGE_IMPORT_PATH,
-  };
+interface UseAclCheckProps {
+  errorHandler?: ${ERROR_HANDLERS.ErrorHandler}<never>;
+}
 
-  const appAbilitiesImport: Import = {
-    bindings: [ACL_APP_ABILITIES],
-    from: getAppAbilitiesImportPath(resolver.options),
-    typeOnly: true,
-  };
+export function ${ACL_CHECK_HOOK}({ errorHandler }: UseAclCheckProps = {}) {
+  const ability = ${ABILITY_CONTEXT}.useAbility${genericAppAbilities}();
 
-  return hbsTemplate({
-    abilityTupleImport,
-    appAbilitiesImport,
-    errorHandlingImport,
-    abilityContextImport: ABILITY_CONTEXT_IMPORT,
-    abilityContext: ABILITY_CONTEXT,
-    appAbilities: ACL_APP_ABILITIES,
-    abilityTuple: CASL_ABILITY_BINDING.abilityTuple,
-    errorHandler: ERROR_HANDLERS.ErrorHandler,
-    sharedErrorHandler: ERROR_HANDLERS.SharedErrorHandler,
-    aclCheckHook: ACL_CHECK_HOOK,
-    hasGenericAppAbilities: resolver.options.abilityContextGenericAppAbilities,
-  });
+  const checkAcl = useCallback((appAbility: ${ACL_APP_ABILITIES}) => {
+    if (!ability.can(...(appAbility as ${CASL_ABILITY_BINDING.abilityTuple}))) {
+      (errorHandler ?? ${ERROR_HANDLERS.SharedErrorHandler}).rethrowError(new Error("ACL check failed"));
+    }
+  }, [ability, errorHandler]);
+
+  return { checkAcl };
+}
+`;
 }

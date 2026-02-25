@@ -97,7 +97,7 @@ export function getAppRestClientFiles(resolver: SchemaResolver): GenerateFileDat
 }
 
 function getAssetFiles(files: GenerateFile[], resolver: SchemaResolver): GenerateFileData[] {
-  return files.reduce((acc, file) => [...acc, getAssetFile(file, resolver)], [] as GenerateFileData[]);
+  return files.map((file) => getAssetFile(file, resolver));
 }
 
 function getAssetFile(file: GenerateFile, resolver: SchemaResolver): GenerateFileData {

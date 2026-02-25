@@ -1,4 +1,4 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
-  "ignorePatterns": ["**/*.hbs", "node_modules", ".yarn"]
+  "ignorePatterns": ["**/*.hbs", "node_modules", ".yarn", "test/generated/**"]
 }

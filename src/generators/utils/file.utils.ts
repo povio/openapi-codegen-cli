@@ -11,11 +11,6 @@ function readFileSync(filePath: string) {
   return fs.readFileSync(filePath, "utf-8");
 }
 
-export function readHbsTemplateSync(fileName: string) {
-  const templatePath = `src/generators/templates/${fileName}.hbs`;
-  return readFileSync(templatePath);
-}
-
 export function readAssetSync(fileName: string) {
   const assetPath = `src/assets/${fileName}`;
   return readFileSync(assetPath);
@@ -30,6 +25,13 @@ function writeFileWithDirSync(file: string, data: string) {
 
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
+  }
+
+  if (fs.existsSync(file)) {
+    const existingData = fs.readFileSync(file, "utf-8");
+    if (existingData === data) {
+      return;
+    }
   }
 
   fs.writeFileSync(file, data, "utf-8");

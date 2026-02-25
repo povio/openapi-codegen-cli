@@ -24,11 +24,7 @@ export function getZodChain({
     .otherwise(() => void 0);
 
   if (typeof schema.description === "string" && schema.description !== "" && options.withDescription) {
-    if (["\n", "\r", "\r\n"].some((c) => String.prototype.includes.call(schema.description, c))) {
-      chains.push(`describe(\`${schema.description}\`)`);
-    } else {
-      chains.push(`describe("${schema.description}")`);
-    }
+    chains.push(`describe(${JSON.stringify(schema.description)})`);
   }
 
   const output = chains

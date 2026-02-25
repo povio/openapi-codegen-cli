@@ -1,30 +1,33 @@
 import { OpenAPIV3 } from "openapi-types";
-
-import { Endpoint } from "@/generators/types/endpoint";
-import { GenerateData } from "@/generators/types/generate";
-import { GenerateOptions } from "@/generators/types/options";
-import { getEndpointTag } from "@/generators/utils/tag.utils";
-
+import { Profiler } from "../../helpers/profile.helper";
+import { Endpoint } from "../types/endpoint";
+import { GenerateData } from "../types/generate";
+import { GenerateOptions } from "../types/options";
+import { getEndpointTag } from "../utils/tag.utils";
 import { getEndpointsFromOpenAPIDoc } from "./endpoints/getEndpointsFromOpenAPIDoc";
 import { SchemaResolver } from "./SchemaResolver.class";
 import { getZodSchemasFromOpenAPIDoc } from "./zod/getZodSchemasFromOpenAPIDoc";
 import { sortZodSchemasByTopology } from "./zod/sortZodSchemasByTopology";
 
-export function getDataFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, options: GenerateOptions) {
-  const resolver = new SchemaResolver(openApiDoc, options);
+export function getDataFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, options: GenerateOptions, profiler?: Profiler) {
+  const p = profiler ?? new Profiler(false);
+  const resolver = p.runSync("data.resolver.init", () => new SchemaResolver(openApiDoc, options, p));
 
-  const endpoints = getEndpointsFromOpenAPIDoc(resolver);
-  const zodSchemasFromDocSchemas = getZodSchemasFromOpenAPIDoc(resolver);
+  const endpoints = p.runSync("data.endpoints.extract", () => getEndpointsFromOpenAPIDoc(resolver, p));
+  const zodSchemasFromDocSchemas = p.runSync("data.zod.extract", () => getZodSchemasFromOpenAPIDoc(resolver, p));
 
   let zodSchemas = {
     ...zodSchemasFromDocSchemas.zodSchemas,
     ...resolver.getZodSchemas(),
     ...zodSchemasFromDocSchemas.enumZodSchemas,
   };
-  zodSchemas = sortZodSchemasByTopology(resolver, zodSchemas);
+  zodSchemas = p.runSync("data.zod.sortTopology", () => sortZodSchemasByTopology(resolver, zodSchemas));
   zodSchemas = { ...resolver.getExtractedEnumZodSchemas(), ...zodSchemas };
 
-  return { resolver, data: splitDataByTags({ resolver, endpoints, zodSchemas, options }) };
+  return {
+    resolver,
+    data: p.runSync("data.splitByTags", () => splitDataByTags({ resolver, endpoints, zodSchemas, options })),
+  };
 }
 
 function splitDataByTags({

@@ -1,5 +1,4 @@
 import { OpenAPIV3 } from "openapi-types";
-
 import { getDataFromOpenAPIDoc } from "./core/getDataFromOpenAPIDoc";
 import { generateAcl } from "./generate/generateAcl";
 import { generateConfigs } from "./generate/generateConfigs";
@@ -16,9 +15,18 @@ import {
   getZodExtendedFiles,
 } from "./utils/generate-files.utils";
 import { getTagFileName } from "./utils/generate/generate.utils";
+import { Profiler } from "../helpers/profile.helper";
 
-export function generateCodeFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, options: GenerateOptions) {
-  const { resolver, data } = getDataFromOpenAPIDoc(openApiDoc, options);
+export function generateCodeFromOpenAPIDoc(
+  openApiDoc: OpenAPIV3.Document,
+  options: GenerateOptions,
+  profiler?: Profiler,
+) {
+  const p = profiler ?? new Profiler(false);
+  const importPath = options.standalone && options.importPath === "ts" ? "relative" : options.importPath;
+  const { resolver, data } = p.runSync("data.extract", () =>
+    getDataFromOpenAPIDoc(openApiDoc, { ...options, importPath }, p),
+  );
 
   const generateFilesData: GenerateFileData[] = [];
   const appAclTags: string[] = [];
@@ -39,7 +47,7 @@ export function generateCodeFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, optio
 
   data.forEach((_, tag) => {
     generateTypes.forEach((type) => {
-      const content = generateFunctions[type]({ resolver, data, tag });
+      const content = p.runSync(`render.${type}`, () => generateFunctions[type]({ resolver, data, tag }));
       if (content) {
         const fileName = getOutputFileName({
           output: options.output,
@@ -54,10 +62,10 @@ export function generateCodeFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, optio
   });
 
   generateFilesData.push(
-    ...getAclFiles(data, resolver),
-    ...getMutationEffectsFiles(data, resolver),
-    ...getZodExtendedFiles(data, resolver),
-    ...getAppRestClientFiles(resolver),
+    ...p.runSync("render.AclShared", () => getAclFiles(data, resolver)),
+    ...p.runSync("render.MutationEffects", () => getMutationEffectsFiles(data, resolver)),
+    ...p.runSync("render.ZodExtended", () => getZodExtendedFiles(data, resolver)),
+    ...p.runSync("render.Standalone", () => getAppRestClientFiles(resolver)),
   );
 
   return generateFilesData;

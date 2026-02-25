@@ -1,0 +1,52 @@
+import { z } from "zod";
+import { CommonModels } from "@/data/common/common.models";
+
+export namespace PositionAccountModels {
+/** 
+ * PositionAccountTotalsResponseDtoSchema 
+ * @type { object }
+ * @property { number } totalBuyRates Total buy rates 
+ * @property { number } totalSellRates Total sell rates 
+ * @property { number } totalProfit Total profit 
+ * @property { number } margin Margin percentage 
+ * @property { number } displayAmount Display amount 
+ * @property { string } displayCurrencyCode Display currency code 
+ */
+export const PositionAccountTotalsResponseDtoSchema = z.object({ totalBuyRates: z.number().describe("Total buy rates"), totalSellRates: z.number().describe("Total sell rates"), totalProfit: z.number().describe("Total profit"), margin: z.number().describe("Margin percentage").nullish(), displayAmount: z.number().describe("Display amount"), displayCurrencyCode: z.string().describe("Display currency code") }).readonly();
+export type PositionAccountTotalsResponseDto = z.infer<typeof PositionAccountTotalsResponseDtoSchema>;
+
+/** 
+ * PositionAccountMasterTotalsDtoSchema 
+ * @type { object }
+ * @property { PositionAccountTotalsResponseDto } totals  
+ * @property { PositionAccountTotalsResponseDto[] } totalsPerCurrency  
+ */
+export const PositionAccountMasterTotalsDtoSchema = z.object({ totals: PositionAccountTotalsResponseDtoSchema, totalsPerCurrency: z.array(PositionAccountTotalsResponseDtoSchema).readonly() }).readonly();
+export type PositionAccountMasterTotalsDto = z.infer<typeof PositionAccountMasterTotalsDtoSchema>;
+
+/** 
+ * ChildPositionAccountReferenceDtoSchema 
+ * @type { object }
+ * @property { string } positionId  
+ * @property { string } positionNumber  
+ * @property { string } accountId  
+ */
+export const ChildPositionAccountReferenceDtoSchema = z.object({ positionId: z.string().nullish(), positionNumber: z.string(), accountId: z.string() }).readonly();
+export type ChildPositionAccountReferenceDto = z.infer<typeof ChildPositionAccountReferenceDtoSchema>;
+
+/** 
+ * PositionAccountResponseDtoSchema 
+ * @type { object }
+ * @property { string } id Account ID 
+ * @property { string } positionId Position ID 
+ * @property { string } invoiceId Invoice ID 
+ * @property { CommonModels.PositionAccountItemDtoResponse[] } items Account items 
+ * @property { PositionAccountTotalsResponseDto } totals  
+ * @property { PositionAccountTotalsResponseDto[] } totalsPerCurrency  
+ * @property { PositionAccountMasterTotalsDto } masterTotals  
+ * @property { ChildPositionAccountReferenceDto[] } childPositionAccounts  
+ */
+export const PositionAccountResponseDtoSchema = z.object({ id: z.string().describe("Account ID"), positionId: z.string().describe("Position ID").nullish(), invoiceId: z.string().describe("Invoice ID").nullish(), items: z.array(CommonModels.PositionAccountItemDtoResponseSchema).readonly().describe("Account items"), totals: PositionAccountTotalsResponseDtoSchema, totalsPerCurrency: z.array(PositionAccountTotalsResponseDtoSchema).readonly(), masterTotals: PositionAccountMasterTotalsDtoSchema.nullish(), childPositionAccounts: z.array(ChildPositionAccountReferenceDtoSchema).readonly().nullish() }).readonly();
+export type PositionAccountResponseDto = z.infer<typeof PositionAccountResponseDtoSchema>;
+
+}
