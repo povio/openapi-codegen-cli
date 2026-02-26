@@ -1,6 +1,6 @@
 {
   "name": "@povio/openapi-codegen-cli",
-  "version": "2.0.8-rc.5",
+  "version": "2.0.8-rc.6",
   "keywords": [
     "codegen",
     "openapi",
@@ -61,7 +61,7 @@
     "format": "oxfmt",
     "format:check": "oxfmt --check",
     "check": "pnpm typecheck && pnpm lint && pnpm test",
-    "push": "pnpm exec ./scripts/publish.sh",
+    "push": "node ./scripts/publish.mjs",
     "dev:generate": "rm -rf ./output && pnpm start generate --config ./test/config.mjs",
     "dev:check": "pnpm start check --config ./test/config.mjs",
     "snapshot:openapi-localhost": "node ./scripts/snapshot-openapi-localhost.mjs",
