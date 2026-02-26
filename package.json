@@ -51,19 +51,19 @@
     "test:watch": "vitest",
     "build": "tsdown",
     "start:dist": "node ./dist/sh.mjs",
-    "gen:base": "rm -rf ./test/generated/base && mkdir -p ./test/generated/base && yarn start generate --config ./test/config.mjs --output ./test/generated/base --no-prettier",
-    "gen:next": "rm -rf ./test/generated/next && mkdir -p ./test/generated/next && yarn start generate --config ./test/config.mjs --output ./test/generated/next --no-prettier",
+    "gen:base": "rm -rf ./test/generated/base && mkdir -p ./test/generated/base && pnpm start generate --config ./test/config.mjs --output ./test/generated/base --no-prettier",
+    "gen:next": "rm -rf ./test/generated/next && mkdir -p ./test/generated/next && pnpm start generate --config ./test/config.mjs --output ./test/generated/next --no-prettier",
     "test:generated-eq": "vitest run ./src/generators/generated-output-eq.test.ts",
-    "gen:verify": "yarn gen:base && yarn gen:next && yarn test:generated-eq",
+    "gen:verify": "pnpm gen:base && pnpm gen:next && pnpm test:generated-eq",
     "typecheck": "tsc --noEmit",
     "lint": "oxlint --type-aware --fix",
     "lint:check": "oxlint --type-aware",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
-    "check": "yarn typecheck && yarn lint && yarn test",
-    "push": "yarn exec ./scripts/publish.sh",
-    "dev:generate": "rm -rf ./output && yarn start generate --config ./test/config.mjs",
-    "dev:check": "yarn start check --config ./test/config.mjs",
+    "check": "pnpm typecheck && pnpm lint && pnpm test",
+    "push": "pnpm exec ./scripts/publish.sh",
+    "dev:generate": "rm -rf ./output && pnpm start generate --config ./test/config.mjs",
+    "dev:check": "pnpm start check --config ./test/config.mjs",
     "snapshot:openapi-localhost": "node ./scripts/snapshot-openapi-localhost.mjs",
     "bench:vite-codegen": "node ./scripts/benchmark-vite-codegen.mjs"
   },
@@ -121,8 +121,7 @@
   },
   "engines": {
     "node": ">= 14",
-    "npm": ">= 8",
-    "yarn": ">= 3.2"
+    "pnpm": ">= 9"
   },
-  "packageManager": "yarn@4.12.0"
+  "packageManager": "pnpm@10.4.0"
 }
