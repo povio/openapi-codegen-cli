@@ -6,6 +6,7 @@
 !.yarn/releases
 !.yarn/sdks
 
+/test/generated/
 /output
 /dist
 
