@@ -116,6 +116,7 @@ export function generateQueries(params: GenerateTypeParams) {
 
   const queryTypesImport: Import = {
     bindings: [
+      "OpenApiQueryConfig",
       ...(queryEndpoints.length > 0 ? [QUERY_OPTIONS_TYPES.query] : []),
       ...(resolver.options.infiniteQueries && infiniteQueryEndpoints.length > 0
         ? [QUERY_OPTIONS_TYPES.infiniteQuery]
@@ -640,6 +641,7 @@ function renderQuery({
   lines.push(
     `export const ${getQueryName(endpoint)} = <TData>(${endpointParams ? `{ ${endpointArgs} }: { ${endpointParams} }, ` : ""}options?: AppQueryOptions<typeof ${importedEndpoint}, TData>${hasAxiosRequestConfig ? `, ${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => {`,
   );
+  lines.push("  const queryConfig = OpenApiQueryConfig.useConfig();");
   if (hasAclCheck) {
     lines.push(`  const { checkAcl } = ${ACL_CHECK_HOOK}();`);
   }
@@ -659,6 +661,7 @@ function renderQuery({
     lines.push(`    queryFn: ${importedEndpoint},`);
   }
   lines.push("    ...options,");
+  lines.push("    onError: options?.onError ?? queryConfig.onError,");
   lines.push("  });");
   lines.push("};");
   return lines.join("\n");
@@ -706,6 +709,7 @@ function renderMutation({
   lines.push(
     `export const ${getQueryName(endpoint, true)} = (options?: AppMutationOptions<typeof ${endpointFunction}, { ${mutationVariablesType} }>${hasMutationEffects ? ` & ${MUTATION_EFFECTS.optionsType}` : ""}${hasAxiosRequestConfig ? `, ${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => {`,
   );
+  lines.push("  const queryConfig = OpenApiQueryConfig.useConfig();");
   if (hasAclCheck) {
     lines.push(`  const { checkAcl } = ${ACL_CHECK_HOOK}();`);
   }
@@ -775,6 +779,7 @@ function renderMutation({
   }
 
   lines.push("    ...options,");
+  lines.push("    onError: options?.onError ?? queryConfig.onError,");
   if (hasMutationEffects) {
     lines.push("    onSuccess: async (resData, variables, onMutateResult, context) => {");
     if (updateQueryEndpoints.length > 0) {
@@ -915,6 +920,7 @@ function renderInfiniteQuery({
   lines.push(
     `export const ${getInfiniteQueryName(endpoint)} = <TData>(${endpointParams ? `{ ${endpointArgsWithoutPage} }: { ${endpointParams} }, ` : ""}options?: AppInfiniteQueryOptions<typeof ${endpointFunction}, TData>${hasAxiosRequestConfig ? `, ${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => {`,
   );
+  lines.push("  const queryConfig = OpenApiQueryConfig.useConfig();");
   if (hasAclCheck) {
     lines.push(`  const { checkAcl } = ${ACL_CHECK_HOOK}();`);
   }
@@ -939,6 +945,7 @@ function renderInfiniteQuery({
   );
   lines.push("    },");
   lines.push("    ...options,");
+  lines.push("    onError: options?.onError ?? queryConfig.onError,");
   lines.push("  });");
   lines.push("};");
   return lines.join("\n");

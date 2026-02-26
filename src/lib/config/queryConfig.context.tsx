@@ -17,6 +17,7 @@ export namespace OpenApiQueryConfig {
     invalidateCurrentModule?: boolean;
     invalidationMap?: InvalidationMap;
     crossTabInvalidation?: boolean;
+    onError?: (error: unknown) => void;
   }
 
   const Context = createContext<Type>({});
@@ -28,12 +29,13 @@ export namespace OpenApiQueryConfig {
     invalidateCurrentModule,
     invalidationMap,
     crossTabInvalidation,
+    onError,
 
     children,
   }: PropsWithChildren<ProviderProps>) => {
     const value = useMemo(
-      () => ({ preferUpdate, invalidateCurrentModule, invalidationMap, crossTabInvalidation }),
-      [preferUpdate, invalidateCurrentModule, invalidationMap, crossTabInvalidation],
+      () => ({ preferUpdate, invalidateCurrentModule, invalidationMap, crossTabInvalidation, onError }),
+      [preferUpdate, invalidateCurrentModule, invalidationMap, crossTabInvalidation, onError],
     );
 
     return <Context.Provider value={value}>{children}</Context.Provider>;
