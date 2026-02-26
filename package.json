@@ -16,7 +16,7 @@
     "url": "git+https://github.com/povio/openapi-codegen-cli.git"
   },
   "bin": {
-    "openapi-codegen": "./dist/sh.js"
+    "openapi-codegen": "./dist/sh.mjs"
   },
   "files": [
     "README.md",
@@ -29,23 +29,19 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.mjs"
+      "import": "./dist/index.mjs"
     },
     "./vite": {
       "types": "./dist/vite.d.ts",
-      "import": "./dist/vite.mjs",
-      "require": "./dist/vite.mjs"
+      "import": "./dist/vite.mjs"
     },
     "./generator": {
       "types": "./dist/generator.d.ts",
-      "import": "./dist/generator.js",
-      "require": "./dist/generator.js"
+      "import": "./dist/generator.mjs"
     },
     "./acl": {
       "types": "./dist/acl.d.ts",
-      "import": "./dist/acl.mjs",
-      "require": "./dist/acl.mjs"
+      "import": "./dist/acl.mjs"
     }
   },
   "scripts": {
@@ -54,9 +50,9 @@
     "test:watch": "vitest",
     "build:clean": "rm -rf ./dist",
     "build:client": "vite build",
-    "build:cli": "node ./esbuild.mjs && chmod +x ./dist/sh.js",
+    "build:cli": "tsdown --config tsdown.config.ts && chmod +x ./dist/sh.mjs",
     "build": "yarn build:clean && yarn build:cli && yarn build:client",
-    "start:dist": "node ./dist/sh.js",
+    "start:dist": "node ./dist/sh.mjs",
     "gen:base": "rm -rf ./test/generated/base && mkdir -p ./test/generated/base && yarn start generate --config ./test/config.mjs --output ./test/generated/base --no-prettier",
     "gen:next": "rm -rf ./test/generated/next && mkdir -p ./test/generated/next && yarn start generate --config ./test/config.mjs --output ./test/generated/next --no-prettier",
     "test:generated-eq": "vitest run ./src/generators/generated-output-eq.test.ts",
@@ -89,7 +85,6 @@
     "@types/yargs": "^17.0.35",
     "@vitejs/plugin-react": "^5.1.4",
     "axios": "^1.13.5",
-    "esbuild": "0.27.3",
     "handlebars": "^4.7.8",
     "openapi-types": "^12.1.3",
     "oxfmt": "^0.34.0",
@@ -99,10 +94,11 @@
     "react": "^19.2.4",
     "reflect-metadata": "^0.2.2",
     "ts-pattern": "^5.9.0",
+    "tsdown": "^0.21.0-beta.1",
     "tsx": "^4.21.0",
     "type-fest": "^5.4.4",
     "typescript": "^5.9.3",
-    "vite": "^7.3.1",
+    "vite": "npm:rolldown-vite@^7.3.1",
     "vite-plugin-dts": "^4.5.4",
     "vitest": "4.0.18",
     "zod": "^4.3.6"
