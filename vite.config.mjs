@@ -1,5 +1,6 @@
 import { readFileSync } from "fs";
 import { resolve } from "path";
+import { builtinModules } from "module";
 
 import { defineConfig } from "vite";
 import dts from "vite-plugin-dts";
@@ -35,6 +36,7 @@ export default defineConfig({
       formats: ["es"],
       entry: {
         index: "src/index.ts",
+        vite: "src/vite.ts",
         acl: "src/acl.ts",
       },
     },
@@ -45,6 +47,8 @@ export default defineConfig({
         // Externalize all dependencies and peerDependencies
         ...Object.keys(pkg.dependencies || {}),
         ...Object.keys(pkg.peerDependencies || {}),
+        ...builtinModules,
+        ...builtinModules.map((moduleName) => `node:${moduleName}`),
         /^react($|\/)/,
         /^react-dom($|\/)/,
         /^@[\w-]+\//,

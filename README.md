@@ -69,6 +69,7 @@ yarn openapi-codegen generate --config my-config.ts
   --config                            Path to TS config file (default: 'openapi-codegen.config.ts')
   --input                             Path/URL to OpenAPI JSON/YAML document
   --output                            Output directory path (default: 'output')
+  --incremental                       Skip generation when OpenAPI and config are unchanged (default: true)
   --format                            Format the generated code using Oxfmt (default: true)
   --verbose                           Display detailed log messages during execution (default: false)
 
@@ -222,6 +223,28 @@ const config: OpenAPICodegenConfig = {
   // modelsOnly: true,
 };
 ```
+
+### Vite Plugin
+
+You can run codegen directly from Vite config (without CLI config file):
+
+```ts
+import { defineConfig } from "vite";
+import { openApiCodegen } from "@povio/openapi-codegen-cli/vite";
+
+export default defineConfig({
+  plugins: [
+    openApiCodegen({
+      input: "./openapi.yaml",
+      output: "./src/data",
+      inlineEndpoints: true,
+      incremental: true,
+    }),
+  ],
+});
+```
+
+The plugin runs on both `vite serve` and `vite build`, and watches local OpenAPI files in dev mode.
 
 ### Enums
 

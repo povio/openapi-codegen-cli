@@ -8,6 +8,7 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   // Base options
   input: "http://localhost:4000/docs-json/",
   output: "output",
+  incremental: true,
   splitByTags: true,
   defaultTag: "Common",
   excludeTags: [],

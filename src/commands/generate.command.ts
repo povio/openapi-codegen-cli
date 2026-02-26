@@ -16,6 +16,9 @@ class GenerateOptions implements GenerateParams {
   @YargOption({ envAlias: "output" })
   output?: string;
 
+  @YargOption({ envAlias: "incremental", type: "boolean" })
+  incremental?: boolean;
+
   @YargOption({ envAlias: "tsNamespaces", type: "boolean" })
   tsNamespaces?: boolean;
 
