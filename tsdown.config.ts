@@ -1,5 +1,4 @@
 import { readFileSync } from "node:fs";
-
 import { defineConfig } from "tsdown";
 
 const pkg = JSON.parse(readFileSync("./package.json", "utf-8")) as {
@@ -8,17 +7,19 @@ const pkg = JSON.parse(readFileSync("./package.json", "utf-8")) as {
   version?: string;
 };
 
-const external = [...Object.keys(pkg.dependencies ?? {}), ...Object.keys(pkg.peerDependencies ?? {})];
+const external = [
+  ...Object.keys(pkg.dependencies ?? {}),
+  ...Object.keys(pkg.peerDependencies ?? {}),
+  "vite",
+  "postcss",
+];
 
 export default defineConfig({
-  entry: ["./src/sh.ts", "./src/generator.ts"],
+  entry: ["./src/sh.ts", "./src/generator.ts", "./src/index.ts", "./src/vite.ts", "./src/acl.ts"],
   format: "esm",
-  outDir: "dist",
   platform: "node",
-  target: "node14",
-  minify: true,
-  clean: false,
-  dts: false,
+  target: "esnext",
+  dts: true,
   deps: {
     neverBundle: external,
     onlyAllowBundle: false,

@@ -1332,7 +1332,7 @@ __metadata:
     "@casl/react":
       optional: true
   bin:
-    openapi-codegen: ./dist/sh.js
+    openapi-codegen: ./dist/sh.mjs
   languageName: unknown
   linkType: soft
 

@@ -8,6 +8,7 @@
     "react-query",
     "zod"
   ],
+  "type": "module",
   "homepage": "https://github.com/povio/openapi-codegen-cli",
   "bugs": "https://github.com/povio/openapi-codegen-cli/issues",
   "license": "BSD-3-Clause",
@@ -48,10 +49,7 @@
     "start": "node --import tsx ./src/sh.ts",
     "test": "vitest run",
     "test:watch": "vitest",
-    "build:clean": "rm -rf ./dist",
-    "build:client": "vite build",
-    "build:cli": "tsdown --config tsdown.config.ts && chmod +x ./dist/sh.mjs",
-    "build": "yarn build:clean && yarn build:cli && yarn build:client",
+    "build": "tsdown",
     "start:dist": "node ./dist/sh.mjs",
     "gen:base": "rm -rf ./test/generated/base && mkdir -p ./test/generated/base && yarn start generate --config ./test/config.mjs --output ./test/generated/base --no-prettier",
     "gen:next": "rm -rf ./test/generated/next && mkdir -p ./test/generated/next && yarn start generate --config ./test/config.mjs --output ./test/generated/next --no-prettier",
@@ -124,5 +122,5 @@
     "npm": ">= 8",
     "yarn": ">= 3.2"
   },
-  "packageManager": "yarn@4.2.2"
+  "packageManager": "yarn@4.12.0"
 }
