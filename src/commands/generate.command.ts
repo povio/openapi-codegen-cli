@@ -46,6 +46,9 @@ class GenerateOptions implements GenerateParams {
   @YargOption({ envAlias: "extractEnums", type: "boolean" })
   extractEnums?: boolean;
 
+  @YargOption({ envAlias: "modelsInCommon", type: "boolean" })
+  modelsInCommon?: boolean;
+
   @YargOption({ envAlias: "removeOperationPrefixEndingWith" })
   removeOperationPrefixEndingWith?: string;
 

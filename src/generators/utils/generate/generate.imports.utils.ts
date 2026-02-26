@@ -181,7 +181,8 @@ function getImports<T>({
 }) {
   const imports = new Map<string, Import>();
   entities.forEach((entity) => {
-    const tag = getTag(entity);
+    const tag =
+      type === GenerateType.Models && options.modelsInCommon && options.splitByTags ? currentTag : getTag(entity);
     if (!imports.has(tag)) {
       const sameTagDir = currentTag === tag;
       imports.set(tag, {

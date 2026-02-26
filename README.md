@@ -85,6 +85,7 @@ yarn openapi-codegen generate --config my-config.ts
   --tsPath                            (Requires `--importPath` to be 'ts') Typescript import path (default: '@/data')
   --removeOperationPrefixEndingWith   Remove operation name prefixes that end with the specified string (default: 'Controller_')
   --extractEnums                      Extract enums into separate Zod schemas (default: true)
+  --modelsInCommon                    Keep all schema declarations in defaultTag models and emit per-module proxy exports (default: false)
   --replaceOptionalWithNullish        Replace `.optional()` chains with `.nullish()` in generated Zod schemas (default: false)
 
   --axiosRequestConfig                Include Axios request config parameters in query hooks (default: false)
@@ -221,6 +222,8 @@ const config: OpenAPICodegenConfig = {
   // inlineEndpointsExcludeModules: ["Users", "Billing"],
   // 3) Models-only mode: generate only *.models.ts files
   // modelsOnly: true,
+  // 4) Keep all model declarations in common.models and generate per-module model proxies
+  // modelsInCommon: true,
 };
 ```
 

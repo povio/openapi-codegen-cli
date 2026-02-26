@@ -3,6 +3,7 @@ import { GenerateType } from "./generate";
 interface ZodGenerateOptions {
   schemaSuffix: string;
   enumSuffix: string;
+  modelsInCommon?: boolean;
   withImplicitRequiredProps?: boolean;
   withDefaultValues?: boolean;
   withDescription?: boolean;

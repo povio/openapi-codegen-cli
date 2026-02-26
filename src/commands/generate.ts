@@ -24,6 +24,7 @@ export type GenerateParams = {
     | "removeOperationPrefixEndingWith"
     | "importPath"
     | "extractEnums"
+    | "modelsInCommon"
     | "acl"
     | "checkAcl"
     | "standalone"
