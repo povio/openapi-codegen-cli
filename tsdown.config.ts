@@ -1,5 +1,5 @@
 import { defineConfig } from "tsdown";
-import packageJson from './package.json' with { type: 'json' };
+import packageJson from "./package.json" with { type: "json" };
 
 export default defineConfig({
   entry: ["./src/sh.ts", "./src/generator.ts", "./src/index.ts", "./src/vite.ts", "./src/acl.ts"],

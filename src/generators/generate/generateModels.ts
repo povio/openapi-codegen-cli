@@ -82,7 +82,9 @@ export function generateModels({ resolver, data, tag }: GenerateTypeParams) {
 function renderModelsProxy({ resolver, data, tag }: GenerateTypeParams) {
   const commonZodSchemas = data.get(resolver.options.defaultTag)?.zodSchemas ?? {};
   const endpoints = data.get(tag)?.endpoints ?? [];
-  const schemaNames = getUsedSchemaNames({ resolver, endpoints }).filter((schemaName) => Boolean(commonZodSchemas[schemaName]));
+  const schemaNames = getUsedSchemaNames({ resolver, endpoints }).filter((schemaName) =>
+    Boolean(commonZodSchemas[schemaName]),
+  );
   if (schemaNames.length === 0) {
     return;
   }
@@ -136,7 +138,13 @@ function renderModelsProxy({ resolver, data, tag }: GenerateTypeParams) {
   return lines.join("\n") + "\n";
 }
 
-function getUsedSchemaNames({ resolver, endpoints }: { resolver: GenerateTypeParams["resolver"]; endpoints: Endpoint[] }) {
+function getUsedSchemaNames({
+  resolver,
+  endpoints,
+}: {
+  resolver: GenerateTypeParams["resolver"];
+  endpoints: Endpoint[];
+}) {
   const usedSchemaNames = new Set<string>();
   const queue: string[] = [];
 

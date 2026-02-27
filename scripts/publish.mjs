@@ -40,7 +40,7 @@ function main() {
 
   const rl = readline.createInterface({
     input: process.stdin,
-    output: process.stdout
+    output: process.stdout,
   });
 
   rl.question("Press enter to continue (or Ctrl+C to cancel)", () => {
