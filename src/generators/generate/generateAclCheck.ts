@@ -9,9 +9,9 @@ import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
 import { getAppAbilitiesImportPath } from "@/generators/utils/generate/generate.utils";
 
 export function generateAclCheck(resolver: SchemaResolver) {
-  const abilityContextImportPath = resolver.options.abilityContextImportPath ?? ABILITY_CONTEXT_IMPORT.from;
+  const abilityContextImportPath = resolver.options.abilityContextImportPath || ABILITY_CONTEXT_IMPORT.from;
   const appAbilitiesImportPath = getAppAbilitiesImportPath(resolver.options);
-  const errorHandlingImportPath = resolver.options.errorHandlingImportPath ?? ERROR_HANDLING_IMPORT.from;
+  const errorHandlingImportPath = resolver.options.errorHandlingImportPath || ERROR_HANDLING_IMPORT.from;
 
   const genericAppAbilities = resolver.options.abilityContextGenericAppAbilities ? `<${ACL_APP_ABILITIES}>` : "";
   return `import { ${CASL_ABILITY_BINDING.abilityTuple} } from "@casl/ability";

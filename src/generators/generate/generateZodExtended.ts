@@ -6,7 +6,7 @@ import { Import } from "@/generators/types/generate";
 export function generateZodExtended(resolver: SchemaResolver) {
   const errorHandlingImport: Import = {
     ...ERROR_HANDLING_IMPORT,
-    from: resolver.options.errorHandlingImportPath ?? ERROR_HANDLING_IMPORT.from,
+    from: resolver.options.errorHandlingImportPath || ERROR_HANDLING_IMPORT.from,
   };
   return `${renderImport(ZOD_IMPORT)}
 ${renderImport(errorHandlingImport)}

@@ -43,7 +43,7 @@ export function getTagFileName(...args: Parameters<typeof getTagFileNameWithoutE
 }
 
 export function getAppRestClientImportPath(options: GenerateOptions) {
-  if (options.restClientImportPath === DEFAULT_GENERATE_OPTIONS.restClientImportPath) {
+  if (!options.restClientImportPath) {
     return `${getImportPath(options)}${APP_REST_CLIENT_FILE.fileName}`;
   }
   return options.restClientImportPath;
