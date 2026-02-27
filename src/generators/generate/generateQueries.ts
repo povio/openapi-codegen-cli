@@ -661,7 +661,6 @@ function renderQuery({
     lines.push(`    queryFn: ${importedEndpoint},`);
   }
   lines.push("    ...options,");
-  lines.push("    onError: options?.onError ?? queryConfig.onError,");
   lines.push("  });");
   lines.push("};");
   return lines.join("\n");
@@ -688,7 +687,6 @@ function renderMutation({
     includeFileParam: true,
     optionalPathParams: resolver.options.workspaceContext,
   });
-  const endpointArgs = renderEndpointArgs(resolver, endpoint, {});
   const resolvedEndpointArgs = renderEndpointArgs(resolver, endpoint, {}, workspaceParamReplacements);
   const destructuredMutationArgs = renderEndpointArgs(resolver, endpoint, { includeFileParam: true });
   const endpointFunction = inlineEndpoints
@@ -779,7 +777,6 @@ function renderMutation({
   }
 
   lines.push("    ...options,");
-  lines.push("    onError: options?.onError ?? queryConfig.onError,");
   if (hasMutationEffects) {
     lines.push("    onSuccess: async (resData, variables, onMutateResult, context) => {");
     if (updateQueryEndpoints.length > 0) {
@@ -945,7 +942,6 @@ function renderInfiniteQuery({
   );
   lines.push("    },");
   lines.push("    ...options,");
-  lines.push("    onError: options?.onError ?? queryConfig.onError,");
   lines.push("  });");
   lines.push("};");
   return lines.join("\n");
