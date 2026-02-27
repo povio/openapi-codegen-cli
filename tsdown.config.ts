@@ -1,30 +1,14 @@
-import { readFileSync } from "node:fs";
-
 import { defineConfig } from "tsdown";
-
-const pkg = JSON.parse(readFileSync("./package.json", "utf-8")) as {
-  dependencies?: Record<string, string>;
-  peerDependencies?: Record<string, string>;
-  version?: string;
-};
-
-const external = [...Object.keys(pkg.dependencies ?? {}), ...Object.keys(pkg.peerDependencies ?? {})];
+import packageJson from "./package.json" with { type: "json" };
 
 export default defineConfig({
-  entry: ["./src/sh.ts", "./src/generator.ts"],
+  entry: ["./src/sh.ts", "./src/generator.ts", "./src/index.ts", "./src/vite.ts", "./src/acl.ts"],
   format: "esm",
-  outDir: "dist",
   platform: "node",
-  target: "node14",
-  minify: true,
-  clean: false,
-  dts: false,
-  deps: {
-    neverBundle: external,
-    onlyAllowBundle: false,
-  },
+  target: "esnext",
+  dts: true,
   define: {
-    "process.env.OPENAPI_CODEGEN_VERSION": JSON.stringify(pkg.version ?? "unknown"),
+    "process.env.OPENAPI_CODEGEN_VERSION": JSON.stringify(packageJson.version),
     "process.env.NODE_ENV": JSON.stringify("production"),
   },
 });
