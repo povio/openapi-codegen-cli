@@ -26,22 +26,22 @@
     "src/generators/templates/**"
   ],
   "main": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
+  "types": "./dist/index.d.mts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": "./dist/index.d.mts",
       "import": "./dist/index.mjs"
     },
     "./vite": {
-      "types": "./dist/vite.d.ts",
+      "types": "./dist/vite.d.mts",
       "import": "./dist/vite.mjs"
     },
     "./generator": {
-      "types": "./dist/generator.d.ts",
+      "types": "./dist/generator.d.mts",
       "import": "./dist/generator.mjs"
     },
     "./acl": {
-      "types": "./dist/acl.d.ts",
+      "types": "./dist/acl.d.mts",
       "import": "./dist/acl.mjs"
     }
   },
