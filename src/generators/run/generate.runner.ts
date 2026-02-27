@@ -17,6 +17,11 @@ type CacheData = {
   optionsHash: string;
 };
 
+type GenerateStats = {
+  generatedFilesCount: number;
+  generatedModulesCount: number;
+};
+
 export async function runGenerate({
   fileConfig,
   params,
@@ -41,18 +46,19 @@ export async function runGenerate({
   if (config.incremental) {
     const cached = readCache(cacheFilePath);
     if (cached && cached.openApiHash === openApiHash && cached.optionsHash === optionsHash) {
-      return { skipped: true, config };
+      return { skipped: true, config, stats: { generatedFilesCount: 0, generatedModulesCount: 0 } };
     }
   }
 
   const filesData = profiler.runSync("generate.total", () => generateCodeFromOpenAPIDoc(openApiDoc, config, profiler));
   profiler.runSync("files.write", () => writeGenerateFileData(filesData));
+  const stats = getGenerateStats(filesData, config);
 
   if (config.incremental) {
     writeCache(cacheFilePath, { openApiHash, optionsHash });
   }
 
-  return { skipped: false, config };
+  return { skipped: false, config, stats };
 }
 
 async function getOpenApiDoc(input: string, profiler: Profiler): Promise<OpenAPIV3.Document> {
@@ -151,4 +157,44 @@ function stableStringify(input: unknown): string {
   const obj = input as Record<string, unknown>;
   const keys = Object.keys(obj).sort((a, b) => a.localeCompare(b));
   return `{${keys.map((key) => `${JSON.stringify(key)}:${stableStringify(obj[key])}`).join(",")}}`;
+}
+
+function getGenerateStats(filesData: { fileName: string }[], config: GenerateOptions): GenerateStats {
+  const generatedFilesCount = filesData.length;
+  if (generatedFilesCount === 0) {
+    return { generatedFilesCount, generatedModulesCount: 0 };
+  }
+
+  if (!config.splitByTags) {
+    return { generatedFilesCount, generatedModulesCount: 1 };
+  }
+
+  const moduleSuffixes = new Set(
+    Object.values(config.configs)
+      .map((generateConfig) => generateConfig.outputFileNameSuffix)
+      .filter(Boolean),
+  );
+
+  const modules = new Set<string>();
+  for (const file of filesData) {
+    const relativeFilePath = path.relative(config.output, file.fileName);
+    const segments = relativeFilePath.split(path.sep).filter(Boolean);
+    if (segments.length < 2) {
+      continue;
+    }
+
+    const moduleName = segments[0];
+    const fileName = segments[segments.length - 1];
+    if (!fileName.startsWith(`${moduleName}.`)) {
+      continue;
+    }
+
+    const suffixWithExt = fileName.slice(moduleName.length + 1);
+    const suffix = suffixWithExt.replace(/\.tsx?$/, "");
+    if (moduleSuffixes.has(suffix)) {
+      modules.add(moduleName);
+    }
+  }
+
+  return { generatedFilesCount, generatedModulesCount: modules.size };
 }

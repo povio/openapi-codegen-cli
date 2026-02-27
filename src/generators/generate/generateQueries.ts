@@ -221,7 +221,7 @@ export function generateQueries(params: GenerateTypeParams) {
   }
 
   if (inlineEndpoints) {
-    lines.push(...renderInlineEndpoints({ resolver, endpoints }));
+    lines.push(...renderInlineEndpoints({ resolver, endpoints, tag }));
     lines.push("");
   }
 
@@ -527,24 +527,32 @@ function renderQueryKeys({ resolver, queryEndpoints }: { resolver: SchemaResolve
   return lines.join("\n");
 }
 
-function renderInlineEndpoints({ resolver, endpoints }: { resolver: SchemaResolver; endpoints: Endpoint[] }) {
+function renderInlineEndpoints({
+  resolver,
+  endpoints,
+  tag,
+}: {
+  resolver: SchemaResolver;
+  endpoints: Endpoint[];
+  tag: string;
+}) {
   const lines: string[] = [];
   for (const endpoint of endpoints) {
-    const endpointParams = renderEndpointParams(resolver, endpoint, {});
+    const endpointParams = renderEndpointParams(resolver, endpoint, { modelNamespaceTag: tag });
     const endpointBody = getEndpointBody(endpoint);
     const hasUndefinedEndpointBody = requiresBody(endpoint) && !endpointBody && hasEndpointConfig(endpoint, resolver);
-    const endpointConfig = renderInlineEndpointConfig(resolver, endpoint);
+    const endpointConfig = renderInlineEndpointConfig(resolver, endpoint, tag);
 
     lines.push(
       `const ${getEndpointName(endpoint)} = (${endpointParams}${resolver.options.axiosRequestConfig ? `${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => {`,
     );
     lines.push(`  return ${APP_REST_CLIENT_NAME}.${endpoint.method}(`);
-    lines.push(`    { resSchema: ${getImportedZodSchemaName(resolver, endpoint.response)} },`);
+    lines.push(`    { resSchema: ${getImportedZodSchemaName(resolver, endpoint.response, tag)} },`);
     lines.push(`    \`${getEndpointPath(endpoint)}\`,`);
 
     if (endpointBody) {
       lines.push(
-        `    ${resolver.options.parseRequestParams ? renderInlineEndpointParamParse(resolver, endpointBody, endpointBody.name) : endpointBody.name},`,
+        `    ${resolver.options.parseRequestParams ? renderInlineEndpointParamParse(resolver, endpointBody, endpointBody.name, tag) : endpointBody.name},`,
       );
     } else if (hasUndefinedEndpointBody) {
       lines.push("    undefined,");
@@ -558,7 +566,12 @@ function renderInlineEndpoints({ resolver, endpoints }: { resolver: SchemaResolv
   return lines;
 }
 
-function renderInlineEndpointParamParse(resolver: SchemaResolver, param: EndpointParameter, paramName: string) {
+function renderInlineEndpointParamParse(
+  resolver: SchemaResolver,
+  param: EndpointParameter,
+  paramName: string,
+  modelNamespaceTag?: string,
+) {
   const addOptional =
     !(param.parameterObject ?? param.bodyObject)?.required &&
     (Boolean(param.parameterSortingEnumSchemaName) || isNamedZodSchema(param.zodSchema));
@@ -566,13 +579,14 @@ function renderInlineEndpointParamParse(resolver: SchemaResolver, param: Endpoin
     ? `${ZOD_EXTENDED.namespace}.${ZOD_EXTENDED.exports.sortExp}(${getImportedZodSchemaName(
         resolver,
         param.parameterSortingEnumSchemaName,
+        modelNamespaceTag,
       )})${addOptional ? ".optional()" : ""}`
-    : `${getImportedZodSchemaName(resolver, param.zodSchema)}${addOptional ? ".optional()" : ""}`;
+    : `${getImportedZodSchemaName(resolver, param.zodSchema, modelNamespaceTag)}${addOptional ? ".optional()" : ""}`;
   const queryArgs = param.type === "Query" ? `, { type: "query", name: "${paramName}" }` : "";
   return `${ZOD_EXTENDED.namespace}.${ZOD_EXTENDED.exports.parse}(${schemaValue}, ${paramName}${queryArgs})`;
 }
 
-function renderInlineEndpointConfig(resolver: SchemaResolver, endpoint: Endpoint) {
+function renderInlineEndpointConfig(resolver: SchemaResolver, endpoint: Endpoint, modelNamespaceTag?: string) {
   const endpointConfig = getEndpointConfig(endpoint);
   const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
   if (Object.keys(endpointConfig).length === 0) {
@@ -588,7 +602,7 @@ function renderInlineEndpointConfig(resolver: SchemaResolver, endpoint: Endpoint
     lines.push("      params: {");
     for (const param of endpointConfig.params) {
       const value = resolver.options.parseRequestParams
-        ? renderInlineEndpointParamParse(resolver, param, param.value)
+        ? renderInlineEndpointParamParse(resolver, param, param.value, modelNamespaceTag)
         : param.value;
       lines.push(`        ${param.name}: ${value},`);
     }

@@ -1,0 +1,32 @@
+import { CommonModels } from "@/data/common/common.models";
+
+export namespace DunningPartnerOutstandingInvoicesModels {
+  export const ListPartnerOutstandingInvoiceSummariesResponseSchema = CommonModels.ListPartnerOutstandingInvoiceSummariesResponseSchema;
+  export const ListPartnerOutstandingInvoiceSummariesOrderParamEnumSchema = CommonModels.ListPartnerOutstandingInvoiceSummariesOrderParamEnumSchema;
+  export const PartnerOutstandingInvoiceSummaryFilterDtoSchema = CommonModels.PartnerOutstandingInvoiceSummaryFilterDtoSchema;
+  export const ListPartnerOutstandingInvoicesResponseSchema = CommonModels.ListPartnerOutstandingInvoicesResponseSchema;
+  export const ListPartnerOutstandingInvoicesOrderParamEnumSchema = CommonModels.ListPartnerOutstandingInvoicesOrderParamEnumSchema;
+  export const PartnerOutstandingInvoiceFilterDtoSchema = CommonModels.PartnerOutstandingInvoiceFilterDtoSchema;
+  export const ListRecommendedDunningLevelsResponseSchema = CommonModels.ListRecommendedDunningLevelsResponseSchema;
+  export const RecommendedDunningLevelsRequestDtoSchema = CommonModels.RecommendedDunningLevelsRequestDtoSchema;
+  export const PaginationDtoSchema = CommonModels.PaginationDtoSchema;
+  export const PartnerOutstandingInvoiceSummaryResponseDtoSchema = CommonModels.PartnerOutstandingInvoiceSummaryResponseDtoSchema;
+  export const DateRangeDtoSchema = CommonModels.DateRangeDtoSchema;
+  export const PartnerOutstandingInvoiceResponseDtoSchema = CommonModels.PartnerOutstandingInvoiceResponseDtoSchema;
+  export const RecommendedLabelResponseDtoSchema = CommonModels.RecommendedLabelResponseDtoSchema;
+  export type ListPartnerOutstandingInvoiceSummariesResponse = CommonModels.ListPartnerOutstandingInvoiceSummariesResponse;
+  export type ListPartnerOutstandingInvoiceSummariesOrderParamEnum = CommonModels.ListPartnerOutstandingInvoiceSummariesOrderParamEnum;
+  export type PartnerOutstandingInvoiceSummaryFilterDto = CommonModels.PartnerOutstandingInvoiceSummaryFilterDto;
+  export type ListPartnerOutstandingInvoicesResponse = CommonModels.ListPartnerOutstandingInvoicesResponse;
+  export type ListPartnerOutstandingInvoicesOrderParamEnum = CommonModels.ListPartnerOutstandingInvoicesOrderParamEnum;
+  export type PartnerOutstandingInvoiceFilterDto = CommonModels.PartnerOutstandingInvoiceFilterDto;
+  export type ListRecommendedDunningLevelsResponse = CommonModels.ListRecommendedDunningLevelsResponse;
+  export type RecommendedDunningLevelsRequestDto = CommonModels.RecommendedDunningLevelsRequestDto;
+  export type PaginationDto = CommonModels.PaginationDto;
+  export type PartnerOutstandingInvoiceSummaryResponseDto = CommonModels.PartnerOutstandingInvoiceSummaryResponseDto;
+  export type DateRangeDto = CommonModels.DateRangeDto;
+  export type PartnerOutstandingInvoiceResponseDto = CommonModels.PartnerOutstandingInvoiceResponseDto;
+  export type RecommendedLabelResponseDto = CommonModels.RecommendedLabelResponseDto;
+  export const ListPartnerOutstandingInvoiceSummariesOrderParamEnum = CommonModels.ListPartnerOutstandingInvoiceSummariesOrderParamEnum;
+  export const ListPartnerOutstandingInvoicesOrderParamEnum = CommonModels.ListPartnerOutstandingInvoicesOrderParamEnum;
+}
