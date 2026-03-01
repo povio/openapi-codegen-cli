@@ -35,13 +35,13 @@ export const keys = {
 
 /** 
  * Query `useGetCalendar`
- * @param { string } object.from Query parameter
- * @param { string } object.to Query parameter
- * @param { ControlTowerCalendarModels.CalendarTypeEnum } object.type Query parameter
- * @param { string } object.search Query parameter
- * @param { ControlTowerCalendarModels.GetCalendarPoNumbersParam } object.poNumbers Query parameter
- * @param { ControlTowerCalendarModels.GetCalendarContainerNumbersParam } object.containerNumbers Query parameter
- * @param { ControlTowerCalendarModels.GetCalendarBookingNumbersParam } object.bookingNumbers Query parameter
+ * @param { string } from Query parameter
+ * @param { string } to Query parameter
+ * @param { ControlTowerCalendarModels.CalendarTypeEnum } type Query parameter
+ * @param { string } search Query parameter
+ * @param { ControlTowerCalendarModels.GetCalendarPoNumbersParam } poNumbers Query parameter
+ * @param { ControlTowerCalendarModels.GetCalendarContainerNumbersParam } containerNumbers Query parameter
+ * @param { ControlTowerCalendarModels.GetCalendarBookingNumbersParam } bookingNumbers Query parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<ControlTowerCalendarModels.CalendarResponseDto> } 
  * @statusCodes [200, 401]

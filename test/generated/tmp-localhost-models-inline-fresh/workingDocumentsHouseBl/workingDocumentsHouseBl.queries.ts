@@ -109,8 +109,8 @@ export const keys = {
  * Mutation `useCreate`
  * @summary Create a house BL document
  * @permission Requires `canUseCreate` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<WorkingDocumentsHouseBlModels.HouseBlDocumentResponseDTO> } 
  * @statusCodes [201, 401]
@@ -137,9 +137,9 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { position
  * Query `useGetHouseBlData`
  * @summary Get house BL document data
  * @permission Requires `canUseGetHouseBlData` ability 
- * @param { string } object.positionId Path parameter
- * @param { string } object.houseBlId Path parameter
- * @param { string } object.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } houseBlId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<WorkingDocumentsHouseBlModels.HouseBlDocumentResponseDTO> } 
  * @statusCodes [200, 401]
@@ -161,10 +161,10 @@ export const useGetHouseBlData = <TData>({ positionId, houseBlId, officeId }: { 
  * Mutation `useUpdateHouseBlData`
  * @summary Update house BL document data
  * @permission Requires `canUseUpdateHouseBlData` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.houseBlId Path parameter
- * @param { string } mutation.officeId Path parameter
- * @param { WorkingDocumentsHouseBlModels.UpdateHouseBlDocumentRequestDTO } mutation.data Body parameter
+ * @param { string } positionId Path parameter
+ * @param { string } houseBlId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { WorkingDocumentsHouseBlModels.UpdateHouseBlDocumentRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<WorkingDocumentsHouseBlModels.HouseBlDocumentResponseDTO> } 
  * @statusCodes [200, 401]
@@ -193,9 +193,9 @@ export const useUpdateHouseBlData = (options?: AppMutationOptions<typeof updateH
  * Mutation `useDeleteHouseBl`
  * @summary Delete house BL document
  * @permission Requires `canUseDeleteHouseBl` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.houseBlId Path parameter
- * @param { string } mutation.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } houseBlId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } House BL document deleted
  * @statusCodes [204, 401, 404]
@@ -222,9 +222,9 @@ export const useDeleteHouseBl = (options?: AppMutationOptions<typeof deleteHouse
  * Query `usePreviewHouseBl` - recommended when file should be cached
  * @summary Preview house BL document
  * @permission Requires `canUsePreviewHouseBl` ability 
- * @param { string } object.positionId Path parameter
- * @param { string } object.houseBlId Path parameter
- * @param { string } object.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } houseBlId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
@@ -246,9 +246,9 @@ export const usePreviewHouseBl = <TData>({ positionId, houseBlId, officeId }: { 
  * Mutation `usePreviewHouseBlMutation` - recommended when file should not be cached
  * @summary Preview house BL document
  * @permission Requires `canUsePreviewHouseBl` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.houseBlId Path parameter
- * @param { string } mutation.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } houseBlId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
@@ -277,9 +277,9 @@ export const usePreviewHouseBlMutation = (options?: AppMutationOptions<typeof pr
  * Query `usePreviewHouseBlEml` - recommended when file should be cached
  * @summary Preview house BL document and return EML file
  * @permission Requires `canUsePreviewHouseBlEml` ability 
- * @param { string } object.positionId Path parameter
- * @param { string } object.houseBlId Path parameter
- * @param { string } object.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } houseBlId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
@@ -301,9 +301,9 @@ export const usePreviewHouseBlEml = <TData>({ positionId, houseBlId, officeId }:
  * Mutation `usePreviewHouseBlEmlMutation` - recommended when file should not be cached
  * @summary Preview house BL document and return EML file
  * @permission Requires `canUsePreviewHouseBlEml` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.houseBlId Path parameter
- * @param { string } mutation.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } houseBlId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
@@ -332,10 +332,10 @@ export const usePreviewHouseBlEmlMutation = (options?: AppMutationOptions<typeof
  * Mutation `useGenerateHouseBl`
  * @summary Generate house BL document
  * @permission Requires `canUseGenerateHouseBl` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.houseBlId Path parameter
- * @param { string } mutation.officeId Path parameter
- * @param { CommonModels.GenerateWorkingDocumentRequestDto } mutation.data Body parameter
+ * @param { string } positionId Path parameter
+ * @param { string } houseBlId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { CommonModels.GenerateWorkingDocumentRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [201, 401]
@@ -362,10 +362,10 @@ export const useGenerateHouseBl = (options?: AppMutationOptions<typeof generateH
  * Mutation `useGenerateDocumentEml` - recommended when file should not be cached
  * @summary Generate house BL document and return EML file
  * @permission Requires `canUseGenerateDocumentEml` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.houseBlId Path parameter
- * @param { string } mutation.officeId Path parameter
- * @param { CommonModels.GenerateWorkingDocumentRequestDto } mutation.data Body parameter
+ * @param { string } positionId Path parameter
+ * @param { string } houseBlId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { CommonModels.GenerateWorkingDocumentRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]

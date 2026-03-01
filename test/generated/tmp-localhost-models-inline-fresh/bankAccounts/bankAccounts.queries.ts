@@ -52,8 +52,8 @@ export const keys = {
  * Query `useFindAll`
  * @summary List all bank accounts with only their labels
  * @permission Requires `canUseFindAll` ability 
- * @param { string } object.search Query parameter
- * @param { string } object.officeId Query parameter
+ * @param { string } search Query parameter
+ * @param { string } officeId Query parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<BankAccountsModels.BankAccountsFindAllResponse> } 
  * @statusCodes [200, 401]
@@ -75,11 +75,11 @@ export const useFindAll = <TData>({ search, officeId }: { search?: string, offic
  * Query `usePaginateLabels`
  * @summary Paginate bank account labels (id and name only)
  * @permission Requires `canUsePaginateLabels` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, bankName, createdAt, updatedAt. Example: `name`
- * @param { BankAccountsModels.BankAccountFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, bankName, createdAt, updatedAt. Example: `name`
+ * @param { BankAccountsModels.BankAccountFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<BankAccountsModels.BankAccountsPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
@@ -101,11 +101,11 @@ export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }:
  * Infinite query `usePaginateLabelsInfinite
  * @summary Paginate bank account labels (id and name only)
  * @permission Requires `canUsePaginateLabels` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, bankName, createdAt, updatedAt. Example: `name`
- * @param { BankAccountsModels.BankAccountFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, bankName, createdAt, updatedAt. Example: `name`
+ * @param { BankAccountsModels.BankAccountFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<BankAccountsModels.BankAccountsPaginateLabelsResponse> } 
  * @statusCodes [200, 401]

@@ -108,12 +108,12 @@ export const keys = {
  * Query `useList`
  * @summary List integration channels for an office
  * @permission Requires `canUseList` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): createdAt, name, businessPartner, lastPolledAt. Example: `createdAt`
- * @param { IntegrationChannelsModels.IntegrationChannelFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): createdAt, name, businessPartner, lastPolledAt. Example: `createdAt`
+ * @param { IntegrationChannelsModels.IntegrationChannelFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<IntegrationChannelsModels.IntegrationChannelsListResponse> } 
  * @statusCodes [200, 401]
@@ -135,12 +135,12 @@ export const useList = <TData>({ officeId, limit, order, filter, page, cursor }:
  * Infinite query `useListInfinite
  * @summary List integration channels for an office
  * @permission Requires `canUseList` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): createdAt, name, businessPartner, lastPolledAt. Example: `createdAt`
- * @param { IntegrationChannelsModels.IntegrationChannelFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): createdAt, name, businessPartner, lastPolledAt. Example: `createdAt`
+ * @param { IntegrationChannelsModels.IntegrationChannelFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<IntegrationChannelsModels.IntegrationChannelsListResponse> } 
  * @statusCodes [200, 401]
@@ -167,8 +167,8 @@ export const useListInfinite = <TData>({ officeId, limit, order, filter, cursor 
  * Mutation `useCreate`
  * @summary Create integration channel
  * @permission Requires `canUseCreate` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { IntegrationChannelsModels.CreateIntegrationChannelRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { IntegrationChannelsModels.CreateIntegrationChannelRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<IntegrationChannelsModels.IntegrationChannelResponseDto> } 
  * @statusCodes [201, 401]
@@ -195,12 +195,12 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { officeId
  * Query `usePaginateLabels`
  * @summary Paginate integration channel labels
  * @permission Requires `canUsePaginateLabels` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): createdAt, name, businessPartner, lastPolledAt. Example: `createdAt`
- * @param { IntegrationChannelsModels.IntegrationChannelLabelsFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): createdAt, name, businessPartner, lastPolledAt. Example: `createdAt`
+ * @param { IntegrationChannelsModels.IntegrationChannelLabelsFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<IntegrationChannelsModels.IntegrationChannelsPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
@@ -222,12 +222,12 @@ export const usePaginateLabels = <TData>({ officeId, limit, order, filter, page,
  * Infinite query `usePaginateLabelsInfinite
  * @summary Paginate integration channel labels
  * @permission Requires `canUsePaginateLabels` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): createdAt, name, businessPartner, lastPolledAt. Example: `createdAt`
- * @param { IntegrationChannelsModels.IntegrationChannelLabelsFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): createdAt, name, businessPartner, lastPolledAt. Example: `createdAt`
+ * @param { IntegrationChannelsModels.IntegrationChannelLabelsFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<IntegrationChannelsModels.IntegrationChannelsPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
@@ -254,8 +254,8 @@ export const usePaginateLabelsInfinite = <TData>({ officeId, limit, order, filte
  * Query `useFindById`
  * @summary Get integration channel by id
  * @permission Requires `canUseFindById` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.id Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } id Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<IntegrationChannelsModels.IntegrationChannelResponseDto> } 
  * @statusCodes [200, 401]
@@ -277,9 +277,9 @@ export const useFindById = <TData>({ officeId, id }: { officeId: string, id: str
  * Mutation `useUpdate`
  * @summary Update integration channel by id
  * @permission Requires `canUseUpdate` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.id Path parameter
- * @param { IntegrationChannelsModels.UpdateIntegrationChannelRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } id Path parameter
+ * @param { IntegrationChannelsModels.UpdateIntegrationChannelRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<IntegrationChannelsModels.IntegrationChannelResponseDto> } 
  * @statusCodes [200, 401]
@@ -308,8 +308,8 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { officeId
  * Mutation `useArchive`
  * @summary Archive integration channel by id
  * @permission Requires `canUseArchive` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.id Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } id Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<IntegrationChannelsModels.IntegrationChannelResponseDto> } 
  * @statusCodes [200, 401]
@@ -338,8 +338,8 @@ export const useArchive = (options?: AppMutationOptions<typeof archive, { office
  * Mutation `useUnarchive`
  * @summary Unarchive integration channel by id
  * @permission Requires `canUseUnarchive` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.id Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } id Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<IntegrationChannelsModels.IntegrationChannelResponseDto> } 
  * @statusCodes [200, 401]
@@ -368,8 +368,8 @@ export const useUnarchive = (options?: AppMutationOptions<typeof unarchive, { of
  * Mutation `useTestConnection`
  * @summary Test integration channel SFTP connection
  * @permission Requires `canUseTestConnection` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.id Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } id Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<IntegrationChannelsModels.TestConnectionResponseDto> } 
  * @statusCodes [200, 401]

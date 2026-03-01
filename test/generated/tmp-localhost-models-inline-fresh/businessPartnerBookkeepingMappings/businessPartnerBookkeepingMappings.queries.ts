@@ -65,8 +65,8 @@ export const keys = {
  * Query `useGetBookkeepingMappings`
  * @summary Fetch all bookkeeping mappings for a business partner
  * @permission Requires `canUseGetBookkeepingMappings` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.businessPartnerId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } businessPartnerId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<BusinessPartnerBookkeepingMappingsModels.BusinessPartnerBookkeepingMappingsResponseDto> } 
  * @statusCodes [200, 401]
@@ -88,9 +88,9 @@ export const useGetBookkeepingMappings = <TData>({ officeId, businessPartnerId }
  * Mutation `useCreateBookkeepingMapping`
  * @summary Create a bookkeeping mapping for a business partner
  * @permission Requires `canUseCreateBookkeepingMapping` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.businessPartnerId Path parameter
- * @param { BusinessPartnerBookkeepingMappingsModels.CreateBookkeepingMappingDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } businessPartnerId Path parameter
+ * @param { BusinessPartnerBookkeepingMappingsModels.CreateBookkeepingMappingDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<BusinessPartnerBookkeepingMappingsModels.BusinessPartnerBookkeepingMappingResponseDto> } 
  * @statusCodes [201, 401]
@@ -117,9 +117,9 @@ export const useCreateBookkeepingMapping = (options?: AppMutationOptions<typeof 
  * Mutation `useUpdateBookkeepingMapping`
  * @summary Update an existing bookkeeping mapping for a business partner
  * @permission Requires `canUseUpdateBookkeepingMapping` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.businessPartnerId Path parameter
- * @param { BusinessPartnerBookkeepingMappingsModels.UpdateBookkeepingMappingRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } businessPartnerId Path parameter
+ * @param { BusinessPartnerBookkeepingMappingsModels.UpdateBookkeepingMappingRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<BusinessPartnerBookkeepingMappingsModels.UpdateBookkeepingMappingResponse> } 
  * @statusCodes [200, 401]
@@ -146,10 +146,10 @@ export const useUpdateBookkeepingMapping = (options?: AppMutationOptions<typeof 
  * Mutation `useUpdateBookkeepingMappingById`
  * @summary Update a specific bookkeeping mapping by ID for a business partner
  * @permission Requires `canUseUpdateBookkeepingMappingById` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.businessPartnerId Path parameter
- * @param { string } mutation.id Path parameter
- * @param { BusinessPartnerBookkeepingMappingsModels.UpdateBookkeepingMappingDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } businessPartnerId Path parameter
+ * @param { string } id Path parameter
+ * @param { BusinessPartnerBookkeepingMappingsModels.UpdateBookkeepingMappingDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<BusinessPartnerBookkeepingMappingsModels.BusinessPartnerBookkeepingMappingResponseDto> } 
  * @statusCodes [200, 401]
@@ -176,9 +176,9 @@ export const useUpdateBookkeepingMappingById = (options?: AppMutationOptions<typ
  * Mutation `useDeleteBookkeepingMapping`
  * @summary Delete an existing bookkeeping mapping for a business partner
  * @permission Requires `canUseDeleteBookkeepingMapping` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.businessPartnerId Path parameter
- * @param { string } mutation.id Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } businessPartnerId Path parameter
+ * @param { string } id Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [204, 401]

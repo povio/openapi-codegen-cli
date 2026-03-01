@@ -123,12 +123,12 @@ export const keys = {
  * Query `useListOfficePayments`
  * @summary List all payments for an office
  * @permission Requires `canUseListOfficePayments` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): paymentDate, amount, paymentMethod, comment, createdAt, updatedAt, currencyNotation, createdByName, invoiceNumber, invoiceDirection, invoiceGrossAmount, invoiceStatus, invoicePaidOn, invoiceIssuingDate. Example: `paymentDate`
- * @param { InvoicePaymentsModels.OfficeInvoicePaymentFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): paymentDate, amount, paymentMethod, comment, createdAt, updatedAt, currencyNotation, createdByName, invoiceNumber, invoiceDirection, invoiceGrossAmount, invoiceStatus, invoicePaidOn, invoiceIssuingDate. Example: `paymentDate`
+ * @param { InvoicePaymentsModels.OfficeInvoicePaymentFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<InvoicePaymentsModels.ListOfficePaymentsResponse> } 
  * @statusCodes [200, 401]
@@ -150,12 +150,12 @@ export const useListOfficePayments = <TData>({ officeId, limit, order, filter, p
  * Infinite query `useListOfficePaymentsInfinite
  * @summary List all payments for an office
  * @permission Requires `canUseListOfficePayments` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): paymentDate, amount, paymentMethod, comment, createdAt, updatedAt, currencyNotation, createdByName, invoiceNumber, invoiceDirection, invoiceGrossAmount, invoiceStatus, invoicePaidOn, invoiceIssuingDate. Example: `paymentDate`
- * @param { InvoicePaymentsModels.OfficeInvoicePaymentFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): paymentDate, amount, paymentMethod, comment, createdAt, updatedAt, currencyNotation, createdByName, invoiceNumber, invoiceDirection, invoiceGrossAmount, invoiceStatus, invoicePaidOn, invoiceIssuingDate. Example: `paymentDate`
+ * @param { InvoicePaymentsModels.OfficeInvoicePaymentFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<InvoicePaymentsModels.ListOfficePaymentsResponse> } 
  * @statusCodes [200, 401]
@@ -182,8 +182,8 @@ export const useListOfficePaymentsInfinite = <TData>({ officeId, limit, order, f
  * Mutation `useBulkCreatePayments`
  * @summary Bulk create payments for multiple invoices
  * @permission Requires `canUseBulkCreatePayments` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { InvoicePaymentsModels.BulkCreatePaymentsRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { InvoicePaymentsModels.BulkCreatePaymentsRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<InvoicePaymentsModels.BulkCreatePaymentsResponseDto> } 
  * @statusCodes [201, 401]
@@ -210,8 +210,8 @@ export const useBulkCreatePayments = (options?: AppMutationOptions<typeof bulkCr
  * Mutation `useCalculatePayments`
  * @summary Calculate grouped payments for provided invoices
  * @permission Requires `canUseCalculatePayments` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { InvoicePaymentsModels.CalculatePaymentsRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { InvoicePaymentsModels.CalculatePaymentsRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<InvoicePaymentsModels.CalculatePaymentsResponseDto> } 
  * @statusCodes [200, 401]
@@ -238,8 +238,8 @@ export const useCalculatePayments = (options?: AppMutationOptions<typeof calcula
  * Mutation `useExportOfficePayments` - recommended when file should not be cached
  * @summary Export office invoice payments to Excel
  * @permission Requires `canUseExportOfficePayments` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { InvoicePaymentsModels.OfficeInvoicePaymentExportRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { InvoicePaymentsModels.OfficeInvoicePaymentExportRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 201, 401]
@@ -266,11 +266,11 @@ export const useExportOfficePayments = (options?: AppMutationOptions<typeof expo
  * Query `useList`
  * @summary List payments for an invoice
  * @permission Requires `canUseList` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.invoiceId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { string } invoiceId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<InvoicePaymentsModels.InvoicePaymentsListResponse> } 
  * @statusCodes [200, 401]
@@ -292,11 +292,11 @@ export const useList = <TData>({ officeId, invoiceId, limit, page, cursor }: { o
  * Infinite query `useListInfinite
  * @summary List payments for an invoice
  * @permission Requires `canUseList` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.invoiceId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { string } invoiceId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<InvoicePaymentsModels.InvoicePaymentsListResponse> } 
  * @statusCodes [200, 401]
@@ -323,9 +323,9 @@ export const useListInfinite = <TData>({ officeId, invoiceId, limit, cursor }: {
  * Mutation `useCreate`
  * @summary Create a payment for an invoice
  * @permission Requires `canUseCreate` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.invoiceId Path parameter
- * @param { InvoicePaymentsModels.CreateInvoicePaymentRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } invoiceId Path parameter
+ * @param { InvoicePaymentsModels.CreateInvoicePaymentRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<InvoicePaymentsModels.PaymentResponseDto> } 
  * @statusCodes [201, 401]
@@ -352,9 +352,9 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { officeId
  * Query `useGetPaymentById`
  * @summary Get a payment by ID
  * @permission Requires `canUseGetPaymentById` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.invoiceId Path parameter
- * @param { string } object.paymentId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } invoiceId Path parameter
+ * @param { string } paymentId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<InvoicePaymentsModels.PaymentResponseDto> } 
  * @statusCodes [200, 401]
@@ -376,10 +376,10 @@ export const useGetPaymentById = <TData>({ officeId, invoiceId, paymentId }: { o
  * Mutation `useUpdate`
  * @summary Update a payment
  * @permission Requires `canUseUpdate` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.invoiceId Path parameter
- * @param { string } mutation.paymentId Path parameter
- * @param { InvoicePaymentsModels.UpdateInvoicePaymentRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } invoiceId Path parameter
+ * @param { string } paymentId Path parameter
+ * @param { InvoicePaymentsModels.UpdateInvoicePaymentRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<InvoicePaymentsModels.PaymentResponseDto> } 
  * @statusCodes [200, 401]
@@ -408,9 +408,9 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { officeId
  * Mutation `useDeleteInvoicePayment`
  * @summary Delete a payment
  * @permission Requires `canUseDeleteInvoicePayment` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.invoiceId Path parameter
- * @param { string } mutation.paymentId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } invoiceId Path parameter
+ * @param { string } paymentId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]

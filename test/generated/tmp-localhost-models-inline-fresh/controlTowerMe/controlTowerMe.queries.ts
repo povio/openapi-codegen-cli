@@ -88,7 +88,7 @@ export const useGetUserProfile = <TData>(options?: AppQueryOptions<typeof getUse
 /** 
  * Mutation `useUpdateUserData`
  * @description Update user data
- * @param { ControlTowerMeModels.UserUpdateDto } mutation.data Body parameter
+ * @param { ControlTowerMeModels.UserUpdateDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<ControlTowerMeModels.UpdateUserDataResponse> } 
  * @statusCodes [200]
@@ -112,7 +112,7 @@ export const useUpdateUserData = (options?: AppMutationOptions<typeof updateUser
 /** 
  * Mutation `useUpdateUserProfile`
  * @description Update basic user profile data
- * @param { ControlTowerMeModels.UserBasicUpdateDto } mutation.data Body parameter
+ * @param { ControlTowerMeModels.UserBasicUpdateDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<ControlTowerMeModels.UpdateUserProfileResponse> } 
  * @statusCodes [200]
@@ -136,7 +136,7 @@ export const useUpdateUserProfile = (options?: AppMutationOptions<typeof updateU
 /** 
  * Mutation `useUpdatePassword`
  * @description Update user password
- * @param { ControlTowerMeModels.UserPasswordUpdateDto } mutation.data Body parameter
+ * @param { ControlTowerMeModels.UserPasswordUpdateDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200]
@@ -160,7 +160,7 @@ export const useUpdatePassword = (options?: AppMutationOptions<typeof updatePass
 /** 
  * Mutation `useUpdateEmailPreferences`
  * @description Update user email notification preferences
- * @param { ControlTowerMeModels.UserEmailPreferencesUpdateDto } mutation.data Body parameter
+ * @param { ControlTowerMeModels.UserEmailPreferencesUpdateDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200]

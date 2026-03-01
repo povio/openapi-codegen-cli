@@ -46,7 +46,7 @@ export const keys = {
  * Query `useGet`
  * @summary Get INTTRA credentials for an office
  * @permission Requires `canUseGet` ability 
- * @param { string } object.officeId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<InttraOfficeIntegrationModels.OfficeInttraCredentialsResponseDto> } 
  * @statusCodes [200, 401]
@@ -68,7 +68,7 @@ export const useGet = <TData>({ officeId }: { officeId: string }, options?: AppQ
  * Mutation `useGenerate`
  * @summary Generate and persist INTTRA SFTP RSA key pair for an office
  * @permission Requires `canUseGenerate` ability 
- * @param { string } mutation.officeId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<InttraOfficeIntegrationModels.GenerateInttraCredentialsResponseDto> } 
  * @statusCodes [200, 401]
@@ -95,8 +95,8 @@ export const useGenerate = (options?: AppMutationOptions<typeof generate, { offi
  * Mutation `useUpdate`
  * @summary Manually update INTTRA credentials (username/password/passphrase)
  * @permission Requires `canUseUpdate` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { InttraOfficeIntegrationModels.UpdateInttraCredentialsRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { InttraOfficeIntegrationModels.UpdateInttraCredentialsRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<InttraOfficeIntegrationModels.UpdateInttraCredentialsResponseDto> } 
  * @statusCodes [200, 401]

@@ -27,8 +27,8 @@ export const keys = {
  * Query `useGet`
  * @summary Get position account details
  * @permission Requires `canUseGet` ability 
- * @param { string } object.positionId Path parameter
- * @param { string } object.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<PositionAccountModels.PositionAccountResponseDto> } 
  * @statusCodes [200, 401]

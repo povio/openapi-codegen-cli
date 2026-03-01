@@ -56,8 +56,8 @@ export const keys = {
  * Query `useFindByPositionId`
  * @summary List position involved parties
  * @permission Requires `canUseFindByPositionId` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.positionId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<PositionInvolvedPartiesModels.FindByPositionIdResponse> } 
  * @statusCodes [200, 401]
@@ -79,9 +79,9 @@ export const useFindByPositionId = <TData>({ officeId, positionId }: { officeId:
  * Mutation `useCreate`
  * @summary Create position involved party
  * @permission Requires `canUseCreate` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.positionId Path parameter
- * @param { CommonModels.CreateInvolvedPartyRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { CommonModels.CreateInvolvedPartyRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<CommonModels.InvolvedPartyResponseDto> } 
  * @statusCodes [201, 401]
@@ -108,10 +108,10 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { officeId
  * Mutation `useUpdate`
  * @summary Update position involved party
  * @permission Requires `canUseUpdate` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.partyId Path parameter
- * @param { CommonModels.UpdateInvolvedPartyDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } partyId Path parameter
+ * @param { CommonModels.UpdateInvolvedPartyDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<CommonModels.InvolvedPartyResponseDto> } 
  * @statusCodes [200, 401]
@@ -138,9 +138,9 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { officeId
  * Mutation `useDeleteOfficesPositionsInvolvedPartiesByPartyId`
  * @summary Delete position involved party
  * @permission Requires `canUseDeleteOfficesPositionsInvolvedPartiesByPartyId` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.partyId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } partyId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [204, 401]

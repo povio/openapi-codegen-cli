@@ -72,12 +72,12 @@ export const keys = {
  * Query `useListDunnings`
  * @summary List dunnings for an office
  * @permission Requires `canUseListDunnings` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): createdAt, level, outstandingAmount, statusChangedOn. Example: `createdAt`
- * @param { DunningManagementModels.DunningFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): createdAt, level, outstandingAmount, statusChangedOn. Example: `createdAt`
+ * @param { DunningManagementModels.DunningFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<DunningManagementModels.ListDunningsResponse> } 
  * @statusCodes [200, 401]
@@ -99,12 +99,12 @@ export const useListDunnings = <TData>({ officeId, limit, order, filter, page, c
  * Infinite query `useListDunningsInfinite
  * @summary List dunnings for an office
  * @permission Requires `canUseListDunnings` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): createdAt, level, outstandingAmount, statusChangedOn. Example: `createdAt`
- * @param { DunningManagementModels.DunningFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): createdAt, level, outstandingAmount, statusChangedOn. Example: `createdAt`
+ * @param { DunningManagementModels.DunningFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<DunningManagementModels.ListDunningsResponse> } 
  * @statusCodes [200, 401]
@@ -131,9 +131,9 @@ export const useListDunningsInfinite = <TData>({ officeId, limit, order, filter,
  * Mutation `useCreateDunningWithInvoices`
  * @summary Create a dunning with outstanding invoices
  * @permission Requires `canUseCreateDunningWithInvoices` ability 
- * @param { string } mutation.partnerId Path parameter
- * @param { string } mutation.officeId Path parameter
- * @param { DunningManagementModels.CreateDunningWithInvoicesRequestDTO } mutation.data Body parameter
+ * @param { string } partnerId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { DunningManagementModels.CreateDunningWithInvoicesRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<DunningManagementModels.DunningResponseDto> } 
  * @statusCodes [201, 401]
@@ -177,8 +177,8 @@ export const useDataGenFake = <TData>(options?: AppQueryOptions<typeof dataGenFa
  * Query `useGetDunningEml` - recommended when file should be cached
  * @summary Get dunning as EML file with PDF attachment
  * @permission Requires `canUseGetDunningEml` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.dunningId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } dunningId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
@@ -200,8 +200,8 @@ export const useGetDunningEml = <TData>({ officeId, dunningId }: { officeId: str
  * Mutation `useGetDunningEmlMutation` - recommended when file should not be cached
  * @summary Get dunning as EML file with PDF attachment
  * @permission Requires `canUseGetDunningEml` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.dunningId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } dunningId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]

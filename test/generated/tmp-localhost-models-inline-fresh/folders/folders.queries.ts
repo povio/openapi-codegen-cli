@@ -80,8 +80,8 @@ export const keys = {
 /** 
  * Query `useGetTree`
  * @summary Get folder tree
- * @param { string } object.officeId Path parameter
- * @param { string } object.folderId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } folderId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<FoldersModels.FolderTreeResponseDTO> } 
  * @statusCodes [200, 401]
@@ -100,13 +100,13 @@ export const useGetTree = <TData>({ officeId, folderId }: { officeId: string, fo
 /** 
  * Query `useGetContent`
  * @summary Get folder content
- * @param { string } object.officeId Path parameter
- * @param { string } object.folderId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { FoldersModels.GetContentOrderParam } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt. Example: `name`
- * @param { FoldersModels.FolderContentFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { string } folderId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { FoldersModels.GetContentOrderParam } order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt. Example: `name`
+ * @param { FoldersModels.FolderContentFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<FoldersModels.FolderResponseDTO> } 
  * @statusCodes [200, 401]
@@ -125,13 +125,13 @@ export const useGetContent = <TData>({ officeId, folderId, limit, order, filter,
 /** 
  * Infinite query `useGetContentInfinite
  * @summary Get folder content
- * @param { string } object.officeId Path parameter
- * @param { string } object.folderId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { FoldersModels.GetContentOrderParam } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt. Example: `name`
- * @param { FoldersModels.FolderContentFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { string } folderId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { FoldersModels.GetContentOrderParam } order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt. Example: `name`
+ * @param { FoldersModels.FolderContentFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<FoldersModels.FolderResponseDTO> } 
  * @statusCodes [200, 401]
@@ -155,9 +155,9 @@ export const useGetContentInfinite = <TData>({ officeId, folderId, limit, order,
 /** 
  * Mutation `useRename`
  * @summary Rename folder
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.folderId Path parameter
- * @param { FoldersModels.RenameFolderRequestDTO } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } folderId Path parameter
+ * @param { FoldersModels.RenameFolderRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<FoldersModels.FolderResponseDTO> } 
  * @statusCodes [200, 401]
@@ -181,8 +181,8 @@ export const useRename = (options?: AppMutationOptions<typeof rename, { officeId
 /** 
  * Mutation `useDeleteFolder`
  * @summary Delete folder
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.folderId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } folderId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [204, 401]
@@ -206,8 +206,8 @@ export const useDeleteFolder = (options?: AppMutationOptions<typeof deleteFolder
 /** 
  * Mutation `useCreate`
  * @summary Create folder
- * @param { string } mutation.officeId Path parameter
- * @param { FoldersModels.CreateFolderRequestDTO } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { FoldersModels.CreateFolderRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<FoldersModels.FolderResponseDTO> } 
  * @statusCodes [201, 401]
@@ -231,8 +231,8 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { officeId
 /** 
  * Mutation `useMove`
  * @summary Move folders
- * @param { string } mutation.officeId Path parameter
- * @param { FoldersModels.MoveFoldersRequestDTO } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { FoldersModels.MoveFoldersRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [204, 401]

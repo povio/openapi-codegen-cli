@@ -100,11 +100,11 @@ export const keys = {
  * Query `usePaginate`
  * @summary Paginate Cargo Types
  * @permission Requires `canUsePaginate` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): matchcode, description, createdAt, updatedAt, createdBy, updatedBy, name. Example: `matchcode`
- * @param { CargoTypesModels.CargoTypePaginationFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): matchcode, description, createdAt, updatedAt, createdBy, updatedBy, name. Example: `matchcode`
+ * @param { CargoTypesModels.CargoTypePaginationFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<CargoTypesModels.CargoTypesPaginateResponse> } 
  * @statusCodes [200, 401]
@@ -126,11 +126,11 @@ export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { lim
  * Infinite query `usePaginateInfinite
  * @summary Paginate Cargo Types
  * @permission Requires `canUsePaginate` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): matchcode, description, createdAt, updatedAt, createdBy, updatedBy, name. Example: `matchcode`
- * @param { CargoTypesModels.CargoTypePaginationFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): matchcode, description, createdAt, updatedAt, createdBy, updatedBy, name. Example: `matchcode`
+ * @param { CargoTypesModels.CargoTypePaginationFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<CargoTypesModels.CargoTypesPaginateResponse> } 
  * @statusCodes [200, 401]
@@ -157,7 +157,7 @@ export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { l
  * Mutation `useCreate`
  * @summary Create Cargo Type
  * @permission Requires `canUseCreate` ability 
- * @param { CargoTypesModels.CreateCargoTypeRequestDTO } mutation.data Body parameter
+ * @param { CargoTypesModels.CreateCargoTypeRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<CargoTypesModels.CargoTypeResponseDTO> } 
  * @statusCodes [201, 401]
@@ -184,11 +184,11 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { data: Ca
  * Query `usePaginateLabels`
  * @summary Paginate cargo types with only their labels
  * @permission Requires `canUsePaginateLabels` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): matchcode, description, createdAt, updatedAt, createdBy, updatedBy, name. Example: `matchcode`
- * @param { CargoTypesModels.CargoTypeLabelFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): matchcode, description, createdAt, updatedAt, createdBy, updatedBy, name. Example: `matchcode`
+ * @param { CargoTypesModels.CargoTypeLabelFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<CargoTypesModels.CargoTypesPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
@@ -210,11 +210,11 @@ export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }:
  * Infinite query `usePaginateLabelsInfinite
  * @summary Paginate cargo types with only their labels
  * @permission Requires `canUsePaginateLabels` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): matchcode, description, createdAt, updatedAt, createdBy, updatedBy, name. Example: `matchcode`
- * @param { CargoTypesModels.CargoTypeLabelFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): matchcode, description, createdAt, updatedAt, createdBy, updatedBy, name. Example: `matchcode`
+ * @param { CargoTypesModels.CargoTypeLabelFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<CargoTypesModels.CargoTypesPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
@@ -241,7 +241,7 @@ export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor 
  * Query `useFindById`
  * @summary Get Cargo Type by id
  * @permission Requires `canUseFindById` ability 
- * @param { string } object.id Path parameter
+ * @param { string } id Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<CargoTypesModels.CargoTypeResponseDTO> } 
  * @statusCodes [200, 401]
@@ -263,8 +263,8 @@ export const useFindById = <TData>({ id }: { id: string }, options?: AppQueryOpt
  * Mutation `useUpdate`
  * @summary Update Cargo Type
  * @permission Requires `canUseUpdate` ability 
- * @param { string } mutation.id Path parameter
- * @param { CargoTypesModels.UpdateCargoTypeRequestDTO } mutation.data Body parameter
+ * @param { string } id Path parameter
+ * @param { CargoTypesModels.UpdateCargoTypeRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<CargoTypesModels.CargoTypeResponseDTO> } 
  * @statusCodes [200, 401]
@@ -293,7 +293,7 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { id: stri
  * Mutation `useArchive`
  * @summary Archive Cargo Type
  * @permission Requires `canUseArchive` ability 
- * @param { string } mutation.id Path parameter
+ * @param { string } id Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<CargoTypesModels.CargoTypeResponseDTO> } 
  * @statusCodes [200, 401]
@@ -322,7 +322,7 @@ export const useArchive = (options?: AppMutationOptions<typeof archive, { id: st
  * Mutation `useUnarchive`
  * @summary Unarchive Cargo Type
  * @permission Requires `canUseUnarchive` ability 
- * @param { string } mutation.id Path parameter
+ * @param { string } id Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<CargoTypesModels.CargoTypeResponseDTO> } 
  * @statusCodes [200, 401]

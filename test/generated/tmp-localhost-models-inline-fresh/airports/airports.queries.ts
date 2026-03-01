@@ -84,11 +84,11 @@ export const keys = {
  * Query `usePaginate`
  * @summary Paginate Airports
  * @permission Requires `canUsePaginate` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, matchCode, iataCode, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
- * @param { AirportsModels.AirportPaginationFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, matchCode, iataCode, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
+ * @param { AirportsModels.AirportPaginationFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<AirportsModels.AirportsPaginateResponse> } 
  * @statusCodes [200, 401]
@@ -110,11 +110,11 @@ export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { lim
  * Infinite query `usePaginateInfinite
  * @summary Paginate Airports
  * @permission Requires `canUsePaginate` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, matchCode, iataCode, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
- * @param { AirportsModels.AirportPaginationFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, matchCode, iataCode, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
+ * @param { AirportsModels.AirportPaginationFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<AirportsModels.AirportsPaginateResponse> } 
  * @statusCodes [200, 401]
@@ -141,7 +141,7 @@ export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { l
  * Mutation `useCreate`
  * @summary Create airport
  * @permission Requires `canUseCreate` ability 
- * @param { AirportsModels.CreateAirportRequestDTO } mutation.data Body parameter
+ * @param { AirportsModels.CreateAirportRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<AirportsModels.AirportResponseDTO> } 
  * @statusCodes [200, 201, 401]
@@ -168,11 +168,11 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { data: Ai
  * Query `usePaginateLabels`
  * @summary Paginate airports with only their labels
  * @permission Requires `canUsePaginateLabels` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, matchCode, iataCode, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
- * @param { AirportsModels.AirportLabelFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, matchCode, iataCode, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
+ * @param { AirportsModels.AirportLabelFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<AirportsModels.AirportsPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
@@ -194,11 +194,11 @@ export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }:
  * Infinite query `usePaginateLabelsInfinite
  * @summary Paginate airports with only their labels
  * @permission Requires `canUsePaginateLabels` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, matchCode, iataCode, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
- * @param { AirportsModels.AirportLabelFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, matchCode, iataCode, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
+ * @param { AirportsModels.AirportLabelFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<AirportsModels.AirportsPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
@@ -225,8 +225,8 @@ export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor 
  * Mutation `useUpdate`
  * @summary Update airport
  * @permission Requires `canUseUpdate` ability 
- * @param { string } mutation.id Path parameter
- * @param { AirportsModels.UpdateAirportRequestDTO } mutation.data Body parameter
+ * @param { string } id Path parameter
+ * @param { AirportsModels.UpdateAirportRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<AirportsModels.AirportResponseDTO> } 
  * @statusCodes [200, 401]
@@ -255,7 +255,7 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { id: stri
  * Query `useFindById`
  * @summary Get airport
  * @permission Requires `canUseFindById` ability 
- * @param { string } object.id Path parameter
+ * @param { string } id Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<AirportsModels.AirportResponseDTO> } 
  * @statusCodes [200, 401]

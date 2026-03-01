@@ -147,12 +147,12 @@ export const keys = {
  * Query `usePaginate`
  * @summary Paginate Quotes
  * @permission Requires `canUsePaginate` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): number, statusDate, transportMode, status, direction, loadType, serviceType, createdAt, employee, profit. Example: `number`
- * @param { QuotesModels.QuoteFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): number, statusDate, transportMode, status, direction, loadType, serviceType, createdAt, employee, profit. Example: `number`
+ * @param { QuotesModels.QuoteFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<QuotesModels.QuotesPaginateResponse> } 
  * @statusCodes [200, 401]
@@ -174,12 +174,12 @@ export const usePaginate = <TData>({ officeId, limit, order, filter, page, curso
  * Infinite query `usePaginateInfinite
  * @summary Paginate Quotes
  * @permission Requires `canUsePaginate` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): number, statusDate, transportMode, status, direction, loadType, serviceType, createdAt, employee, profit. Example: `number`
- * @param { QuotesModels.QuoteFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): number, statusDate, transportMode, status, direction, loadType, serviceType, createdAt, employee, profit. Example: `number`
+ * @param { QuotesModels.QuoteFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<QuotesModels.QuotesPaginateResponse> } 
  * @statusCodes [200, 401]
@@ -206,8 +206,8 @@ export const usePaginateInfinite = <TData>({ officeId, limit, order, filter, cur
  * Mutation `useCreate`
  * @summary Create Quote
  * @permission Requires `canUseCreate` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { QuotesModels.CreateQuoteRequestDTO } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { QuotesModels.CreateQuoteRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<QuotesModels.QuoteCoreResponseDTO> } 
  * @statusCodes [201, 401]
@@ -234,10 +234,10 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { officeId
  * Query `useListAvailablePartnersFor`
  * @summary List available business partners for a quote
  * @permission Requires `canUseListAvailablePartnersFor` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.quoteId Path parameter
- * @param { string } object.search Query parameter
- * @param { CommonModels.PositionAvailablePartnersUseCase } object.useCase Query parameter. When provided and office toggle is enabled, restrict available partners to finance relationships (customer/vendor).
+ * @param { string } officeId Path parameter
+ * @param { string } quoteId Path parameter
+ * @param { string } search Query parameter
+ * @param { CommonModels.PositionAvailablePartnersUseCase } useCase Query parameter. When provided and office toggle is enabled, restrict available partners to finance relationships (customer/vendor).
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<QuotesModels.QuotesListAvailablePartnersForResponse> } 
  * @statusCodes [200, 401]
@@ -259,8 +259,8 @@ export const useListAvailablePartnersFor = <TData>({ officeId, quoteId, search, 
  * Mutation `useExportQuotes` - recommended when file should not be cached
  * @summary Export quotes to Excel
  * @permission Requires `canUseExportQuotes` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { QuotesModels.QuoteExportRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { QuotesModels.QuoteExportRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 201, 401]
@@ -287,8 +287,8 @@ export const useExportQuotes = (options?: AppMutationOptions<typeof exportQuotes
  * Query `useGetById`
  * @summary Get quote by id
  * @permission Requires `canUseGetById` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.quoteId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } quoteId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<QuotesModels.QuoteCoreResponseDTO> } 
  * @statusCodes [200, 401]
@@ -310,9 +310,9 @@ export const useGetById = <TData>({ officeId, quoteId }: { officeId: string, quo
  * Mutation `useUpdate`
  * @summary Update quote
  * @permission Requires `canUseUpdate` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.quoteId Path parameter
- * @param { QuotesModels.UpdateQuoteRequestDTO } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } quoteId Path parameter
+ * @param { QuotesModels.UpdateQuoteRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<QuotesModels.QuoteCoreResponseDTO> } 
  * @statusCodes [200, 401]
@@ -341,8 +341,8 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { officeId
  * Mutation `useCancel`
  * @summary Cancel quote
  * @permission Requires `canUseCancel` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.quoteId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } quoteId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<QuotesModels.QuoteCoreResponseDTO> } 
  * @statusCodes [200, 401]
@@ -371,9 +371,9 @@ export const useCancel = (options?: AppMutationOptions<typeof cancel, { officeId
  * Mutation `useDuplicate`
  * @summary Duplicate quote
  * @permission Requires `canUseDuplicate` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.quoteId Path parameter
- * @param { QuotesModels.DuplicateQuoteRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } quoteId Path parameter
+ * @param { QuotesModels.DuplicateQuoteRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<QuotesModels.QuoteCoreResponseDTO> } 
  * @statusCodes [201, 401]
@@ -402,8 +402,8 @@ export const useDuplicate = (options?: AppMutationOptions<typeof duplicate, { of
  * Query `useGetInvolvedParties`
  * @summary Get involved parties for quote
  * @permission Requires `canUseGetInvolvedParties` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.quoteId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } quoteId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<QuotesModels.GetInvolvedPartiesResponse> } 
  * @statusCodes [200, 401]
@@ -425,9 +425,9 @@ export const useGetInvolvedParties = <TData>({ officeId, quoteId }: { officeId: 
  * Mutation `useCreateInvolvedParty`
  * @summary Create involved party for quote
  * @permission Requires `canUseCreateInvolvedParty` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.quoteId Path parameter
- * @param { CommonModels.CreateInvolvedPartyRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } quoteId Path parameter
+ * @param { CommonModels.CreateInvolvedPartyRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<CommonModels.InvolvedPartyResponseDto> } 
  * @statusCodes [201, 401]
@@ -454,10 +454,10 @@ export const useCreateInvolvedParty = (options?: AppMutationOptions<typeof creat
  * Mutation `useUpdateInvolvedParty`
  * @summary Update involved party for quote
  * @permission Requires `canUseUpdateInvolvedParty` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.quoteId Path parameter
- * @param { string } mutation.partyId Path parameter
- * @param { CommonModels.UpdateInvolvedPartyDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } quoteId Path parameter
+ * @param { string } partyId Path parameter
+ * @param { CommonModels.UpdateInvolvedPartyDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<CommonModels.InvolvedPartyResponseDto> } 
  * @statusCodes [200, 401]
@@ -484,9 +484,9 @@ export const useUpdateInvolvedParty = (options?: AppMutationOptions<typeof updat
  * Mutation `useDeleteInvolvedParty`
  * @summary Delete involved party for quote
  * @permission Requires `canUseDeleteInvolvedParty` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.quoteId Path parameter
- * @param { string } mutation.partyId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } quoteId Path parameter
+ * @param { string } partyId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]

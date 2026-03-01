@@ -79,8 +79,8 @@ export const keys = {
  * Mutation `useCreate`
  * @summary Create an export declaration document
  * @permission Requires `canUseCreate` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<WorkingDocumentsExportDeclarationModels.ExportDeclarationDocumentResponseDTO> } 
  * @statusCodes [201, 401]
@@ -107,9 +107,9 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { position
  * Query `useGetExportDeclarationData`
  * @summary Get export declaration document data
  * @permission Requires `canUseGetExportDeclarationData` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.positionId Path parameter
- * @param { string } object.exportDeclarationId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } exportDeclarationId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<WorkingDocumentsExportDeclarationModels.ExportDeclarationDocumentResponseDTO> } 
  * @statusCodes [200, 401]
@@ -131,10 +131,10 @@ export const useGetExportDeclarationData = <TData>({ officeId, positionId, expor
  * Mutation `useUpdateExportDeclarationData`
  * @summary Update export declaration document data
  * @permission Requires `canUseUpdateExportDeclarationData` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.exportDeclarationId Path parameter
- * @param { WorkingDocumentsExportDeclarationModels.UpdateExportDeclarationDocumentRequestDTO } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } exportDeclarationId Path parameter
+ * @param { WorkingDocumentsExportDeclarationModels.UpdateExportDeclarationDocumentRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<WorkingDocumentsExportDeclarationModels.ExportDeclarationDocumentResponseDTO> } 
  * @statusCodes [200, 401]
@@ -163,9 +163,9 @@ export const useUpdateExportDeclarationData = (options?: AppMutationOptions<type
  * Mutation `useDeleteExportDeclaration`
  * @summary Delete export declaration document
  * @permission Requires `canUseDeleteExportDeclaration` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.exportDeclarationId Path parameter
- * @param { string } mutation.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } exportDeclarationId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } Export declaration document deleted
  * @statusCodes [204, 401, 404]
@@ -192,9 +192,9 @@ export const useDeleteExportDeclaration = (options?: AppMutationOptions<typeof d
  * Query `usePreviewExportDeclaration` - recommended when file should be cached
  * @summary Preview export declaration document
  * @permission Requires `canUsePreviewExportDeclaration` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.positionId Path parameter
- * @param { string } object.exportDeclarationId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } exportDeclarationId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
@@ -216,9 +216,9 @@ export const usePreviewExportDeclaration = <TData>({ officeId, positionId, expor
  * Mutation `usePreviewExportDeclarationMutation` - recommended when file should not be cached
  * @summary Preview export declaration document
  * @permission Requires `canUsePreviewExportDeclaration` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.exportDeclarationId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } exportDeclarationId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
@@ -247,10 +247,10 @@ export const usePreviewExportDeclarationMutation = (options?: AppMutationOptions
  * Mutation `useGenerateExportDeclaration`
  * @summary Generate export declaration document
  * @permission Requires `canUseGenerateExportDeclaration` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.exportDeclarationId Path parameter
- * @param { CommonModels.GenerateWorkingDocumentRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } exportDeclarationId Path parameter
+ * @param { CommonModels.GenerateWorkingDocumentRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [201, 401]

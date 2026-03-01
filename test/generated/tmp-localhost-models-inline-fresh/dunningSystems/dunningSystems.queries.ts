@@ -100,12 +100,12 @@ export const keys = {
  * Query `usePaginateLabels`
  * @summary Paginate dunning system labels
  * @permission Requires `canUsePaginateLabels` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt, isDefault. Example: `name`
- * @param { DunningSystemsModels.DunningSystemLabelFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt, isDefault. Example: `name`
+ * @param { DunningSystemsModels.DunningSystemLabelFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<DunningSystemsModels.DunningSystemsPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
@@ -127,12 +127,12 @@ export const usePaginateLabels = <TData>({ officeId, limit, order, filter, page,
  * Infinite query `usePaginateLabelsInfinite
  * @summary Paginate dunning system labels
  * @permission Requires `canUsePaginateLabels` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt, isDefault. Example: `name`
- * @param { DunningSystemsModels.DunningSystemLabelFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt, isDefault. Example: `name`
+ * @param { DunningSystemsModels.DunningSystemLabelFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<DunningSystemsModels.DunningSystemsPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
@@ -159,12 +159,12 @@ export const usePaginateLabelsInfinite = <TData>({ officeId, limit, order, filte
  * Query `usePaginate`
  * @summary List dunning systems
  * @permission Requires `canUsePaginate` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt, isDefault. Example: `name`
- * @param { DunningSystemsModels.DunningSystemFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt, isDefault. Example: `name`
+ * @param { DunningSystemsModels.DunningSystemFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<DunningSystemsModels.DunningSystemsPaginateResponse> } 
  * @statusCodes [200, 401]
@@ -186,12 +186,12 @@ export const usePaginate = <TData>({ officeId, limit, order, filter, page, curso
  * Infinite query `usePaginateInfinite
  * @summary List dunning systems
  * @permission Requires `canUsePaginate` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt, isDefault. Example: `name`
- * @param { DunningSystemsModels.DunningSystemFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt, isDefault. Example: `name`
+ * @param { DunningSystemsModels.DunningSystemFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<DunningSystemsModels.DunningSystemsPaginateResponse> } 
  * @statusCodes [200, 401]
@@ -218,8 +218,8 @@ export const usePaginateInfinite = <TData>({ officeId, limit, order, filter, cur
  * Mutation `useCreate`
  * @summary Create dunning system
  * @permission Requires `canUseCreate` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { DunningSystemsModels.CreateDunningSystemRequestDTO } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { DunningSystemsModels.CreateDunningSystemRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<DunningSystemsModels.DunningSystemResponseDTO> } 
  * @statusCodes [201, 401]
@@ -246,8 +246,8 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { officeId
  * Query `useFindById`
  * @summary Get dunning system by ID
  * @permission Requires `canUseFindById` ability 
- * @param { string } object.id Path parameter
- * @param { string } object.officeId Path parameter
+ * @param { string } id Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<DunningSystemsModels.DunningSystemResponseDTO> } 
  * @statusCodes [200, 401]
@@ -269,9 +269,9 @@ export const useFindById = <TData>({ id, officeId }: { id: string, officeId: str
  * Mutation `useUpdate`
  * @summary Update dunning system
  * @permission Requires `canUseUpdate` ability 
- * @param { string } mutation.id Path parameter
- * @param { string } mutation.officeId Path parameter
- * @param { DunningSystemsModels.UpdateDunningSystemRequestDTO } mutation.data Body parameter
+ * @param { string } id Path parameter
+ * @param { string } officeId Path parameter
+ * @param { DunningSystemsModels.UpdateDunningSystemRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<DunningSystemsModels.DunningSystemResponseDTO> } 
  * @statusCodes [200, 401]
@@ -300,8 +300,8 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { id: stri
  * Mutation `useArchive`
  * @summary Archive dunning system
  * @permission Requires `canUseArchive` ability 
- * @param { string } mutation.id Path parameter
- * @param { string } mutation.officeId Path parameter
+ * @param { string } id Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<DunningSystemsModels.DunningSystemResponseDTO> } 
  * @statusCodes [200, 401]
@@ -330,8 +330,8 @@ export const useArchive = (options?: AppMutationOptions<typeof archive, { id: st
  * Mutation `useUnarchive`
  * @summary Unarchive dunning system
  * @permission Requires `canUseUnarchive` ability 
- * @param { string } mutation.id Path parameter
- * @param { string } mutation.officeId Path parameter
+ * @param { string } id Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<DunningSystemsModels.DunningSystemResponseDTO> } 
  * @statusCodes [200, 401]

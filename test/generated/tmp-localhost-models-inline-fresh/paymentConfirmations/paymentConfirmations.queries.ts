@@ -69,12 +69,12 @@ export const keys = {
  * Query `useGet`
  * @summary Get payment confirmation items
  * @permission Requires `canUseGet` ability 
- * @param { string } object.officeId Path parameter
- * @param { PaymentConfirmationsModels.PaymentConfirmationItemFilterDto } object.filter Query parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): paymentDate, invoiceNumber, amount. Example: `paymentDate`
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { PaymentConfirmationsModels.PaymentConfirmationItemFilterDto } filter Query parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): paymentDate, invoiceNumber, amount. Example: `paymentDate`
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<PaymentConfirmationsModels.PaymentConfirmationsGetResponse> } 
  * @statusCodes [200, 401]
@@ -96,12 +96,12 @@ export const useGet = <TData>({ officeId, filter, limit, order, page, cursor }: 
  * Infinite query `useGetInfinite
  * @summary Get payment confirmation items
  * @permission Requires `canUseGet` ability 
- * @param { string } object.officeId Path parameter
- * @param { PaymentConfirmationsModels.PaymentConfirmationItemFilterDto } object.filter Query parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): paymentDate, invoiceNumber, amount. Example: `paymentDate`
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { PaymentConfirmationsModels.PaymentConfirmationItemFilterDto } filter Query parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): paymentDate, invoiceNumber, amount. Example: `paymentDate`
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<PaymentConfirmationsModels.PaymentConfirmationsGetResponse> } 
  * @statusCodes [200, 401]
@@ -128,8 +128,8 @@ export const useGetInfinite = <TData>({ officeId, filter, limit, order, cursor }
  * Mutation `useGenerate` - recommended when file should not be cached
  * @summary Generate payment confirmation PDF
  * @permission Requires `canUseGenerate` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { PaymentConfirmationsModels.GeneratePaymentConfirmationRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { PaymentConfirmationsModels.GeneratePaymentConfirmationRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 201, 401]
@@ -156,8 +156,8 @@ export const useGenerate = (options?: AppMutationOptions<typeof generate, { offi
  * Mutation `useGetEml` - recommended when file should not be cached
  * @summary Get payment confirmation as EML file with PDF attachment
  * @permission Requires `canUseGetEml` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { PaymentConfirmationsModels.GeneratePaymentConfirmationRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { PaymentConfirmationsModels.GeneratePaymentConfirmationRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 201, 401]

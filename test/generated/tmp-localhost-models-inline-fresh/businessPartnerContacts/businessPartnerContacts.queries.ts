@@ -74,8 +74,8 @@ export const keys = {
  * Query `useGetContacts`
  * @summary Get all contacts for a business partner
  * @permission Requires `canUseGetContacts` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.businessPartnerId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } businessPartnerId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<BusinessPartnerContactsModels.BusinessPartnerContactListResponseDTO> } 
  * @statusCodes [200, 401]
@@ -97,9 +97,9 @@ export const useGetContacts = <TData>({ officeId, businessPartnerId }: { officeI
  * Mutation `useCreateContact`
  * @summary Create a new contact for a business partner
  * @permission Requires `canUseCreateContact` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.businessPartnerId Path parameter
- * @param { BusinessPartnerContactsModels.CreateBusinessPartnerContactRequestDTO } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } businessPartnerId Path parameter
+ * @param { BusinessPartnerContactsModels.CreateBusinessPartnerContactRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<BusinessPartnerContactsModels.BusinessPartnerContactResponseDTO> } 
  * @statusCodes [201, 401]
@@ -126,13 +126,13 @@ export const useCreateContact = (options?: AppMutationOptions<typeof createConta
  * Query `usePaginateContactLabels`
  * @summary Paginate business partner contact labels (id and name only)
  * @permission Requires `canUsePaginateContactLabels` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.businessPartnerId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, role, email, createdAt, updatedAt. Example: `name`
- * @param { BusinessPartnerContactsModels.BusinessPartnerContactFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { string } businessPartnerId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, role, email, createdAt, updatedAt. Example: `name`
+ * @param { BusinessPartnerContactsModels.BusinessPartnerContactFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<BusinessPartnerContactsModels.PaginateContactLabelsResponse> } 
  * @statusCodes [200, 401]
@@ -154,13 +154,13 @@ export const usePaginateContactLabels = <TData>({ officeId, businessPartnerId, l
  * Infinite query `usePaginateContactLabelsInfinite
  * @summary Paginate business partner contact labels (id and name only)
  * @permission Requires `canUsePaginateContactLabels` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.businessPartnerId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, role, email, createdAt, updatedAt. Example: `name`
- * @param { BusinessPartnerContactsModels.BusinessPartnerContactFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { string } businessPartnerId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, role, email, createdAt, updatedAt. Example: `name`
+ * @param { BusinessPartnerContactsModels.BusinessPartnerContactFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<BusinessPartnerContactsModels.PaginateContactLabelsResponse> } 
  * @statusCodes [200, 401]
@@ -187,10 +187,10 @@ export const usePaginateContactLabelsInfinite = <TData>({ officeId, businessPart
  * Mutation `useUpdateContact`
  * @summary Update a business partner contact
  * @permission Requires `canUseUpdateContact` ability 
- * @param { string } mutation.contactId Path parameter
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.businessPartnerId Path parameter
- * @param { BusinessPartnerContactsModels.UpdateBusinessPartnerContactRequestDTO } mutation.data Body parameter
+ * @param { string } contactId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } businessPartnerId Path parameter
+ * @param { BusinessPartnerContactsModels.UpdateBusinessPartnerContactRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<BusinessPartnerContactsModels.BusinessPartnerContactResponseDTO> } 
  * @statusCodes [200, 401]
@@ -216,9 +216,9 @@ export const useUpdateContact = (options?: AppMutationOptions<typeof updateConta
 /** 
  * Mutation `useDeleteContact`
  * @permission Requires `canUseDeleteContact` ability 
- * @param { string } mutation.contactId Path parameter
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.businessPartnerId Path parameter
+ * @param { string } contactId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } businessPartnerId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 204, 401]

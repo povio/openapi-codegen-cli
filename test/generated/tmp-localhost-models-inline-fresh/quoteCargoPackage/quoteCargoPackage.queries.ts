@@ -62,10 +62,10 @@ export const moduleName = QueryModule.QuoteCargoPackage;
  * Mutation `useCreatePackage`
  * @summary Create a new package for a cargo
  * @permission Requires `canUseCreatePackage` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.quoteId Path parameter
- * @param { string } mutation.cargoId Path parameter
- * @param { CommonModels.CreatePositionCargoPackageDTO } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } quoteId Path parameter
+ * @param { string } cargoId Path parameter
+ * @param { CommonModels.CreatePositionCargoPackageDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<CommonModels.PositionCargoPackageResponseDTO> } 
  * @statusCodes [201, 401]
@@ -92,11 +92,11 @@ export const useCreatePackage = (options?: AppMutationOptions<typeof createPacka
  * Mutation `useUpdatePackage`
  * @summary Update a package
  * @permission Requires `canUseUpdatePackage` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.quoteId Path parameter
- * @param { string } mutation.cargoId Path parameter
- * @param { string } mutation.packageId Path parameter
- * @param { CommonModels.UpdatePositionCargoPackageDTO } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } quoteId Path parameter
+ * @param { string } cargoId Path parameter
+ * @param { string } packageId Path parameter
+ * @param { CommonModels.UpdatePositionCargoPackageDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<CommonModels.PositionCargoPackageResponseDTO> } 
  * @statusCodes [200, 401]
@@ -123,10 +123,10 @@ export const useUpdatePackage = (options?: AppMutationOptions<typeof updatePacka
  * Mutation `useDeletePackage`
  * @summary Delete a package
  * @permission Requires `canUseDeletePackage` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.quoteId Path parameter
- * @param { string } mutation.cargoId Path parameter
- * @param { string } mutation.packageId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } quoteId Path parameter
+ * @param { string } cargoId Path parameter
+ * @param { string } packageId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [204, 401]
@@ -153,10 +153,10 @@ export const useDeletePackage = (options?: AppMutationOptions<typeof deletePacka
  * Mutation `useDuplicatePackage`
  * @summary Duplicate a package
  * @permission Requires `canUseDuplicatePackage` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.quoteId Path parameter
- * @param { string } mutation.cargoId Path parameter
- * @param { string } mutation.packageId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } quoteId Path parameter
+ * @param { string } cargoId Path parameter
+ * @param { string } packageId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<CommonModels.PositionCargoPackageResponseDTO> } 
  * @statusCodes [201, 401]
@@ -183,11 +183,11 @@ export const useDuplicatePackage = (options?: AppMutationOptions<typeof duplicat
  * Mutation `useMovePackage`
  * @summary Move a package to a different cargo
  * @permission Requires `canUseMovePackage` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.quoteId Path parameter
- * @param { string } mutation.cargoId Path parameter
- * @param { string } mutation.packageId Path parameter
- * @param { CommonModels.MovePositionCargoPackageRequestDTO } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } quoteId Path parameter
+ * @param { string } cargoId Path parameter
+ * @param { string } packageId Path parameter
+ * @param { CommonModels.MovePositionCargoPackageRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<CommonModels.PositionCargoPackageResponseDTO> } 
  * @statusCodes [200, 401]

@@ -52,7 +52,7 @@ export const useGetProfile = <TData>(options?: AppQueryOptions<typeof getProfile
 /** 
  * Mutation `useUpdateProfile`
  * @summary Update employee profile
- * @param { EmployeeProfileModels.UpdateEmployeeProfileRequestDTO } mutation.data Body parameter
+ * @param { EmployeeProfileModels.UpdateEmployeeProfileRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<EmployeeProfileModels.EmployeeProfileResponseDTO> } 
  * @statusCodes [200, 401]

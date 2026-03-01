@@ -141,11 +141,11 @@ export const keys = {
 /** 
  * Query `usePaginate`
  * @summary Paginate offices
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name. Example: `name`
- * @param { OfficesModels.OfficeFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name. Example: `name`
+ * @param { OfficesModels.OfficeFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<OfficesModels.OfficesPaginateResponse> } 
  * @statusCodes [200, 401]
@@ -164,11 +164,11 @@ export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { lim
 /** 
  * Infinite query `usePaginateInfinite
  * @summary Paginate offices
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name. Example: `name`
- * @param { OfficesModels.OfficeFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name. Example: `name`
+ * @param { OfficesModels.OfficeFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<OfficesModels.OfficesPaginateResponse> } 
  * @statusCodes [200, 401]
@@ -193,7 +193,7 @@ export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { l
  * Mutation `useCreate`
  * @summary Create new office
  * @permission Requires `canUseCreate` ability 
- * @param { OfficesModels.CreateOfficeRequest } mutation.data Body parameter
+ * @param { OfficesModels.CreateOfficeRequest } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<OfficesModels.OfficeResponseDto> } 
  * @statusCodes [201, 401]
@@ -219,7 +219,7 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { data: Of
 /** 
  * Query `useFindAllLabels`
  * @summary List all offices with only their labels
- * @param { string } object.search Query parameter
+ * @param { string } search Query parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<OfficesModels.FindAllLabelsResponse> } 
  * @statusCodes [200, 401]
@@ -238,11 +238,11 @@ export const useFindAllLabels = <TData>({ search }: { search?: string }, options
 /** 
  * Query `usePaginateLabels`
  * @summary Paginate offices with only their labels
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name. Example: `name`
- * @param { OfficesModels.OfficeLabelFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name. Example: `name`
+ * @param { OfficesModels.OfficeLabelFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<OfficesModels.OfficesPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
@@ -261,11 +261,11 @@ export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }:
 /** 
  * Infinite query `usePaginateLabelsInfinite
  * @summary Paginate offices with only their labels
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name. Example: `name`
- * @param { OfficesModels.OfficeLabelFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name. Example: `name`
+ * @param { OfficesModels.OfficeLabelFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<OfficesModels.OfficesPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
@@ -290,7 +290,7 @@ export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor 
  * Query `useGet`
  * @summary Get office by id
  * @permission Requires `canUseGet` ability 
- * @param { string } object.id Path parameter
+ * @param { string } id Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<OfficesModels.OfficeDetailResponseDto> } 
  * @statusCodes [200, 401]
@@ -312,8 +312,8 @@ export const useGet = <TData>({ id }: { id: string }, options?: AppQueryOptions<
  * Mutation `useUpdate`
  * @summary Update office
  * @permission Requires `canUseUpdate` ability 
- * @param { string } mutation.id Path parameter
- * @param { OfficesModels.UpdateOfficeRequest } mutation.data Body parameter
+ * @param { string } id Path parameter
+ * @param { OfficesModels.UpdateOfficeRequest } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<OfficesModels.OfficeResponseDto> } 
  * @statusCodes [200, 401]
@@ -340,9 +340,9 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { id: stri
  * Mutation `useUploadDocumentImage`
  * @summary Upload document image for an office
  * @permission Requires `canUseUploadDocumentImage` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { OfficesModels.UploadOfficeDocumentRequestDto } mutation.data Body parameter
- * @param { File } mutation.file Body parameter
+ * @param { string } officeId Path parameter
+ * @param { OfficesModels.UploadOfficeDocumentRequestDto } data Body parameter
+ * @param { File } file Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<OfficesModels.DocumentImageUploadInstructionsDto> } 
  * @statusCodes [201, 401]
@@ -394,8 +394,8 @@ export const useUploadDocumentImage = (options?: AppMutationOptions<typeof uploa
  * Mutation `useCreateBankAccount`
  * @summary Create office bank account
  * @permission Requires `canUseCreateBankAccount` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { OfficesModels.CreateOfficeBankAccountDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { OfficesModels.CreateOfficeBankAccountDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<OfficesModels.OfficeBankAccountResponseDto> } 
  * @statusCodes [201, 401]
@@ -422,9 +422,9 @@ export const useCreateBankAccount = (options?: AppMutationOptions<typeof createB
  * Mutation `useUpdateBankAccount`
  * @summary Update office bank account
  * @permission Requires `canUseUpdateBankAccount` ability 
- * @param { string } mutation.accountId Path parameter
- * @param { string } mutation.officeId Path parameter
- * @param { OfficesModels.UpdateOfficeBankAccountDto } mutation.data Body parameter
+ * @param { string } accountId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { OfficesModels.UpdateOfficeBankAccountDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<OfficesModels.OfficeBankAccountResponseDto> } 
  * @statusCodes [200, 401]
@@ -451,8 +451,8 @@ export const useUpdateBankAccount = (options?: AppMutationOptions<typeof updateB
  * Mutation `useDeleteBankAccount`
  * @summary Delete office bank account
  * @permission Requires `canUseDeleteBankAccount` ability 
- * @param { string } mutation.accountId Path parameter
- * @param { string } mutation.officeId Path parameter
+ * @param { string } accountId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
@@ -479,10 +479,10 @@ export const useDeleteBankAccount = (options?: AppMutationOptions<typeof deleteB
  * Mutation `useUploadBankAccountFooter`
  * @summary Upload office bank account footer
  * @permission Requires `canUseUploadBankAccountFooter` ability 
- * @param { string } mutation.accountId Path parameter
- * @param { string } mutation.officeId Path parameter
- * @param { OfficesModels.UploadOfficeBankAccountFooterRequestDto } mutation.data Body parameter
- * @param { File } mutation.file Body parameter
+ * @param { string } accountId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { OfficesModels.UploadOfficeBankAccountFooterRequestDto } data Body parameter
+ * @param { File } file Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<OfficesModels.DocumentImageUploadInstructionsDto> } 
  * @statusCodes [201, 401]

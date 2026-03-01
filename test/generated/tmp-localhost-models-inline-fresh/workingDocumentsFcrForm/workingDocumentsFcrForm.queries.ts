@@ -79,8 +79,8 @@ export const keys = {
  * Mutation `useCreate`
  * @summary Create an FCR document
  * @permission Requires `canUseCreate` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<WorkingDocumentsFcrFormModels.FcrDocumentResponseDTO> } 
  * @statusCodes [201, 401]
@@ -107,9 +107,9 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { position
  * Query `useGetFcrData`
  * @summary Get FCR document data
  * @permission Requires `canUseGetFcrData` ability 
- * @param { string } object.positionId Path parameter
- * @param { string } object.fcrId Path parameter
- * @param { string } object.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } fcrId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<WorkingDocumentsFcrFormModels.FcrDocumentResponseDTO> } 
  * @statusCodes [200, 401]
@@ -131,10 +131,10 @@ export const useGetFcrData = <TData>({ positionId, fcrId, officeId }: { position
  * Mutation `useUpdateFcrData`
  * @summary Update FCR document data
  * @permission Requires `canUseUpdateFcrData` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.fcrId Path parameter
- * @param { string } mutation.officeId Path parameter
- * @param { WorkingDocumentsFcrFormModels.UpdateFcrDocumentRequestDTO } mutation.data Body parameter
+ * @param { string } positionId Path parameter
+ * @param { string } fcrId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { WorkingDocumentsFcrFormModels.UpdateFcrDocumentRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<WorkingDocumentsFcrFormModels.FcrDocumentResponseDTO> } 
  * @statusCodes [200, 401]
@@ -163,9 +163,9 @@ export const useUpdateFcrData = (options?: AppMutationOptions<typeof updateFcrDa
  * Mutation `useDeleteFcr`
  * @summary Delete FCR document
  * @permission Requires `canUseDeleteFcr` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.fcrId Path parameter
- * @param { string } mutation.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } fcrId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } FCR document deleted
  * @statusCodes [204, 401, 404]
@@ -192,9 +192,9 @@ export const useDeleteFcr = (options?: AppMutationOptions<typeof deleteFcr, { po
  * Query `usePreviewFcr` - recommended when file should be cached
  * @summary Preview FCR document
  * @permission Requires `canUsePreviewFcr` ability 
- * @param { string } object.positionId Path parameter
- * @param { string } object.fcrId Path parameter
- * @param { string } object.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } fcrId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
@@ -216,9 +216,9 @@ export const usePreviewFcr = <TData>({ positionId, fcrId, officeId }: { position
  * Mutation `usePreviewFcrMutation` - recommended when file should not be cached
  * @summary Preview FCR document
  * @permission Requires `canUsePreviewFcr` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.fcrId Path parameter
- * @param { string } mutation.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } fcrId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
@@ -247,10 +247,10 @@ export const usePreviewFcrMutation = (options?: AppMutationOptions<typeof previe
  * Mutation `useGenerateFcr`
  * @summary Generate FCR document
  * @permission Requires `canUseGenerateFcr` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.fcrId Path parameter
- * @param { string } mutation.officeId Path parameter
- * @param { CommonModels.GenerateWorkingDocumentRequestDto } mutation.data Body parameter
+ * @param { string } positionId Path parameter
+ * @param { string } fcrId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { CommonModels.GenerateWorkingDocumentRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [201, 401]

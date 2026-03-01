@@ -100,11 +100,11 @@ export const keys = {
  * Query `usePaginateLabels`
  * @summary Paginate partner networks with only their labels
  * @permission Requires `canUsePaginateLabels` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
- * @param { PartnerNetworksModels.PartnerNetworkLabelFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
+ * @param { PartnerNetworksModels.PartnerNetworkLabelFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<PartnerNetworksModels.PartnerNetworksPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
@@ -126,11 +126,11 @@ export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }:
  * Infinite query `usePaginateLabelsInfinite
  * @summary Paginate partner networks with only their labels
  * @permission Requires `canUsePaginateLabels` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
- * @param { PartnerNetworksModels.PartnerNetworkLabelFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
+ * @param { PartnerNetworksModels.PartnerNetworkLabelFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<PartnerNetworksModels.PartnerNetworksPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
@@ -157,11 +157,11 @@ export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor 
  * Query `usePaginate`
  * @summary Paginate Partner Networks
  * @permission Requires `canUsePaginate` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
- * @param { PartnerNetworksModels.PartnerNetworkPaginationFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
+ * @param { PartnerNetworksModels.PartnerNetworkPaginationFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<PartnerNetworksModels.PartnerNetworksPaginateResponse> } 
  * @statusCodes [200, 401]
@@ -183,11 +183,11 @@ export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { lim
  * Infinite query `usePaginateInfinite
  * @summary Paginate Partner Networks
  * @permission Requires `canUsePaginate` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
- * @param { PartnerNetworksModels.PartnerNetworkPaginationFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
+ * @param { PartnerNetworksModels.PartnerNetworkPaginationFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<PartnerNetworksModels.PartnerNetworksPaginateResponse> } 
  * @statusCodes [200, 401]
@@ -214,7 +214,7 @@ export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { l
  * Mutation `useCreate`
  * @summary Create a new Partner Network
  * @permission Requires `canUseCreate` ability 
- * @param { PartnerNetworksModels.CreatePartnerNetworkRequestDTO } mutation.data Body parameter
+ * @param { PartnerNetworksModels.CreatePartnerNetworkRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<PartnerNetworksModels.PartnerNetworkResponseDTO> } 
  * @statusCodes [201, 401]
@@ -241,7 +241,7 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { data: Pa
  * Query `useFindById`
  * @summary Get Partner Network by ID
  * @permission Requires `canUseFindById` ability 
- * @param { string } object.id Path parameter
+ * @param { string } id Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<PartnerNetworksModels.PartnerNetworkResponseDTO> } 
  * @statusCodes [200, 401]
@@ -263,8 +263,8 @@ export const useFindById = <TData>({ id }: { id: string }, options?: AppQueryOpt
  * Mutation `useUpdate`
  * @summary Update Partner Network
  * @permission Requires `canUseUpdate` ability 
- * @param { string } mutation.id Path parameter
- * @param { PartnerNetworksModels.UpdatePartnerNetworkRequestDTO } mutation.data Body parameter
+ * @param { string } id Path parameter
+ * @param { PartnerNetworksModels.UpdatePartnerNetworkRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<PartnerNetworksModels.PartnerNetworkResponseDTO> } 
  * @statusCodes [200, 401]
@@ -293,7 +293,7 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { id: stri
  * Mutation `useArchive`
  * @summary Archive Partner Network
  * @permission Requires `canUseArchive` ability 
- * @param { string } mutation.id Path parameter
+ * @param { string } id Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<PartnerNetworksModels.PartnerNetworkResponseDTO> } 
  * @statusCodes [200, 401]
@@ -322,7 +322,7 @@ export const useArchive = (options?: AppMutationOptions<typeof archive, { id: st
  * Mutation `useUnarchive`
  * @summary Unarchive Partner Network
  * @permission Requires `canUseUnarchive` ability 
- * @param { string } mutation.id Path parameter
+ * @param { string } id Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<PartnerNetworksModels.PartnerNetworkResponseDTO> } 
  * @statusCodes [200, 401]

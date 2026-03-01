@@ -100,8 +100,8 @@ export const keys = {
  * Mutation `useCreate`
  * @summary Create project
  * @permission Requires `canUseCreate` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { ProjectLiteModels.CreateProjectLiteRequestDTO } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { ProjectLiteModels.CreateProjectLiteRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<ProjectLiteModels.ProjectLiteResponseDTO> } 
  * @statusCodes [201, 401]
@@ -128,12 +128,12 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { officeId
  * Query `usePaginate`
  * @summary Get paginated projects
  * @permission Requires `canUsePaginate` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
- * @param { ProjectLiteModels.ProjectLiteFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
+ * @param { ProjectLiteModels.ProjectLiteFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<ProjectLiteModels.ProjectLitePaginateResponse> } 
  * @statusCodes [200, 401]
@@ -155,12 +155,12 @@ export const usePaginate = <TData>({ officeId, limit, order, filter, page, curso
  * Infinite query `usePaginateInfinite
  * @summary Get paginated projects
  * @permission Requires `canUsePaginate` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
- * @param { ProjectLiteModels.ProjectLiteFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
+ * @param { ProjectLiteModels.ProjectLiteFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<ProjectLiteModels.ProjectLitePaginateResponse> } 
  * @statusCodes [200, 401]
@@ -187,12 +187,12 @@ export const usePaginateInfinite = <TData>({ officeId, limit, order, filter, cur
  * Query `usePaginateProjectLabels`
  * @summary Paginate project labels
  * @permission Requires `canUsePaginateProjectLabels` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
- * @param { ProjectLiteModels.ProjectLiteFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
+ * @param { ProjectLiteModels.ProjectLiteFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<ProjectLiteModels.PaginateProjectLabelsResponse> } 
  * @statusCodes [200, 401]
@@ -214,12 +214,12 @@ export const usePaginateProjectLabels = <TData>({ officeId, limit, order, filter
  * Infinite query `usePaginateProjectLabelsInfinite
  * @summary Paginate project labels
  * @permission Requires `canUsePaginateProjectLabels` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
- * @param { ProjectLiteModels.ProjectLiteFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
+ * @param { ProjectLiteModels.ProjectLiteFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<ProjectLiteModels.PaginateProjectLabelsResponse> } 
  * @statusCodes [200, 401]
@@ -246,8 +246,8 @@ export const usePaginateProjectLabelsInfinite = <TData>({ officeId, limit, order
  * Query `useFindById`
  * @summary Get project by id
  * @permission Requires `canUseFindById` ability 
- * @param { string } object.id Path parameter
- * @param { string } object.officeId Path parameter
+ * @param { string } id Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<ProjectLiteModels.ProjectLiteResponseDTO> } 
  * @statusCodes [200, 401]
@@ -269,9 +269,9 @@ export const useFindById = <TData>({ id, officeId }: { id: string, officeId: str
  * Mutation `useUpdate`
  * @summary Update project
  * @permission Requires `canUseUpdate` ability 
- * @param { string } mutation.id Path parameter
- * @param { string } mutation.officeId Path parameter
- * @param { ProjectLiteModels.UpdateProjectLiteRequestDTO } mutation.data Body parameter
+ * @param { string } id Path parameter
+ * @param { string } officeId Path parameter
+ * @param { ProjectLiteModels.UpdateProjectLiteRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<ProjectLiteModels.ProjectLiteResponseDTO> } 
  * @statusCodes [200, 401]
@@ -300,8 +300,8 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { id: stri
  * Mutation `useArchive`
  * @summary Archive project
  * @permission Requires `canUseArchive` ability 
- * @param { string } mutation.id Path parameter
- * @param { string } mutation.officeId Path parameter
+ * @param { string } id Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
@@ -328,8 +328,8 @@ export const useArchive = (options?: AppMutationOptions<typeof archive, { id: st
  * Mutation `useUnarchive`
  * @summary Unarchive project
  * @permission Requires `canUseUnarchive` ability 
- * @param { string } mutation.id Path parameter
- * @param { string } mutation.officeId Path parameter
+ * @param { string } id Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]

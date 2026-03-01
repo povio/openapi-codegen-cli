@@ -50,11 +50,11 @@ export const keys = {
 /** 
  * Query `usePaginatePermissions`
  * @permission Requires `canUsePaginatePermissions` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): id. Example: `id`
- * @param { EmployeePermissionsModels.EmployeePermissionFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): id. Example: `id`
+ * @param { EmployeePermissionsModels.EmployeePermissionFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<EmployeePermissionsModels.EmployeePermissionsPaginatePermissionsResponse> } 
  * @statusCodes [200, 401]
@@ -75,11 +75,11 @@ export const usePaginatePermissions = <TData>({ limit, order, filter, page, curs
 /** 
  * Infinite query `usePaginatePermissionsInfinite
  * @permission Requires `canUsePaginatePermissions` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): id. Example: `id`
- * @param { EmployeePermissionsModels.EmployeePermissionFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): id. Example: `id`
+ * @param { EmployeePermissionsModels.EmployeePermissionFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<EmployeePermissionsModels.EmployeePermissionsPaginatePermissionsResponse> } 
  * @statusCodes [200, 401]
@@ -106,7 +106,7 @@ export const usePaginatePermissionsInfinite = <TData>({ limit, order, filter, cu
  * Query `useFindAll`
  * @summary List all permissions with only their labels
  * @permission Requires `canUseFindAll` ability 
- * @param { string } object.search Query parameter
+ * @param { string } search Query parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<EmployeePermissionsModels.EmployeePermissionsFindAllResponse> } 
  * @statusCodes [200, 401]

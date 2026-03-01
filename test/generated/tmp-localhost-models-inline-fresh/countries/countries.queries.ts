@@ -65,11 +65,11 @@ export const keys = {
  * Query `usePaginate`
  * @summary Paginate Countries
  * @permission Requires `canUsePaginate` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, isoCode2, isoCode3, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
- * @param { CountriesModels.CountryPaginationFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, isoCode2, isoCode3, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
+ * @param { CountriesModels.CountryPaginationFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<CountriesModels.CountriesPaginateResponse> } 
  * @statusCodes [200, 401]
@@ -91,11 +91,11 @@ export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { lim
  * Infinite query `usePaginateInfinite
  * @summary Paginate Countries
  * @permission Requires `canUsePaginate` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, isoCode2, isoCode3, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
- * @param { CountriesModels.CountryPaginationFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, isoCode2, isoCode3, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
+ * @param { CountriesModels.CountryPaginationFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<CountriesModels.CountriesPaginateResponse> } 
  * @statusCodes [200, 401]
@@ -122,11 +122,11 @@ export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { l
  * Query `usePaginateCountryLabels`
  * @summary Paginate country labels (id and name only)
  * @permission Requires `canUsePaginateCountryLabels` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, isoCode2, isoCode3, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
- * @param { CountriesModels.CountryPaginationFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, isoCode2, isoCode3, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
+ * @param { CountriesModels.CountryPaginationFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<CountriesModels.PaginateCountryLabelsResponse> } 
  * @statusCodes [200, 401]
@@ -148,11 +148,11 @@ export const usePaginateCountryLabels = <TData>({ limit, order, filter, page, cu
  * Infinite query `usePaginateCountryLabelsInfinite
  * @summary Paginate country labels (id and name only)
  * @permission Requires `canUsePaginateCountryLabels` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, isoCode2, isoCode3, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
- * @param { CountriesModels.CountryPaginationFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, isoCode2, isoCode3, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
+ * @param { CountriesModels.CountryPaginationFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<CountriesModels.PaginateCountryLabelsResponse> } 
  * @statusCodes [200, 401]
@@ -179,7 +179,7 @@ export const usePaginateCountryLabelsInfinite = <TData>({ limit, order, filter, 
  * Query `useGetCountryById`
  * @summary Get country by ID with complete details
  * @permission Requires `canUseGetCountryById` ability 
- * @param { string } object.id Path parameter
+ * @param { string } id Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<CountriesModels.CountryResponseDTO> } 
  * @statusCodes [200, 401]

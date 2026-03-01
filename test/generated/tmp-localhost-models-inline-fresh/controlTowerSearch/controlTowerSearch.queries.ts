@@ -29,9 +29,9 @@ export const moduleName = QueryModule.ControlTowerSearch;
 
 /** 
  * Mutation `useSearch`
- * @param { ControlTowerSearchModels.SearchRequestDto } mutation.data Body parameter
- * @param { ControlTowerSearchModels.SearchItemTypeEnum } mutation.type Query parameter
- * @param { number } mutation.limit Query parameter. Minimum: `1`
+ * @param { ControlTowerSearchModels.SearchRequestDto } data Body parameter
+ * @param { ControlTowerSearchModels.SearchItemTypeEnum } type Query parameter
+ * @param { number } limit Query parameter. Minimum: `1`
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<ControlTowerSearchModels.SearchResponseDto> } 
  * @statusCodes [201, 401]

@@ -65,13 +65,13 @@ export const keys = {
  * Query `useList`
  * @summary List Inttra shipping instruction messages for a position/BL instructions
  * @permission Requires `canUseList` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.positionId Path parameter
- * @param { string } object.shippingInstructionsId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
- * @param { InttraShippingInstructionMessagesModels.ShippingInstructionMessageFilterDto } object.filter Query parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } shippingInstructionsId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
+ * @param { InttraShippingInstructionMessagesModels.ShippingInstructionMessageFilterDto } filter Query parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<InttraShippingInstructionMessagesModels.InttraShippingInstructionMessagesListResponse> } 
  * @statusCodes [200, 401]
@@ -93,13 +93,13 @@ export const useList = <TData>({ officeId, positionId, shippingInstructionsId, l
  * Infinite query `useListInfinite
  * @summary List Inttra shipping instruction messages for a position/BL instructions
  * @permission Requires `canUseList` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.positionId Path parameter
- * @param { string } object.shippingInstructionsId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
- * @param { InttraShippingInstructionMessagesModels.ShippingInstructionMessageFilterDto } object.filter Query parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } shippingInstructionsId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
+ * @param { InttraShippingInstructionMessagesModels.ShippingInstructionMessageFilterDto } filter Query parameter
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<InttraShippingInstructionMessagesModels.InttraShippingInstructionMessagesListResponse> } 
  * @statusCodes [200, 401]
@@ -126,10 +126,10 @@ export const useListInfinite = <TData>({ officeId, positionId, shippingInstructi
  * Mutation `useCreate`
  * @summary Create Inttra shipping instruction message
  * @permission Requires `canUseCreate` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.shippingInstructionsId Path parameter
- * @param { InttraShippingInstructionMessagesModels.CreateShippingInstructionMessageRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } shippingInstructionsId Path parameter
+ * @param { InttraShippingInstructionMessagesModels.CreateShippingInstructionMessageRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<InttraShippingInstructionMessagesModels.ShippingInstructionMessageResponseDto> } 
  * @statusCodes [201, 401]
@@ -156,10 +156,10 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { officeId
  * Query `useGetById`
  * @summary Get Inttra shipping instruction message details
  * @permission Requires `canUseGetById` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.positionId Path parameter
- * @param { string } object.shippingInstructionsId Path parameter
- * @param { string } object.messageId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } shippingInstructionsId Path parameter
+ * @param { string } messageId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<InttraShippingInstructionMessagesModels.ShippingInstructionMessageResponseDto> } 
  * @statusCodes [200, 401]
@@ -181,11 +181,11 @@ export const useGetById = <TData>({ officeId, positionId, shippingInstructionsId
  * Mutation `useUpdate`
  * @summary Update Inttra shipping instruction message
  * @permission Requires `canUseUpdate` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.shippingInstructionsId Path parameter
- * @param { string } mutation.messageId Path parameter
- * @param { InttraShippingInstructionMessagesModels.UpdateShippingInstructionMessageRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } shippingInstructionsId Path parameter
+ * @param { string } messageId Path parameter
+ * @param { InttraShippingInstructionMessagesModels.UpdateShippingInstructionMessageRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<InttraShippingInstructionMessagesModels.ShippingInstructionMessageResponseDto> } 
  * @statusCodes [200, 401]

@@ -35,11 +35,11 @@ export const keys = {
 /** 
  * Query `useFindAll`
  * @description Lists packages
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): Eta, createdAt. Example: `Eta`
- * @param { ControlTowerPackagesModels.PackageFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): Eta, createdAt. Example: `Eta`
+ * @param { ControlTowerPackagesModels.PackageFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<ControlTowerPackagesModels.ControlTowerPackagesFindAllResponse> } 
  * @statusCodes [200, 401]
@@ -58,11 +58,11 @@ export const useFindAll = <TData>({ limit, order, filter, page, cursor }: { limi
 /** 
  * Infinite query `useFindAllInfinite
  * @description Lists packages
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): Eta, createdAt. Example: `Eta`
- * @param { ControlTowerPackagesModels.PackageFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): Eta, createdAt. Example: `Eta`
+ * @param { ControlTowerPackagesModels.PackageFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<ControlTowerPackagesModels.ControlTowerPackagesFindAllResponse> } 
  * @statusCodes [200, 401]

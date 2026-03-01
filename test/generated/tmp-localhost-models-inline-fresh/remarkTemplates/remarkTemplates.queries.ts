@@ -100,12 +100,12 @@ export const keys = {
  * Query `usePaginateLabels`
  * @summary Paginate remark template labels for office
  * @permission Requires `canUsePaginateLabels` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
- * @param { RemarkTemplatesModels.RemarkTemplateLabelFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
+ * @param { RemarkTemplatesModels.RemarkTemplateLabelFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<RemarkTemplatesModels.RemarkTemplatesPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
@@ -127,12 +127,12 @@ export const usePaginateLabels = <TData>({ officeId, limit, order, filter, page,
  * Infinite query `usePaginateLabelsInfinite
  * @summary Paginate remark template labels for office
  * @permission Requires `canUsePaginateLabels` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
- * @param { RemarkTemplatesModels.RemarkTemplateLabelFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
+ * @param { RemarkTemplatesModels.RemarkTemplateLabelFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<RemarkTemplatesModels.RemarkTemplatesPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
@@ -159,12 +159,12 @@ export const usePaginateLabelsInfinite = <TData>({ officeId, limit, order, filte
  * Query `useList`
  * @summary List remark templates
  * @permission Requires `canUseList` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
- * @param { RemarkTemplatesModels.RemarkTemplateFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
+ * @param { RemarkTemplatesModels.RemarkTemplateFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<RemarkTemplatesModels.RemarkTemplatesListResponse> } 
  * @statusCodes [200, 401]
@@ -186,12 +186,12 @@ export const useList = <TData>({ officeId, limit, order, filter, page, cursor }:
  * Infinite query `useListInfinite
  * @summary List remark templates
  * @permission Requires `canUseList` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
- * @param { RemarkTemplatesModels.RemarkTemplateFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
+ * @param { RemarkTemplatesModels.RemarkTemplateFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<RemarkTemplatesModels.RemarkTemplatesListResponse> } 
  * @statusCodes [200, 401]
@@ -218,8 +218,8 @@ export const useListInfinite = <TData>({ officeId, limit, order, filter, cursor 
  * Mutation `useCreate`
  * @summary Create a new remark template
  * @permission Requires `canUseCreate` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { RemarkTemplatesModels.CreateRemarkTemplateRequestDTO } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { RemarkTemplatesModels.CreateRemarkTemplateRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<RemarkTemplatesModels.RemarkTemplateResponseDTO> } 
  * @statusCodes [201, 401, 409]
@@ -246,8 +246,8 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { officeId
  * Query `useFindById`
  * @summary Get remark template by ID
  * @permission Requires `canUseFindById` ability 
- * @param { string } object.id Path parameter
- * @param { string } object.officeId Path parameter
+ * @param { string } id Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<RemarkTemplatesModels.RemarkTemplateResponseDTO> } 
  * @statusCodes [200, 401, 404]
@@ -269,9 +269,9 @@ export const useFindById = <TData>({ id, officeId }: { id: string, officeId: str
  * Mutation `useUpdate`
  * @summary Update remark template by ID
  * @permission Requires `canUseUpdate` ability 
- * @param { string } mutation.id Path parameter
- * @param { string } mutation.officeId Path parameter
- * @param { RemarkTemplatesModels.UpdateRemarkTemplateRequestDTO } mutation.data Body parameter
+ * @param { string } id Path parameter
+ * @param { string } officeId Path parameter
+ * @param { RemarkTemplatesModels.UpdateRemarkTemplateRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<RemarkTemplatesModels.RemarkTemplateResponseDTO> } 
  * @statusCodes [200, 401, 404, 409]
@@ -300,8 +300,8 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { id: stri
  * Mutation `useArchive`
  * @summary Archive remark template
  * @permission Requires `canUseArchive` ability 
- * @param { string } mutation.id Path parameter
- * @param { string } mutation.officeId Path parameter
+ * @param { string } id Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<RemarkTemplatesModels.RemarkTemplateResponseDTO> } 
  * @statusCodes [200, 401, 404, 409]
@@ -330,8 +330,8 @@ export const useArchive = (options?: AppMutationOptions<typeof archive, { id: st
  * Mutation `useUnarchive`
  * @summary Unarchive remark template
  * @permission Requires `canUseUnarchive` ability 
- * @param { string } mutation.id Path parameter
- * @param { string } mutation.officeId Path parameter
+ * @param { string } id Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<RemarkTemplatesModels.RemarkTemplateResponseDTO> } 
  * @statusCodes [200, 401, 404, 409]

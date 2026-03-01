@@ -79,8 +79,8 @@ export const keys = {
  * Mutation `useCreate`
  * @summary Create shipping instructions
  * @permission Requires `canUseCreate` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.positionId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<ShippingInstructionsModels.ShippingInstructionsResponseDto> } 
  * @statusCodes [201, 401]
@@ -107,9 +107,9 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { officeId
  * Query `useGet`
  * @summary Get shipping instructions data
  * @permission Requires `canUseGet` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.positionId Path parameter
- * @param { string } object.id Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } id Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<ShippingInstructionsModels.ShippingInstructionsResponseDto> } 
  * @statusCodes [200, 401]
@@ -131,10 +131,10 @@ export const useGet = <TData>({ officeId, positionId, id }: { officeId: string, 
  * Mutation `useUpdate`
  * @summary Update shipping instructions
  * @permission Requires `canUseUpdate` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.id Path parameter
- * @param { ShippingInstructionsModels.UpdateShippingInstructionsRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } id Path parameter
+ * @param { ShippingInstructionsModels.UpdateShippingInstructionsRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<ShippingInstructionsModels.ShippingInstructionsResponseDto> } Shipping instructions updated successfully
  * @statusCodes [200, 401, 404]
@@ -163,9 +163,9 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { officeId
  * Mutation `useDeleteOfficesPositionsShippingInstructionsById`
  * @summary Delete shipping instructions
  * @permission Requires `canUseDeleteOfficesPositionsShippingInstructionsById` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.id Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } id Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } Shipping instructions deleted
  * @statusCodes [204, 401, 404]
@@ -192,9 +192,9 @@ export const useDeleteOfficesPositionsShippingInstructionsById = (options?: AppM
  * Query `usePreview` - recommended when file should be cached
  * @summary Preview shipping instructions document
  * @permission Requires `canUsePreview` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.positionId Path parameter
- * @param { string } object.id Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } id Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
@@ -216,9 +216,9 @@ export const usePreview = <TData>({ officeId, positionId, id }: { officeId: stri
  * Mutation `usePreviewMutation` - recommended when file should not be cached
  * @summary Preview shipping instructions document
  * @permission Requires `canUsePreview` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.id Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } id Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
@@ -247,10 +247,10 @@ export const usePreviewMutation = (options?: AppMutationOptions<typeof preview, 
  * Mutation `useGenerate`
  * @summary Generate shipping instructions document
  * @permission Requires `canUseGenerate` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.id Path parameter
- * @param { CommonModels.GenerateWorkingDocumentRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } id Path parameter
+ * @param { CommonModels.GenerateWorkingDocumentRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [201, 401]

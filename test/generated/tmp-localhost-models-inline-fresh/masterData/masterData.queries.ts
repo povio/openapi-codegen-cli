@@ -52,9 +52,9 @@ export const keys = {
  * Query `useFindAll`
  * @summary List master data based on provided type
  * @permission Requires `canUseFindAll` ability 
- * @param { string } object.officeId Path parameter
- * @param { MasterDataModels.MasterDataFindAllTypesParam } object.types Query parameter
- * @param { string } object.search Query parameter
+ * @param { string } officeId Path parameter
+ * @param { MasterDataModels.MasterDataFindAllTypesParam } types Query parameter
+ * @param { string } search Query parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<MasterDataModels.MasterDataItemsResponseDTO> } 
  * @statusCodes [200, 401]
@@ -76,12 +76,12 @@ export const useFindAll = <TData>({ officeId, types, search }: { officeId: strin
  * Query `usePaginate`
  * @summary Paginate master data based on provided type
  * @permission Requires `canUsePaginate` ability 
- * @param { string } object.officeId Path parameter
- * @param { MasterDataModels.MasterDataPaginateTypesParam } object.types Query parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.search Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { MasterDataModels.MasterDataPaginateTypesParam } types Query parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } search Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<MasterDataModels.MasterDataPaginateResponse> } 
  * @statusCodes [200, 401]
@@ -103,12 +103,12 @@ export const usePaginate = <TData>({ officeId, types, limit, search, page, curso
  * Infinite query `usePaginateInfinite
  * @summary Paginate master data based on provided type
  * @permission Requires `canUsePaginate` ability 
- * @param { string } object.officeId Path parameter
- * @param { MasterDataModels.MasterDataPaginateTypesParam } object.types Query parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.search Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { MasterDataModels.MasterDataPaginateTypesParam } types Query parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } search Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<MasterDataModels.MasterDataPaginateResponse> } 
  * @statusCodes [200, 401]

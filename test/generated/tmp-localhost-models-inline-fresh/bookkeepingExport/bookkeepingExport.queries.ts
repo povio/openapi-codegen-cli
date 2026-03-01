@@ -130,8 +130,8 @@ export const keys = {
  * Mutation `useCreateBatch`
  * @summary Create bookkeeping export batch
  * @permission Requires `canUseCreateBatch` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { BookkeepingExportModels.CreateBookkeepingExportBatchRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { BookkeepingExportModels.CreateBookkeepingExportBatchRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<BookkeepingExportModels.CreateBookkeepingExportBatchResponseDto> } 
  * @statusCodes [201, 401]
@@ -158,12 +158,12 @@ export const useCreateBatch = (options?: AppMutationOptions<typeof createBatch, 
  * Query `usePaginateBatches`
  * @summary List bookkeeping export batches
  * @permission Requires `canUsePaginateBatches` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): createdAt, status, format, totalInvoiceCount. Example: `createdAt`
- * @param { BookkeepingExportModels.BookkeepingExportBatchPreviewFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): createdAt, status, format, totalInvoiceCount. Example: `createdAt`
+ * @param { BookkeepingExportModels.BookkeepingExportBatchPreviewFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<BookkeepingExportModels.PaginateBatchesResponse> } 
  * @statusCodes [200, 401]
@@ -185,12 +185,12 @@ export const usePaginateBatches = <TData>({ officeId, limit, order, filter, page
  * Infinite query `usePaginateBatchesInfinite
  * @summary List bookkeeping export batches
  * @permission Requires `canUsePaginateBatches` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): createdAt, status, format, totalInvoiceCount. Example: `createdAt`
- * @param { BookkeepingExportModels.BookkeepingExportBatchPreviewFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): createdAt, status, format, totalInvoiceCount. Example: `createdAt`
+ * @param { BookkeepingExportModels.BookkeepingExportBatchPreviewFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<BookkeepingExportModels.PaginateBatchesResponse> } 
  * @statusCodes [200, 401]
@@ -217,8 +217,8 @@ export const usePaginateBatchesInfinite = <TData>({ officeId, limit, order, filt
  * Query `useGetBatch`
  * @summary Get bookkeeping export batch details
  * @permission Requires `canUseGetBatch` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.batchId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } batchId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<BookkeepingExportModels.BookkeepingExportBatchDetailsDto> } 
  * @statusCodes [200, 401]
@@ -240,9 +240,9 @@ export const useGetBatch = <TData>({ officeId, batchId }: { officeId: string, ba
  * Mutation `useUpdateBatchFormat`
  * @summary Update bookkeeping export batch format
  * @permission Requires `canUseUpdateBatchFormat` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.batchId Path parameter
- * @param { BookkeepingExportModels.UpdateBookkeepingExportBatchRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } batchId Path parameter
+ * @param { BookkeepingExportModels.UpdateBookkeepingExportBatchRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<BookkeepingExportModels.BookkeepingExportBatchDetailsDto> } 
  * @statusCodes [200, 401]
@@ -271,9 +271,9 @@ export const useUpdateBatchFormat = (options?: AppMutationOptions<typeof updateB
  * Mutation `useUpdateBatchItem`
  * @summary Update bookkeeping export batch item inclusion
  * @permission Requires `canUseUpdateBatchItem` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.batchId Path parameter
- * @param { BookkeepingExportModels.UpdateBookkeepingExportBatchItemRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } batchId Path parameter
+ * @param { BookkeepingExportModels.UpdateBookkeepingExportBatchItemRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
@@ -300,13 +300,13 @@ export const useUpdateBatchItem = (options?: AppMutationOptions<typeof updateBat
  * Query `usePaginateBatchItems`
  * @summary List batch items with filters and pagination
  * @permission Requires `canUsePaginateBatchItems` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.batchId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): issuingDate. Example: `issuingDate`
- * @param { BookkeepingExportModels.BookkeepingExportItemDetailFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { string } batchId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): issuingDate. Example: `issuingDate`
+ * @param { BookkeepingExportModels.BookkeepingExportItemDetailFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<BookkeepingExportModels.PaginateBatchItemsResponse> } 
  * @statusCodes [200, 401]
@@ -328,13 +328,13 @@ export const usePaginateBatchItems = <TData>({ officeId, batchId, limit, order, 
  * Infinite query `usePaginateBatchItemsInfinite
  * @summary List batch items with filters and pagination
  * @permission Requires `canUsePaginateBatchItems` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.batchId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): issuingDate. Example: `issuingDate`
- * @param { BookkeepingExportModels.BookkeepingExportItemDetailFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { string } batchId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): issuingDate. Example: `issuingDate`
+ * @param { BookkeepingExportModels.BookkeepingExportItemDetailFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<BookkeepingExportModels.PaginateBatchItemsResponse> } 
  * @statusCodes [200, 401]
@@ -361,8 +361,8 @@ export const usePaginateBatchItemsInfinite = <TData>({ officeId, batchId, limit,
  * Mutation `useValidateBookkeepingBatch`
  * @summary Validate bookkeeping batch
  * @permission Requires `canUseValidateBookkeepingBatch` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.batchId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } batchId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
@@ -389,8 +389,8 @@ export const useValidateBookkeepingBatch = (options?: AppMutationOptions<typeof 
  * Mutation `useExportBookkeepingBatch`
  * @summary Export bookkeeping batch
  * @permission Requires `canUseExportBookkeepingBatch` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.batchId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } batchId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [201, 401]
@@ -417,8 +417,8 @@ export const useExportBookkeepingBatch = (options?: AppMutationOptions<typeof ex
  * Mutation `useRevertBookkeepingBatch`
  * @summary Revert bookkeeping export batch
  * @permission Requires `canUseRevertBookkeepingBatch` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.batchId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } batchId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
@@ -445,9 +445,9 @@ export const useRevertBookkeepingBatch = (options?: AppMutationOptions<typeof re
  * Query `useGetVatLineItems`
  * @summary Get VAT line items for bookkeeping export batch
  * @permission Requires `canUseGetVatLineItems` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.batchId Path parameter
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): account, contraAccount, issuingDate, invoiceNumber, receiver. Example: `account`
+ * @param { string } officeId Path parameter
+ * @param { string } batchId Path parameter
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): account, contraAccount, issuingDate, invoiceNumber, receiver. Example: `account`
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<BookkeepingExportModels.GetVatLineItemsResponse> } 
  * @statusCodes [200, 401]

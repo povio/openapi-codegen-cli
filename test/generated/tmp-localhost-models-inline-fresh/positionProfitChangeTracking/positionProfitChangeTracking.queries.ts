@@ -47,13 +47,13 @@ export const keys = {
  * Query `useFindProfitChangeGroups`
  * @summary List position profit change groups
  * @permission Requires `canUseFindProfitChangeGroups` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.positionId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): timestamp, profitAmount, changeCount. Example: `timestamp`
- * @param { PositionProfitChangeTrackingModels.PositionProfitChangeTrackingFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): timestamp, profitAmount, changeCount. Example: `timestamp`
+ * @param { PositionProfitChangeTrackingModels.PositionProfitChangeTrackingFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<PositionProfitChangeTrackingModels.PositionProfitChangeTrackingFindProfitChangeGroupsResponse> } 
  * @statusCodes [200, 401]
@@ -75,13 +75,13 @@ export const useFindProfitChangeGroups = <TData>({ officeId, positionId, limit, 
  * Infinite query `useFindProfitChangeGroupsInfinite
  * @summary List position profit change groups
  * @permission Requires `canUseFindProfitChangeGroups` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.positionId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): timestamp, profitAmount, changeCount. Example: `timestamp`
- * @param { PositionProfitChangeTrackingModels.PositionProfitChangeTrackingFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): timestamp, profitAmount, changeCount. Example: `timestamp`
+ * @param { PositionProfitChangeTrackingModels.PositionProfitChangeTrackingFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<PositionProfitChangeTrackingModels.PositionProfitChangeTrackingFindProfitChangeGroupsResponse> } 
  * @statusCodes [200, 401]
@@ -108,9 +108,9 @@ export const useFindProfitChangeGroupsInfinite = <TData>({ officeId, positionId,
  * Query `useFindProfitChangeGroupDetail`
  * @summary Get position profit change group details
  * @permission Requires `canUseFindProfitChangeGroupDetail` ability 
- * @param { string } object.groupId Path parameter
- * @param { string } object.officeId Path parameter
- * @param { string } object.positionId Path parameter
+ * @param { string } groupId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<PositionProfitChangeTrackingModels.PositionAccountProfitChangeGroupDetailDto> } 
  * @statusCodes [200, 401]

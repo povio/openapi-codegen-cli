@@ -86,10 +86,10 @@ export const moduleName = QueryModule.Files;
 /** 
  * Mutation `useCreateUpload`
  * @summary Create file upload instructions
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.folderId Path parameter
- * @param { FilesModels.CreateFileRequestDTO } mutation.data Body parameter
- * @param { File } mutation.file Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } folderId Path parameter
+ * @param { FilesModels.CreateFileRequestDTO } data Body parameter
+ * @param { File } file Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<FilesModels.FileUploadResponseDTO> } 
  * @statusCodes [201, 401]
@@ -138,8 +138,8 @@ export const useCreateUpload = (options?: AppMutationOptions<typeof createUpload
 /** 
  * Mutation `useGetEml` - recommended when file should not be cached
  * @summary Get files as EML file with attachments
- * @param { string } mutation.officeId Path parameter
- * @param { FilesModels.GetFilesEmlRequestDTO } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { FilesModels.GetFilesEmlRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
@@ -163,9 +163,9 @@ export const useGetEml = (options?: AppMutationOptions<typeof getEml, { officeId
 /** 
  * Mutation `useRename`
  * @summary Rename file
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.fileId Path parameter
- * @param { FilesModels.RenameFileRequestDTO } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } fileId Path parameter
+ * @param { FilesModels.RenameFileRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<CommonModels.FileResponseDTO> } 
  * @statusCodes [200, 401]
@@ -189,8 +189,8 @@ export const useRename = (options?: AppMutationOptions<typeof rename, { officeId
 /** 
  * Mutation `useMove`
  * @summary Move files
- * @param { string } mutation.officeId Path parameter
- * @param { FilesModels.MoveFilesRequestDTO } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { FilesModels.MoveFilesRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [204, 401]
@@ -214,8 +214,8 @@ export const useMove = (options?: AppMutationOptions<typeof move, { officeId: st
 /** 
  * Mutation `useCopy`
  * @summary Copy files
- * @param { string } mutation.officeId Path parameter
- * @param { FilesModels.MoveFilesRequestDTO } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { FilesModels.MoveFilesRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [204, 401]
@@ -239,8 +239,8 @@ export const useCopy = (options?: AppMutationOptions<typeof copy, { officeId: st
 /** 
  * Mutation `useArchive`
  * @summary Archive files
- * @param { string } mutation.officeId Path parameter
- * @param { FilesModels.SetFilesArchivedRequestDTO } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { FilesModels.SetFilesArchivedRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [204, 401]
@@ -264,8 +264,8 @@ export const useArchive = (options?: AppMutationOptions<typeof archive, { office
 /** 
  * Mutation `useUnarchive`
  * @summary Unarchive files
- * @param { string } mutation.officeId Path parameter
- * @param { FilesModels.SetFilesArchivedRequestDTO } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { FilesModels.SetFilesArchivedRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [204, 401]

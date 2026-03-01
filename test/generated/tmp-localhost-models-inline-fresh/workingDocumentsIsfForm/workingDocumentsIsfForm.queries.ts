@@ -79,8 +79,8 @@ export const keys = {
  * Mutation `useCreate`
  * @summary Create an ISF document
  * @permission Requires `canUseCreate` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<WorkingDocumentsIsfFormModels.IsfDocumentResponseDTO> } 
  * @statusCodes [201, 401]
@@ -107,9 +107,9 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { position
  * Query `useGetIsfData`
  * @summary Get ISF document data
  * @permission Requires `canUseGetIsfData` ability 
- * @param { string } object.positionId Path parameter
- * @param { string } object.isfId Path parameter
- * @param { string } object.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } isfId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<WorkingDocumentsIsfFormModels.IsfDocumentResponseDTO> } 
  * @statusCodes [200, 401]
@@ -131,10 +131,10 @@ export const useGetIsfData = <TData>({ positionId, isfId, officeId }: { position
  * Mutation `useUpdateIsfData`
  * @summary Update ISF document data
  * @permission Requires `canUseUpdateIsfData` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.isfId Path parameter
- * @param { string } mutation.officeId Path parameter
- * @param { WorkingDocumentsIsfFormModels.UpdateIsfDocumentRequestDTO } mutation.data Body parameter
+ * @param { string } positionId Path parameter
+ * @param { string } isfId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { WorkingDocumentsIsfFormModels.UpdateIsfDocumentRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<WorkingDocumentsIsfFormModels.IsfDocumentResponseDTO> } 
  * @statusCodes [200, 401]
@@ -163,9 +163,9 @@ export const useUpdateIsfData = (options?: AppMutationOptions<typeof updateIsfDa
  * Mutation `useDeleteIsf`
  * @summary Delete ISF document
  * @permission Requires `canUseDeleteIsf` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.isfId Path parameter
- * @param { string } mutation.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } isfId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } ISF document deleted
  * @statusCodes [204, 401, 404]
@@ -192,9 +192,9 @@ export const useDeleteIsf = (options?: AppMutationOptions<typeof deleteIsf, { po
  * Query `usePreviewIsf` - recommended when file should be cached
  * @summary Preview ISF document
  * @permission Requires `canUsePreviewIsf` ability 
- * @param { string } object.positionId Path parameter
- * @param { string } object.isfId Path parameter
- * @param { string } object.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } isfId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
@@ -216,9 +216,9 @@ export const usePreviewIsf = <TData>({ positionId, isfId, officeId }: { position
  * Mutation `usePreviewIsfMutation` - recommended when file should not be cached
  * @summary Preview ISF document
  * @permission Requires `canUsePreviewIsf` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.isfId Path parameter
- * @param { string } mutation.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } isfId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
@@ -247,10 +247,10 @@ export const usePreviewIsfMutation = (options?: AppMutationOptions<typeof previe
  * Mutation `useGenerateIsf`
  * @summary Generate ISF document
  * @permission Requires `canUseGenerateIsf` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.isfId Path parameter
- * @param { string } mutation.officeId Path parameter
- * @param { CommonModels.GenerateWorkingDocumentRequestDto } mutation.data Body parameter
+ * @param { string } positionId Path parameter
+ * @param { string } isfId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { CommonModels.GenerateWorkingDocumentRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [201, 401]

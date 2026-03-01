@@ -79,8 +79,8 @@ export const keys = {
  * Mutation `useCreate`
  * @summary Create a CMR document
  * @permission Requires `canUseCreate` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<WorkingDocumentsCmrFormModels.CmrDocumentResponseDTO> } 
  * @statusCodes [201, 401]
@@ -107,9 +107,9 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { position
  * Query `useGetCmrData`
  * @summary Get CMR document data
  * @permission Requires `canUseGetCmrData` ability 
- * @param { string } object.positionId Path parameter
- * @param { string } object.cmrId Path parameter
- * @param { string } object.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } cmrId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<WorkingDocumentsCmrFormModels.CmrDocumentResponseDTO> } 
  * @statusCodes [200, 401]
@@ -131,10 +131,10 @@ export const useGetCmrData = <TData>({ positionId, cmrId, officeId }: { position
  * Mutation `useUpdateCmrData`
  * @summary Update CMR document data
  * @permission Requires `canUseUpdateCmrData` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.cmrId Path parameter
- * @param { string } mutation.officeId Path parameter
- * @param { WorkingDocumentsCmrFormModels.UpdateCmrDocumentRequestDTO } mutation.data Body parameter
+ * @param { string } positionId Path parameter
+ * @param { string } cmrId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { WorkingDocumentsCmrFormModels.UpdateCmrDocumentRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<WorkingDocumentsCmrFormModels.CmrDocumentResponseDTO> } 
  * @statusCodes [200, 401]
@@ -163,9 +163,9 @@ export const useUpdateCmrData = (options?: AppMutationOptions<typeof updateCmrDa
  * Mutation `useDeleteCmr`
  * @summary Delete CMR document
  * @permission Requires `canUseDeleteCmr` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.cmrId Path parameter
- * @param { string } mutation.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } cmrId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } CMR document deleted
  * @statusCodes [204, 401, 404]
@@ -192,9 +192,9 @@ export const useDeleteCmr = (options?: AppMutationOptions<typeof deleteCmr, { po
  * Query `usePreviewCmr` - recommended when file should be cached
  * @summary Preview CMR document
  * @permission Requires `canUsePreviewCmr` ability 
- * @param { string } object.positionId Path parameter
- * @param { string } object.cmrId Path parameter
- * @param { string } object.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } cmrId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
@@ -216,9 +216,9 @@ export const usePreviewCmr = <TData>({ positionId, cmrId, officeId }: { position
  * Mutation `usePreviewCmrMutation` - recommended when file should not be cached
  * @summary Preview CMR document
  * @permission Requires `canUsePreviewCmr` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.cmrId Path parameter
- * @param { string } mutation.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } cmrId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
@@ -247,10 +247,10 @@ export const usePreviewCmrMutation = (options?: AppMutationOptions<typeof previe
  * Mutation `useGenerateCmr`
  * @summary Generate CMR document
  * @permission Requires `canUseGenerateCmr` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.cmrId Path parameter
- * @param { string } mutation.officeId Path parameter
- * @param { CommonModels.GenerateWorkingDocumentRequestDto } mutation.data Body parameter
+ * @param { string } positionId Path parameter
+ * @param { string } cmrId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { CommonModels.GenerateWorkingDocumentRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [201, 401]

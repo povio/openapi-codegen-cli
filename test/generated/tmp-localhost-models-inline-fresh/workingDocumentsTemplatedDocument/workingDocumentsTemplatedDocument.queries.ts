@@ -95,9 +95,9 @@ export const keys = {
  * Mutation `useCreate`
  * @summary Create a templated document
  * @permission Requires `canUseCreate` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.officeId Path parameter
- * @param { WorkingDocumentsTemplatedDocumentModels.CreateTemplatedDocumentRequestDto } mutation.data Body parameter
+ * @param { string } positionId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { WorkingDocumentsTemplatedDocumentModels.CreateTemplatedDocumentRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<WorkingDocumentsTemplatedDocumentModels.TemplatedDocumentResponseDto> } 
  * @statusCodes [201, 401]
@@ -124,9 +124,9 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { position
  * Query `useGetTemplatedDocument`
  * @summary Get templated document data
  * @permission Requires `canUseGetTemplatedDocument` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.positionId Path parameter
- * @param { string } object.templatedDocumentId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } templatedDocumentId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<WorkingDocumentsTemplatedDocumentModels.TemplatedDocumentResponseDto> } 
  * @statusCodes [200, 401]
@@ -148,10 +148,10 @@ export const useGetTemplatedDocument = <TData>({ officeId, positionId, templated
  * Mutation `useUpdateTemplatedDocument`
  * @summary Update templated document data
  * @permission Requires `canUseUpdateTemplatedDocument` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.templatedDocumentId Path parameter
- * @param { WorkingDocumentsTemplatedDocumentModels.UpdateTemplatedDocumentRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } templatedDocumentId Path parameter
+ * @param { WorkingDocumentsTemplatedDocumentModels.UpdateTemplatedDocumentRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<WorkingDocumentsTemplatedDocumentModels.TemplatedDocumentResponseDto> } 
  * @statusCodes [200, 401]
@@ -180,9 +180,9 @@ export const useUpdateTemplatedDocument = (options?: AppMutationOptions<typeof u
  * Mutation `useDeleteTemplatedDocument`
  * @summary Delete templated document
  * @permission Requires `canUseDeleteTemplatedDocument` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.templatedDocumentId Path parameter
- * @param { string } mutation.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } templatedDocumentId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } Templated document deleted
  * @statusCodes [204, 401, 404]
@@ -209,10 +209,10 @@ export const useDeleteTemplatedDocument = (options?: AppMutationOptions<typeof d
  * Mutation `usePreviewTemplatedDocument` - recommended when file should not be cached
  * @summary Preview templated document
  * @permission Requires `canUsePreviewTemplatedDocument` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.templatedDocumentId Path parameter
- * @param { WorkingDocumentsTemplatedDocumentModels.GenerateWorkingDocumentPreviewRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } templatedDocumentId Path parameter
+ * @param { WorkingDocumentsTemplatedDocumentModels.GenerateWorkingDocumentPreviewRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 201, 401]
@@ -239,10 +239,10 @@ export const usePreviewTemplatedDocument = (options?: AppMutationOptions<typeof 
  * Mutation `useIssueTemplatedDocument`
  * @summary Issue templated document (generate final PDF)
  * @permission Requires `canUseIssueTemplatedDocument` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.templatedDocumentId Path parameter
- * @param { CommonModels.GenerateWorkingDocumentRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } templatedDocumentId Path parameter
+ * @param { CommonModels.GenerateWorkingDocumentRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [201, 401]
@@ -269,10 +269,10 @@ export const useIssueTemplatedDocument = (options?: AppMutationOptions<typeof is
  * Mutation `useGenerateDocumentEml` - recommended when file should not be cached
  * @summary Generate templated document and return EML file
  * @permission Requires `canUseGenerateDocumentEml` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.templatedDocumentId Path parameter
- * @param { CommonModels.GenerateWorkingDocumentRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } templatedDocumentId Path parameter
+ * @param { CommonModels.GenerateWorkingDocumentRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]

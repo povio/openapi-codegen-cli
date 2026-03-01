@@ -100,7 +100,7 @@ export const keys = {
  * Mutation `useCreate`
  * @summary Create a new depot
  * @permission Requires `canUseCreate` ability 
- * @param { DepotsModels.CreateDepotRequestDTO } mutation.data Body parameter
+ * @param { DepotsModels.CreateDepotRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<DepotsModels.DepotResponseDTO> } 
  * @statusCodes [201, 401]
@@ -127,11 +127,11 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { data: De
  * Query `usePaginate`
  * @summary Paginate Depots
  * @permission Requires `canUsePaginate` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, matchCode, shortName, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
- * @param { DepotsModels.DepotPaginationFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, matchCode, shortName, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
+ * @param { DepotsModels.DepotPaginationFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<DepotsModels.DepotsPaginateResponse> } 
  * @statusCodes [200, 401]
@@ -153,11 +153,11 @@ export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { lim
  * Infinite query `usePaginateInfinite
  * @summary Paginate Depots
  * @permission Requires `canUsePaginate` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, matchCode, shortName, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
- * @param { DepotsModels.DepotPaginationFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, matchCode, shortName, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
+ * @param { DepotsModels.DepotPaginationFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<DepotsModels.DepotsPaginateResponse> } 
  * @statusCodes [200, 401]
@@ -184,11 +184,11 @@ export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { l
  * Query `usePaginateLabels`
  * @summary Paginate depots with only their labels
  * @permission Requires `canUsePaginateLabels` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, matchCode, shortName, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
- * @param { DepotsModels.DepotLabelFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, matchCode, shortName, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
+ * @param { DepotsModels.DepotLabelFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<DepotsModels.DepotsPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
@@ -210,11 +210,11 @@ export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }:
  * Infinite query `usePaginateLabelsInfinite
  * @summary Paginate depots with only their labels
  * @permission Requires `canUsePaginateLabels` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, matchCode, shortName, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
- * @param { DepotsModels.DepotLabelFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, matchCode, shortName, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
+ * @param { DepotsModels.DepotLabelFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<DepotsModels.DepotsPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
@@ -241,7 +241,7 @@ export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor 
  * Query `useFindById`
  * @summary Fetch depot by id
  * @permission Requires `canUseFindById` ability 
- * @param { string } object.id Path parameter
+ * @param { string } id Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<DepotsModels.DepotResponseDTO> } 
  * @statusCodes [200, 401]
@@ -263,8 +263,8 @@ export const useFindById = <TData>({ id }: { id: string }, options?: AppQueryOpt
  * Mutation `useUpdate`
  * @summary Update a depot
  * @permission Requires `canUseUpdate` ability 
- * @param { string } mutation.id Path parameter
- * @param { DepotsModels.UpdateDepotRequestDTO } mutation.data Body parameter
+ * @param { string } id Path parameter
+ * @param { DepotsModels.UpdateDepotRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<DepotsModels.DepotResponseDTO> } 
  * @statusCodes [200, 401]
@@ -293,7 +293,7 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { id: stri
  * Mutation `useArchive`
  * @summary Archive a depot
  * @permission Requires `canUseArchive` ability 
- * @param { string } mutation.id Path parameter
+ * @param { string } id Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
@@ -320,7 +320,7 @@ export const useArchive = (options?: AppMutationOptions<typeof archive, { id: st
  * Mutation `useUnarchive`
  * @summary Unarchive a depot
  * @permission Requires `canUseUnarchive` ability 
- * @param { string } mutation.id Path parameter
+ * @param { string } id Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]

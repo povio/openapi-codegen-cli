@@ -108,7 +108,7 @@ export const useFindProfile = <TData>(options?: AppQueryOptions<typeof findProfi
  * Mutation `useCreate`
  * @summary Create new customer
  * @permission Requires `canUseCreate` ability 
- * @param { CustomersModels.CreateCustomerDTO } mutation.data Body parameter
+ * @param { CustomersModels.CreateCustomerDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<CustomersModels.CustomerResponseDTO> } 
  * @statusCodes [201, 401]
@@ -135,11 +135,11 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { data: Cu
  * Query `useList`
  * @summary List customers
  * @permission Requires `canUseList` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): firstName, lastName, email, createdAt. Example: `firstName`
- * @param { CustomersModels.CustomerPaginationFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): firstName, lastName, email, createdAt. Example: `firstName`
+ * @param { CustomersModels.CustomerPaginationFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<CustomersModels.CustomersListResponse> } 
  * @statusCodes [200, 401]
@@ -161,11 +161,11 @@ export const useList = <TData>({ limit, order, filter, page, cursor }: { limit: 
  * Infinite query `useListInfinite
  * @summary List customers
  * @permission Requires `canUseList` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): firstName, lastName, email, createdAt. Example: `firstName`
- * @param { CustomersModels.CustomerPaginationFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): firstName, lastName, email, createdAt. Example: `firstName`
+ * @param { CustomersModels.CustomerPaginationFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<CustomersModels.CustomersListResponse> } 
  * @statusCodes [200, 401]
@@ -192,7 +192,7 @@ export const useListInfinite = <TData>({ limit, order, filter, cursor }: { limit
  * Query `useFindById`
  * @summary Get customer by id
  * @permission Requires `canUseFindById` ability 
- * @param { string } object.customerId Path parameter
+ * @param { string } customerId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<CustomersModels.CustomerResponseDTO> } 
  * @statusCodes [200, 401]
@@ -214,8 +214,8 @@ export const useFindById = <TData>({ customerId }: { customerId: string }, optio
  * Mutation `useUpdate`
  * @summary Update customer
  * @permission Requires `canUseUpdate` ability 
- * @param { string } mutation.customerId Path parameter
- * @param { CustomersModels.UpdateCustomerDTO } mutation.data Body parameter
+ * @param { string } customerId Path parameter
+ * @param { CustomersModels.UpdateCustomerDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<CustomersModels.CustomerResponseDTO> } 
  * @statusCodes [200, 401]
@@ -244,7 +244,7 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { customer
  * Mutation `useDeactivate`
  * @summary Deactivate customer
  * @permission Requires `canUseDeactivate` ability 
- * @param { string } mutation.id Path parameter
+ * @param { string } id Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<CustomersModels.CustomerResponseDTO> } 
  * @statusCodes [200, 401]
@@ -271,7 +271,7 @@ export const useDeactivate = (options?: AppMutationOptions<typeof deactivate, { 
  * Mutation `useReactivate`
  * @summary Reactivate customer
  * @permission Requires `canUseReactivate` ability 
- * @param { string } mutation.id Path parameter
+ * @param { string } id Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<CustomersModels.CustomerResponseDTO> } 
  * @statusCodes [200, 401]

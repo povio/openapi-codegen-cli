@@ -385,8 +385,8 @@ export const keys = {
  * Query `useGetInvoicesEml` - recommended when file should be cached
  * @summary Get invoices as EML file with PDF attachments
  * @permission Requires `canUseGetInvoicesEml` ability 
- * @param { string } object.officeId Path parameter
- * @param { InvoicesModels.GetInvoicesEmlInvoiceIdsParam } object.invoiceIds Query parameter. Invoice IDs
+ * @param { string } officeId Path parameter
+ * @param { InvoicesModels.GetInvoicesEmlInvoiceIdsParam } invoiceIds Query parameter. Invoice IDs
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
@@ -408,8 +408,8 @@ export const useGetInvoicesEml = <TData>({ officeId, invoiceIds }: { officeId: s
  * Mutation `useGetInvoicesEmlMutation` - recommended when file should not be cached
  * @summary Get invoices as EML file with PDF attachments
  * @permission Requires `canUseGetInvoicesEml` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { InvoicesModels.GetInvoicesEmlInvoiceIdsParam } mutation.invoiceIds Query parameter. Invoice IDs
+ * @param { string } officeId Path parameter
+ * @param { InvoicesModels.GetInvoicesEmlInvoiceIdsParam } invoiceIds Query parameter. Invoice IDs
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
@@ -438,13 +438,13 @@ export const useGetInvoicesEmlMutation = (options?: AppMutationOptions<typeof ge
  * Query `useFind`
  * @summary List invoices for a position
  * @permission Requires `canUseFind` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.positionId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): status, createdAt, serviceDate. Example: `status`
- * @param { InvoicesModels.InvoiceFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): status, createdAt, serviceDate. Example: `status`
+ * @param { InvoicesModels.InvoiceFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<InvoicesModels.InvoicesFindResponse> } 
  * @statusCodes [200, 401]
@@ -466,13 +466,13 @@ export const useFind = <TData>({ officeId, positionId, limit, order, filter, pag
  * Infinite query `useFindInfinite
  * @summary List invoices for a position
  * @permission Requires `canUseFind` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.positionId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): status, createdAt, serviceDate. Example: `status`
- * @param { InvoicesModels.InvoiceFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): status, createdAt, serviceDate. Example: `status`
+ * @param { InvoicesModels.InvoiceFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<InvoicesModels.InvoicesFindResponse> } 
  * @statusCodes [200, 401]
@@ -499,9 +499,9 @@ export const useFindInfinite = <TData>({ officeId, positionId, limit, order, fil
  * Mutation `useChangeIncomingCustomer`
  * @summary Change incoming invoice customer and update vendors on registered charges
  * @permission Requires `canUseChangeIncomingCustomer` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.invoiceId Path parameter
- * @param { InvoicesModels.ChangeInvoiceCustomerRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } invoiceId Path parameter
+ * @param { InvoicesModels.ChangeInvoiceCustomerRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<InvoicesModels.InvoiceDetailDto> } 
  * @statusCodes [200, 401]
@@ -530,12 +530,12 @@ export const useChangeIncomingCustomer = (options?: AppMutationOptions<typeof ch
  * Query `useFindByOffice`
  * @summary List invoices for an office
  * @permission Requires `canUseFindByOffice` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): invoiceNumber, issuingDate, invoiceType, amount, netAmount, currencyNotation, dueDate, status, paidOn, serviceDate, internalNumber, positionNumber, invoiceDirection, receiver, receiverCountry, paidAmount, totalVat, dunningBlock, invoiceInReview, isInvoiceOk, isVatOk, comments, salesRepName, isExportedToBookkeeping, createdAt, customerReferenceOverride, externalSystemId. Example: `invoiceNumber`
- * @param { CommonModels.OfficeInvoiceFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): invoiceNumber, issuingDate, invoiceType, amount, netAmount, currencyNotation, dueDate, status, paidOn, serviceDate, internalNumber, positionNumber, invoiceDirection, receiver, receiverCountry, paidAmount, totalVat, dunningBlock, invoiceInReview, isInvoiceOk, isVatOk, comments, salesRepName, isExportedToBookkeeping, createdAt, customerReferenceOverride, externalSystemId. Example: `invoiceNumber`
+ * @param { CommonModels.OfficeInvoiceFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<InvoicesModels.FindByOfficeResponse> } 
  * @statusCodes [200, 401]
@@ -557,12 +557,12 @@ export const useFindByOffice = <TData>({ officeId, limit, order, filter, page, c
  * Infinite query `useFindByOfficeInfinite
  * @summary List invoices for an office
  * @permission Requires `canUseFindByOffice` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): invoiceNumber, issuingDate, invoiceType, amount, netAmount, currencyNotation, dueDate, status, paidOn, serviceDate, internalNumber, positionNumber, invoiceDirection, receiver, receiverCountry, paidAmount, totalVat, dunningBlock, invoiceInReview, isInvoiceOk, isVatOk, comments, salesRepName, isExportedToBookkeeping, createdAt, customerReferenceOverride, externalSystemId. Example: `invoiceNumber`
- * @param { CommonModels.OfficeInvoiceFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): invoiceNumber, issuingDate, invoiceType, amount, netAmount, currencyNotation, dueDate, status, paidOn, serviceDate, internalNumber, positionNumber, invoiceDirection, receiver, receiverCountry, paidAmount, totalVat, dunningBlock, invoiceInReview, isInvoiceOk, isVatOk, comments, salesRepName, isExportedToBookkeeping, createdAt, customerReferenceOverride, externalSystemId. Example: `invoiceNumber`
+ * @param { CommonModels.OfficeInvoiceFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<InvoicesModels.FindByOfficeResponse> } 
  * @statusCodes [200, 401]
@@ -589,8 +589,8 @@ export const useFindByOfficeInfinite = <TData>({ officeId, limit, order, filter,
  * Mutation `useCreateDraft`
  * @summary Create a draft invoice from charge items
  * @permission Requires `canUseCreateDraft` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { InvoicesModels.CreateDraftInvoiceRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { InvoicesModels.CreateDraftInvoiceRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<InvoicesModels.InvoiceDetailDto> } 
  * @statusCodes [201, 401, default]
@@ -617,8 +617,8 @@ export const useCreateDraft = (options?: AppMutationOptions<typeof createDraft, 
  * Mutation `useExportInvoices` - recommended when file should not be cached
  * @summary Export invoices to Excel
  * @permission Requires `canUseExportInvoices` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { InvoicesModels.InvoiceExportRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { InvoicesModels.InvoiceExportRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 201, 401]
@@ -647,8 +647,8 @@ export const useExportInvoices = (options?: AppMutationOptions<typeof exportInvo
  * Mutation `useExportCharges` - recommended when file should not be cached
  * @summary Export invoice charges as Excel file
  * @permission Requires `canUseExportCharges` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { InvoicesModels.InvoiceExportRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { InvoicesModels.InvoiceExportRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 201, 401]
@@ -677,13 +677,13 @@ export const useExportCharges = (options?: AppMutationOptions<typeof exportCharg
  * Query `useGetUnCharges`
  * @summary Get uninvoiced charges for a position
  * @permission Requires `canUseGetUnCharges` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.positionId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): chargeItemId, orderPosition, serviceDate, receiverId, positionNumber, chargeTypeId, currency, vatRuleId. Example: `chargeItemId`
- * @param { InvoicesModels.UninvoicedChargePaginationDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): chargeItemId, orderPosition, serviceDate, receiverId, positionNumber, chargeTypeId, currency, vatRuleId. Example: `chargeItemId`
+ * @param { InvoicesModels.UninvoicedChargePaginationDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<InvoicesModels.GetUnChargesResponse> } 
  * @statusCodes [200, 401]
@@ -705,13 +705,13 @@ export const useGetUnCharges = <TData>({ officeId, positionId, limit, order, fil
  * Infinite query `useGetUnChargesInfinite
  * @summary Get uninvoiced charges for a position
  * @permission Requires `canUseGetUnCharges` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.positionId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): chargeItemId, orderPosition, serviceDate, receiverId, positionNumber, chargeTypeId, currency, vatRuleId. Example: `chargeItemId`
- * @param { InvoicesModels.UninvoicedChargePaginationDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): chargeItemId, orderPosition, serviceDate, receiverId, positionNumber, chargeTypeId, currency, vatRuleId. Example: `chargeItemId`
+ * @param { InvoicesModels.UninvoicedChargePaginationDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<InvoicesModels.GetUnChargesResponse> } 
  * @statusCodes [200, 401]
@@ -738,10 +738,10 @@ export const useGetUnChargesInfinite = <TData>({ officeId, positionId, limit, or
  * Query `useListAvailablePartnersFor`
  * @summary List available business partners for an invoice (union of position involved parties)
  * @permission Requires `canUseListAvailablePartnersFor` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.invoiceId Path parameter
- * @param { string } object.search Query parameter
- * @param { CommonModels.PositionAvailablePartnersUseCase } object.useCase Query parameter. When provided and office toggle is enabled, restrict available partners to finance relationships (customer/vendor).
+ * @param { string } officeId Path parameter
+ * @param { string } invoiceId Path parameter
+ * @param { string } search Query parameter
+ * @param { CommonModels.PositionAvailablePartnersUseCase } useCase Query parameter. When provided and office toggle is enabled, restrict available partners to finance relationships (customer/vendor).
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<InvoicesModels.InvoicesListAvailablePartnersForResponse> } 
  * @statusCodes [200, 401]
@@ -763,12 +763,12 @@ export const useListAvailablePartnersFor = <TData>({ officeId, invoiceId, search
  * Query `useGetOfficeUnCharges`
  * @summary Get uninvoiced charges for all positions in an office
  * @permission Requires `canUseGetOfficeUnCharges` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): chargeItemId, orderPosition, serviceDate, receiverId, positionNumber, chargeTypeId, currency, vatRuleId. Example: `chargeItemId`
- * @param { InvoicesModels.UninvoicedChargesFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): chargeItemId, orderPosition, serviceDate, receiverId, positionNumber, chargeTypeId, currency, vatRuleId. Example: `chargeItemId`
+ * @param { InvoicesModels.UninvoicedChargesFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<InvoicesModels.GetOfficeUnChargesResponse> } 
  * @statusCodes [200, 401]
@@ -790,12 +790,12 @@ export const useGetOfficeUnCharges = <TData>({ officeId, limit, order, filter, p
  * Infinite query `useGetOfficeUnChargesInfinite
  * @summary Get uninvoiced charges for all positions in an office
  * @permission Requires `canUseGetOfficeUnCharges` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): chargeItemId, orderPosition, serviceDate, receiverId, positionNumber, chargeTypeId, currency, vatRuleId. Example: `chargeItemId`
- * @param { InvoicesModels.UninvoicedChargesFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): chargeItemId, orderPosition, serviceDate, receiverId, positionNumber, chargeTypeId, currency, vatRuleId. Example: `chargeItemId`
+ * @param { InvoicesModels.UninvoicedChargesFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<InvoicesModels.GetOfficeUnChargesResponse> } 
  * @statusCodes [200, 401]
@@ -822,8 +822,8 @@ export const useGetOfficeUnChargesInfinite = <TData>({ officeId, limit, order, f
  * Mutation `useExportUnCharges` - recommended when file should not be cached
  * @summary Export uninvoiced charges as Excel file
  * @permission Requires `canUseExportUnCharges` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { InvoicesModels.UninvoicedChargesExportRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { InvoicesModels.UninvoicedChargesExportRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 201, 401]
@@ -852,7 +852,7 @@ export const useExportUnCharges = (options?: AppMutationOptions<typeof exportUnC
  * Mutation `useCreateDirect`
  * @summary Dummy endpoint to expose direct invoice permission to FE
  * @permission Requires `canUseCreateDirect` ability 
- * @param { string } mutation.officeId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [201, 401, default]
@@ -879,9 +879,9 @@ export const useCreateDirect = (options?: AppMutationOptions<typeof createDirect
  * Mutation `useAddChargeToDirect`
  * @summary Add a charge to a direct invoice
  * @permission Requires `canUseAddChargeToDirect` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.invoiceId Path parameter
- * @param { InvoicesModels.CreateDirectInvoiceChargeRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } invoiceId Path parameter
+ * @param { InvoicesModels.CreateDirectInvoiceChargeRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<InvoicesModels.InvoiceDetailDto> } 
  * @statusCodes [201, 401, default]
@@ -910,9 +910,9 @@ export const useAddChargeToDirect = (options?: AppMutationOptions<typeof addChar
  * Mutation `useUpdateCharges`
  * @summary Update charges on a draft invoice
  * @permission Requires `canUseUpdateCharges` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.invoiceId Path parameter
- * @param { InvoicesModels.UpdateInvoiceChargesRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } invoiceId Path parameter
+ * @param { InvoicesModels.UpdateInvoiceChargesRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<InvoicesModels.InvoiceDetailDto> } 
  * @statusCodes [200, 401, default]
@@ -941,9 +941,9 @@ export const useUpdateCharges = (options?: AppMutationOptions<typeof updateCharg
  * Mutation `useRemoveChargeFromDirect`
  * @summary Remove a charge from a direct invoice
  * @permission Requires `canUseRemoveChargeFromDirect` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.invoiceId Path parameter
- * @param { string } mutation.chargeId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } invoiceId Path parameter
+ * @param { string } chargeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<InvoicesModels.InvoiceDetailDto> } 
  * @statusCodes [200, 401, default]
@@ -972,8 +972,8 @@ export const useRemoveChargeFromDirect = (options?: AppMutationOptions<typeof re
  * Query `useGetDetail`
  * @summary Get invoice details
  * @permission Requires `canUseGetDetail` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.invoiceId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } invoiceId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<InvoicesModels.InvoiceDetailDto> } 
  * @statusCodes [200, 401, default]
@@ -995,9 +995,9 @@ export const useGetDetail = <TData>({ officeId, invoiceId }: { officeId: string,
  * Mutation `useUpdate`
  * @summary Update invoice details
  * @permission Requires `canUseUpdate` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.invoiceId Path parameter
- * @param { InvoicesModels.UpdateInvoiceRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } invoiceId Path parameter
+ * @param { InvoicesModels.UpdateInvoiceRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<InvoicesModels.InvoiceDetailDto> } 
  * @statusCodes [200, 401, default]
@@ -1026,8 +1026,8 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { officeId
  * Mutation `useDeleteInvoice`
  * @summary Delete invoice
  * @permission Requires `canUseDeleteInvoice` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.invoiceId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } invoiceId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [204, 401]
@@ -1054,9 +1054,9 @@ export const useDeleteInvoice = (options?: AppMutationOptions<typeof deleteInvoi
  * Mutation `useFix`
  * @summary Fix invoice with accounting permission
  * @permission Requires `canUseFix` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.invoiceId Path parameter
- * @param { InvoicesModels.FixInvoiceRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } invoiceId Path parameter
+ * @param { InvoicesModels.FixInvoiceRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<InvoicesModels.InvoiceDetailDto> } 
  * @statusCodes [200, 401, default]
@@ -1085,8 +1085,8 @@ export const useFix = (options?: AppMutationOptions<typeof fix, { officeId: stri
  * Mutation `useGenerate` - recommended when file should not be cached
  * @summary Generate an invoice PDF
  * @permission Requires `canUseGenerate` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.invoiceId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } invoiceId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<AxiosResponse<void>> } 
  * @statusCodes [201, 401]
@@ -1113,9 +1113,9 @@ export const useGenerate = (options?: AppMutationOptions<typeof generate, { offi
  * Mutation `useUpdateIssuedVatRules`
  * @summary Update VAT rules on issued invoice charges
  * @permission Requires `canUseUpdateIssuedVatRules` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.invoiceId Path parameter
- * @param { InvoicesModels.UpdateIssuedInvoiceVatRulesRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } invoiceId Path parameter
+ * @param { InvoicesModels.UpdateIssuedInvoiceVatRulesRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<InvoicesModels.InvoiceDetailDto> } 
  * @statusCodes [200, 401, default]
@@ -1144,9 +1144,9 @@ export const useUpdateIssuedVatRules = (options?: AppMutationOptions<typeof upda
  * Mutation `useUpdateIssuedCharges`
  * @summary Update charges on issued invoice
  * @permission Requires `canUseUpdateIssuedCharges` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.invoiceId Path parameter
- * @param { InvoicesModels.UpdateIssuedInvoiceChargesRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } invoiceId Path parameter
+ * @param { InvoicesModels.UpdateIssuedInvoiceChargesRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<InvoicesModels.InvoiceDetailDto> } 
  * @statusCodes [200, 401, default]
@@ -1175,8 +1175,8 @@ export const useUpdateIssuedCharges = (options?: AppMutationOptions<typeof updat
  * Mutation `useIssue` - recommended when file should not be cached
  * @summary Issue outgoing invoice
  * @permission Requires `canUseIssue` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.invoiceId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } invoiceId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 201, 401]
@@ -1205,8 +1205,8 @@ export const useIssue = (options?: AppMutationOptions<typeof issue, { officeId: 
  * Mutation `useReportHungarian`
  * @summary Report invoice to Hungarian tax authority
  * @permission Requires `canUseReportHungarian` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.invoiceId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } invoiceId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
@@ -1233,8 +1233,8 @@ export const useReportHungarian = (options?: AppMutationOptions<typeof reportHun
  * Mutation `useGenerateIncoming` - recommended when file should not be cached
  * @summary Re-Generate an invoice PDF
  * @permission Requires `canUseGenerateIncoming` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.invoiceId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } invoiceId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 201, 401]
@@ -1263,8 +1263,8 @@ export const useGenerateIncoming = (options?: AppMutationOptions<typeof generate
  * Mutation `useRegister`
  * @summary Register incoming invoice
  * @permission Requires `canUseRegister` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.invoiceId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } invoiceId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<InvoicesModels.InvoiceDetailDto> } 
  * @statusCodes [200, 401, default]
@@ -1293,8 +1293,8 @@ export const useRegister = (options?: AppMutationOptions<typeof register, { offi
  * Query `useGetPreview` - recommended when file should be cached
  * @summary Get invoice PDF preview
  * @permission Requires `canUseGetPreview` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.invoiceId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } invoiceId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
@@ -1316,8 +1316,8 @@ export const useGetPreview = <TData>({ officeId, invoiceId }: { officeId: string
  * Mutation `useGetPreviewMutation` - recommended when file should not be cached
  * @summary Get invoice PDF preview
  * @permission Requires `canUseGetPreview` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.invoiceId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } invoiceId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
@@ -1346,8 +1346,8 @@ export const useGetPreviewMutation = (options?: AppMutationOptions<typeof getPre
  * Query `useGetInvoiceEml` - recommended when file should be cached
  * @summary Get invoice as EML file with PDF attachment
  * @permission Requires `canUseGetInvoiceEml` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.invoiceId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } invoiceId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
@@ -1369,8 +1369,8 @@ export const useGetInvoiceEml = <TData>({ officeId, invoiceId }: { officeId: str
  * Mutation `useGetInvoiceEmlMutation` - recommended when file should not be cached
  * @summary Get invoice as EML file with PDF attachment
  * @permission Requires `canUseGetInvoiceEml` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.invoiceId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } invoiceId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
@@ -1399,10 +1399,10 @@ export const useGetInvoiceEmlMutation = (options?: AppMutationOptions<typeof get
  * Mutation `usePrepareDocumentUpload`
  * @summary Prepare for invoice document upload
  * @permission Requires `canUsePrepareDocumentUpload` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.invoiceId Path parameter
- * @param { InvoicesModels.PrepareUploadRequestDto } mutation.data Body parameter
- * @param { File } mutation.file Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } invoiceId Path parameter
+ * @param { InvoicesModels.PrepareUploadRequestDto } data Body parameter
+ * @param { File } file Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<InvoicesModels.InvoiceUploadInstructionsDto> } 
  * @statusCodes [200, 401, default]
@@ -1454,8 +1454,8 @@ export const usePrepareDocumentUpload = (options?: AppMutationOptions<typeof pre
  * Mutation `useCancel`
  * @summary Cancel invoice (create draft credit note)
  * @permission Requires `canUseCancel` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.invoiceId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } invoiceId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<InvoicesModels.InvoiceDetailDto> } 
  * @statusCodes [201, 401, default]
@@ -1484,8 +1484,8 @@ export const useCancel = (options?: AppMutationOptions<typeof cancel, { officeId
  * Mutation `useIssueCreditNote`
  * @summary Issue credit invoice
  * @permission Requires `canUseIssueCreditNote` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.invoiceId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } invoiceId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<InvoicesModels.InvoiceDetailDto> } 
  * @statusCodes [200, 401, default]

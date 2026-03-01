@@ -30,10 +30,10 @@ export const keys = {
 /** 
  * Query `useGet`
  * @summary Get user activity for an entity
- * @param { string } object.officeId Path parameter
- * @param { string } object.entityType Path parameter
- * @param { string } object.entityId Path parameter
- * @param { number } object.activeThresholdMinutes Query parameter. Active threshold in minutes. Minimum: `1`
+ * @param { string } officeId Path parameter
+ * @param { string } entityType Path parameter
+ * @param { string } entityId Path parameter
+ * @param { number } activeThresholdMinutes Query parameter. Active threshold in minutes. Minimum: `1`
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<UserActivityModels.UserActivityResponseDto> } 
  * @statusCodes [200, 401]

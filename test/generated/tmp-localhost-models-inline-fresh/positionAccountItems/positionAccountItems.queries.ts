@@ -73,9 +73,9 @@ export const moduleName = QueryModule.PositionAccountItems;
  * Mutation `useCreate`
  * @summary Create position account items (bulk)
  * @permission Requires `canUseCreate` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.officeId Path parameter
- * @param { PositionAccountItemsModels.CreatePositionAccountItemsRequestDto } mutation.data Body parameter
+ * @param { string } positionId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { PositionAccountItemsModels.CreatePositionAccountItemsRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<PositionAccountItemsModels.PositionAccountItemsCreateResponse> } 
  * @statusCodes [201, 401]
@@ -102,9 +102,9 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { position
  * Mutation `useDeletePositionAccountItems`
  * @summary Delete position account items (bulk)
  * @permission Requires `canUseDeletePositionAccountItems` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.officeId Path parameter
- * @param { PositionAccountItemsModels.DeletePositionAccountItemsRequestDto } mutation.data Body parameter
+ * @param { string } positionId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { PositionAccountItemsModels.DeletePositionAccountItemsRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [204, 401]
@@ -131,9 +131,9 @@ export const useDeletePositionAccountItems = (options?: AppMutationOptions<typeo
  * Mutation `useUpdate`
  * @summary Update position account items (bulk)
  * @permission Requires `canUseUpdate` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.officeId Path parameter
- * @param { PositionAccountItemsModels.UpdatePositionAccountItemsRequestDto } mutation.data Body parameter
+ * @param { string } positionId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { PositionAccountItemsModels.UpdatePositionAccountItemsRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<PositionAccountItemsModels.PositionAccountItemsUpdateResponse> } 
  * @statusCodes [200, 401]
@@ -160,9 +160,9 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { position
  * Mutation `useDuplicate`
  * @summary Duplicate position account items (bulk)
  * @permission Requires `canUseDuplicate` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.officeId Path parameter
- * @param { PositionAccountItemsModels.DuplicatePositionAccountItemsRequestDto } mutation.data Body parameter
+ * @param { string } positionId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { PositionAccountItemsModels.DuplicatePositionAccountItemsRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<PositionAccountItemsModels.PositionAccountItemsDuplicateResponse> } 
  * @statusCodes [201, 401]
@@ -189,9 +189,9 @@ export const useDuplicate = (options?: AppMutationOptions<typeof duplicate, { po
  * Mutation `useReassign`
  * @summary Reassign position account items to another position (bulk)
  * @permission Requires `canUseReassign` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.officeId Path parameter
- * @param { PositionAccountItemsModels.ReassignPositionAccountItemsRequestDto } mutation.data Body parameter
+ * @param { string } positionId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { PositionAccountItemsModels.ReassignPositionAccountItemsRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<PositionAccountItemsModels.ReassignResponse> } 
  * @statusCodes [200, 401]
@@ -218,10 +218,10 @@ export const useReassign = (options?: AppMutationOptions<typeof reassign, { posi
  * Mutation `useReorder`
  * @summary Reorder position account item
  * @permission Requires `canUseReorder` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.itemId Path parameter
- * @param { string } mutation.officeId Path parameter
- * @param { PositionAccountItemsModels.ReorderPositionAccountItemRequestDto } mutation.data Body parameter
+ * @param { string } positionId Path parameter
+ * @param { string } itemId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { PositionAccountItemsModels.ReorderPositionAccountItemRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [204, 401]

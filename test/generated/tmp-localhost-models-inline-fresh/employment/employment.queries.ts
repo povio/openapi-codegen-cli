@@ -92,7 +92,7 @@ export const keys = {
  * Mutation `useCreate`
  * @summary Create new employment
  * @permission Requires `canUseCreate` ability 
- * @param { EmploymentModels.EmploymentCreateRequest } mutation.data Body parameter
+ * @param { EmploymentModels.EmploymentCreateRequest } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<CommonModels.EmploymentResponse> } 
  * @statusCodes [201, 401]
@@ -119,12 +119,12 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { data: Em
  * Query `useList`
  * @summary List Employments
  * @permission Requires `canUseList` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): officeId, createdAt. Example: `officeId`
- * @param { EmploymentModels.EmploymentListPopulateParam } object.populate Query parameter
- * @param { EmploymentModels.EmploymentFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): officeId, createdAt. Example: `officeId`
+ * @param { EmploymentModels.EmploymentListPopulateParam } populate Query parameter
+ * @param { EmploymentModels.EmploymentFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<EmploymentModels.EmploymentListResponse> } 
  * @statusCodes [200, 401]
@@ -146,12 +146,12 @@ export const useList = <TData>({ limit, order, populate, filter, page, cursor }:
  * Infinite query `useListInfinite
  * @summary List Employments
  * @permission Requires `canUseList` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): officeId, createdAt. Example: `officeId`
- * @param { EmploymentModels.EmploymentListPopulateParam } object.populate Query parameter
- * @param { EmploymentModels.EmploymentFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): officeId, createdAt. Example: `officeId`
+ * @param { EmploymentModels.EmploymentListPopulateParam } populate Query parameter
+ * @param { EmploymentModels.EmploymentFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<EmploymentModels.EmploymentListResponse> } 
  * @statusCodes [200, 401]
@@ -178,8 +178,8 @@ export const useListInfinite = <TData>({ limit, order, populate, filter, cursor 
  * Query `useListRoles`
  * @summary List Employments Roles
  * @permission Requires `canUseListRoles` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.employmentId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } employmentId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<EmploymentModels.EmploymentListRolesResponse> } 
  * @statusCodes [200, 401]
@@ -201,9 +201,9 @@ export const useListRoles = <TData>({ officeId, employmentId }: { officeId: stri
  * Mutation `useUpdateRoles`
  * @summary Update Employment Roles
  * @permission Requires `canUseUpdateRoles` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.employmentId Path parameter
- * @param { EmploymentModels.EmploymentRoleMembershipsUpdateRequest } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } employmentId Path parameter
+ * @param { EmploymentModels.EmploymentRoleMembershipsUpdateRequest } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<EmploymentModels.EmploymentUpdateRolesResponse> } 
  * @statusCodes [200, 401]
@@ -229,9 +229,9 @@ export const useUpdateRoles = (options?: AppMutationOptions<typeof updateRoles, 
 /** 
  * Mutation `useUpdate`
  * @permission Requires `canUseUpdate` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.employmentId Path parameter
- * @param { EmploymentModels.UpdateEmploymentRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } employmentId Path parameter
+ * @param { EmploymentModels.UpdateEmploymentRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<CommonModels.EmploymentResponse> } 
  * @statusCodes [200, 401]
@@ -258,8 +258,8 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { officeId
  * Mutation `useArchive`
  * @summary Archive Employment
  * @permission Requires `canUseArchive` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.employmentId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } employmentId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<CommonModels.EmploymentResponse> } 
  * @statusCodes [200, 401]
@@ -286,8 +286,8 @@ export const useArchive = (options?: AppMutationOptions<typeof archive, { office
  * Mutation `useUnarchive`
  * @summary Un-archive Employment
  * @permission Requires `canUseUnarchive` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.employmentId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } employmentId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<CommonModels.EmploymentResponse> } 
  * @statusCodes [200, 401]

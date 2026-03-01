@@ -109,11 +109,11 @@ export const keys = {
  * Query `usePaginate`
  * @summary Paginate Container Yards
  * @permission Requires `canUsePaginate` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, matchCode, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
- * @param { ContainerYardsModels.ContainerYardFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, matchCode, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
+ * @param { ContainerYardsModels.ContainerYardFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<ContainerYardsModels.ContainerYardsPaginateResponse> } 
  * @statusCodes [200, 401]
@@ -135,11 +135,11 @@ export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { lim
  * Infinite query `usePaginateInfinite
  * @summary Paginate Container Yards
  * @permission Requires `canUsePaginate` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, matchCode, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
- * @param { ContainerYardsModels.ContainerYardFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, matchCode, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
+ * @param { ContainerYardsModels.ContainerYardFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<ContainerYardsModels.ContainerYardsPaginateResponse> } 
  * @statusCodes [200, 401]
@@ -166,7 +166,7 @@ export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { l
  * Mutation `useCreate`
  * @summary Create container yard
  * @permission Requires `canUseCreate` ability 
- * @param { ContainerYardsModels.CreateContainerYardRequestDTO } mutation.data Body parameter
+ * @param { ContainerYardsModels.CreateContainerYardRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<ContainerYardsModels.ContainerYardResponseDTO> } 
  * @statusCodes [200, 201, 401]
@@ -193,11 +193,11 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { data: Co
  * Query `usePaginateLabels`
  * @summary Paginate container yard labels (id and name)
  * @permission Requires `canUsePaginateLabels` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, matchCode, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
- * @param { ContainerYardsModels.ContainerYardLabelFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, matchCode, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
+ * @param { ContainerYardsModels.ContainerYardLabelFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<ContainerYardsModels.ContainerYardsPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
@@ -219,11 +219,11 @@ export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }:
  * Infinite query `usePaginateLabelsInfinite
  * @summary Paginate container yard labels (id and name)
  * @permission Requires `canUsePaginateLabels` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, matchCode, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
- * @param { ContainerYardsModels.ContainerYardLabelFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, matchCode, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
+ * @param { ContainerYardsModels.ContainerYardLabelFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<ContainerYardsModels.ContainerYardsPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
@@ -250,7 +250,7 @@ export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor 
  * Query `useGetLabelById`
  * @summary Get container yard by ID with label format (id and formatted name)
  * @permission Requires `canUseGetLabelById` ability 
- * @param { string } object.id Path parameter
+ * @param { string } id Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<CommonModels.LabelResponseDTO> } 
  * @statusCodes [200, 401]
@@ -272,7 +272,7 @@ export const useGetLabelById = <TData>({ id }: { id: string }, options?: AppQuer
  * Mutation `useArchive`
  * @summary Archive container yard
  * @permission Requires `canUseArchive` ability 
- * @param { string } mutation.id Path parameter
+ * @param { string } id Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<ContainerYardsModels.ContainerYardResponseDTO> } 
  * @statusCodes [200, 401]
@@ -301,7 +301,7 @@ export const useArchive = (options?: AppMutationOptions<typeof archive, { id: st
  * Mutation `useUnarchive`
  * @summary Unarchive container yard
  * @permission Requires `canUseUnarchive` ability 
- * @param { string } mutation.id Path parameter
+ * @param { string } id Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<ContainerYardsModels.ContainerYardResponseDTO> } 
  * @statusCodes [200, 401]
@@ -330,8 +330,8 @@ export const useUnarchive = (options?: AppMutationOptions<typeof unarchive, { id
  * Mutation `useUpdate`
  * @summary Update container yard
  * @permission Requires `canUseUpdate` ability 
- * @param { string } mutation.id Path parameter
- * @param { ContainerYardsModels.UpdateContainerYardRequestDTO } mutation.data Body parameter
+ * @param { string } id Path parameter
+ * @param { ContainerYardsModels.UpdateContainerYardRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<ContainerYardsModels.ContainerYardResponseDTO> } 
  * @statusCodes [200, 401]
@@ -360,7 +360,7 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { id: stri
  * Query `useFindById`
  * @summary Get container yard
  * @permission Requires `canUseFindById` ability 
- * @param { string } object.id Path parameter
+ * @param { string } id Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<ContainerYardsModels.ContainerYardResponseDTO> } 
  * @statusCodes [200, 401]

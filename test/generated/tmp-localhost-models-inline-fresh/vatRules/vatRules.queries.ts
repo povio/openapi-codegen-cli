@@ -100,11 +100,11 @@ export const keys = {
  * Query `usePaginateLabels`
  * @summary Paginate VAT rule labels (id and matchcode only)
  * @permission Requires `canUsePaginateLabels` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): matchcode, name, type, createdAt, updatedAt, createdBy, updatedBy. Example: `matchcode`
- * @param { VatRulesModels.VatRuleFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): matchcode, name, type, createdAt, updatedAt, createdBy, updatedBy. Example: `matchcode`
+ * @param { VatRulesModels.VatRuleFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<VatRulesModels.VatRulesPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
@@ -126,11 +126,11 @@ export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }:
  * Infinite query `usePaginateLabelsInfinite
  * @summary Paginate VAT rule labels (id and matchcode only)
  * @permission Requires `canUsePaginateLabels` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): matchcode, name, type, createdAt, updatedAt, createdBy, updatedBy. Example: `matchcode`
- * @param { VatRulesModels.VatRuleFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): matchcode, name, type, createdAt, updatedAt, createdBy, updatedBy. Example: `matchcode`
+ * @param { VatRulesModels.VatRuleFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<VatRulesModels.VatRulesPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
@@ -157,11 +157,11 @@ export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor 
  * Query `useList`
  * @summary List VAT rules
  * @permission Requires `canUseList` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): matchcode, name, type, createdAt, updatedAt, createdBy, updatedBy. Example: `matchcode`
- * @param { VatRulesModels.VatRuleFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): matchcode, name, type, createdAt, updatedAt, createdBy, updatedBy. Example: `matchcode`
+ * @param { VatRulesModels.VatRuleFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<VatRulesModels.VatRulesListResponse> } 
  * @statusCodes [200, 401]
@@ -183,11 +183,11 @@ export const useList = <TData>({ limit, order, filter, page, cursor }: { limit: 
  * Infinite query `useListInfinite
  * @summary List VAT rules
  * @permission Requires `canUseList` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): matchcode, name, type, createdAt, updatedAt, createdBy, updatedBy. Example: `matchcode`
- * @param { VatRulesModels.VatRuleFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): matchcode, name, type, createdAt, updatedAt, createdBy, updatedBy. Example: `matchcode`
+ * @param { VatRulesModels.VatRuleFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<VatRulesModels.VatRulesListResponse> } 
  * @statusCodes [200, 401]
@@ -214,7 +214,7 @@ export const useListInfinite = <TData>({ limit, order, filter, cursor }: { limit
  * Mutation `useCreate`
  * @summary Create a new VAT rule
  * @permission Requires `canUseCreate` ability 
- * @param { VatRulesModels.CreateVatRuleRequestDTO } mutation.data Body parameter
+ * @param { VatRulesModels.CreateVatRuleRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<VatRulesModels.VatRuleResponseDTO> } 
  * @statusCodes [201, 401, 409]
@@ -241,7 +241,7 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { data: Va
  * Query `useFindById`
  * @summary Get VAT rule by ID
  * @permission Requires `canUseFindById` ability 
- * @param { string } object.id Path parameter
+ * @param { string } id Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<VatRulesModels.VatRuleResponseDTO> } 
  * @statusCodes [200, 401, 404]
@@ -263,8 +263,8 @@ export const useFindById = <TData>({ id }: { id: string }, options?: AppQueryOpt
  * Mutation `useUpdate`
  * @summary Update VAT rule by ID
  * @permission Requires `canUseUpdate` ability 
- * @param { string } mutation.id Path parameter
- * @param { VatRulesModels.UpdateVatRuleRequestDTO } mutation.data Body parameter
+ * @param { string } id Path parameter
+ * @param { VatRulesModels.UpdateVatRuleRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<VatRulesModels.VatRuleResponseDTO> } 
  * @statusCodes [200, 401, 404, 409]
@@ -293,7 +293,7 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { id: stri
  * Mutation `useArchive`
  * @summary Archive VAT rule
  * @permission Requires `canUseArchive` ability 
- * @param { string } mutation.id Path parameter
+ * @param { string } id Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<VatRulesModels.VatRuleResponseDTO> } 
  * @statusCodes [200, 401, 404, 409]
@@ -322,7 +322,7 @@ export const useArchive = (options?: AppMutationOptions<typeof archive, { id: st
  * Mutation `useUnarchive`
  * @summary Unarchive VAT rule
  * @permission Requires `canUseUnarchive` ability 
- * @param { string } mutation.id Path parameter
+ * @param { string } id Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<VatRulesModels.VatRuleResponseDTO> } 
  * @statusCodes [200, 401, 404, 409]

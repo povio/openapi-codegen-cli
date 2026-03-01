@@ -79,8 +79,8 @@ export const keys = {
  * Mutation `useCreate`
  * @summary Create an AMS Instructions document
  * @permission Requires `canUseCreate` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<WorkingDocumentsAmsInstructionsModels.AMSInstructionsDocumentResponseDTO> } 
  * @statusCodes [201, 401]
@@ -107,9 +107,9 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { position
  * Query `useGetAMSInstructionsData`
  * @summary Get AMS Instructions document data
  * @permission Requires `canUseGetAMSInstructionsData` ability 
- * @param { string } object.positionId Path parameter
- * @param { string } object.amsInstructionsId Path parameter
- * @param { string } object.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } amsInstructionsId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<WorkingDocumentsAmsInstructionsModels.AMSInstructionsDocumentResponseDTO> } 
  * @statusCodes [200, 401]
@@ -131,10 +131,10 @@ export const useGetAMSInstructionsData = <TData>({ positionId, amsInstructionsId
  * Mutation `useUpdateAMSInstructionsData`
  * @summary Update AMS Instructions document data
  * @permission Requires `canUseUpdateAMSInstructionsData` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.amsInstructionsId Path parameter
- * @param { string } mutation.officeId Path parameter
- * @param { WorkingDocumentsAmsInstructionsModels.UpdateAMSInstructionsDocumentRequestDTO } mutation.data Body parameter
+ * @param { string } positionId Path parameter
+ * @param { string } amsInstructionsId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { WorkingDocumentsAmsInstructionsModels.UpdateAMSInstructionsDocumentRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<WorkingDocumentsAmsInstructionsModels.AMSInstructionsDocumentResponseDTO> } 
  * @statusCodes [200, 401]
@@ -163,9 +163,9 @@ export const useUpdateAMSInstructionsData = (options?: AppMutationOptions<typeof
  * Mutation `useDeleteAMSInstructions`
  * @summary Delete AMS Instructions document
  * @permission Requires `canUseDeleteAMSInstructions` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.amsInstructionsId Path parameter
- * @param { string } mutation.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } amsInstructionsId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } AMS Instructions document deleted
  * @statusCodes [204, 401, 404]
@@ -192,9 +192,9 @@ export const useDeleteAMSInstructions = (options?: AppMutationOptions<typeof del
  * Query `usePreviewAMSInstructions` - recommended when file should be cached
  * @summary Preview AMS Instructions document
  * @permission Requires `canUsePreviewAMSInstructions` ability 
- * @param { string } object.positionId Path parameter
- * @param { string } object.amsInstructionsId Path parameter
- * @param { string } object.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } amsInstructionsId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
@@ -216,9 +216,9 @@ export const usePreviewAMSInstructions = <TData>({ positionId, amsInstructionsId
  * Mutation `usePreviewAMSInstructionsMutation` - recommended when file should not be cached
  * @summary Preview AMS Instructions document
  * @permission Requires `canUsePreviewAMSInstructions` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.amsInstructionsId Path parameter
- * @param { string } mutation.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } amsInstructionsId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
@@ -247,10 +247,10 @@ export const usePreviewAMSInstructionsMutation = (options?: AppMutationOptions<t
  * Mutation `useGenerateAMSInstructions`
  * @summary Generate AMS Instructions document
  * @permission Requires `canUseGenerateAMSInstructions` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.amsInstructionsId Path parameter
- * @param { string } mutation.officeId Path parameter
- * @param { CommonModels.GenerateWorkingDocumentRequestDto } mutation.data Body parameter
+ * @param { string } positionId Path parameter
+ * @param { string } amsInstructionsId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { CommonModels.GenerateWorkingDocumentRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [201, 401]

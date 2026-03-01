@@ -91,12 +91,12 @@ export const keys = {
  * Query `usePaginate`
  * @summary List AWB stocks
  * @permission Requires `canUsePaginate` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): createdAt, updatedAt, createdBy, updatedBy, carrierName, startNumber, priority. Example: `createdAt`
- * @param { AWBStocksModels.AWBStockFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): createdAt, updatedAt, createdBy, updatedBy, carrierName, startNumber, priority. Example: `createdAt`
+ * @param { AWBStocksModels.AWBStockFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<AWBStocksModels.AWBStocksPaginateResponse> } 
  * @statusCodes [200, 401]
@@ -118,12 +118,12 @@ export const usePaginate = <TData>({ officeId, limit, order, filter, page, curso
  * Infinite query `usePaginateInfinite
  * @summary List AWB stocks
  * @permission Requires `canUsePaginate` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): createdAt, updatedAt, createdBy, updatedBy, carrierName, startNumber, priority. Example: `createdAt`
- * @param { AWBStocksModels.AWBStockFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): createdAt, updatedAt, createdBy, updatedBy, carrierName, startNumber, priority. Example: `createdAt`
+ * @param { AWBStocksModels.AWBStockFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<AWBStocksModels.AWBStocksPaginateResponse> } 
  * @statusCodes [200, 401]
@@ -150,8 +150,8 @@ export const usePaginateInfinite = <TData>({ officeId, limit, order, filter, cur
  * Mutation `useCreate`
  * @summary Create AWB stock
  * @permission Requires `canUseCreate` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { AWBStocksModels.CreateAWBStockRequestDTO } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { AWBStocksModels.CreateAWBStockRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<AWBStocksModels.AWBStockResponseDTO> } 
  * @statusCodes [201, 401]
@@ -178,8 +178,8 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { officeId
  * Query `useFindById`
  * @summary Get AWB stock details
  * @permission Requires `canUseFindById` ability 
- * @param { string } object.stockId Path parameter
- * @param { string } object.officeId Path parameter
+ * @param { string } stockId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<AWBStocksModels.AWBStockResponseDTO> } 
  * @statusCodes [200, 401]
@@ -201,9 +201,9 @@ export const useFindById = <TData>({ stockId, officeId }: { stockId: string, off
  * Mutation `useUpdate`
  * @summary Update AWB stock comments
  * @permission Requires `canUseUpdate` ability 
- * @param { string } mutation.stockId Path parameter
- * @param { string } mutation.officeId Path parameter
- * @param { AWBStocksModels.UpdateAWBStockRequestDTO } mutation.data Body parameter
+ * @param { string } stockId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { AWBStocksModels.UpdateAWBStockRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<AWBStocksModels.AWBStockResponseDTO> } 
  * @statusCodes [200, 401]
@@ -232,8 +232,8 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { stockId:
  * Mutation `useArchive`
  * @summary Archive AWB stock
  * @permission Requires `canUseArchive` ability 
- * @param { string } mutation.stockId Path parameter
- * @param { string } mutation.officeId Path parameter
+ * @param { string } stockId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<AWBStocksModels.AWBStockResponseDTO> } 
  * @statusCodes [200, 401]
@@ -262,8 +262,8 @@ export const useArchive = (options?: AppMutationOptions<typeof archive, { stockI
  * Mutation `useUnarchive`
  * @summary Unarchive AWB stock
  * @permission Requires `canUseUnarchive` ability 
- * @param { string } mutation.stockId Path parameter
- * @param { string } mutation.officeId Path parameter
+ * @param { string } stockId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<AWBStocksModels.AWBStockResponseDTO> } 
  * @statusCodes [200, 401]
@@ -292,8 +292,8 @@ export const useUnarchive = (options?: AppMutationOptions<typeof unarchive, { st
  * Mutation `useGenerateNextNumber`
  * @summary Generate next AWB number for carrier
  * @permission Requires `canUseGenerateNextNumber` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { AWBStocksModels.GenerateAWBNumberRequestDTO } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { AWBStocksModels.GenerateAWBNumberRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<AWBStocksModels.GenerateAWBNumberResponseDTO> } 
  * @statusCodes [201, 401]

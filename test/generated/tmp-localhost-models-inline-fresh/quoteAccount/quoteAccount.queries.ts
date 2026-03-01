@@ -64,8 +64,8 @@ export const keys = {
  * Query `useGet`
  * @summary Get quote account details
  * @permission Requires `canUseGet` ability 
- * @param { string } object.quoteId Path parameter
- * @param { string } object.officeId Path parameter
+ * @param { string } quoteId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<QuoteAccountModels.QuoteAccountResponseDto> } 
  * @statusCodes [200, 401]
@@ -87,9 +87,9 @@ export const useGet = <TData>({ quoteId, officeId }: { quoteId: string, officeId
  * Mutation `useCreateItem`
  * @summary Create quote account item
  * @permission Requires `canUseCreateItem` ability 
- * @param { string } mutation.quoteId Path parameter
- * @param { string } mutation.officeId Path parameter
- * @param { QuoteAccountModels.CreateQuoteAccountItemRequestDto } mutation.data Body parameter
+ * @param { string } quoteId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { QuoteAccountModels.CreateQuoteAccountItemRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<QuoteAccountModels.QuoteAccountItemDtoResponse> } 
  * @statusCodes [201, 401]
@@ -116,9 +116,9 @@ export const useCreateItem = (options?: AppMutationOptions<typeof createItem, { 
  * Mutation `useDeleteItem`
  * @summary Delete quote account item
  * @permission Requires `canUseDeleteItem` ability 
- * @param { string } mutation.quoteId Path parameter
- * @param { string } mutation.itemId Path parameter
- * @param { string } mutation.officeId Path parameter
+ * @param { string } quoteId Path parameter
+ * @param { string } itemId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
@@ -145,10 +145,10 @@ export const useDeleteItem = (options?: AppMutationOptions<typeof deleteItem, { 
  * Mutation `useUpdateItem`
  * @summary Update quote account item
  * @permission Requires `canUseUpdateItem` ability 
- * @param { string } mutation.quoteId Path parameter
- * @param { string } mutation.itemId Path parameter
- * @param { string } mutation.officeId Path parameter
- * @param { QuoteAccountModels.UpdateQuoteAccountItemRequestDto } mutation.data Body parameter
+ * @param { string } quoteId Path parameter
+ * @param { string } itemId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { QuoteAccountModels.UpdateQuoteAccountItemRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<QuoteAccountModels.QuoteAccountItemDtoResponse> } 
  * @statusCodes [200, 401]
@@ -175,9 +175,9 @@ export const useUpdateItem = (options?: AppMutationOptions<typeof updateItem, { 
  * Mutation `useDuplicateItem`
  * @summary Duplicate quote account item
  * @permission Requires `canUseDuplicateItem` ability 
- * @param { string } mutation.quoteId Path parameter
- * @param { string } mutation.itemId Path parameter
- * @param { string } mutation.officeId Path parameter
+ * @param { string } quoteId Path parameter
+ * @param { string } itemId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<QuoteAccountModels.QuoteAccountItemDtoResponse> } 
  * @statusCodes [201, 401]

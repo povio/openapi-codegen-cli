@@ -100,11 +100,11 @@ export const keys = {
  * Query `usePaginate`
  * @summary Paginate HS Codes
  * @permission Requires `canUsePaginate` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): matchCode, createdAt, updatedAt, createdBy, updatedBy, name. Example: `matchCode`
- * @param { HsCodesModels.HsCodePaginationFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): matchCode, createdAt, updatedAt, createdBy, updatedBy, name. Example: `matchCode`
+ * @param { HsCodesModels.HsCodePaginationFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<HsCodesModels.HsCodesPaginateResponse> } 
  * @statusCodes [200, 401]
@@ -126,11 +126,11 @@ export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { lim
  * Infinite query `usePaginateInfinite
  * @summary Paginate HS Codes
  * @permission Requires `canUsePaginate` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): matchCode, createdAt, updatedAt, createdBy, updatedBy, name. Example: `matchCode`
- * @param { HsCodesModels.HsCodePaginationFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): matchCode, createdAt, updatedAt, createdBy, updatedBy, name. Example: `matchCode`
+ * @param { HsCodesModels.HsCodePaginationFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<HsCodesModels.HsCodesPaginateResponse> } 
  * @statusCodes [200, 401]
@@ -157,7 +157,7 @@ export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { l
  * Mutation `useCreate`
  * @summary Create a new HS Code
  * @permission Requires `canUseCreate` ability 
- * @param { HsCodesModels.CreateHsCodeRequestDTO } mutation.data Body parameter
+ * @param { HsCodesModels.CreateHsCodeRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<HsCodesModels.HsCodeResponseDTO> } 
  * @statusCodes [201, 401]
@@ -184,11 +184,11 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { data: Hs
  * Query `usePaginateLabels`
  * @summary Paginate HS codes with only their labels
  * @permission Requires `canUsePaginateLabels` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): matchCode, createdAt, updatedAt, createdBy, updatedBy, name. Example: `matchCode`
- * @param { HsCodesModels.HsCodeLabelFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): matchCode, createdAt, updatedAt, createdBy, updatedBy, name. Example: `matchCode`
+ * @param { HsCodesModels.HsCodeLabelFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<HsCodesModels.HsCodesPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
@@ -210,11 +210,11 @@ export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }:
  * Infinite query `usePaginateLabelsInfinite
  * @summary Paginate HS codes with only their labels
  * @permission Requires `canUsePaginateLabels` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): matchCode, createdAt, updatedAt, createdBy, updatedBy, name. Example: `matchCode`
- * @param { HsCodesModels.HsCodeLabelFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): matchCode, createdAt, updatedAt, createdBy, updatedBy, name. Example: `matchCode`
+ * @param { HsCodesModels.HsCodeLabelFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<HsCodesModels.HsCodesPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
@@ -241,7 +241,7 @@ export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor 
  * Query `useFindById`
  * @summary Get HS Code Details by id
  * @permission Requires `canUseFindById` ability 
- * @param { string } object.id Path parameter
+ * @param { string } id Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<HsCodesModels.HsCodeResponseDTO> } 
  * @statusCodes [200, 401]
@@ -263,8 +263,8 @@ export const useFindById = <TData>({ id }: { id: string }, options?: AppQueryOpt
  * Mutation `useUpdate`
  * @summary Update an existing HS Code
  * @permission Requires `canUseUpdate` ability 
- * @param { string } mutation.id Path parameter
- * @param { HsCodesModels.UpdateHsCodeRequestDTO } mutation.data Body parameter
+ * @param { string } id Path parameter
+ * @param { HsCodesModels.UpdateHsCodeRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<HsCodesModels.HsCodeResponseDTO> } 
  * @statusCodes [200, 401]
@@ -293,7 +293,7 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { id: stri
  * Mutation `useArchive`
  * @summary Archive an HS Code
  * @permission Requires `canUseArchive` ability 
- * @param { string } mutation.id Path parameter
+ * @param { string } id Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<HsCodesModels.HsCodeResponseDTO> } 
  * @statusCodes [200, 401]
@@ -322,7 +322,7 @@ export const useArchive = (options?: AppMutationOptions<typeof archive, { id: st
  * Mutation `useUnarchive`
  * @summary Unarchive an HS Code
  * @permission Requires `canUseUnarchive` ability 
- * @param { string } mutation.id Path parameter
+ * @param { string } id Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<HsCodesModels.HsCodeResponseDTO> } 
  * @statusCodes [200, 401]

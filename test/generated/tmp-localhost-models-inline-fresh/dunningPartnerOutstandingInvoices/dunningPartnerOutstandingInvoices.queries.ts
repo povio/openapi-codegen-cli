@@ -66,12 +66,12 @@ export const keys = {
  * Query `useListPartnerOutstandingInvoiceSummaries`
  * @summary List office outstanding invoice summaries per partner
  * @permission Requires `canUseListPartnerOutstandingInvoiceSummaries` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): outstandingAmount, daysOverdue, lastDunningDate, invoiceCount, partnerCountry, partnerName, dunningSystemName. Example: `outstandingAmount`
- * @param { DunningPartnerOutstandingInvoicesModels.PartnerOutstandingInvoiceSummaryFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): outstandingAmount, daysOverdue, lastDunningDate, invoiceCount, partnerCountry, partnerName, dunningSystemName. Example: `outstandingAmount`
+ * @param { DunningPartnerOutstandingInvoicesModels.PartnerOutstandingInvoiceSummaryFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<DunningPartnerOutstandingInvoicesModels.ListPartnerOutstandingInvoiceSummariesResponse> } 
  * @statusCodes [200, 401]
@@ -93,12 +93,12 @@ export const useListPartnerOutstandingInvoiceSummaries = <TData>({ officeId, lim
  * Infinite query `useListPartnerOutstandingInvoiceSummariesInfinite
  * @summary List office outstanding invoice summaries per partner
  * @permission Requires `canUseListPartnerOutstandingInvoiceSummaries` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): outstandingAmount, daysOverdue, lastDunningDate, invoiceCount, partnerCountry, partnerName, dunningSystemName. Example: `outstandingAmount`
- * @param { DunningPartnerOutstandingInvoicesModels.PartnerOutstandingInvoiceSummaryFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): outstandingAmount, daysOverdue, lastDunningDate, invoiceCount, partnerCountry, partnerName, dunningSystemName. Example: `outstandingAmount`
+ * @param { DunningPartnerOutstandingInvoicesModels.PartnerOutstandingInvoiceSummaryFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<DunningPartnerOutstandingInvoicesModels.ListPartnerOutstandingInvoiceSummariesResponse> } 
  * @statusCodes [200, 401]
@@ -125,13 +125,13 @@ export const useListPartnerOutstandingInvoiceSummariesInfinite = <TData>({ offic
  * Query `useListPartnerOutstandingInvoices`
  * @summary List outstanding invoices for a specific partner
  * @permission Requires `canUseListPartnerOutstandingInvoices` ability 
- * @param { string } object.partnerId Path parameter
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): dueDate, invoiceDate, owedAmount. Example: `dueDate`
- * @param { DunningPartnerOutstandingInvoicesModels.PartnerOutstandingInvoiceFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } partnerId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): dueDate, invoiceDate, owedAmount. Example: `dueDate`
+ * @param { DunningPartnerOutstandingInvoicesModels.PartnerOutstandingInvoiceFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<DunningPartnerOutstandingInvoicesModels.ListPartnerOutstandingInvoicesResponse> } 
  * @statusCodes [200, 401]
@@ -153,13 +153,13 @@ export const useListPartnerOutstandingInvoices = <TData>({ partnerId, officeId, 
  * Infinite query `useListPartnerOutstandingInvoicesInfinite
  * @summary List outstanding invoices for a specific partner
  * @permission Requires `canUseListPartnerOutstandingInvoices` ability 
- * @param { string } object.partnerId Path parameter
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): dueDate, invoiceDate, owedAmount. Example: `dueDate`
- * @param { DunningPartnerOutstandingInvoicesModels.PartnerOutstandingInvoiceFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } partnerId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): dueDate, invoiceDate, owedAmount. Example: `dueDate`
+ * @param { DunningPartnerOutstandingInvoicesModels.PartnerOutstandingInvoiceFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<DunningPartnerOutstandingInvoicesModels.ListPartnerOutstandingInvoicesResponse> } 
  * @statusCodes [200, 401]
@@ -186,9 +186,9 @@ export const useListPartnerOutstandingInvoicesInfinite = <TData>({ partnerId, of
  * Mutation `useListRecommendedDunningLevels`
  * @summary List recommended dunning levels for a partner
  * @permission Requires `canUseListRecommendedDunningLevels` ability 
- * @param { string } mutation.partnerId Path parameter
- * @param { string } mutation.officeId Path parameter
- * @param { DunningPartnerOutstandingInvoicesModels.RecommendedDunningLevelsRequestDto } mutation.data Body parameter
+ * @param { string } partnerId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { DunningPartnerOutstandingInvoicesModels.RecommendedDunningLevelsRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<DunningPartnerOutstandingInvoicesModels.ListRecommendedDunningLevelsResponse> } 
  * @statusCodes [200, 401]

@@ -79,8 +79,8 @@ export const keys = {
  * Mutation `useCreate`
  * @summary Create a House AWB document
  * @permission Requires `canUseCreate` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<WorkingDocumentsHouseAwbModels.HouseAwbDocumentResponseDTO> } 
  * @statusCodes [201, 401]
@@ -107,9 +107,9 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { position
  * Query `useGetHouseAwbData`
  * @summary Get House AWB document data
  * @permission Requires `canUseGetHouseAwbData` ability 
- * @param { string } object.positionId Path parameter
- * @param { string } object.hawbId Path parameter
- * @param { string } object.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } hawbId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<WorkingDocumentsHouseAwbModels.HouseAwbDocumentResponseDTO> } 
  * @statusCodes [200, 401]
@@ -131,10 +131,10 @@ export const useGetHouseAwbData = <TData>({ positionId, hawbId, officeId }: { po
  * Mutation `useUpdateHouseAwbData`
  * @summary Update House AWB document data
  * @permission Requires `canUseUpdateHouseAwbData` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.hawbId Path parameter
- * @param { string } mutation.officeId Path parameter
- * @param { WorkingDocumentsHouseAwbModels.UpdateHouseAwbDocumentRequestDTO } mutation.data Body parameter
+ * @param { string } positionId Path parameter
+ * @param { string } hawbId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { WorkingDocumentsHouseAwbModels.UpdateHouseAwbDocumentRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<WorkingDocumentsHouseAwbModels.HouseAwbDocumentResponseDTO> } 
  * @statusCodes [200, 401]
@@ -163,9 +163,9 @@ export const useUpdateHouseAwbData = (options?: AppMutationOptions<typeof update
  * Mutation `useDeleteHouseAwb`
  * @summary Delete House AWB document
  * @permission Requires `canUseDeleteHouseAwb` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.hawbId Path parameter
- * @param { string } mutation.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } hawbId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } House AWB document deleted
  * @statusCodes [204, 401, 404]
@@ -192,9 +192,9 @@ export const useDeleteHouseAwb = (options?: AppMutationOptions<typeof deleteHous
  * Query `usePreviewHouseAwb` - recommended when file should be cached
  * @summary Preview House AWB document
  * @permission Requires `canUsePreviewHouseAwb` ability 
- * @param { string } object.positionId Path parameter
- * @param { string } object.hawbId Path parameter
- * @param { string } object.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } hawbId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
@@ -216,9 +216,9 @@ export const usePreviewHouseAwb = <TData>({ positionId, hawbId, officeId }: { po
  * Mutation `usePreviewHouseAwbMutation` - recommended when file should not be cached
  * @summary Preview House AWB document
  * @permission Requires `canUsePreviewHouseAwb` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.hawbId Path parameter
- * @param { string } mutation.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } hawbId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
@@ -247,10 +247,10 @@ export const usePreviewHouseAwbMutation = (options?: AppMutationOptions<typeof p
  * Mutation `useGenerateHouseAwb`
  * @summary Generate House AWB document
  * @permission Requires `canUseGenerateHouseAwb` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.hawbId Path parameter
- * @param { string } mutation.officeId Path parameter
- * @param { CommonModels.GenerateWorkingDocumentRequestDto } mutation.data Body parameter
+ * @param { string } positionId Path parameter
+ * @param { string } hawbId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { CommonModels.GenerateWorkingDocumentRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [201, 401]

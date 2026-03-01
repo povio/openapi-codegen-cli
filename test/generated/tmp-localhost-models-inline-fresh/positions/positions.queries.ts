@@ -198,11 +198,11 @@ export const keys = {
  * Query `useFindAll`
  * @summary List all positions with only their labels
  * @permission Requires `canUseFindAll` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { PositionsModels.PositionLabelsFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { PositionsModels.PositionLabelsFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<PositionsModels.PositionsFindAllResponse> } 
  * @statusCodes [200, 401]
@@ -224,11 +224,11 @@ export const useFindAll = <TData>({ officeId, limit, filter, page, cursor }: { o
  * Infinite query `useFindAllInfinite
  * @summary List all positions with only their labels
  * @permission Requires `canUseFindAll` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { PositionsModels.PositionLabelsFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { PositionsModels.PositionLabelsFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<PositionsModels.PositionsFindAllResponse> } 
  * @statusCodes [200, 401]
@@ -255,12 +255,12 @@ export const useFindAllInfinite = <TData>({ officeId, limit, filter, cursor }: {
  * Query `usePaginate`
  * @summary List positions
  * @permission Requires `canUsePaginate` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): number, transportMode, isCancelled, direction, loadType, serviceDate, createdAt, departureDate, arrivalDate, blfromCostumerDate, blfromCarrierDate, customsDate, vgmCustomerDate, serviceType, externalSystemId, employee, project, profit, margin, isMasterPosition. Example: `number`
- * @param { PositionsModels.PositionFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): number, transportMode, isCancelled, direction, loadType, serviceDate, createdAt, departureDate, arrivalDate, blfromCostumerDate, blfromCarrierDate, customsDate, vgmCustomerDate, serviceType, externalSystemId, employee, project, profit, margin, isMasterPosition. Example: `number`
+ * @param { PositionsModels.PositionFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<PositionsModels.PositionsPaginateResponse> } 
  * @statusCodes [200, 401]
@@ -282,12 +282,12 @@ export const usePaginate = <TData>({ officeId, limit, order, filter, page, curso
  * Infinite query `usePaginateInfinite
  * @summary List positions
  * @permission Requires `canUsePaginate` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): number, transportMode, isCancelled, direction, loadType, serviceDate, createdAt, departureDate, arrivalDate, blfromCostumerDate, blfromCarrierDate, customsDate, vgmCustomerDate, serviceType, externalSystemId, employee, project, profit, margin, isMasterPosition. Example: `number`
- * @param { PositionsModels.PositionFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): number, transportMode, isCancelled, direction, loadType, serviceDate, createdAt, departureDate, arrivalDate, blfromCostumerDate, blfromCarrierDate, customsDate, vgmCustomerDate, serviceType, externalSystemId, employee, project, profit, margin, isMasterPosition. Example: `number`
+ * @param { PositionsModels.PositionFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<PositionsModels.PositionsPaginateResponse> } 
  * @statusCodes [200, 401]
@@ -314,8 +314,8 @@ export const usePaginateInfinite = <TData>({ officeId, limit, order, filter, cur
  * Mutation `useCreate`
  * @summary Create position
  * @permission Requires `canUseCreate` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { PositionsModels.CreatePositionRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { PositionsModels.CreatePositionRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<CommonModels.PositionCoreResponseDto> } Position created successfully
  * @statusCodes [201, 400, 401, 404]
@@ -342,7 +342,7 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { officeId
  * Query `useTotalProfit`
  * @summary List positions
  * @permission Requires `canUseTotalProfit` ability 
- * @param { string } object.officeId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<PositionsModels.TotalProfitResponse> } 
  * @statusCodes [200, 401]
@@ -364,10 +364,10 @@ export const useTotalProfit = <TData>({ officeId }: { officeId: string }, option
  * Query `useListAvailablePartnersFor`
  * @summary List available business partners for a position
  * @permission Requires `canUseListAvailablePartnersFor` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.positionId Path parameter
- * @param { string } object.search Query parameter
- * @param { CommonModels.PositionAvailablePartnersUseCase } object.useCase Query parameter. When provided and office toggle is enabled, restrict available partners to finance relationships (customer/vendor).
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } search Query parameter
+ * @param { CommonModels.PositionAvailablePartnersUseCase } useCase Query parameter. When provided and office toggle is enabled, restrict available partners to finance relationships (customer/vendor).
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<PositionsModels.PositionsListAvailablePartnersForResponse> } 
  * @statusCodes [200, 401]
@@ -389,8 +389,8 @@ export const useListAvailablePartnersFor = <TData>({ officeId, positionId, searc
  * Mutation `useExportPositions` - recommended when file should not be cached
  * @summary Export positions to Excel
  * @permission Requires `canUseExportPositions` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { PositionsModels.PositionExportRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { PositionsModels.PositionExportRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 201, 401]
@@ -417,8 +417,8 @@ export const useExportPositions = (options?: AppMutationOptions<typeof exportPos
  * Query `useGet`
  * @summary Get position by ID
  * @permission Requires `canUseGet` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.positionId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<CommonModels.PositionCoreResponseDto> } Position retrieved successfully
  * @statusCodes [200, 401, 403, 404]
@@ -440,9 +440,9 @@ export const useGet = <TData>({ officeId, positionId }: { officeId: string, posi
  * Mutation `useUpdate`
  * @summary Update position
  * @permission Requires `canUseUpdate` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.positionId Path parameter
- * @param { PositionsModels.UpdatePositionDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { PositionsModels.UpdatePositionDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<CommonModels.PositionCoreResponseDto> } Position updated successfully
  * @statusCodes [200, 400, 401, 404]
@@ -471,8 +471,8 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { officeId
  * Query `useListRouteLabels`
  * @summary List all route labels for a position
  * @permission Requires `canUseListRouteLabels` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.positionId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<PositionsModels.ListRouteLabelsResponse> } 
  * @statusCodes [200, 401]
@@ -494,8 +494,8 @@ export const useListRouteLabels = <TData>({ officeId, positionId }: { officeId: 
  * Query `useGetDuplicateDefaultParameters`
  * @summary Get default duplication parameters for a position
  * @permission Requires `canUseGetDuplicateDefaultParameters` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.positionId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<PositionsModels.DuplicatePositionDefaultParametersResponseDto> } Default parameters and suggested estimated service date
  * @statusCodes [200, 401, 404]
@@ -517,9 +517,9 @@ export const useGetDuplicateDefaultParameters = <TData>({ officeId, positionId }
  * Mutation `useDuplicate`
  * @summary Duplicate position
  * @permission Requires `canUseDuplicate` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.positionId Path parameter
- * @param { PositionsModels.DuplicatePositionRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { PositionsModels.DuplicatePositionRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<CommonModels.PositionCoreResponseDto> } Position duplicated successfully
  * @statusCodes [201, 400, 401, 404]
@@ -548,8 +548,8 @@ export const useDuplicate = (options?: AppMutationOptions<typeof duplicate, { of
  * Mutation `useCancel`
  * @summary Cancel position
  * @permission Requires `canUseCancel` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.positionId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<CommonModels.PositionCoreResponseDto> } Position cancelled successfully
  * @statusCodes [200, 400, 401, 403, 404]
@@ -578,8 +578,8 @@ export const useCancel = (options?: AppMutationOptions<typeof cancel, { officeId
  * Mutation `useRevertCancel`
  * @summary Revert cancelled position (accounting)
  * @permission Requires `canUseRevertCancel` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.positionId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<CommonModels.PositionCoreResponseDto> } Position reverted successfully
  * @statusCodes [200, 400, 401, 403, 404]
@@ -608,9 +608,9 @@ export const useRevertCancel = (options?: AppMutationOptions<typeof revertCancel
  * Mutation `useLinkChild`
  * @summary Link child positions to parent
  * @permission Requires `canUseLinkChild` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.positionId Path parameter
- * @param { PositionsModels.LinkChildPositionsRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { PositionsModels.LinkChildPositionsRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [201, 401]
@@ -637,9 +637,9 @@ export const useLinkChild = (options?: AppMutationOptions<typeof linkChild, { of
  * Mutation `useUnlinkChild`
  * @summary Unlink child positions from parent
  * @permission Requires `canUseUnlinkChild` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.positionId Path parameter
- * @param { PositionsModels.UnlinkChildPositionsRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { PositionsModels.UnlinkChildPositionsRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
@@ -666,11 +666,11 @@ export const useUnlinkChild = (options?: AppMutationOptions<typeof unlinkChild, 
  * Query `useListChild`
  * @summary Get child positions for parent
  * @permission Requires `canUseListChild` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.positionId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<PositionsModels.ListChildResponse> } 
  * @statusCodes [200, 401]
@@ -692,11 +692,11 @@ export const useListChild = <TData>({ officeId, positionId, limit, page, cursor 
  * Infinite query `useListChildInfinite
  * @summary Get child positions for parent
  * @permission Requires `canUseListChild` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.positionId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<PositionsModels.ListChildResponse> } 
  * @statusCodes [200, 401]

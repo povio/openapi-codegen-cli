@@ -72,8 +72,8 @@ export const keys = {
  * Query `useList`
  * @summary Get position checklist items
  * @permission Requires `canUseList` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.positionId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<PositionChecklistModels.PositionChecklistResponseDto> } 
  * @statusCodes [200, 401]
@@ -95,9 +95,9 @@ export const useList = <TData>({ officeId, positionId }: { officeId: string, pos
  * Mutation `useApplyTemplates`
  * @summary Apply checklist templates to position
  * @permission Requires `canUseApplyTemplates` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.positionId Path parameter
- * @param { PositionChecklistModels.ApplyTemplatesRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { PositionChecklistModels.ApplyTemplatesRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<PositionChecklistModels.ApplyTemplatesResponse> } 
  * @statusCodes [201, 401]
@@ -124,9 +124,9 @@ export const useApplyTemplates = (options?: AppMutationOptions<typeof applyTempl
  * Mutation `useComplete`
  * @summary Complete a checklist item
  * @permission Requires `canUseComplete` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.itemId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } itemId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<PositionChecklistModels.PositionChecklistItemResponseDto> } 
  * @statusCodes [201, 401]
@@ -153,9 +153,9 @@ export const useComplete = (options?: AppMutationOptions<typeof complete, { offi
  * Mutation `useUncomplete`
  * @summary Mark checklist item as not completed
  * @permission Requires `canUseUncomplete` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.itemId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } itemId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<PositionChecklistModels.PositionChecklistItemResponseDto> } 
  * @statusCodes [201, 401]
@@ -182,10 +182,10 @@ export const useUncomplete = (options?: AppMutationOptions<typeof uncomplete, { 
  * Mutation `useUpdateNotes`
  * @summary Update checklist item notes
  * @permission Requires `canUseUpdateNotes` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.itemId Path parameter
- * @param { PositionChecklistModels.UpdatePositionChecklistItemDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } itemId Path parameter
+ * @param { PositionChecklistModels.UpdatePositionChecklistItemDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<PositionChecklistModels.PositionChecklistItemResponseDto> } 
  * @statusCodes [200, 401]
@@ -212,9 +212,9 @@ export const useUpdateNotes = (options?: AppMutationOptions<typeof updateNotes, 
  * Mutation `useReorder`
  * @summary Reorder checklist items
  * @permission Requires `canUseReorder` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.positionId Path parameter
- * @param { PositionChecklistModels.ReorderPositionChecklistDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { PositionChecklistModels.ReorderPositionChecklistDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<PositionChecklistModels.PositionChecklistReorderResponse> } 
  * @statusCodes [200, 401]

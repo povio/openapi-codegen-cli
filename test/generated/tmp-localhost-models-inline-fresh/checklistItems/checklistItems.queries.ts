@@ -100,8 +100,8 @@ export const keys = {
  * Mutation `useCreate`
  * @summary Create checklist item
  * @permission Requires `canUseCreate` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { ChecklistItemsModels.CreateChecklistItemRequestDTO } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { ChecklistItemsModels.CreateChecklistItemRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<ChecklistItemsModels.ChecklistItemResponseDTO> } 
  * @statusCodes [201, 401]
@@ -128,12 +128,12 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { officeId
  * Query `usePaginate`
  * @summary Get paginated checklist items
  * @permission Requires `canUsePaginate` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
- * @param { ChecklistItemsModels.ChecklistItemFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
+ * @param { ChecklistItemsModels.ChecklistItemFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<ChecklistItemsModels.ChecklistItemsPaginateResponse> } 
  * @statusCodes [200, 401]
@@ -155,12 +155,12 @@ export const usePaginate = <TData>({ officeId, limit, order, filter, page, curso
  * Infinite query `usePaginateInfinite
  * @summary Get paginated checklist items
  * @permission Requires `canUsePaginate` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
- * @param { ChecklistItemsModels.ChecklistItemFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
+ * @param { ChecklistItemsModels.ChecklistItemFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<ChecklistItemsModels.ChecklistItemsPaginateResponse> } 
  * @statusCodes [200, 401]
@@ -187,12 +187,12 @@ export const usePaginateInfinite = <TData>({ officeId, limit, order, filter, cur
  * Query `usePaginateLabels`
  * @summary Paginate checklist item labels
  * @permission Requires `canUsePaginateLabels` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
- * @param { ChecklistItemsModels.ChecklistItemLabelFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
+ * @param { ChecklistItemsModels.ChecklistItemLabelFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<ChecklistItemsModels.ChecklistItemsPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
@@ -214,12 +214,12 @@ export const usePaginateLabels = <TData>({ officeId, limit, order, filter, page,
  * Infinite query `usePaginateLabelsInfinite
  * @summary Paginate checklist item labels
  * @permission Requires `canUsePaginateLabels` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
- * @param { ChecklistItemsModels.ChecklistItemLabelFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, createdAt, updatedAt, createdBy, updatedBy. Example: `name`
+ * @param { ChecklistItemsModels.ChecklistItemLabelFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<ChecklistItemsModels.ChecklistItemsPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
@@ -246,8 +246,8 @@ export const usePaginateLabelsInfinite = <TData>({ officeId, limit, order, filte
  * Query `useFindById`
  * @summary Get checklist item by id
  * @permission Requires `canUseFindById` ability 
- * @param { string } object.id Path parameter
- * @param { string } object.officeId Path parameter
+ * @param { string } id Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<ChecklistItemsModels.ChecklistItemResponseDTO> } 
  * @statusCodes [200, 401]
@@ -269,9 +269,9 @@ export const useFindById = <TData>({ id, officeId }: { id: string, officeId: str
  * Mutation `useUpdate`
  * @summary Update checklist item
  * @permission Requires `canUseUpdate` ability 
- * @param { string } mutation.id Path parameter
- * @param { string } mutation.officeId Path parameter
- * @param { ChecklistItemsModels.UpdateChecklistItemRequestDTO } mutation.data Body parameter
+ * @param { string } id Path parameter
+ * @param { string } officeId Path parameter
+ * @param { ChecklistItemsModels.UpdateChecklistItemRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<ChecklistItemsModels.ChecklistItemResponseDTO> } 
  * @statusCodes [200, 401]
@@ -300,8 +300,8 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { id: stri
  * Mutation `useArchive`
  * @summary Archive checklist item
  * @permission Requires `canUseArchive` ability 
- * @param { string } mutation.id Path parameter
- * @param { string } mutation.officeId Path parameter
+ * @param { string } id Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
@@ -328,8 +328,8 @@ export const useArchive = (options?: AppMutationOptions<typeof archive, { id: st
  * Mutation `useUnarchive`
  * @summary Unarchive checklist item
  * @permission Requires `canUseUnarchive` ability 
- * @param { string } mutation.id Path parameter
- * @param { string } mutation.officeId Path parameter
+ * @param { string } id Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]

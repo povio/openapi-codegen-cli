@@ -102,11 +102,11 @@ export const keys = {
  * Query `useList`
  * @summary List Currencies
  * @permission Requires `canUseList` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): isoCode, name, createdAt, updatedAt, createdBy, updatedBy. Example: `isoCode`
- * @param { CurrenciesModels.CurrencyPaginationFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): isoCode, name, createdAt, updatedAt, createdBy, updatedBy. Example: `isoCode`
+ * @param { CurrenciesModels.CurrencyPaginationFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<CurrenciesModels.CurrenciesListResponse> } 
  * @statusCodes [200, 401]
@@ -128,11 +128,11 @@ export const useList = <TData>({ limit, order, filter, page, cursor }: { limit: 
  * Infinite query `useListInfinite
  * @summary List Currencies
  * @permission Requires `canUseList` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): isoCode, name, createdAt, updatedAt, createdBy, updatedBy. Example: `isoCode`
- * @param { CurrenciesModels.CurrencyPaginationFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): isoCode, name, createdAt, updatedAt, createdBy, updatedBy. Example: `isoCode`
+ * @param { CurrenciesModels.CurrencyPaginationFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<CurrenciesModels.CurrenciesListResponse> } 
  * @statusCodes [200, 401]
@@ -159,7 +159,7 @@ export const useListInfinite = <TData>({ limit, order, filter, cursor }: { limit
  * Mutation `useCreateCurrency`
  * @summary Create Currency
  * @permission Requires `canUseCreateCurrency` ability 
- * @param { CurrenciesModels.CreateCurrencyRequestDTO } mutation.data Body parameter
+ * @param { CurrenciesModels.CreateCurrencyRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<CurrenciesModels.CurrencyResponseDto> } 
  * @statusCodes [201, 401]
@@ -186,11 +186,11 @@ export const useCreateCurrency = (options?: AppMutationOptions<typeof createCurr
  * Query `usePaginateCurrencyLabels`
  * @summary Paginate Currency labels (id and name only)
  * @permission Requires `canUsePaginateCurrencyLabels` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): isoCode, name, createdAt, updatedAt, createdBy, updatedBy. Example: `isoCode`
- * @param { CurrenciesModels.CurrencyPaginationFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): isoCode, name, createdAt, updatedAt, createdBy, updatedBy. Example: `isoCode`
+ * @param { CurrenciesModels.CurrencyPaginationFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<CurrenciesModels.PaginateCurrencyLabelsResponse> } 
  * @statusCodes [200, 401]
@@ -212,11 +212,11 @@ export const usePaginateCurrencyLabels = <TData>({ limit, order, filter, page, c
  * Infinite query `usePaginateCurrencyLabelsInfinite
  * @summary Paginate Currency labels (id and name only)
  * @permission Requires `canUsePaginateCurrencyLabels` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): isoCode, name, createdAt, updatedAt, createdBy, updatedBy. Example: `isoCode`
- * @param { CurrenciesModels.CurrencyPaginationFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): isoCode, name, createdAt, updatedAt, createdBy, updatedBy. Example: `isoCode`
+ * @param { CurrenciesModels.CurrencyPaginationFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<CurrenciesModels.PaginateCurrencyLabelsResponse> } 
  * @statusCodes [200, 401]
@@ -243,7 +243,7 @@ export const usePaginateCurrencyLabelsInfinite = <TData>({ limit, order, filter,
  * Query `useGetCurrencyById`
  * @summary Get Currency by iso code
  * @permission Requires `canUseGetCurrencyById` ability 
- * @param { string } object.isoCode Path parameter
+ * @param { string } isoCode Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<CurrenciesModels.CurrencyResponseDto> } 
  * @statusCodes [200, 401]
@@ -265,8 +265,8 @@ export const useGetCurrencyById = <TData>({ isoCode }: { isoCode: string }, opti
  * Mutation `useUpdateCurrency`
  * @summary Update Currency
  * @permission Requires `canUseUpdateCurrency` ability 
- * @param { string } mutation.isoCode Path parameter
- * @param { CurrenciesModels.UpdateCurrencyRequestDTO } mutation.data Body parameter
+ * @param { string } isoCode Path parameter
+ * @param { CurrenciesModels.UpdateCurrencyRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<CurrenciesModels.CurrencyResponseDto> } 
  * @statusCodes [200, 401]
@@ -295,12 +295,12 @@ export const useUpdateCurrency = (options?: AppMutationOptions<typeof updateCurr
  * Query `usePaginateCurrencyLabelsByOffice`
  * @summary Paginate office currency labels (id and name only)
  * @permission Requires `canUsePaginateCurrencyLabelsByOffice` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): isoCode, name, createdAt, updatedAt, createdBy, updatedBy. Example: `isoCode`
- * @param { CurrenciesModels.CurrencyPaginationFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): isoCode, name, createdAt, updatedAt, createdBy, updatedBy. Example: `isoCode`
+ * @param { CurrenciesModels.CurrencyPaginationFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<CurrenciesModels.PaginateCurrencyLabelsByOfficeResponse> } 
  * @statusCodes [200, 401]
@@ -322,12 +322,12 @@ export const usePaginateCurrencyLabelsByOffice = <TData>({ officeId, limit, orde
  * Infinite query `usePaginateCurrencyLabelsByOfficeInfinite
  * @summary Paginate office currency labels (id and name only)
  * @permission Requires `canUsePaginateCurrencyLabelsByOffice` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): isoCode, name, createdAt, updatedAt, createdBy, updatedBy. Example: `isoCode`
- * @param { CurrenciesModels.CurrencyPaginationFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): isoCode, name, createdAt, updatedAt, createdBy, updatedBy. Example: `isoCode`
+ * @param { CurrenciesModels.CurrencyPaginationFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<CurrenciesModels.PaginateCurrencyLabelsByOfficeResponse> } 
  * @statusCodes [200, 401]

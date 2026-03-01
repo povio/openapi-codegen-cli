@@ -47,13 +47,13 @@ export const keys = {
  * Query `useList`
  * @summary List working documents
  * @permission Requires `canUseList` ability 
- * @param { string } object.positionId Path parameter
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): NAME, TYPE, CREATED_AT, UPDATED_AT. Example: `NAME`
- * @param { WorkingDocumentsModels.WorkingDocumentFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } positionId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): NAME, TYPE, CREATED_AT, UPDATED_AT. Example: `NAME`
+ * @param { WorkingDocumentsModels.WorkingDocumentFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<WorkingDocumentsModels.WorkingDocumentsListResponse> } 
  * @statusCodes [200, 401]
@@ -75,13 +75,13 @@ export const useList = <TData>({ positionId, officeId, limit, order, filter, pag
  * Infinite query `useListInfinite
  * @summary List working documents
  * @permission Requires `canUseList` ability 
- * @param { string } object.positionId Path parameter
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): NAME, TYPE, CREATED_AT, UPDATED_AT. Example: `NAME`
- * @param { WorkingDocumentsModels.WorkingDocumentFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } positionId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): NAME, TYPE, CREATED_AT, UPDATED_AT. Example: `NAME`
+ * @param { WorkingDocumentsModels.WorkingDocumentFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<WorkingDocumentsModels.WorkingDocumentsListResponse> } 
  * @statusCodes [200, 401]
@@ -108,9 +108,9 @@ export const useListInfinite = <TData>({ positionId, officeId, limit, order, fil
  * Query `useFindById`
  * @summary Get working document by ID
  * @permission Requires `canUseFindById` ability 
- * @param { string } object.positionId Path parameter
- * @param { string } object.id Path parameter
- * @param { string } object.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } id Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<WorkingDocumentsModels.WorkingDocumentResponseDTO> } 
  * @statusCodes [200, 401, 404]

@@ -53,8 +53,8 @@ export const useGetAll = <TData>(options?: AppQueryOptions<typeof getAll, TData>
 /** 
  * Mutation `useUpdate`
  * @summary Update employee setting
- * @param { string } mutation.key Path parameter
- * @param { EmployeeSettingsModels.UpdateEmployeeSettingDto } mutation.data Body parameter
+ * @param { string } key Path parameter
+ * @param { EmployeeSettingsModels.UpdateEmployeeSettingDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [204, 401]

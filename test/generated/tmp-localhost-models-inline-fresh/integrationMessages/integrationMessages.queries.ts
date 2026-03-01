@@ -38,12 +38,12 @@ export const keys = {
  * Query `useList`
  * @summary Paginate integration messages
  * @permission Requires `canUseList` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): createdAt, status, direction, format, integrationChannel, positionNumber. Example: `createdAt`
- * @param { IntegrationMessagesModels.IntegrationMessageFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): createdAt, status, direction, format, integrationChannel, positionNumber. Example: `createdAt`
+ * @param { IntegrationMessagesModels.IntegrationMessageFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<IntegrationMessagesModels.IntegrationMessagesListResponse> } 
  * @statusCodes [200, 401]
@@ -65,12 +65,12 @@ export const useList = <TData>({ officeId, limit, order, filter, page, cursor }:
  * Infinite query `useListInfinite
  * @summary Paginate integration messages
  * @permission Requires `canUseList` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): createdAt, status, direction, format, integrationChannel, positionNumber. Example: `createdAt`
- * @param { IntegrationMessagesModels.IntegrationMessageFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): createdAt, status, direction, format, integrationChannel, positionNumber. Example: `createdAt`
+ * @param { IntegrationMessagesModels.IntegrationMessageFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<IntegrationMessagesModels.IntegrationMessagesListResponse> } 
  * @statusCodes [200, 401]

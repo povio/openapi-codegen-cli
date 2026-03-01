@@ -48,9 +48,9 @@ export const keys = {
  * Mutation `useUpload`
  * @summary Create upload instructions for master data import file
  * @permission Requires `canUseUpload` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { MasterDataImportModels.MasterDataImportUploadRequestDto } mutation.data Body parameter
- * @param { File } mutation.file Body parameter
+ * @param { string } officeId Path parameter
+ * @param { MasterDataImportModels.MasterDataImportUploadRequestDto } data Body parameter
+ * @param { File } file Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<MasterDataImportModels.MasterDataImportUploadResponseDto> } 
  * @statusCodes [201, 401]
@@ -102,8 +102,8 @@ export const useUpload = (options?: AppMutationOptions<typeof upload, { officeId
  * Mutation `usePostOfficesMasterDataImportByOfficeId`
  * @summary Start master data import process
  * @permission Requires `canUsePostOfficesMasterDataImportByOfficeId` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { MasterDataImportModels.MasterDataImportRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { MasterDataImportModels.MasterDataImportRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<MasterDataImportModels.MasterDataImportResponseDto> } 
  * @statusCodes [201, 401]
@@ -130,8 +130,8 @@ export const usePostOfficesMasterDataImportByOfficeId = (options?: AppMutationOp
  * Query `useGetImportStatus`
  * @summary Get import job status
  * @permission Requires `canUseGetImportStatus` ability 
- * @param { string } object.jobId Path parameter
- * @param { string } object.officeId Path parameter
+ * @param { string } jobId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<MasterDataImportModels.ImportStatusResponseDto> } 
  * @statusCodes [200, 401]

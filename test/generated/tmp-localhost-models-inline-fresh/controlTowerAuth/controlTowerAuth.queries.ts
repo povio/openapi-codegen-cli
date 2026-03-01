@@ -33,7 +33,7 @@ export const moduleName = QueryModule.ControlTowerAuth;
 /** 
  * Mutation `useLogin`
  * @description Returns an access token to authenticate for protected endpoints
- * @param { ControlTowerAuthModels.LoginRequestDto } mutation.data Body parameter
+ * @param { ControlTowerAuthModels.LoginRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<ControlTowerAuthModels.LoginResponseDto> } 
  * @statusCodes [200, 400, 401]
@@ -57,7 +57,7 @@ export const useLogin = (options?: AppMutationOptions<typeof login, { data: Cont
 /** 
  * Mutation `useResetPassword`
  * @description Resets the password for the requesting user
- * @param { ControlTowerAuthModels.PasswordResetDto } mutation.data Body parameter
+ * @param { ControlTowerAuthModels.PasswordResetDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<ControlTowerAuthModels.LoginResponseDto> } 
  * @statusCodes [200, 400, 401]

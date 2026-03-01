@@ -108,12 +108,12 @@ export const keys = {
  * Query `useListCargosByPositionId`
  * @summary List all cargo items for a position
  * @permission Requires `canUseListCargosByPositionId` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.positionId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { PositionCargoModels.ListCargosByPositionIdOrderParam } object.order Query parameter. Order fields. Prefix with - for descending order. Example: -createdAt,updatedAt
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { PositionCargoModels.ListCargosByPositionIdOrderParam } order Query parameter. Order fields. Prefix with - for descending order. Example: -createdAt,updatedAt
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<PositionCargoModels.ListCargosByPositionIdResponse> } 
  * @statusCodes [200, 401]
@@ -135,12 +135,12 @@ export const useListCargosByPositionId = <TData>({ officeId, positionId, limit, 
  * Infinite query `useListCargosByPositionIdInfinite
  * @summary List all cargo items for a position
  * @permission Requires `canUseListCargosByPositionId` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.positionId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { PositionCargoModels.ListCargosByPositionIdOrderParam } object.order Query parameter. Order fields. Prefix with - for descending order. Example: -createdAt,updatedAt
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { PositionCargoModels.ListCargosByPositionIdOrderParam } order Query parameter. Order fields. Prefix with - for descending order. Example: -createdAt,updatedAt
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<PositionCargoModels.ListCargosByPositionIdResponse> } 
  * @statusCodes [200, 401]
@@ -167,9 +167,9 @@ export const useListCargosByPositionIdInfinite = <TData>({ officeId, positionId,
  * Mutation `useCreateCargo`
  * @summary Create a new cargo item
  * @permission Requires `canUseCreateCargo` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.positionId Path parameter
- * @param { CommonModels.CreatePositionCargoDTO } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { CommonModels.CreatePositionCargoDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<CommonModels.PositionCargoResponseDTO> } 
  * @statusCodes [201, 401]
@@ -196,8 +196,8 @@ export const useCreateCargo = (options?: AppMutationOptions<typeof createCargo, 
  * Query `useListCargoLabels`
  * @summary List all cargo labels for a position
  * @permission Requires `canUseListCargoLabels` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.positionId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<PositionCargoModels.PositionCargoListCargoLabelsResponse> } 
  * @statusCodes [200, 401]
@@ -219,8 +219,8 @@ export const useListCargoLabels = <TData>({ officeId, positionId }: { officeId: 
  * Query `useGetCargoSummary`
  * @summary Get cargo summary grouped by transport unit type
  * @permission Requires `canUseGetCargoSummary` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.positionId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<PositionCargoModels.PositionCargoGetCargoSummaryResponse> } 
  * @statusCodes [200, 401]
@@ -242,9 +242,9 @@ export const useGetCargoSummary = <TData>({ officeId, positionId }: { officeId: 
  * Query `useGetCargoById`
  * @summary Get a specific cargo item
  * @permission Requires `canUseGetCargoById` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.positionId Path parameter
- * @param { string } object.cargoId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } cargoId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<CommonModels.PositionCargoResponseDTO> } 
  * @statusCodes [200, 401]
@@ -266,10 +266,10 @@ export const useGetCargoById = <TData>({ officeId, positionId, cargoId }: { offi
  * Mutation `useUpdateCargo`
  * @summary Update a cargo item
  * @permission Requires `canUseUpdateCargo` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.cargoId Path parameter
- * @param { CommonModels.UpdatePositionCargoDTO } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } cargoId Path parameter
+ * @param { CommonModels.UpdatePositionCargoDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<CommonModels.PositionCargoResponseDTO> } 
  * @statusCodes [200, 401]
@@ -298,9 +298,9 @@ export const useUpdateCargo = (options?: AppMutationOptions<typeof updateCargo, 
  * Mutation `useDeleteCargo`
  * @summary Delete a cargo item
  * @permission Requires `canUseDeleteCargo` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.cargoId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } cargoId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [204, 401]
@@ -327,10 +327,10 @@ export const useDeleteCargo = (options?: AppMutationOptions<typeof deleteCargo, 
  * Mutation `useCreateBulkCargos`
  * @summary Create a new cargo item
  * @permission Requires `canUseCreateBulkCargos` ability 
- * @param { number } mutation.numberOfCargos Path parameter
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.positionId Path parameter
- * @param { CommonModels.CreatePositionCargoDTO } mutation.data Body parameter
+ * @param { number } numberOfCargos Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { CommonModels.CreatePositionCargoDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<PositionCargoModels.PositionCargoCreateBulkCargosResponse> } 
  * @statusCodes [201, 401]
@@ -357,9 +357,9 @@ export const useCreateBulkCargos = (options?: AppMutationOptions<typeof createBu
  * Mutation `useDuplicateCargo`
  * @summary Duplicate a cargo item
  * @permission Requires `canUseDuplicateCargo` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.cargoId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } cargoId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<CommonModels.PositionCargoResponseDTO> } 
  * @statusCodes [201, 401]

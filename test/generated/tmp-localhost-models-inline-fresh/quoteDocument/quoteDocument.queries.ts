@@ -78,8 +78,8 @@ export const keys = {
  * Query `useGet`
  * @summary Get quote document
  * @permission Requires `canUseGet` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.quoteId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } quoteId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<QuoteDocumentModels.QuoteDocumentResponseDto> } 
  * @statusCodes [200, 401]
@@ -101,9 +101,9 @@ export const useGet = <TData>({ officeId, quoteId }: { officeId: string, quoteId
  * Mutation `useUpdate`
  * @summary Update quote document
  * @permission Requires `canUseUpdate` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.quoteId Path parameter
- * @param { QuoteDocumentModels.UpdateQuoteDocumentRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } quoteId Path parameter
+ * @param { QuoteDocumentModels.UpdateQuoteDocumentRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
@@ -130,9 +130,9 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { officeId
  * Mutation `useGetPreview` - recommended when file should not be cached
  * @summary Get quote document pdf preview
  * @permission Requires `canUseGetPreview` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.quoteId Path parameter
- * @param { QuoteDocumentModels.GenerateQuoteDocumentPreviewRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } quoteId Path parameter
+ * @param { QuoteDocumentModels.GenerateQuoteDocumentPreviewRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 201, 401]
@@ -159,9 +159,9 @@ export const useGetPreview = (options?: AppMutationOptions<typeof getPreview, { 
  * Mutation `useGenerate`
  * @summary Get quote document pdf preview
  * @permission Requires `canUseGenerate` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.quoteId Path parameter
- * @param { QuoteDocumentModels.GenerateQuoteDocumentRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } quoteId Path parameter
+ * @param { QuoteDocumentModels.GenerateQuoteDocumentRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [201, 401]
@@ -188,9 +188,9 @@ export const useGenerate = (options?: AppMutationOptions<typeof generate, { offi
  * Mutation `useGenerateEml` - recommended when file should not be cached
  * @summary Generate quote document and return EML file
  * @permission Requires `canUseGenerateEml` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.quoteId Path parameter
- * @param { QuoteDocumentModels.GenerateQuoteDocumentRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } quoteId Path parameter
+ * @param { QuoteDocumentModels.GenerateQuoteDocumentRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]

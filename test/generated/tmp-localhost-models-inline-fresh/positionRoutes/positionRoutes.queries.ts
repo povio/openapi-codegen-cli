@@ -82,8 +82,8 @@ export const keys = {
  * Query `useListRoutes`
  * @summary List routes with points for a position (unified for sea/air/road)
  * @permission Requires `canUseListRoutes` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.positionId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<CommonModels.RouteListResponseDto> } 
  * @statusCodes [200, 401]
@@ -105,10 +105,10 @@ export const useListRoutes = <TData>({ officeId, positionId }: { officeId: strin
  * Mutation `useCreateRoutePoint`
  * @summary Create a route point
  * @permission Requires `canUseCreateRoutePoint` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.routeId Path parameter
- * @param { CommonModels.CreateRoutePointRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } routeId Path parameter
+ * @param { CommonModels.CreateRoutePointRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<CommonModels.RoutePointResponseDto> } 
  * @statusCodes [201, 401]
@@ -135,11 +135,11 @@ export const useCreateRoutePoint = (options?: AppMutationOptions<typeof createRo
  * Mutation `useUpdateRoutePoint`
  * @summary Update a route point
  * @permission Requires `canUseUpdateRoutePoint` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.routeId Path parameter
- * @param { string } mutation.pointId Path parameter
- * @param { CommonModels.UpdateRoutePointRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } routeId Path parameter
+ * @param { string } pointId Path parameter
+ * @param { CommonModels.UpdateRoutePointRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<CommonModels.RoutePointResponseDto> } 
  * @statusCodes [200, 401]
@@ -166,10 +166,10 @@ export const useUpdateRoutePoint = (options?: AppMutationOptions<typeof updateRo
  * Mutation `useDeleteRoutePoint`
  * @summary Delete a route point
  * @permission Requires `canUseDeleteRoutePoint` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.routeId Path parameter
- * @param { string } mutation.pointId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } routeId Path parameter
+ * @param { string } pointId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [204, 401]
@@ -196,8 +196,8 @@ export const useDeleteRoutePoint = (options?: AppMutationOptions<typeof deleteRo
  * Mutation `useSplitRoutes`
  * @summary Split routes by cargo (sea positions only)
  * @permission Requires `canUseSplitRoutes` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.positionId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
@@ -224,9 +224,9 @@ export const useSplitRoutes = (options?: AppMutationOptions<typeof splitRoutes, 
  * Mutation `useMergeRoutes`
  * @summary Merge routes (sea positions only)
  * @permission Requires `canUseMergeRoutes` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.positionId Path parameter
- * @param { CommonModels.MergeRoutesRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { CommonModels.MergeRoutesRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
@@ -253,10 +253,10 @@ export const useMergeRoutes = (options?: AppMutationOptions<typeof mergeRoutes, 
  * Mutation `useCopyRoute`
  * @summary Copy route points to another route (sea positions only)
  * @permission Requires `canUseCopyRoute` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.routeId Path parameter
- * @param { CommonModels.CopyRouteRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } routeId Path parameter
+ * @param { CommonModels.CopyRouteRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]

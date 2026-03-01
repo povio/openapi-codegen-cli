@@ -79,8 +79,8 @@ export const keys = {
  * Mutation `useCreate`
  * @summary Create a Master AWB document
  * @permission Requires `canUseCreate` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<WorkingDocumentsMasterAwbModels.MasterAwbDocumentResponseDTO> } 
  * @statusCodes [201, 401]
@@ -107,9 +107,9 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { position
  * Query `useGetMasterAwbData`
  * @summary Get Master AWB document data
  * @permission Requires `canUseGetMasterAwbData` ability 
- * @param { string } object.positionId Path parameter
- * @param { string } object.mawbId Path parameter
- * @param { string } object.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } mawbId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<WorkingDocumentsMasterAwbModels.MasterAwbDocumentResponseDTO> } 
  * @statusCodes [200, 401]
@@ -131,10 +131,10 @@ export const useGetMasterAwbData = <TData>({ positionId, mawbId, officeId }: { p
  * Mutation `useUpdateMasterAwbData`
  * @summary Update Master AWB document data
  * @permission Requires `canUseUpdateMasterAwbData` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.mawbId Path parameter
- * @param { string } mutation.officeId Path parameter
- * @param { WorkingDocumentsMasterAwbModels.UpdateMasterAwbDocumentRequestDTO } mutation.data Body parameter
+ * @param { string } positionId Path parameter
+ * @param { string } mawbId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { WorkingDocumentsMasterAwbModels.UpdateMasterAwbDocumentRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<WorkingDocumentsMasterAwbModels.MasterAwbDocumentResponseDTO> } 
  * @statusCodes [200, 401]
@@ -163,9 +163,9 @@ export const useUpdateMasterAwbData = (options?: AppMutationOptions<typeof updat
  * Mutation `useDeleteMasterAwb`
  * @summary Delete Master AWB document
  * @permission Requires `canUseDeleteMasterAwb` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.mawbId Path parameter
- * @param { string } mutation.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } mawbId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } Master AWB document deleted
  * @statusCodes [204, 401, 404]
@@ -192,9 +192,9 @@ export const useDeleteMasterAwb = (options?: AppMutationOptions<typeof deleteMas
  * Query `usePreviewMasterAwb` - recommended when file should be cached
  * @summary Preview Master AWB document
  * @permission Requires `canUsePreviewMasterAwb` ability 
- * @param { string } object.positionId Path parameter
- * @param { string } object.mawbId Path parameter
- * @param { string } object.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } mawbId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
@@ -216,9 +216,9 @@ export const usePreviewMasterAwb = <TData>({ positionId, mawbId, officeId }: { p
  * Mutation `usePreviewMasterAwbMutation` - recommended when file should not be cached
  * @summary Preview Master AWB document
  * @permission Requires `canUsePreviewMasterAwb` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.mawbId Path parameter
- * @param { string } mutation.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } mawbId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
@@ -247,10 +247,10 @@ export const usePreviewMasterAwbMutation = (options?: AppMutationOptions<typeof 
  * Mutation `useGenerateMasterAwb`
  * @summary Generate Master AWB document
  * @permission Requires `canUseGenerateMasterAwb` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.mawbId Path parameter
- * @param { string } mutation.officeId Path parameter
- * @param { CommonModels.GenerateWorkingDocumentRequestDto } mutation.data Body parameter
+ * @param { string } positionId Path parameter
+ * @param { string } mawbId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { CommonModels.GenerateWorkingDocumentRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [201, 401]

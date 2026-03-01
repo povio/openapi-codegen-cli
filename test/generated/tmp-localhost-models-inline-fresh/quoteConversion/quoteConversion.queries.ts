@@ -27,9 +27,9 @@ export const moduleName = QueryModule.QuoteConversion;
  * Mutation `useConvertQuoteToPosition`
  * @summary Convert quote to position
  * @permission Requires `canUseConvertQuoteToPosition` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.quoteId Path parameter
- * @param { QuoteConversionModels.ConvertQuoteToPositionRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } quoteId Path parameter
+ * @param { QuoteConversionModels.ConvertQuoteToPositionRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<CommonModels.PositionCoreResponseDto> } Quote converted to position successfully
  * @statusCodes [201, 400, 401, 404]

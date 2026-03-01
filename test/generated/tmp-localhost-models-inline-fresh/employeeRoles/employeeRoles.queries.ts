@@ -115,11 +115,11 @@ export const keys = {
  * Query `useList`
  * @summary Paginate Employee Role Definitions
  * @permission Requires `canUseList` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, numberOfUsers. Example: `name`
- * @param { EmployeeRolesModels.EmployeeRolePaginationFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, numberOfUsers. Example: `name`
+ * @param { EmployeeRolesModels.EmployeeRolePaginationFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<EmployeeRolesModels.EmployeeRolesListResponse> } 
  * @statusCodes [200, 401]
@@ -141,11 +141,11 @@ export const useList = <TData>({ limit, order, filter, page, cursor }: { limit: 
  * Infinite query `useListInfinite
  * @summary Paginate Employee Role Definitions
  * @permission Requires `canUseList` ability 
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, numberOfUsers. Example: `name`
- * @param { EmployeeRolesModels.EmployeeRolePaginationFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, numberOfUsers. Example: `name`
+ * @param { EmployeeRolesModels.EmployeeRolePaginationFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<EmployeeRolesModels.EmployeeRolesListResponse> } 
  * @statusCodes [200, 401]
@@ -172,7 +172,7 @@ export const useListInfinite = <TData>({ limit, order, filter, cursor }: { limit
  * Mutation `useCreate`
  * @summary Create Employee Role Definition
  * @permission Requires `canUseCreate` ability 
- * @param { EmployeeRolesModels.EmployeeRoleCreateRequest } mutation.data Body parameter
+ * @param { EmployeeRolesModels.EmployeeRoleCreateRequest } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<CommonModels.EmployeeRoleResponse> } 
  * @statusCodes [201, 401]
@@ -199,8 +199,8 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { data: Em
  * Query `useLabels`
  * @summary List all employee roles with only their labels
  * @permission Requires `canUseLabels` ability 
- * @param { string } object.search Query parameter
- * @param { CommonModels.EmployeeRoleContext } object.context Query parameter
+ * @param { string } search Query parameter
+ * @param { CommonModels.EmployeeRoleContext } context Query parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<EmployeeRolesModels.LabelsResponse> } 
  * @statusCodes [200, 401]
@@ -222,7 +222,7 @@ export const useLabels = <TData>({ search, context }: { search?: string, context
  * Query `useFind`
  * @summary Get Employee Role Definition
  * @permission Requires `canUseFind` ability 
- * @param { string } object.roleId Path parameter
+ * @param { string } roleId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<CommonModels.EmployeeRoleResponse> } 
  * @statusCodes [200, 401]
@@ -244,8 +244,8 @@ export const useFind = <TData>({ roleId }: { roleId: string }, options?: AppQuer
  * Mutation `useUpdate`
  * @summary Update Employee Role Definition
  * @permission Requires `canUseUpdate` ability 
- * @param { string } mutation.roleId Path parameter
- * @param { EmployeeRolesModels.EmployeeRoleUpdateRequest } mutation.data Body parameter
+ * @param { string } roleId Path parameter
+ * @param { EmployeeRolesModels.EmployeeRoleUpdateRequest } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<CommonModels.EmployeeRoleResponse> } 
  * @statusCodes [200, 401]
@@ -274,7 +274,7 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { roleId: 
  * Mutation `useDeleteEmployeesRolesByRoleId`
  * @summary Delete Employee Role Definition
  * @permission Requires `canUseDeleteEmployeesRolesByRoleId` ability 
- * @param { string } mutation.roleId Path parameter
+ * @param { string } roleId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<CommonModels.StatusResponseDto> } 
  * @statusCodes [200, 401]
@@ -303,7 +303,7 @@ export const useDeleteEmployeesRolesByRoleId = (options?: AppMutationOptions<typ
  * - convenience endpoint to expand the permissions of a role
  * - only returns the enabled permissions
  * @permission Requires `canUsePaginatePermissions` ability 
- * @param { string } object.roleId Path parameter
+ * @param { string } roleId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<EmployeeRolesModels.EmployeeRolesPaginatePermissionsResponse> } 
  * @statusCodes [200, 401]
@@ -325,9 +325,9 @@ export const usePaginatePermissions = <TData>({ roleId }: { roleId: string }, op
  * Mutation `useTogglePermission`
  * @summary Toggle Employee Role Definition Permission
  * @permission Requires `canUseTogglePermission` ability 
- * @param { string } mutation.roleId Path parameter
- * @param { string } mutation.permission Path parameter
- * @param { EmployeeRolesModels.EmployeeRoleTogglePermissionRequest } mutation.data Body parameter
+ * @param { string } roleId Path parameter
+ * @param { string } permission Path parameter
+ * @param { EmployeeRolesModels.EmployeeRoleTogglePermissionRequest } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
@@ -354,8 +354,8 @@ export const useTogglePermission = (options?: AppMutationOptions<typeof togglePe
  * Mutation `useCopy`
  * @summary Copy Employee Role Definition
  * @permission Requires `canUseCopy` ability 
- * @param { string } mutation.roleId Path parameter
- * @param { EmployeeRolesModels.CopyEmployeeRoleDto } mutation.data Body parameter
+ * @param { string } roleId Path parameter
+ * @param { EmployeeRolesModels.CopyEmployeeRoleDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<CommonModels.EmployeeRoleResponse> } 
  * @statusCodes [201, 401]

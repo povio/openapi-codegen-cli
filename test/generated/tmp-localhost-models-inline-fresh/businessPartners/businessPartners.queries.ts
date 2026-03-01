@@ -215,12 +215,12 @@ export const keys = {
  * Query `usePaginate`
  * @summary Paginate business partners
  * @permission Requires `canUsePaginate` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, matchCode, createdAt, updatedAt, createdBy, updatedBy, vat, shortName, address, locked, currency, archived. Example: `name`
- * @param { BusinessPartnersModels.BusinessPartnerFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, matchCode, createdAt, updatedAt, createdBy, updatedBy, vat, shortName, address, locked, currency, archived. Example: `name`
+ * @param { BusinessPartnersModels.BusinessPartnerFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<BusinessPartnersModels.BusinessPartnersPaginateResponse> } 
  * @statusCodes [200, 401]
@@ -242,12 +242,12 @@ export const usePaginate = <TData>({ officeId, limit, order, filter, page, curso
  * Infinite query `usePaginateInfinite
  * @summary Paginate business partners
  * @permission Requires `canUsePaginate` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, matchCode, createdAt, updatedAt, createdBy, updatedBy, vat, shortName, address, locked, currency, archived. Example: `name`
- * @param { BusinessPartnersModels.BusinessPartnerFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, matchCode, createdAt, updatedAt, createdBy, updatedBy, vat, shortName, address, locked, currency, archived. Example: `name`
+ * @param { BusinessPartnersModels.BusinessPartnerFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<BusinessPartnersModels.BusinessPartnersPaginateResponse> } 
  * @statusCodes [200, 401]
@@ -274,8 +274,8 @@ export const usePaginateInfinite = <TData>({ officeId, limit, order, filter, cur
  * Mutation `useCreate`
  * @summary Create business partner
  * @permission Requires `canUseCreate` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { BusinessPartnersModels.CreateBusinessPartnerRequestDTO } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { BusinessPartnersModels.CreateBusinessPartnerRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<BusinessPartnersModels.BusinessPartnerResponseDTO> } 
  * @statusCodes [201, 401]
@@ -301,12 +301,12 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { officeId
 /** 
  * Query `usePaginateLabels`
  * @permission Requires `canUsePaginateLabels` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, matchCode, createdAt, updatedAt, createdBy, updatedBy, vat, shortName, address, locked, currency, archived. Example: `name`
- * @param { BusinessPartnersModels.BusinessPartnerLabelsFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, matchCode, createdAt, updatedAt, createdBy, updatedBy, vat, shortName, address, locked, currency, archived. Example: `name`
+ * @param { BusinessPartnersModels.BusinessPartnerLabelsFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<BusinessPartnersModels.BusinessPartnersPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
@@ -327,12 +327,12 @@ export const usePaginateLabels = <TData>({ officeId, limit, order, filter, page,
 /** 
  * Infinite query `usePaginateLabelsInfinite
  * @permission Requires `canUsePaginateLabels` ability 
- * @param { string } object.officeId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { string } object.order Query parameter. Order by fields (comma separated with +/- prefix): name, matchCode, createdAt, updatedAt, createdBy, updatedBy, vat, shortName, address, locked, currency, archived. Example: `name`
- * @param { BusinessPartnersModels.BusinessPartnerLabelsFilterDto } object.filter Query parameter
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): name, matchCode, createdAt, updatedAt, createdBy, updatedBy, vat, shortName, address, locked, currency, archived. Example: `name`
+ * @param { BusinessPartnersModels.BusinessPartnerLabelsFilterDto } filter Query parameter
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<BusinessPartnersModels.BusinessPartnersPaginateLabelsResponse> } 
  * @statusCodes [200, 401]
@@ -359,8 +359,8 @@ export const usePaginateLabelsInfinite = <TData>({ officeId, limit, order, filte
  * Query `useGetById`
  * @summary Get business partner by ID
  * @permission Requires `canUseGetById` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.id Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } id Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<BusinessPartnersModels.BusinessPartnerDetailResponseDTO> } 
  * @statusCodes [200, 401]
@@ -382,9 +382,9 @@ export const useGetById = <TData>({ officeId, id }: { officeId: string, id: stri
  * Mutation `useUpdate`
  * @summary Update business partner
  * @permission Requires `canUseUpdate` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.id Path parameter
- * @param { BusinessPartnersModels.UpdateBusinessPartnerRequestDTO } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } id Path parameter
+ * @param { BusinessPartnersModels.UpdateBusinessPartnerRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<BusinessPartnersModels.BusinessPartnerDetailResponseDTO> } 
  * @statusCodes [200, 401]
@@ -413,8 +413,8 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { officeId
  * Mutation `useArchive`
  * @summary Archive business partner
  * @permission Requires `canUseArchive` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.id Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } id Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
@@ -441,8 +441,8 @@ export const useArchive = (options?: AppMutationOptions<typeof archive, { office
  * Mutation `useUnarchive`
  * @summary Unarchive business partner
  * @permission Requires `canUseUnarchive` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.id Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } id Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
@@ -469,8 +469,8 @@ export const useUnarchive = (options?: AppMutationOptions<typeof unarchive, { of
  * Mutation `useLock`
  * @summary Lock business partner
  * @permission Requires `canUseLock` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.id Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } id Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
@@ -497,8 +497,8 @@ export const useLock = (options?: AppMutationOptions<typeof lock, { officeId: st
  * Mutation `useUnlock`
  * @summary Unlock business partner
  * @permission Requires `canUseUnlock` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.id Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } id Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
@@ -525,8 +525,8 @@ export const useUnlock = (options?: AppMutationOptions<typeof unlock, { officeId
  * Query `useGetRemarks`
  * @summary Get business partner remarks
  * @permission Requires `canUseGetRemarks` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.id Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } id Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<BusinessPartnersModels.GetRemarksResponse> } 
  * @statusCodes [200, 401]
@@ -548,9 +548,9 @@ export const useGetRemarks = <TData>({ officeId, id }: { officeId: string, id: s
  * Mutation `useCreateRemark`
  * @summary Create business partner remark
  * @permission Requires `canUseCreateRemark` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.id Path parameter
- * @param { BusinessPartnersModels.CreateBusinessPartnerRemarkRequestDTO } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } id Path parameter
+ * @param { BusinessPartnersModels.CreateBusinessPartnerRemarkRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<BusinessPartnersModels.BusinessPartnerRemarkResponseDTO> } 
  * @statusCodes [201, 401]
@@ -576,10 +576,10 @@ export const useCreateRemark = (options?: AppMutationOptions<typeof createRemark
 /** 
  * Mutation `useUpdateRemark`
  * @permission Requires `canUseUpdateRemark` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.id Path parameter
- * @param { string } mutation.remarkId Path parameter
- * @param { BusinessPartnersModels.UpdateBusinessPartnerRemarkRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } id Path parameter
+ * @param { string } remarkId Path parameter
+ * @param { BusinessPartnersModels.UpdateBusinessPartnerRemarkRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<BusinessPartnersModels.BusinessPartnerRemarkResponseDTO> } 
  * @statusCodes [200, 401]
@@ -606,9 +606,9 @@ export const useUpdateRemark = (options?: AppMutationOptions<typeof updateRemark
  * Mutation `useDeleteRemark`
  * @summary Delete business partner remark
  * @permission Requires `canUseDeleteRemark` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.id Path parameter
- * @param { string } mutation.remarkId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } id Path parameter
+ * @param { string } remarkId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [200, 401]
@@ -635,8 +635,8 @@ export const useDeleteRemark = (options?: AppMutationOptions<typeof deleteRemark
  * Query `useGetBasicInfo`
  * @summary Get business partner basic info
  * @permission Requires `canUseGetBasicInfo` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.id Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } id Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<BusinessPartnersModels.BusinessPartnerBasicResponseDTO> } 
  * @statusCodes [200, 401]
@@ -658,9 +658,9 @@ export const useGetBasicInfo = <TData>({ officeId, id }: { officeId: string, id:
  * Mutation `useUpdateBasicInfo`
  * @summary Update business partner basic info
  * @permission Requires `canUseUpdateBasicInfo` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.id Path parameter
- * @param { BusinessPartnersModels.UpdateBusinessPartnerBasicRequestDTO } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } id Path parameter
+ * @param { BusinessPartnersModels.UpdateBusinessPartnerBasicRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<BusinessPartnersModels.BusinessPartnerBasicResponseDTO> } 
  * @statusCodes [200, 401]
@@ -689,10 +689,10 @@ export const useUpdateBasicInfo = (options?: AppMutationOptions<typeof updateBas
  * Mutation `useCreateSignatureUploadInstructions`
  * @summary Create upload instructions for business partner signature
  * @permission Requires `canUseCreateSignatureUploadInstructions` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.id Path parameter
- * @param { BusinessPartnersModels.BusinessPartnerSignatureUploadRequestDTO } mutation.data Body parameter
- * @param { File } mutation.file Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } id Path parameter
+ * @param { BusinessPartnersModels.BusinessPartnerSignatureUploadRequestDTO } data Body parameter
+ * @param { File } file Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<BusinessPartnersModels.BusinessPartnerSignatureUploadResponseDTO> } 
  * @statusCodes [201, 401]
@@ -744,8 +744,8 @@ export const useCreateSignatureUploadInstructions = (options?: AppMutationOption
  * Query `useGetCargoAgentInfo`
  * @summary Get cargo agent information for business partner
  * @permission Requires `canUseGetCargoAgentInfo` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.id Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } id Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<BusinessPartnersModels.CargoAgentResponseDTO> } 
  * @statusCodes [200, 401]
@@ -767,9 +767,9 @@ export const useGetCargoAgentInfo = <TData>({ officeId, id }: { officeId: string
  * Mutation `useUpdateCargoAgent`
  * @summary Update cargo agent information for business partner
  * @permission Requires `canUseUpdateCargoAgent` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.id Path parameter
- * @param { BusinessPartnersModels.UpdateCargoAgentDTO } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } id Path parameter
+ * @param { BusinessPartnersModels.UpdateCargoAgentDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<BusinessPartnersModels.CargoAgentResponseDTO> } 
  * @statusCodes [200, 401]
@@ -798,8 +798,8 @@ export const useUpdateCargoAgent = (options?: AppMutationOptions<typeof updateCa
  * Query `useGetCarrierInformation`
  * @summary Get carrier information for business partner
  * @permission Requires `canUseGetCarrierInformation` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.id Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } id Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<BusinessPartnersModels.CarrierResponseDTO> } 
  * @statusCodes [200, 401]
@@ -821,9 +821,9 @@ export const useGetCarrierInformation = <TData>({ officeId, id }: { officeId: st
  * Mutation `useUpdateCarrier`
  * @summary Update carrier information for business partner
  * @permission Requires `canUseUpdateCarrier` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.id Path parameter
- * @param { BusinessPartnersModels.UpdateCarrierDTO } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { string } id Path parameter
+ * @param { BusinessPartnersModels.UpdateCarrierDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<BusinessPartnersModels.CarrierResponseDTO> } 
  * @statusCodes [200, 401]

@@ -94,8 +94,8 @@ export const keys = {
  * Mutation `useCreate`
  * @summary Create a BL Instructions document
  * @permission Requires `canUseCreate` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<WorkingDocumentsBlInstructionsModels.BlInstructionsDocumentResponseDTO> } 
  * @statusCodes [201, 401]
@@ -122,9 +122,9 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { position
  * Query `useGetBlInstructionsData`
  * @summary Get BL Instructions document data
  * @permission Requires `canUseGetBlInstructionsData` ability 
- * @param { string } object.positionId Path parameter
- * @param { string } object.blInstructionsId Path parameter
- * @param { string } object.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } blInstructionsId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<WorkingDocumentsBlInstructionsModels.BlInstructionsDocumentResponseDTO> } 
  * @statusCodes [200, 401]
@@ -146,10 +146,10 @@ export const useGetBlInstructionsData = <TData>({ positionId, blInstructionsId, 
  * Mutation `useUpdateBlInstructionsData`
  * @summary Update BL Instructions document data
  * @permission Requires `canUseUpdateBlInstructionsData` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.blInstructionsId Path parameter
- * @param { string } mutation.officeId Path parameter
- * @param { WorkingDocumentsBlInstructionsModels.UpdateBlInstructionsDocumentRequestDTO } mutation.data Body parameter
+ * @param { string } positionId Path parameter
+ * @param { string } blInstructionsId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { WorkingDocumentsBlInstructionsModels.UpdateBlInstructionsDocumentRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<WorkingDocumentsBlInstructionsModels.BlInstructionsDocumentResponseDTO> } 
  * @statusCodes [200, 401]
@@ -178,9 +178,9 @@ export const useUpdateBlInstructionsData = (options?: AppMutationOptions<typeof 
  * Mutation `useDeleteBlInstructions`
  * @summary Delete BL Instructions document
  * @permission Requires `canUseDeleteBlInstructions` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.blInstructionsId Path parameter
- * @param { string } mutation.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } blInstructionsId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } BL Instructions document deleted
  * @statusCodes [204, 401, 404]
@@ -207,9 +207,9 @@ export const useDeleteBlInstructions = (options?: AppMutationOptions<typeof dele
  * Query `usePreviewBlInstructions` - recommended when file should be cached
  * @summary Preview BL Instructions document
  * @permission Requires `canUsePreviewBlInstructions` ability 
- * @param { string } object.positionId Path parameter
- * @param { string } object.blInstructionsId Path parameter
- * @param { string } object.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } blInstructionsId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
@@ -231,9 +231,9 @@ export const usePreviewBlInstructions = <TData>({ positionId, blInstructionsId, 
  * Mutation `usePreviewBlInstructionsMutation` - recommended when file should not be cached
  * @summary Preview BL Instructions document
  * @permission Requires `canUsePreviewBlInstructions` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.blInstructionsId Path parameter
- * @param { string } mutation.officeId Path parameter
+ * @param { string } positionId Path parameter
+ * @param { string } blInstructionsId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
@@ -262,10 +262,10 @@ export const usePreviewBlInstructionsMutation = (options?: AppMutationOptions<ty
  * Mutation `useGenerateBlInstructions`
  * @summary Generate BL Instructions document
  * @permission Requires `canUseGenerateBlInstructions` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.blInstructionsId Path parameter
- * @param { string } mutation.officeId Path parameter
- * @param { CommonModels.GenerateWorkingDocumentRequestDto } mutation.data Body parameter
+ * @param { string } positionId Path parameter
+ * @param { string } blInstructionsId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { CommonModels.GenerateWorkingDocumentRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [201, 401]
@@ -292,10 +292,10 @@ export const useGenerateBlInstructions = (options?: AppMutationOptions<typeof ge
  * Mutation `useGenerateDocumentEml` - recommended when file should not be cached
  * @summary Generate BL Instructions document and return EML file
  * @permission Requires `canUseGenerateDocumentEml` ability 
- * @param { string } mutation.positionId Path parameter
- * @param { string } mutation.blInstructionsId Path parameter
- * @param { string } mutation.officeId Path parameter
- * @param { CommonModels.GenerateWorkingDocumentRequestDto } mutation.data Body parameter
+ * @param { string } positionId Path parameter
+ * @param { string } blInstructionsId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { CommonModels.GenerateWorkingDocumentRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]

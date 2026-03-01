@@ -461,9 +461,8 @@ function renderQueryJsDocs({
     ...(mode !== "infiniteQuery" ? { includeFileParam: true } : {}),
   });
   for (const endpointParam of params) {
-    const source = mode === "mutation" ? "mutation" : "object";
     lines.push(
-      ` * @param { ${endpointParam.type} } ${source}.${endpointParam.name} ${renderEndpointParamDescription(endpointParam)}`,
+      ` * @param { ${endpointParam.type} } ${endpointParam.name} ${renderEndpointParamDescription(endpointParam)}`,
     );
   }
 

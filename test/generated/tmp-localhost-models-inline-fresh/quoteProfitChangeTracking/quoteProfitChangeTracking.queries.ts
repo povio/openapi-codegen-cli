@@ -45,11 +45,11 @@ export const keys = {
  * Query `useFindProfitChangeGroups`
  * @summary List quote profit change groups
  * @permission Requires `canUseFindProfitChangeGroups` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.quoteId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { string } quoteId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<QuoteProfitChangeTrackingModels.QuoteProfitChangeTrackingFindProfitChangeGroupsResponse> } 
  * @statusCodes [200, 401]
@@ -71,11 +71,11 @@ export const useFindProfitChangeGroups = <TData>({ officeId, quoteId, limit, pag
  * Infinite query `useFindProfitChangeGroupsInfinite
  * @summary List quote profit change groups
  * @permission Requires `canUseFindProfitChangeGroups` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.quoteId Path parameter
- * @param { number } object.limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
- * @param { number } object.page Query parameter. 1-indexed page number to begin from
- * @param { string } object.cursor Query parameter. ID of item to start after
+ * @param { string } officeId Path parameter
+ * @param { string } quoteId Path parameter
+ * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
+ * @param { number } page Query parameter. 1-indexed page number to begin from
+ * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<QuoteProfitChangeTrackingModels.QuoteProfitChangeTrackingFindProfitChangeGroupsResponse> } 
  * @statusCodes [200, 401]
@@ -102,9 +102,9 @@ export const useFindProfitChangeGroupsInfinite = <TData>({ officeId, quoteId, li
  * Query `useFindProfitChangeGroupDetail`
  * @summary Get quote profit change group details
  * @permission Requires `canUseFindProfitChangeGroupDetail` ability 
- * @param { string } object.groupId Path parameter
- * @param { string } object.officeId Path parameter
- * @param { string } object.quoteId Path parameter
+ * @param { string } groupId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } quoteId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<QuoteProfitChangeTrackingModels.QuoteAccountProfitChangeGroupDetailDto> } 
  * @statusCodes [200, 401]

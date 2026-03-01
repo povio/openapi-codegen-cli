@@ -46,8 +46,8 @@ export const keys = {
  * Mutation `usePrepareUpload`
  * @summary Prepare upload instructions for MOVE files merge
  * @permission Requires `canUsePrepareUpload` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { FactoringMergeModels.PrepareFactoringMergeRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { FactoringMergeModels.PrepareFactoringMergeRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<FactoringMergeModels.FactoringMergeUploadInstructionsResponseDto> } 
  * @statusCodes [201, 401, default]
@@ -74,8 +74,8 @@ export const usePrepareUpload = (options?: AppMutationOptions<typeof prepareUplo
  * Mutation `useProcessMerge`
  * @summary Start processing the merge batch
  * @permission Requires `canUseProcessMerge` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { string } mutation.batchId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } batchId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<FactoringMergeModels.FactoringMergeBatchResponseDto> } 
  * @statusCodes [201, 401, default]
@@ -104,8 +104,8 @@ export const useProcessMerge = (options?: AppMutationOptions<typeof processMerge
  * Query `useGetMergeBatch`
  * @summary Get merge batch status
  * @permission Requires `canUseGetMergeBatch` ability 
- * @param { string } object.officeId Path parameter
- * @param { string } object.batchId Path parameter
+ * @param { string } officeId Path parameter
+ * @param { string } batchId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<FactoringMergeModels.FactoringMergeBatchResponseDto> } 
  * @statusCodes [200, 401, default]

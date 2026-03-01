@@ -38,8 +38,8 @@ export const keys = {
  * Mutation `useCreate`
  * @summary Generate factoring export files for Raiffeisen Factor Bank
  * @permission Requires `canUseCreate` ability 
- * @param { string } mutation.officeId Path parameter
- * @param { FactoringExportModels.CreateFactoringExportRequestDto } mutation.data Body parameter
+ * @param { string } officeId Path parameter
+ * @param { FactoringExportModels.CreateFactoringExportRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<FactoringExportModels.FactoringExportBatchResponseDto> } 
  * @statusCodes [201, 401]
@@ -66,8 +66,8 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { officeId
  * Query `useGetBatch`
  * @summary Get factoring export batch status
  * @permission Requires `canUseGetBatch` ability 
- * @param { string } object.batchId Path parameter
- * @param { string } object.officeId Path parameter
+ * @param { string } batchId Path parameter
+ * @param { string } officeId Path parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<FactoringExportModels.FactoringExportBatchResponseDto> } 
  * @statusCodes [200, 401]
