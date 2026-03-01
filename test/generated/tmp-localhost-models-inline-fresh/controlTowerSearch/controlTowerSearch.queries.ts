@@ -45,7 +45,6 @@ export const useSearch = (options?: AppMutationOptions<typeof search, { data: Co
       search(data, type, limit)
 ,
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

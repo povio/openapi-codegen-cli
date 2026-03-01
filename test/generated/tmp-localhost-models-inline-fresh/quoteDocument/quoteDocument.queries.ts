@@ -94,7 +94,6 @@ export const useGet = <TData>({ officeId, quoteId }: { officeId: string, quoteId
     checkAcl(QuoteDocumentAcl.canUseGet({ officeId } ));
     return get(officeId, quoteId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -120,7 +119,6 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { officeId
       return update(officeId, quoteId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -150,7 +148,6 @@ export const useGetPreview = (options?: AppMutationOptions<typeof getPreview, { 
       return getPreview(officeId, quoteId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -180,7 +177,6 @@ export const useGenerate = (options?: AppMutationOptions<typeof generate, { offi
       return generate(officeId, quoteId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -210,7 +206,6 @@ export const useGenerateEml = (options?: AppMutationOptions<typeof generateEml, 
       return generateEml(officeId, quoteId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

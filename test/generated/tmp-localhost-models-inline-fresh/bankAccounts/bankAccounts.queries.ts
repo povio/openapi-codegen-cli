@@ -68,7 +68,6 @@ export const useFindAll = <TData>({ search, officeId }: { search?: string, offic
     checkAcl(BankAccountsAcl.canUseFindAll());
     return findAll(search, officeId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -95,7 +94,6 @@ export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }:
     checkAcl(BankAccountsAcl.canUsePaginateLabels());
     return paginateLabels(limit, order, filter, page, cursor) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -127,7 +125,6 @@ export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor 
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 

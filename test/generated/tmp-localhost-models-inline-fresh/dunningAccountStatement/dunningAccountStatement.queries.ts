@@ -60,8 +60,8 @@ export const moduleName = QueryModule.DunningAccountStatement;
 export const keys = {
     all: [moduleName] as const,
     dataGenFake: () => [...keys.all, "/data-gen-fake/account-statement", ] as const,
-    generateAccountStatement: (officeId: string, limit?: number, order?: string, filter?: CommonModels.OfficeInvoiceFilterDto, page?: number, cursor?: string) => [...keys.all, "/offices/:officeId/invoices/account-statement", officeId, limit, order, filter, page, cursor] as const,
-    generateAccountStatementInfinite: (officeId: string, limit?: number, order?: string, filter?: CommonModels.OfficeInvoiceFilterDto, cursor?: string) => [...keys.all, "/offices/:officeId/invoices/account-statement", "infinite", officeId, limit, order, filter, cursor] as const,
+    generateAccountStatement: (officeId: string, limit?: number, order?: string, filter?: DunningAccountStatementModels.OfficeInvoiceFilterDto, page?: number, cursor?: string) => [...keys.all, "/offices/:officeId/invoices/account-statement", officeId, limit, order, filter, page, cursor] as const,
+    generateAccountStatementInfinite: (officeId: string, limit?: number, order?: string, filter?: DunningAccountStatementModels.OfficeInvoiceFilterDto, cursor?: string) => [...keys.all, "/offices/:officeId/invoices/account-statement", "infinite", officeId, limit, order, filter, cursor] as const,
 };
 
 /** 
@@ -78,7 +78,6 @@ export const useDataGenFake = <TData>(options?: AppQueryOptions<typeof dataGenFa
     queryKey: keys.dataGenFake(),
     queryFn: dataGenFake,
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -106,7 +105,6 @@ export const useGenerateAccountStatement = <TData>({ officeId, limit, order, fil
     checkAcl(DunningAccountStatementAcl.canUseGenerateAccountStatement({ officeId } ));
     return generateAccountStatement(officeId, limit, order, filter, page, cursor) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -135,7 +133,6 @@ export const useGenerateAccountStatementMutation = (options?: AppMutationOptions
       return generateAccountStatement(officeId, limit, order, filter, page, cursor)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, limit } = variables;
       const updateKeys = [keys.generateAccountStatement(officeId, limit)];
@@ -174,7 +171,6 @@ export const useGenerateAccountStatementInfinite = <TData>({ officeId, limit, or
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -199,7 +195,6 @@ export const useGetAccountStatementEml = (options?: AppMutationOptions<typeof ge
       return getAccountStatementEml(officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

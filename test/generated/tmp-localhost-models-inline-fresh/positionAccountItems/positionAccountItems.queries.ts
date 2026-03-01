@@ -91,7 +91,6 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { position
       return create(positionId, officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -121,7 +120,6 @@ export const useDeletePositionAccountItems = (options?: AppMutationOptions<typeo
       return deletePositionAccountItems(positionId, officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -151,7 +149,6 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { position
       return update(positionId, officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -181,7 +178,6 @@ export const useDuplicate = (options?: AppMutationOptions<typeof duplicate, { po
       return duplicate(positionId, officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -211,7 +207,6 @@ export const useReassign = (options?: AppMutationOptions<typeof reassign, { posi
       return reassign(positionId, officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -242,7 +237,6 @@ export const useReorder = (options?: AppMutationOptions<typeof reorder, { positi
       return reorder(positionId, itemId, officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

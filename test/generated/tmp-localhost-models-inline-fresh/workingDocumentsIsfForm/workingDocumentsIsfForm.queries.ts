@@ -96,7 +96,6 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { position
       return create(positionId, officeId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -125,7 +124,6 @@ export const useGetIsfData = <TData>({ positionId, isfId, officeId }: { position
     checkAcl(WorkingDocumentsIsfFormAcl.canUseGetIsfData({ officeId } ));
     return getIsfData(positionId, isfId, officeId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -152,7 +150,6 @@ export const useUpdateIsfData = (options?: AppMutationOptions<typeof updateIsfDa
       return updateIsfData(positionId, isfId, officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { positionId, isfId, officeId } = variables;
       const updateKeys = [keys.getIsfData(positionId, isfId, officeId)];
@@ -184,7 +181,6 @@ export const useDeleteIsf = (options?: AppMutationOptions<typeof deleteIsf, { po
       return deleteIsf(positionId, isfId, officeId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -213,7 +209,6 @@ export const usePreviewIsf = <TData>({ positionId, isfId, officeId }: { position
     checkAcl(WorkingDocumentsIsfFormAcl.canUsePreviewIsf({ officeId } ));
     return previewIsf(positionId, isfId, officeId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -239,7 +234,6 @@ export const usePreviewIsfMutation = (options?: AppMutationOptions<typeof previe
       return previewIsf(positionId, isfId, officeId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { positionId, isfId, officeId } = variables;
       const updateKeys = [keys.previewIsf(positionId, isfId, officeId)];
@@ -272,7 +266,6 @@ export const useGenerateIsf = (options?: AppMutationOptions<typeof generateIsf, 
       return generateIsf(positionId, isfId, officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

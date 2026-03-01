@@ -81,7 +81,6 @@ export const useGetBookkeepingMappings = <TData>({ officeId, businessPartnerId }
     checkAcl(BusinessPartnerBookkeepingMappingsAcl.canUseGetBookkeepingMappings({ officeId } ));
     return getBookkeepingMappings(officeId, businessPartnerId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -107,7 +106,6 @@ export const useCreateBookkeepingMapping = (options?: AppMutationOptions<typeof 
       return createBookkeepingMapping(officeId, businessPartnerId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -137,7 +135,6 @@ export const useUpdateBookkeepingMapping = (options?: AppMutationOptions<typeof 
       return updateBookkeepingMapping(officeId, businessPartnerId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -168,7 +165,6 @@ export const useUpdateBookkeepingMappingById = (options?: AppMutationOptions<typ
       return updateBookkeepingMappingById(officeId, businessPartnerId, id, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -198,7 +194,6 @@ export const useDeleteBookkeepingMapping = (options?: AppMutationOptions<typeof 
       return deleteBookkeepingMapping(officeId, businessPartnerId, id)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

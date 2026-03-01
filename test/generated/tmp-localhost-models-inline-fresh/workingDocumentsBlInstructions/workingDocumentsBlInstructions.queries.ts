@@ -111,7 +111,6 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { position
       return create(positionId, officeId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -140,7 +139,6 @@ export const useGetBlInstructionsData = <TData>({ positionId, blInstructionsId, 
     checkAcl(WorkingDocumentsBlInstructionsAcl.canUseGetBlInstructionsData({ officeId } ));
     return getBlInstructionsData(positionId, blInstructionsId, officeId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -167,7 +165,6 @@ export const useUpdateBlInstructionsData = (options?: AppMutationOptions<typeof 
       return updateBlInstructionsData(positionId, blInstructionsId, officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { positionId, blInstructionsId, officeId } = variables;
       const updateKeys = [keys.getBlInstructionsData(positionId, blInstructionsId, officeId)];
@@ -199,7 +196,6 @@ export const useDeleteBlInstructions = (options?: AppMutationOptions<typeof dele
       return deleteBlInstructions(positionId, blInstructionsId, officeId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -228,7 +224,6 @@ export const usePreviewBlInstructions = <TData>({ positionId, blInstructionsId, 
     checkAcl(WorkingDocumentsBlInstructionsAcl.canUsePreviewBlInstructions({ officeId } ));
     return previewBlInstructions(positionId, blInstructionsId, officeId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -254,7 +249,6 @@ export const usePreviewBlInstructionsMutation = (options?: AppMutationOptions<ty
       return previewBlInstructions(positionId, blInstructionsId, officeId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { positionId, blInstructionsId, officeId } = variables;
       const updateKeys = [keys.previewBlInstructions(positionId, blInstructionsId, officeId)];
@@ -287,7 +281,6 @@ export const useGenerateBlInstructions = (options?: AppMutationOptions<typeof ge
       return generateBlInstructions(positionId, blInstructionsId, officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -318,7 +311,6 @@ export const useGenerateDocumentEml = (options?: AppMutationOptions<typeof gener
       return generateDocumentEml(positionId, blInstructionsId, officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { positionId, blInstructionsId, officeId } = variables;
       const updateKeys = [keys.previewBlInstructions(positionId, blInstructionsId, officeId)];

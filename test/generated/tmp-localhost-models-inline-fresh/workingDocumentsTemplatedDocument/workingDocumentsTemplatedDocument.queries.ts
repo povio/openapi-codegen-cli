@@ -113,7 +113,6 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { position
       return create(positionId, officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -142,7 +141,6 @@ export const useGetTemplatedDocument = <TData>({ officeId, positionId, templated
     checkAcl(WorkingDocumentsTemplatedDocumentAcl.canUseGetTemplatedDocument({ officeId } ));
     return getTemplatedDocument(officeId, positionId, templatedDocumentId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -169,7 +167,6 @@ export const useUpdateTemplatedDocument = (options?: AppMutationOptions<typeof u
       return updateTemplatedDocument(officeId, positionId, templatedDocumentId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, positionId, templatedDocumentId } = variables;
       const updateKeys = [keys.getTemplatedDocument(officeId, positionId, templatedDocumentId)];
@@ -201,7 +198,6 @@ export const useDeleteTemplatedDocument = (options?: AppMutationOptions<typeof d
       return deleteTemplatedDocument(positionId, templatedDocumentId, officeId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -232,7 +228,6 @@ export const usePreviewTemplatedDocument = (options?: AppMutationOptions<typeof 
       return previewTemplatedDocument(officeId, positionId, templatedDocumentId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -263,7 +258,6 @@ export const useIssueTemplatedDocument = (options?: AppMutationOptions<typeof is
       return issueTemplatedDocument(officeId, positionId, templatedDocumentId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -294,7 +288,6 @@ export const useGenerateDocumentEml = (options?: AppMutationOptions<typeof gener
       return generateDocumentEml(officeId, positionId, templatedDocumentId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

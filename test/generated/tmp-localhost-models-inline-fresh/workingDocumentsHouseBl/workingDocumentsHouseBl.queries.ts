@@ -126,7 +126,6 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { position
       return create(positionId, officeId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -155,7 +154,6 @@ export const useGetHouseBlData = <TData>({ positionId, houseBlId, officeId }: { 
     checkAcl(WorkingDocumentsHouseBlAcl.canUseGetHouseBlData({ officeId } ));
     return getHouseBlData(positionId, houseBlId, officeId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -182,7 +180,6 @@ export const useUpdateHouseBlData = (options?: AppMutationOptions<typeof updateH
       return updateHouseBlData(positionId, houseBlId, officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { positionId, houseBlId, officeId } = variables;
       const updateKeys = [keys.getHouseBlData(positionId, houseBlId, officeId)];
@@ -214,7 +211,6 @@ export const useDeleteHouseBl = (options?: AppMutationOptions<typeof deleteHouse
       return deleteHouseBl(positionId, houseBlId, officeId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -243,7 +239,6 @@ export const usePreviewHouseBl = <TData>({ positionId, houseBlId, officeId }: { 
     checkAcl(WorkingDocumentsHouseBlAcl.canUsePreviewHouseBl({ officeId } ));
     return previewHouseBl(positionId, houseBlId, officeId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -269,7 +264,6 @@ export const usePreviewHouseBlMutation = (options?: AppMutationOptions<typeof pr
       return previewHouseBl(positionId, houseBlId, officeId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { positionId, houseBlId, officeId } = variables;
       const updateKeys = [keys.previewHouseBl(positionId, houseBlId, officeId), keys.previewHouseBlEml(positionId, houseBlId, officeId)];
@@ -300,7 +294,6 @@ export const usePreviewHouseBlEml = <TData>({ positionId, houseBlId, officeId }:
     checkAcl(WorkingDocumentsHouseBlAcl.canUsePreviewHouseBlEml({ officeId } ));
     return previewHouseBlEml(positionId, houseBlId, officeId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -326,7 +319,6 @@ export const usePreviewHouseBlEmlMutation = (options?: AppMutationOptions<typeof
       return previewHouseBlEml(positionId, houseBlId, officeId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { positionId, houseBlId, officeId } = variables;
       const updateKeys = [keys.previewHouseBl(positionId, houseBlId, officeId), keys.previewHouseBlEml(positionId, houseBlId, officeId)];
@@ -359,7 +351,6 @@ export const useGenerateHouseBl = (options?: AppMutationOptions<typeof generateH
       return generateHouseBl(positionId, houseBlId, officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -390,7 +381,6 @@ export const useGenerateDocumentEml = (options?: AppMutationOptions<typeof gener
       return generateDocumentEml(positionId, houseBlId, officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { positionId, houseBlId, officeId } = variables;
       const updateKeys = [keys.previewHouseBl(positionId, houseBlId, officeId), keys.previewHouseBlEml(positionId, houseBlId, officeId)];

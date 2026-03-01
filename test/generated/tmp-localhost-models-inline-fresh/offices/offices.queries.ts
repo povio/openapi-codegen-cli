@@ -158,7 +158,6 @@ export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { lim
     queryFn: () => 
     paginate(limit, order, filter, page, cursor),
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -187,7 +186,6 @@ export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { l
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -211,7 +209,6 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { data: Of
       return create(data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -235,7 +232,6 @@ export const useFindAllLabels = <TData>({ search }: { search?: string }, options
     queryFn: () => 
     findAllLabels(search),
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -259,7 +255,6 @@ export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }:
     queryFn: () => 
     paginateLabels(limit, order, filter, page, cursor),
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -288,7 +283,6 @@ export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor 
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -311,7 +305,6 @@ export const useGet = <TData>({ id }: { id: string }, options?: AppQueryOptions<
     checkAcl(OfficesAcl.canUseGet());
     return get(id) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -336,7 +329,6 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { id: stri
       return update(id, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -391,7 +383,6 @@ export const useUploadDocumentImage = (options?: AppMutationOptions<typeof uploa
       return uploadInstructions;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -420,7 +411,6 @@ export const useCreateBankAccount = (options?: AppMutationOptions<typeof createB
       return createBankAccount(officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -450,7 +440,6 @@ export const useUpdateBankAccount = (options?: AppMutationOptions<typeof updateB
       return updateBankAccount(accountId, officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -479,7 +468,6 @@ export const useDeleteBankAccount = (options?: AppMutationOptions<typeof deleteB
       return deleteBankAccount(accountId, officeId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -535,7 +523,6 @@ export const useUploadBankAccountFooter = (options?: AppMutationOptions<typeof u
       return uploadInstructions;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

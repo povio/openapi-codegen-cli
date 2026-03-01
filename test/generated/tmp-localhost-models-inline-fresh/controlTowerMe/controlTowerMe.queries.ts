@@ -82,7 +82,6 @@ export const useGetUserProfile = <TData>(options?: AppQueryOptions<typeof getUse
     queryKey: keys.getUserProfile(),
     queryFn: getUserProfile,
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -103,7 +102,6 @@ export const useUpdateUserData = (options?: AppMutationOptions<typeof updateUser
       updateUserData(data)
 ,
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -128,7 +126,6 @@ export const useUpdateUserProfile = (options?: AppMutationOptions<typeof updateU
       updateUserProfile(data)
 ,
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -153,7 +150,6 @@ export const useUpdatePassword = (options?: AppMutationOptions<typeof updatePass
       updatePassword(data)
 ,
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -178,7 +174,6 @@ export const useUpdateEmailPreferences = (options?: AppMutationOptions<typeof up
       updateEmailPreferences(data)
 ,
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -202,7 +197,6 @@ export const useUpdateProjectAccess = (options?: AppMutationOptions<typeof updat
       updateProjectAccess()
 ,
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

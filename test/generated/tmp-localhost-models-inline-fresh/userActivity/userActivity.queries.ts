@@ -46,7 +46,6 @@ export const useGet = <TData>({ officeId, entityType, entityId, activeThresholdM
     queryFn: () => 
     get(officeId, entityType, entityId, activeThresholdMinutes),
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 

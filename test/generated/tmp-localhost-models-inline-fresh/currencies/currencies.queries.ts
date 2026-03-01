@@ -121,7 +121,6 @@ export const useList = <TData>({ limit, order, filter, page, cursor }: { limit: 
     checkAcl(CurrenciesAcl.canUseList());
     return list(limit, order, filter, page, cursor) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -153,7 +152,6 @@ export const useListInfinite = <TData>({ limit, order, filter, cursor }: { limit
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -177,7 +175,6 @@ export const useCreateCurrency = (options?: AppMutationOptions<typeof createCurr
       return createCurrency(data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -208,7 +205,6 @@ export const usePaginateCurrencyLabels = <TData>({ limit, order, filter, page, c
     checkAcl(CurrenciesAcl.canUsePaginateCurrencyLabels());
     return paginateCurrencyLabels(limit, order, filter, page, cursor) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -240,7 +236,6 @@ export const usePaginateCurrencyLabelsInfinite = <TData>({ limit, order, filter,
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -263,7 +258,6 @@ export const useGetCurrencyById = <TData>({ isoCode }: { isoCode: string }, opti
     checkAcl(CurrenciesAcl.canUseGetCurrencyById());
     return getCurrencyById(isoCode) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -288,7 +282,6 @@ export const useUpdateCurrency = (options?: AppMutationOptions<typeof updateCurr
       return updateCurrency(isoCode, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { isoCode } = variables;
       const updateKeys = [keys.getCurrencyById(isoCode)];
@@ -322,7 +315,6 @@ export const usePaginateCurrencyLabelsByOffice = <TData>({ officeId, limit, orde
     checkAcl(CurrenciesAcl.canUsePaginateCurrencyLabelsByOffice());
     return paginateCurrencyLabelsByOffice(officeId, limit, order, filter, page, cursor) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -355,7 +347,6 @@ export const usePaginateCurrencyLabelsByOfficeInfinite = <TData>({ officeId, lim
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 

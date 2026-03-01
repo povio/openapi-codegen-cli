@@ -94,7 +94,6 @@ export const useGetTree = <TData>({ officeId, folderId }: { officeId: string, fo
     queryFn: () => 
     getTree(officeId, folderId),
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -120,7 +119,6 @@ export const useGetContent = <TData>({ officeId, folderId, limit, order, filter,
     queryFn: () => 
     getContent(officeId, folderId, limit, order, filter, page, cursor),
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -151,7 +149,6 @@ export const useGetContentInfinite = <TData>({ officeId, folderId, limit, order,
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -174,7 +171,6 @@ export const useRename = (options?: AppMutationOptions<typeof rename, { officeId
       rename(officeId, folderId, data)
 ,
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -200,7 +196,6 @@ export const useDeleteFolder = (options?: AppMutationOptions<typeof deleteFolder
       deleteFolder(officeId, folderId)
 ,
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -226,7 +221,6 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { officeId
       create(officeId, data)
 ,
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -252,7 +246,6 @@ export const useMove = (options?: AppMutationOptions<typeof move, { officeId: st
       move(officeId, data)
 ,
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

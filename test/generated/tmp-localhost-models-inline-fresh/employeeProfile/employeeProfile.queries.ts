@@ -46,7 +46,6 @@ export const useGetProfile = <TData>(options?: AppQueryOptions<typeof getProfile
     queryKey: keys.getProfile(),
     queryFn: getProfile,
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -67,7 +66,6 @@ export const useUpdateProfile = (options?: AppMutationOptions<typeof updateProfi
       updateProfile(data)
 ,
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const updateKeys = [keys.getProfile()];
       await runMutationEffects(resData, variables, options, updateKeys);

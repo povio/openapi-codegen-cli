@@ -96,7 +96,6 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { position
       return create(positionId, officeId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -125,7 +124,6 @@ export const useGetCmrData = <TData>({ positionId, cmrId, officeId }: { position
     checkAcl(WorkingDocumentsCmrFormAcl.canUseGetCmrData({ officeId } ));
     return getCmrData(positionId, cmrId, officeId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -152,7 +150,6 @@ export const useUpdateCmrData = (options?: AppMutationOptions<typeof updateCmrDa
       return updateCmrData(positionId, cmrId, officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { positionId, cmrId, officeId } = variables;
       const updateKeys = [keys.getCmrData(positionId, cmrId, officeId)];
@@ -184,7 +181,6 @@ export const useDeleteCmr = (options?: AppMutationOptions<typeof deleteCmr, { po
       return deleteCmr(positionId, cmrId, officeId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -213,7 +209,6 @@ export const usePreviewCmr = <TData>({ positionId, cmrId, officeId }: { position
     checkAcl(WorkingDocumentsCmrFormAcl.canUsePreviewCmr({ officeId } ));
     return previewCmr(positionId, cmrId, officeId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -239,7 +234,6 @@ export const usePreviewCmrMutation = (options?: AppMutationOptions<typeof previe
       return previewCmr(positionId, cmrId, officeId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { positionId, cmrId, officeId } = variables;
       const updateKeys = [keys.previewCmr(positionId, cmrId, officeId)];
@@ -272,7 +266,6 @@ export const useGenerateCmr = (options?: AppMutationOptions<typeof generateCmr, 
       return generateCmr(positionId, cmrId, officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

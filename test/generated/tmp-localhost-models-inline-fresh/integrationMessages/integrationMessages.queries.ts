@@ -58,7 +58,6 @@ export const useList = <TData>({ officeId, limit, order, filter, page, cursor }:
     checkAcl(IntegrationMessagesAcl.canUseList({ officeId } ));
     return list(officeId, limit, order, filter, page, cursor) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -91,7 +90,6 @@ export const useListInfinite = <TData>({ officeId, limit, order, filter, cursor 
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 

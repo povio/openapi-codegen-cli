@@ -63,7 +63,6 @@ export const usePrepareUpload = (options?: AppMutationOptions<typeof prepareUplo
       return prepareUpload(officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -92,7 +91,6 @@ export const useProcessMerge = (options?: AppMutationOptions<typeof processMerge
       return processMerge(officeId, batchId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, batchId } = variables;
       const updateKeys = [keys.getMergeBatch(officeId, batchId)];
@@ -122,7 +120,6 @@ export const useGetMergeBatch = <TData>({ officeId, batchId }: { officeId: strin
     checkAcl(FactoringMergeAcl.canUseGetMergeBatch({ officeId } ));
     return getMergeBatch(officeId, batchId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 

@@ -45,7 +45,6 @@ export const useConvertQuoteToPosition = (options?: AppMutationOptions<typeof co
       return convertQuoteToPosition(officeId, quoteId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

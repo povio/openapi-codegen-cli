@@ -54,7 +54,6 @@ export const useGetCalendar = <TData>({ from, to, type, search, poNumbers, conta
     queryFn: () => 
     getCalendar(from, to, type, search, poNumbers, containerNumbers, bookingNumbers),
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 

@@ -98,7 +98,6 @@ export const useListRoutes = <TData>({ officeId, quoteId }: { officeId: string, 
     checkAcl(QuoteRoutesAcl.canUseListRoutes({ officeId } ));
     return listRoutes(officeId, quoteId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -125,7 +124,6 @@ export const useCreateRoutePoint = (options?: AppMutationOptions<typeof createRo
       return createRoutePoint(officeId, quoteId, routeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -157,7 +155,6 @@ export const useUpdateRoutePoint = (options?: AppMutationOptions<typeof updateRo
       return updateRoutePoint(officeId, quoteId, routeId, pointId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -188,7 +185,6 @@ export const useDeleteRoutePoint = (options?: AppMutationOptions<typeof deleteRo
       return deleteRoutePoint(officeId, quoteId, routeId, pointId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -217,7 +213,6 @@ export const useSplitRoutes = (options?: AppMutationOptions<typeof splitRoutes, 
       return splitRoutes(officeId, quoteId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -247,7 +242,6 @@ export const useMergeRoutes = (options?: AppMutationOptions<typeof mergeRoutes, 
       return mergeRoutes(officeId, quoteId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -278,7 +272,6 @@ export const useCopyRoute = (options?: AppMutationOptions<typeof copyRoute, { of
       return copyRoute(officeId, quoteId, routeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

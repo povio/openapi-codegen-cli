@@ -92,7 +92,6 @@ export const useListDunnings = <TData>({ officeId, limit, order, filter, page, c
     checkAcl(DunningManagementAcl.canUseListDunnings({ officeId } ));
     return listDunnings(officeId, limit, order, filter, page, cursor) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -125,7 +124,6 @@ export const useListDunningsInfinite = <TData>({ officeId, limit, order, filter,
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -151,7 +149,6 @@ export const useCreateDunningWithInvoices = (options?: AppMutationOptions<typeof
       return createDunningWithInvoices(partnerId, officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -173,7 +170,6 @@ export const useDataGenFake = <TData>(options?: AppQueryOptions<typeof dataGenFa
     queryKey: keys.dataGenFake(),
     queryFn: dataGenFake,
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -197,7 +193,6 @@ export const useGetDunningEml = <TData>({ officeId, dunningId }: { officeId: str
     checkAcl(DunningManagementAcl.canUseGetDunningEml({ officeId } ));
     return getDunningEml(officeId, dunningId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -222,7 +217,6 @@ export const useGetDunningEmlMutation = (options?: AppMutationOptions<typeof get
       return getDunningEml(officeId, dunningId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, dunningId } = variables;
       const updateKeys = [keys.getDunningEml(officeId, dunningId)];

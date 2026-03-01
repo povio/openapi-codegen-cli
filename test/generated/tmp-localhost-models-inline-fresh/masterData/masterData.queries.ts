@@ -69,7 +69,6 @@ export const useFindAll = <TData>({ officeId, types, search }: { officeId: strin
     checkAcl(MasterDataAcl.canUseFindAll());
     return findAll(officeId, types, search) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -97,7 +96,6 @@ export const usePaginate = <TData>({ officeId, types, limit, search, page, curso
     checkAcl(MasterDataAcl.canUsePaginate());
     return paginate(officeId, types, limit, search, page, cursor) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -130,7 +128,6 @@ export const usePaginateInfinite = <TData>({ officeId, types, limit, search, cur
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 

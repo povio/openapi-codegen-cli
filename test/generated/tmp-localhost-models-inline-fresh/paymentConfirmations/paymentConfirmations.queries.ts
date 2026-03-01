@@ -89,7 +89,6 @@ export const useGet = <TData>({ officeId, filter, limit, order, page, cursor }: 
     checkAcl(PaymentConfirmationsAcl.canUseGet({ officeId } ));
     return get(officeId, filter, limit, order, page, cursor) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -122,7 +121,6 @@ export const useGetInfinite = <TData>({ officeId, filter, limit, order, cursor }
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -147,7 +145,6 @@ export const useGenerate = (options?: AppMutationOptions<typeof generate, { offi
       return generate(officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -176,7 +173,6 @@ export const useGetEml = (options?: AppMutationOptions<typeof getEml, { officeId
       return getEml(officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

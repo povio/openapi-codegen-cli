@@ -80,7 +80,6 @@ export const useGet = <TData>({ quoteId, officeId }: { quoteId: string, officeId
     checkAcl(QuoteAccountAcl.canUseGet({ officeId } ));
     return get(quoteId, officeId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -106,7 +105,6 @@ export const useCreateItem = (options?: AppMutationOptions<typeof createItem, { 
       return createItem(quoteId, officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -136,7 +134,6 @@ export const useDeleteItem = (options?: AppMutationOptions<typeof deleteItem, { 
       return deleteItem(quoteId, itemId, officeId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -167,7 +164,6 @@ export const useUpdateItem = (options?: AppMutationOptions<typeof updateItem, { 
       return updateItem(quoteId, itemId, officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -197,7 +193,6 @@ export const useDuplicateItem = (options?: AppMutationOptions<typeof duplicateIt
       return duplicateItem(quoteId, itemId, officeId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

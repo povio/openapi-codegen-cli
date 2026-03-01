@@ -96,7 +96,6 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { position
       return create(positionId, officeId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -125,7 +124,6 @@ export const useGetAMSInstructionsData = <TData>({ positionId, amsInstructionsId
     checkAcl(WorkingDocumentsAmsInstructionsAcl.canUseGetAMSInstructionsData({ officeId } ));
     return getAMSInstructionsData(positionId, amsInstructionsId, officeId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -152,7 +150,6 @@ export const useUpdateAMSInstructionsData = (options?: AppMutationOptions<typeof
       return updateAMSInstructionsData(positionId, amsInstructionsId, officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { positionId, amsInstructionsId, officeId } = variables;
       const updateKeys = [keys.getAMSInstructionsData(positionId, amsInstructionsId, officeId)];
@@ -184,7 +181,6 @@ export const useDeleteAMSInstructions = (options?: AppMutationOptions<typeof del
       return deleteAMSInstructions(positionId, amsInstructionsId, officeId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -213,7 +209,6 @@ export const usePreviewAMSInstructions = <TData>({ positionId, amsInstructionsId
     checkAcl(WorkingDocumentsAmsInstructionsAcl.canUsePreviewAMSInstructions({ officeId } ));
     return previewAMSInstructions(positionId, amsInstructionsId, officeId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -239,7 +234,6 @@ export const usePreviewAMSInstructionsMutation = (options?: AppMutationOptions<t
       return previewAMSInstructions(positionId, amsInstructionsId, officeId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { positionId, amsInstructionsId, officeId } = variables;
       const updateKeys = [keys.previewAMSInstructions(positionId, amsInstructionsId, officeId)];
@@ -272,7 +266,6 @@ export const useGenerateAMSInstructions = (options?: AppMutationOptions<typeof g
       return generateAMSInstructions(positionId, amsInstructionsId, officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

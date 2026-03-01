@@ -128,7 +128,6 @@ export const useList = <TData>({ officeId, limit, order, filter, page, cursor }:
     checkAcl(IntegrationChannelsAcl.canUseList({ officeId } ));
     return list(officeId, limit, order, filter, page, cursor) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -161,7 +160,6 @@ export const useListInfinite = <TData>({ officeId, limit, order, filter, cursor 
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -186,7 +184,6 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { officeId
       return create(officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -218,7 +215,6 @@ export const usePaginateLabels = <TData>({ officeId, limit, order, filter, page,
     checkAcl(IntegrationChannelsAcl.canUsePaginateLabels({ officeId } ));
     return paginateLabels(officeId, limit, order, filter, page, cursor) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -251,7 +247,6 @@ export const usePaginateLabelsInfinite = <TData>({ officeId, limit, order, filte
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -275,7 +270,6 @@ export const useFindById = <TData>({ officeId, id }: { officeId: string, id: str
     checkAcl(IntegrationChannelsAcl.canUseFindById({ officeId } ));
     return findById(officeId, id) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -301,7 +295,6 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { officeId
       return update(officeId, id, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, id } = variables;
       const updateKeys = [keys.findById(officeId, id)];
@@ -332,7 +325,6 @@ export const useArchive = (options?: AppMutationOptions<typeof archive, { office
       return archive(officeId, id)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, id } = variables;
       const updateKeys = [keys.findById(officeId, id)];
@@ -363,7 +355,6 @@ export const useUnarchive = (options?: AppMutationOptions<typeof unarchive, { of
       return unarchive(officeId, id)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, id } = variables;
       const updateKeys = [keys.findById(officeId, id)];
@@ -394,7 +385,6 @@ export const useTestConnection = (options?: AppMutationOptions<typeof testConnec
       return testConnection(officeId, id)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

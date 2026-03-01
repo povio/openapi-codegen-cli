@@ -69,7 +69,6 @@ export const usePaginatePermissions = <TData>({ limit, order, filter, page, curs
     checkAcl(EmployeePermissionsAcl.canUsePaginatePermissions());
     return paginatePermissions(limit, order, filter, page, cursor) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -100,7 +99,6 @@ export const usePaginatePermissionsInfinite = <TData>({ limit, order, filter, cu
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -123,7 +121,6 @@ export const useFindAll = <TData>({ search }: { search?: string }, options?: App
     checkAcl(EmployeePermissionsAcl.canUseFindAll());
     return findAll(search) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 

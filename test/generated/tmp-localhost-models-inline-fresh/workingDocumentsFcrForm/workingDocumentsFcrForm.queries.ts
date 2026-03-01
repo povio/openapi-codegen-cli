@@ -96,7 +96,6 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { position
       return create(positionId, officeId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -125,7 +124,6 @@ export const useGetFcrData = <TData>({ positionId, fcrId, officeId }: { position
     checkAcl(WorkingDocumentsFcrFormAcl.canUseGetFcrData({ officeId } ));
     return getFcrData(positionId, fcrId, officeId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -152,7 +150,6 @@ export const useUpdateFcrData = (options?: AppMutationOptions<typeof updateFcrDa
       return updateFcrData(positionId, fcrId, officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { positionId, fcrId, officeId } = variables;
       const updateKeys = [keys.getFcrData(positionId, fcrId, officeId)];
@@ -184,7 +181,6 @@ export const useDeleteFcr = (options?: AppMutationOptions<typeof deleteFcr, { po
       return deleteFcr(positionId, fcrId, officeId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -213,7 +209,6 @@ export const usePreviewFcr = <TData>({ positionId, fcrId, officeId }: { position
     checkAcl(WorkingDocumentsFcrFormAcl.canUsePreviewFcr({ officeId } ));
     return previewFcr(positionId, fcrId, officeId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -239,7 +234,6 @@ export const usePreviewFcrMutation = (options?: AppMutationOptions<typeof previe
       return previewFcr(positionId, fcrId, officeId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { positionId, fcrId, officeId } = variables;
       const updateKeys = [keys.previewFcr(positionId, fcrId, officeId)];
@@ -272,7 +266,6 @@ export const useGenerateFcr = (options?: AppMutationOptions<typeof generateFcr, 
       return generateFcr(positionId, fcrId, officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

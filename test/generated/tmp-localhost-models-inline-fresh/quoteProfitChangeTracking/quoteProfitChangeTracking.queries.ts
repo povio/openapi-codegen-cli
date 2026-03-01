@@ -64,7 +64,6 @@ export const useFindProfitChangeGroups = <TData>({ officeId, quoteId, limit, pag
     checkAcl(QuoteProfitChangeTrackingAcl.canUseFindProfitChangeGroups({ officeId, quoteId } ));
     return findProfitChangeGroups(officeId, quoteId, limit, page, cursor) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -96,7 +95,6 @@ export const useFindProfitChangeGroupsInfinite = <TData>({ officeId, quoteId, li
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -121,7 +119,6 @@ export const useFindProfitChangeGroupDetail = <TData>({ groupId, officeId, quote
     checkAcl(QuoteProfitChangeTrackingAcl.canUseFindProfitChangeGroupDetail({ officeId, quoteId } ));
     return findProfitChangeGroupDetail(groupId, officeId, quoteId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 

@@ -91,7 +91,6 @@ export const useUpload = (options?: AppMutationOptions<typeof upload, { officeId
       return uploadInstructions;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -120,7 +119,6 @@ export const usePostOfficesMasterDataImportByOfficeId = (options?: AppMutationOp
       return postOfficesMasterDataImportByOfficeId(officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -148,7 +146,6 @@ export const useGetImportStatus = <TData>({ jobId, officeId }: { jobId: string, 
     checkAcl(MasterDataImportAcl.canUseGetImportStatus({ officeId } ));
     return getImportStatus(jobId, officeId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 

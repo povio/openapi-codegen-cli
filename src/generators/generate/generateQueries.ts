@@ -230,7 +230,7 @@ export function generateQueries(params: GenerateTypeParams) {
   );
   lines.push("");
 
-  lines.push(renderQueryKeys({ resolver, queryEndpoints }));
+  lines.push(renderQueryKeys({ resolver, queryEndpoints, tag }));
   lines.push("");
 
   for (const endpoint of endpoints) {
@@ -496,7 +496,15 @@ function renderQueryJsDocs({
   return lines.join("\n");
 }
 
-function renderQueryKeys({ resolver, queryEndpoints }: { resolver: SchemaResolver; queryEndpoints: Endpoint[] }) {
+function renderQueryKeys({
+  resolver,
+  queryEndpoints,
+  tag,
+}: {
+  resolver: SchemaResolver;
+  queryEndpoints: Endpoint[];
+  tag: string;
+}) {
   if (queryEndpoints.length === 0) {
     return "";
   }
@@ -506,7 +514,10 @@ function renderQueryKeys({ resolver, queryEndpoints }: { resolver: SchemaResolve
   lines.push(`    all: [${QUERIES_MODULE_NAME}] as const,`);
   for (const endpoint of queryEndpoints) {
     lines.push(
-      `    ${getEndpointName(endpoint)}: (${renderEndpointParams(resolver, endpoint, { pathParamsRequiredOnly: true })}) => [...keys.all, "${endpoint.path}", ${renderEndpointArgs(
+      `    ${getEndpointName(endpoint)}: (${renderEndpointParams(resolver, endpoint, {
+        pathParamsRequiredOnly: true,
+        modelNamespaceTag: tag,
+      })}) => [...keys.all, "${endpoint.path}", ${renderEndpointArgs(
         resolver,
         endpoint,
         {},
@@ -517,6 +528,7 @@ function renderQueryKeys({ resolver, queryEndpoints }: { resolver: SchemaResolve
         `    ${getEndpointName(endpoint)}Infinite: (${renderEndpointParams(resolver, endpoint, {
           excludePageParam: true,
           pathParamsRequiredOnly: true,
+          modelNamespaceTag: tag,
         })}) => [...keys.all, "${endpoint.path}", "infinite", ${renderEndpointArgs(resolver, endpoint, {
           excludePageParam: true,
         })}] as const,`,

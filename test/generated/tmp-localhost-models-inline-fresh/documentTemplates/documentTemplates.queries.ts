@@ -137,7 +137,6 @@ export const usePaginateLabels = <TData>({ officeId, limit, order, filter, page,
     checkAcl(DocumentTemplatesAcl.canUsePaginateLabels({ officeId } ));
     return paginateLabels(officeId, limit, order, filter, page, cursor) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -170,7 +169,6 @@ export const usePaginateLabelsInfinite = <TData>({ officeId, limit, order, filte
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -198,7 +196,6 @@ export const useList = <TData>({ officeId, limit, order, filter, page, cursor }:
     checkAcl(DocumentTemplatesAcl.canUseList({ officeId } ));
     return list(officeId, limit, order, filter, page, cursor) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -231,7 +228,6 @@ export const useListInfinite = <TData>({ officeId, limit, order, filter, cursor 
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -256,7 +252,6 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { officeId
       return create(officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -284,7 +279,6 @@ export const useFindById = <TData>({ documentTemplateId, officeId }: { documentT
     checkAcl(DocumentTemplatesAcl.canUseFindById({ officeId } ));
     return findById(documentTemplateId, officeId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -310,7 +304,6 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { document
       return update(documentTemplateId, officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { documentTemplateId, officeId } = variables;
       const updateKeys = [keys.findById(documentTemplateId, officeId)];
@@ -342,7 +335,6 @@ export const useAddRemarkBlock = (options?: AppMutationOptions<typeof addRemarkB
       return addRemarkBlock(documentTemplateId, officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { documentTemplateId, officeId } = variables;
       const updateKeys = [keys.findById(documentTemplateId, officeId)];
@@ -374,7 +366,6 @@ export const useDeleteRemarkBlock = (options?: AppMutationOptions<typeof deleteR
       return deleteRemarkBlock(documentTemplateId, remarkBlockId, officeId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { documentTemplateId, officeId } = variables;
       const updateKeys = [keys.findById(documentTemplateId, officeId)];
@@ -405,7 +396,6 @@ export const useArchive = (options?: AppMutationOptions<typeof archive, { docume
       return archive(documentTemplateId, officeId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { documentTemplateId, officeId } = variables;
       const updateKeys = [keys.findById(documentTemplateId, officeId)];
@@ -436,7 +426,6 @@ export const useUnarchive = (options?: AppMutationOptions<typeof unarchive, { do
       return unarchive(documentTemplateId, officeId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { documentTemplateId, officeId } = variables;
       const updateKeys = [keys.findById(documentTemplateId, officeId)];

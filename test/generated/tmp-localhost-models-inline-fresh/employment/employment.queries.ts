@@ -108,7 +108,6 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { data: Em
       return create(data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -140,7 +139,6 @@ export const useList = <TData>({ limit, order, populate, filter, page, cursor }:
     checkAcl(EmploymentAcl.canUseList());
     return list(limit, order, populate, filter, page, cursor) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -173,7 +171,6 @@ export const useListInfinite = <TData>({ limit, order, populate, filter, cursor 
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -197,7 +194,6 @@ export const useListRoles = <TData>({ officeId, employmentId }: { officeId: stri
     checkAcl(EmploymentAcl.canUseListRoles({ officeId } ));
     return listRoles(officeId, employmentId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -223,7 +219,6 @@ export const useUpdateRoles = (options?: AppMutationOptions<typeof updateRoles, 
       return updateRoles(officeId, employmentId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -252,7 +247,6 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { officeId
       return update(officeId, employmentId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -281,7 +275,6 @@ export const useArchive = (options?: AppMutationOptions<typeof archive, { office
       return archive(officeId, employmentId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -310,7 +303,6 @@ export const useUnarchive = (options?: AppMutationOptions<typeof unarchive, { of
       return unarchive(officeId, employmentId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

@@ -106,7 +106,7 @@ export const keys = {
     all: [moduleName] as const,
     list: (limit?: number, order?: string, filter?: EmployeeRolesModels.EmployeeRolePaginationFilterDto, page?: number, cursor?: string) => [...keys.all, "/employees/roles", limit, order, filter, page, cursor] as const,
     listInfinite: (limit?: number, order?: string, filter?: EmployeeRolesModels.EmployeeRolePaginationFilterDto, cursor?: string) => [...keys.all, "/employees/roles", "infinite", limit, order, filter, cursor] as const,
-    labels: (search?: string, context?: CommonModels.EmployeeRoleContext) => [...keys.all, "/employees/roles/labels", search, context] as const,
+    labels: (search?: string, context?: EmployeeRolesModels.EmployeeRoleContext) => [...keys.all, "/employees/roles/labels", search, context] as const,
     find: (roleId: string) => [...keys.all, "/employees/roles/:roleId", roleId] as const,
     paginatePermissions: (roleId: string) => [...keys.all, "/employees/roles/:roleId/permissions", roleId] as const,
 };
@@ -134,7 +134,6 @@ export const useList = <TData>({ limit, order, filter, page, cursor }: { limit: 
     checkAcl(EmployeeRolesAcl.canUseList());
     return list(limit, order, filter, page, cursor) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -166,7 +165,6 @@ export const useListInfinite = <TData>({ limit, order, filter, cursor }: { limit
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -190,7 +188,6 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { data: Em
       return create(data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -218,7 +215,6 @@ export const useLabels = <TData>({ search, context }: { search?: string, context
     checkAcl(EmployeeRolesAcl.canUseLabels());
     return labels(search, context) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -241,7 +237,6 @@ export const useFind = <TData>({ roleId }: { roleId: string }, options?: AppQuer
     checkAcl(EmployeeRolesAcl.canUseFind());
     return find(roleId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -266,7 +261,6 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { roleId: 
       return update(roleId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { roleId } = variables;
       const updateKeys = [keys.find(roleId)];
@@ -296,7 +290,6 @@ export const useDeleteEmployeesRolesByRoleId = (options?: AppMutationOptions<typ
       return deleteEmployeesRolesByRoleId(roleId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -325,7 +318,6 @@ export const usePaginatePermissions = <TData>({ roleId }: { roleId: string }, op
     checkAcl(EmployeeRolesAcl.canUsePaginatePermissions());
     return paginatePermissions(roleId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -351,7 +343,6 @@ export const useTogglePermission = (options?: AppMutationOptions<typeof togglePe
       return togglePermission(roleId, permission, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -380,7 +371,6 @@ export const useCopy = (options?: AppMutationOptions<typeof copy, { roleId: stri
       return copy(roleId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { roleId } = variables;
       const updateKeys = [keys.find(roleId)];

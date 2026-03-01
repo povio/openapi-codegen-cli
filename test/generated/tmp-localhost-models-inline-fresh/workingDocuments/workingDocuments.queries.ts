@@ -68,7 +68,6 @@ export const useList = <TData>({ positionId, officeId, limit, order, filter, pag
     checkAcl(WorkingDocumentsAcl.canUseList({ officeId } ));
     return list(positionId, officeId, limit, order, filter, page, cursor) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -102,7 +101,6 @@ export const useListInfinite = <TData>({ positionId, officeId, limit, order, fil
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -127,7 +125,6 @@ export const useFindById = <TData>({ positionId, id, officeId }: { positionId: s
     checkAcl(WorkingDocumentsAcl.canUseFindById({ officeId } ));
     return findById(positionId, id, officeId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 

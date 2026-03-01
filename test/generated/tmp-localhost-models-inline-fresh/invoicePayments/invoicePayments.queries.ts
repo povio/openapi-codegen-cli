@@ -143,7 +143,6 @@ export const useListOfficePayments = <TData>({ officeId, limit, order, filter, p
     checkAcl(InvoicePaymentsAcl.canUseListOfficePayments({ officeId } ));
     return listOfficePayments(officeId, limit, order, filter, page, cursor) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -176,7 +175,6 @@ export const useListOfficePaymentsInfinite = <TData>({ officeId, limit, order, f
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -201,7 +199,6 @@ export const useBulkCreatePayments = (options?: AppMutationOptions<typeof bulkCr
       return bulkCreatePayments(officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -230,7 +227,6 @@ export const useCalculatePayments = (options?: AppMutationOptions<typeof calcula
       return calculatePayments(officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -259,7 +255,6 @@ export const useExportOfficePayments = (options?: AppMutationOptions<typeof expo
       return exportOfficePayments(officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -290,7 +285,6 @@ export const useList = <TData>({ officeId, invoiceId, limit, page, cursor }: { o
     checkAcl(InvoicePaymentsAcl.canUseList({ officeId } ));
     return list(officeId, invoiceId, limit, page, cursor) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -322,7 +316,6 @@ export const useListInfinite = <TData>({ officeId, invoiceId, limit, cursor }: {
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -348,7 +341,6 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { officeId
       return create(officeId, invoiceId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -377,7 +369,6 @@ export const useGetPaymentById = <TData>({ officeId, invoiceId, paymentId }: { o
     checkAcl(InvoicePaymentsAcl.canUseGetPaymentById({ officeId } ));
     return getPaymentById(officeId, invoiceId, paymentId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -404,7 +395,6 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { officeId
       return update(officeId, invoiceId, paymentId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, invoiceId, paymentId } = variables;
       const updateKeys = [keys.getPaymentById(officeId, invoiceId, paymentId)];
@@ -436,7 +426,6 @@ export const useDeleteInvoicePayment = (options?: AppMutationOptions<typeof dele
       return deleteInvoicePayment(officeId, invoiceId, paymentId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

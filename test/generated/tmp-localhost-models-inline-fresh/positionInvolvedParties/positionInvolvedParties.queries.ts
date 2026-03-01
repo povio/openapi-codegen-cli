@@ -72,7 +72,6 @@ export const useFindByPositionId = <TData>({ officeId, positionId }: { officeId:
     checkAcl(PositionInvolvedPartiesAcl.canUseFindByPositionId({ officeId } ));
     return findByPositionId(officeId, positionId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -98,7 +97,6 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { officeId
       return create(officeId, positionId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -129,7 +127,6 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { officeId
       return update(officeId, positionId, partyId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -159,7 +156,6 @@ export const useDeleteOfficesPositionsInvolvedPartiesByPartyId = (options?: AppM
       return deleteOfficesPositionsInvolvedPartiesByPartyId(officeId, positionId, partyId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

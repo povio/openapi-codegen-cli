@@ -235,7 +235,6 @@ export const usePaginate = <TData>({ officeId, limit, order, filter, page, curso
     checkAcl(BusinessPartnersAcl.canUsePaginate({ officeId } ));
     return paginate(officeId, limit, order, filter, page, cursor) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -268,7 +267,6 @@ export const usePaginateInfinite = <TData>({ officeId, limit, order, filter, cur
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -293,7 +291,6 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { officeId
       return create(officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -324,7 +321,6 @@ export const usePaginateLabels = <TData>({ officeId, limit, order, filter, page,
     checkAcl(BusinessPartnersAcl.canUsePaginateLabels({ officeId } ));
     return paginateLabels(officeId, limit, order, filter, page, cursor) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -356,7 +352,6 @@ export const usePaginateLabelsInfinite = <TData>({ officeId, limit, order, filte
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -380,7 +375,6 @@ export const useGetById = <TData>({ officeId, id }: { officeId: string, id: stri
     checkAcl(BusinessPartnersAcl.canUseGetById({ officeId } ));
     return getById(officeId, id) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -406,7 +400,6 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { officeId
       return update(officeId, id, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, id } = variables;
       const updateKeys = [keys.getById(officeId, id)];
@@ -437,7 +430,6 @@ export const useArchive = (options?: AppMutationOptions<typeof archive, { office
       return archive(officeId, id)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -466,7 +458,6 @@ export const useUnarchive = (options?: AppMutationOptions<typeof unarchive, { of
       return unarchive(officeId, id)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -495,7 +486,6 @@ export const useLock = (options?: AppMutationOptions<typeof lock, { officeId: st
       return lock(officeId, id)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -524,7 +514,6 @@ export const useUnlock = (options?: AppMutationOptions<typeof unlock, { officeId
       return unlock(officeId, id)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -552,7 +541,6 @@ export const useGetRemarks = <TData>({ officeId, id }: { officeId: string, id: s
     checkAcl(BusinessPartnersAcl.canUseGetRemarks({ officeId } ));
     return getRemarks(officeId, id) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -578,7 +566,6 @@ export const useCreateRemark = (options?: AppMutationOptions<typeof createRemark
       return createRemark(officeId, id, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -608,7 +595,6 @@ export const useUpdateRemark = (options?: AppMutationOptions<typeof updateRemark
       return updateRemark(officeId, id, remarkId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -638,7 +624,6 @@ export const useDeleteRemark = (options?: AppMutationOptions<typeof deleteRemark
       return deleteRemark(officeId, id, remarkId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -666,7 +651,6 @@ export const useGetBasicInfo = <TData>({ officeId, id }: { officeId: string, id:
     checkAcl(BusinessPartnersAcl.canUseGetBasicInfo({ officeId } ));
     return getBasicInfo(officeId, id) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -692,7 +676,6 @@ export const useUpdateBasicInfo = (options?: AppMutationOptions<typeof updateBas
       return updateBasicInfo(officeId, id, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, id } = variables;
       const updateKeys = [keys.getBasicInfo(officeId, id)];
@@ -750,7 +733,6 @@ export const useCreateSignatureUploadInstructions = (options?: AppMutationOption
       return uploadInstructions;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -778,7 +760,6 @@ export const useGetCargoAgentInfo = <TData>({ officeId, id }: { officeId: string
     checkAcl(BusinessPartnersAcl.canUseGetCargoAgentInfo({ officeId } ));
     return getCargoAgentInfo(officeId, id) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -804,7 +785,6 @@ export const useUpdateCargoAgent = (options?: AppMutationOptions<typeof updateCa
       return updateCargoAgent(officeId, id, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, id } = variables;
       const updateKeys = [keys.getCargoAgentInfo(officeId, id)];
@@ -834,7 +814,6 @@ export const useGetCarrierInformation = <TData>({ officeId, id }: { officeId: st
     checkAcl(BusinessPartnersAcl.canUseGetCarrierInformation({ officeId } ));
     return getCarrierInformation(officeId, id) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -860,7 +839,6 @@ export const useUpdateCarrier = (options?: AppMutationOptions<typeof updateCarri
       return updateCarrier(officeId, id, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, id } = variables;
       const updateKeys = [keys.getCarrierInformation(officeId, id)];

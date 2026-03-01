@@ -96,7 +96,6 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { officeId
       return create(officeId, positionId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -125,7 +124,6 @@ export const useGet = <TData>({ officeId, positionId, id }: { officeId: string, 
     checkAcl(ShippingInstructionsAcl.canUseGet({ officeId } ));
     return get(officeId, positionId, id) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -152,7 +150,6 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { officeId
       return update(officeId, positionId, id, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, positionId, id } = variables;
       const updateKeys = [keys.get(officeId, positionId, id)];
@@ -184,7 +181,6 @@ export const useDeleteOfficesPositionsShippingInstructionsById = (options?: AppM
       return deleteOfficesPositionsShippingInstructionsById(officeId, positionId, id)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -213,7 +209,6 @@ export const usePreview = <TData>({ officeId, positionId, id }: { officeId: stri
     checkAcl(ShippingInstructionsAcl.canUsePreview({ officeId } ));
     return preview(officeId, positionId, id) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -239,7 +234,6 @@ export const usePreviewMutation = (options?: AppMutationOptions<typeof preview, 
       return preview(officeId, positionId, id)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, positionId, id } = variables;
       const updateKeys = [keys.preview(officeId, positionId, id)];
@@ -272,7 +266,6 @@ export const useGenerate = (options?: AppMutationOptions<typeof generate, { offi
       return generate(officeId, positionId, id, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

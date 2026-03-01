@@ -138,7 +138,7 @@ export const keys = {
     all: [moduleName] as const,
     paginate: (officeId: string, limit?: number, order?: string, filter?: QuotesModels.QuoteFilterDto, page?: number, cursor?: string) => [...keys.all, "/offices/:officeId/quotes", officeId, limit, order, filter, page, cursor] as const,
     paginateInfinite: (officeId: string, limit?: number, order?: string, filter?: QuotesModels.QuoteFilterDto, cursor?: string) => [...keys.all, "/offices/:officeId/quotes", "infinite", officeId, limit, order, filter, cursor] as const,
-    listAvailablePartnersFor: (officeId: string, quoteId: string, search?: string, useCase?: CommonModels.PositionAvailablePartnersUseCase) => [...keys.all, "/offices/:officeId/quotes/:quoteId/available-partners", officeId, quoteId, search, useCase] as const,
+    listAvailablePartnersFor: (officeId: string, quoteId: string, search?: string, useCase?: QuotesModels.PositionAvailablePartnersUseCase) => [...keys.all, "/offices/:officeId/quotes/:quoteId/available-partners", officeId, quoteId, search, useCase] as const,
     getById: (officeId: string, quoteId: string) => [...keys.all, "/offices/:officeId/quotes/:quoteId", officeId, quoteId] as const,
     getInvolvedParties: (officeId: string, quoteId: string) => [...keys.all, "/offices/:officeId/quotes/:quoteId/involved-parties", officeId, quoteId] as const,
 };
@@ -167,7 +167,6 @@ export const usePaginate = <TData>({ officeId, limit, order, filter, page, curso
     checkAcl(QuotesAcl.canUsePaginate({ officeId } ));
     return paginate(officeId, limit, order, filter, page, cursor) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -200,7 +199,6 @@ export const usePaginateInfinite = <TData>({ officeId, limit, order, filter, cur
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -225,7 +223,6 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { officeId
       return create(officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -255,7 +252,6 @@ export const useListAvailablePartnersFor = <TData>({ officeId, quoteId, search, 
     checkAcl(QuotesAcl.canUseListAvailablePartnersFor({ officeId } ));
     return listAvailablePartnersFor(officeId, quoteId, search, useCase) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -280,7 +276,6 @@ export const useExportQuotes = (options?: AppMutationOptions<typeof exportQuotes
       return exportQuotes(officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -308,7 +303,6 @@ export const useGetById = <TData>({ officeId, quoteId }: { officeId: string, quo
     checkAcl(QuotesAcl.canUseGetById({ officeId } ));
     return getById(officeId, quoteId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -334,7 +328,6 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { officeId
       return update(officeId, quoteId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, quoteId } = variables;
       const updateKeys = [keys.getById(officeId, quoteId)];
@@ -365,7 +358,6 @@ export const useCancel = (options?: AppMutationOptions<typeof cancel, { officeId
       return cancel(officeId, quoteId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, quoteId } = variables;
       const updateKeys = [keys.getById(officeId, quoteId)];
@@ -397,7 +389,6 @@ export const useDuplicate = (options?: AppMutationOptions<typeof duplicate, { of
       return duplicate(officeId, quoteId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, quoteId } = variables;
       const updateKeys = [keys.getById(officeId, quoteId)];
@@ -427,7 +418,6 @@ export const useGetInvolvedParties = <TData>({ officeId, quoteId }: { officeId: 
     checkAcl(QuotesAcl.canUseGetInvolvedParties({ officeId } ));
     return getInvolvedParties(officeId, quoteId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -453,7 +443,6 @@ export const useCreateInvolvedParty = (options?: AppMutationOptions<typeof creat
       return createInvolvedParty(officeId, quoteId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -484,7 +473,6 @@ export const useUpdateInvolvedParty = (options?: AppMutationOptions<typeof updat
       return updateInvolvedParty(officeId, quoteId, partyId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -514,7 +502,6 @@ export const useDeleteInvolvedParty = (options?: AppMutationOptions<typeof delet
       return deleteInvolvedParty(officeId, quoteId, partyId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

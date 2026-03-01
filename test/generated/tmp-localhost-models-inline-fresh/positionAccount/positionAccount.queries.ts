@@ -43,7 +43,6 @@ export const useGet = <TData>({ positionId, officeId }: { positionId: string, of
     checkAcl(PositionAccountAcl.canUseGet({ officeId } ));
     return get(positionId, officeId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 

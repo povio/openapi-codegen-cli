@@ -86,7 +86,6 @@ export const useListPartnerOutstandingInvoiceSummaries = <TData>({ officeId, lim
     checkAcl(DunningPartnerOutstandingInvoicesAcl.canUseListPartnerOutstandingInvoiceSummaries({ officeId } ));
     return listPartnerOutstandingInvoiceSummaries(officeId, limit, order, filter, page, cursor) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -119,7 +118,6 @@ export const useListPartnerOutstandingInvoiceSummariesInfinite = <TData>({ offic
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -148,7 +146,6 @@ export const useListPartnerOutstandingInvoices = <TData>({ partnerId, officeId, 
     checkAcl(DunningPartnerOutstandingInvoicesAcl.canUseListPartnerOutstandingInvoices({ officeId } ));
     return listPartnerOutstandingInvoices(partnerId, officeId, limit, order, filter, page, cursor) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -182,7 +179,6 @@ export const useListPartnerOutstandingInvoicesInfinite = <TData>({ partnerId, of
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -208,7 +204,6 @@ export const useListRecommendedDunningLevels = (options?: AppMutationOptions<typ
       return listRecommendedDunningLevels(partnerId, officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

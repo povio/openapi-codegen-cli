@@ -86,7 +86,6 @@ export const useList = <TData>({ officeId, positionId, shippingInstructionsId, l
     checkAcl(InttraShippingInstructionMessagesAcl.canUseList({ officeId } ));
     return list(officeId, positionId, shippingInstructionsId, limit, page, cursor, filter) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -120,7 +119,6 @@ export const useListInfinite = <TData>({ officeId, positionId, shippingInstructi
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -147,7 +145,6 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { officeId
       return create(officeId, positionId, shippingInstructionsId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -177,7 +174,6 @@ export const useGetById = <TData>({ officeId, positionId, shippingInstructionsId
     checkAcl(InttraShippingInstructionMessagesAcl.canUseGetById({ officeId } ));
     return getById(officeId, positionId, shippingInstructionsId, messageId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -205,7 +201,6 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { officeId
       return update(officeId, positionId, shippingInstructionsId, messageId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, positionId, shippingInstructionsId, messageId } = variables;
       const updateKeys = [keys.getById(officeId, positionId, shippingInstructionsId, messageId)];

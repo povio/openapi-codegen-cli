@@ -70,7 +70,6 @@ export const useFindAll = <TData>({ limit, order, filter, page, cursor }: { limi
     queryFn: () => 
     findAll(limit, order, filter, page, cursor),
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -99,7 +98,6 @@ export const useFindAllInfinite = <TData>({ limit, order, filter, cursor }: { li
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -119,7 +117,6 @@ export const useFindById = <TData>({ id }: { id: string }, options?: AppQueryOpt
     queryFn: () => 
     findById(id),
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -139,7 +136,6 @@ export const useGetJourney = <TData>({ id }: { id: string }, options?: AppQueryO
     queryFn: () => 
     getJourney(id),
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 

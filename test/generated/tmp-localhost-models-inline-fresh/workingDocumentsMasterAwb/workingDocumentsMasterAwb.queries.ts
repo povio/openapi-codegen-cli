@@ -96,7 +96,6 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { position
       return create(positionId, officeId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -125,7 +124,6 @@ export const useGetMasterAwbData = <TData>({ positionId, mawbId, officeId }: { p
     checkAcl(WorkingDocumentsMasterAwbAcl.canUseGetMasterAwbData({ officeId } ));
     return getMasterAwbData(positionId, mawbId, officeId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -152,7 +150,6 @@ export const useUpdateMasterAwbData = (options?: AppMutationOptions<typeof updat
       return updateMasterAwbData(positionId, mawbId, officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { positionId, mawbId, officeId } = variables;
       const updateKeys = [keys.getMasterAwbData(positionId, mawbId, officeId)];
@@ -184,7 +181,6 @@ export const useDeleteMasterAwb = (options?: AppMutationOptions<typeof deleteMas
       return deleteMasterAwb(positionId, mawbId, officeId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -213,7 +209,6 @@ export const usePreviewMasterAwb = <TData>({ positionId, mawbId, officeId }: { p
     checkAcl(WorkingDocumentsMasterAwbAcl.canUsePreviewMasterAwb({ officeId } ));
     return previewMasterAwb(positionId, mawbId, officeId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -239,7 +234,6 @@ export const usePreviewMasterAwbMutation = (options?: AppMutationOptions<typeof 
       return previewMasterAwb(positionId, mawbId, officeId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { positionId, mawbId, officeId } = variables;
       const updateKeys = [keys.previewMasterAwb(positionId, mawbId, officeId)];
@@ -272,7 +266,6 @@ export const useGenerateMasterAwb = (options?: AppMutationOptions<typeof generat
       return generateMasterAwb(positionId, mawbId, officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

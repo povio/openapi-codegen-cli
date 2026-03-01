@@ -55,7 +55,6 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { officeId
       return create(officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -83,7 +82,6 @@ export const useGetBatch = <TData>({ batchId, officeId }: { batchId: string, off
     checkAcl(FactoringExportAcl.canUseGetBatch({ officeId } ));
     return getBatch(batchId, officeId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 

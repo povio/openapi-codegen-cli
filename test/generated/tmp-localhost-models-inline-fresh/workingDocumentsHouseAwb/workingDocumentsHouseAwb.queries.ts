@@ -96,7 +96,6 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { position
       return create(positionId, officeId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -125,7 +124,6 @@ export const useGetHouseAwbData = <TData>({ positionId, hawbId, officeId }: { po
     checkAcl(WorkingDocumentsHouseAwbAcl.canUseGetHouseAwbData({ officeId } ));
     return getHouseAwbData(positionId, hawbId, officeId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -152,7 +150,6 @@ export const useUpdateHouseAwbData = (options?: AppMutationOptions<typeof update
       return updateHouseAwbData(positionId, hawbId, officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { positionId, hawbId, officeId } = variables;
       const updateKeys = [keys.getHouseAwbData(positionId, hawbId, officeId)];
@@ -184,7 +181,6 @@ export const useDeleteHouseAwb = (options?: AppMutationOptions<typeof deleteHous
       return deleteHouseAwb(positionId, hawbId, officeId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -213,7 +209,6 @@ export const usePreviewHouseAwb = <TData>({ positionId, hawbId, officeId }: { po
     checkAcl(WorkingDocumentsHouseAwbAcl.canUsePreviewHouseAwb({ officeId } ));
     return previewHouseAwb(positionId, hawbId, officeId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -239,7 +234,6 @@ export const usePreviewHouseAwbMutation = (options?: AppMutationOptions<typeof p
       return previewHouseAwb(positionId, hawbId, officeId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { positionId, hawbId, officeId } = variables;
       const updateKeys = [keys.previewHouseAwb(positionId, hawbId, officeId)];
@@ -272,7 +266,6 @@ export const useGenerateHouseAwb = (options?: AppMutationOptions<typeof generate
       return generateHouseAwb(positionId, hawbId, officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

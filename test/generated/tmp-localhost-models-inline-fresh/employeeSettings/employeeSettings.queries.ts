@@ -47,7 +47,6 @@ export const useGetAll = <TData>(options?: AppQueryOptions<typeof getAll, TData>
     queryKey: keys.getAll(),
     queryFn: getAll,
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -69,7 +68,6 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { key: str
       update(key, data)
 ,
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

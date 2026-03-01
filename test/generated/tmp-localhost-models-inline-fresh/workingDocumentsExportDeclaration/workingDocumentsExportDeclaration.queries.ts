@@ -96,7 +96,6 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { position
       return create(positionId, officeId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -125,7 +124,6 @@ export const useGetExportDeclarationData = <TData>({ officeId, positionId, expor
     checkAcl(WorkingDocumentsExportDeclarationAcl.canUseGetExportDeclarationData({ officeId } ));
     return getExportDeclarationData(officeId, positionId, exportDeclarationId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -152,7 +150,6 @@ export const useUpdateExportDeclarationData = (options?: AppMutationOptions<type
       return updateExportDeclarationData(officeId, positionId, exportDeclarationId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, positionId, exportDeclarationId } = variables;
       const updateKeys = [keys.getExportDeclarationData(officeId, positionId, exportDeclarationId)];
@@ -184,7 +181,6 @@ export const useDeleteExportDeclaration = (options?: AppMutationOptions<typeof d
       return deleteExportDeclaration(positionId, exportDeclarationId, officeId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -213,7 +209,6 @@ export const usePreviewExportDeclaration = <TData>({ officeId, positionId, expor
     checkAcl(WorkingDocumentsExportDeclarationAcl.canUsePreviewExportDeclaration({ officeId } ));
     return previewExportDeclaration(officeId, positionId, exportDeclarationId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -239,7 +234,6 @@ export const usePreviewExportDeclarationMutation = (options?: AppMutationOptions
       return previewExportDeclaration(officeId, positionId, exportDeclarationId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, positionId, exportDeclarationId } = variables;
       const updateKeys = [keys.previewExportDeclaration(officeId, positionId, exportDeclarationId)];
@@ -272,7 +266,6 @@ export const useGenerateExportDeclaration = (options?: AppMutationOptions<typeof
       return generateExportDeclaration(officeId, positionId, exportDeclarationId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

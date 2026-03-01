@@ -35,7 +35,6 @@ export const useGet = <TData>(options?: AppQueryOptions<typeof get, TData>) => {
     queryKey: keys.get(),
     queryFn: get,
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 

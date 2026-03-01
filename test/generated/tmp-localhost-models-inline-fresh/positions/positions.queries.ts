@@ -186,7 +186,7 @@ export const keys = {
     paginate: (officeId: string, limit?: number, order?: string, filter?: PositionsModels.PositionFilterDto, page?: number, cursor?: string) => [...keys.all, "/offices/:officeId/positions", officeId, limit, order, filter, page, cursor] as const,
     paginateInfinite: (officeId: string, limit?: number, order?: string, filter?: PositionsModels.PositionFilterDto, cursor?: string) => [...keys.all, "/offices/:officeId/positions", "infinite", officeId, limit, order, filter, cursor] as const,
     totalProfit: (officeId: string) => [...keys.all, "/offices/:officeId/positions/fake-total-profit", officeId] as const,
-    listAvailablePartnersFor: (officeId: string, positionId: string, search?: string, useCase?: CommonModels.PositionAvailablePartnersUseCase) => [...keys.all, "/offices/:officeId/positions/:positionId/available-partners", officeId, positionId, search, useCase] as const,
+    listAvailablePartnersFor: (officeId: string, positionId: string, search?: string, useCase?: PositionsModels.PositionAvailablePartnersUseCase) => [...keys.all, "/offices/:officeId/positions/:positionId/available-partners", officeId, positionId, search, useCase] as const,
     get: (officeId: string, positionId: string) => [...keys.all, "/offices/:officeId/positions/:positionId", officeId, positionId] as const,
     listRouteLabels: (officeId: string, positionId: string) => [...keys.all, "/offices/:officeId/positions/:positionId/routes/labels", officeId, positionId] as const,
     getDuplicateDefaultParameters: (officeId: string, positionId: string) => [...keys.all, "/offices/:officeId/positions/:positionId/duplicate/default-parameters", officeId, positionId] as const,
@@ -217,7 +217,6 @@ export const useFindAll = <TData>({ officeId, limit, filter, page, cursor }: { o
     checkAcl(PositionsAcl.canUseFindAll({ officeId } ));
     return findAll(officeId, limit, filter, page, cursor) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -249,7 +248,6 @@ export const useFindAllInfinite = <TData>({ officeId, limit, filter, cursor }: {
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -277,7 +275,6 @@ export const usePaginate = <TData>({ officeId, limit, order, filter, page, curso
     checkAcl(PositionsAcl.canUsePaginate({ officeId } ));
     return paginate(officeId, limit, order, filter, page, cursor) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -310,7 +307,6 @@ export const usePaginateInfinite = <TData>({ officeId, limit, order, filter, cur
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -335,7 +331,6 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { officeId
       return create(officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -362,7 +357,6 @@ export const useTotalProfit = <TData>({ officeId }: { officeId: string }, option
     checkAcl(PositionsAcl.canUseTotalProfit({ officeId } ));
     return totalProfit(officeId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -388,7 +382,6 @@ export const useListAvailablePartnersFor = <TData>({ officeId, positionId, searc
     checkAcl(PositionsAcl.canUseListAvailablePartnersFor({ officeId } ));
     return listAvailablePartnersFor(officeId, positionId, search, useCase) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -413,7 +406,6 @@ export const useExportPositions = (options?: AppMutationOptions<typeof exportPos
       return exportPositions(officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -441,7 +433,6 @@ export const useGet = <TData>({ officeId, positionId }: { officeId: string, posi
     checkAcl(PositionsAcl.canUseGet({ officeId } ));
     return get(officeId, positionId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -467,7 +458,6 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { officeId
       return update(officeId, positionId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, positionId } = variables;
       const updateKeys = [keys.get(officeId, positionId)];
@@ -497,7 +487,6 @@ export const useListRouteLabels = <TData>({ officeId, positionId }: { officeId: 
     checkAcl(PositionsAcl.canUseListRouteLabels({ officeId } ));
     return listRouteLabels(officeId, positionId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -521,7 +510,6 @@ export const useGetDuplicateDefaultParameters = <TData>({ officeId, positionId }
     checkAcl(PositionsAcl.canUseGetDuplicateDefaultParameters({ officeId } ));
     return getDuplicateDefaultParameters(officeId, positionId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -547,7 +535,6 @@ export const useDuplicate = (options?: AppMutationOptions<typeof duplicate, { of
       return duplicate(officeId, positionId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, positionId } = variables;
       const updateKeys = [keys.get(officeId, positionId)];
@@ -578,7 +565,6 @@ export const useCancel = (options?: AppMutationOptions<typeof cancel, { officeId
       return cancel(officeId, positionId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, positionId } = variables;
       const updateKeys = [keys.get(officeId, positionId)];
@@ -609,7 +595,6 @@ export const useRevertCancel = (options?: AppMutationOptions<typeof revertCancel
       return revertCancel(officeId, positionId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, positionId } = variables;
       const updateKeys = [keys.get(officeId, positionId)];
@@ -641,7 +626,6 @@ export const useLinkChild = (options?: AppMutationOptions<typeof linkChild, { of
       return linkChild(officeId, positionId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -671,7 +655,6 @@ export const useUnlinkChild = (options?: AppMutationOptions<typeof unlinkChild, 
       return unlinkChild(officeId, positionId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -702,7 +685,6 @@ export const useListChild = <TData>({ officeId, positionId, limit, page, cursor 
     checkAcl(PositionsAcl.canUseListChild({ officeId } ));
     return listChild(officeId, positionId, limit, page, cursor) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -734,7 +716,6 @@ export const useListChildInfinite = <TData>({ officeId, positionId, limit, curso
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 

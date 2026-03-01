@@ -147,7 +147,6 @@ export const useCreateBatch = (options?: AppMutationOptions<typeof createBatch, 
       return createBatch(officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -179,7 +178,6 @@ export const usePaginateBatches = <TData>({ officeId, limit, order, filter, page
     checkAcl(BookkeepingExportAcl.canUsePaginateBatches({ officeId } ));
     return paginateBatches(officeId, limit, order, filter, page, cursor) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -212,7 +210,6 @@ export const usePaginateBatchesInfinite = <TData>({ officeId, limit, order, filt
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -236,7 +233,6 @@ export const useGetBatch = <TData>({ officeId, batchId }: { officeId: string, ba
     checkAcl(BookkeepingExportAcl.canUseGetBatch({ officeId } ));
     return getBatch(officeId, batchId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -262,7 +258,6 @@ export const useUpdateBatchFormat = (options?: AppMutationOptions<typeof updateB
       return updateBatchFormat(officeId, batchId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, batchId } = variables;
       const updateKeys = [keys.getBatch(officeId, batchId)];
@@ -294,7 +289,6 @@ export const useUpdateBatchItem = (options?: AppMutationOptions<typeof updateBat
       return updateBatchItem(officeId, batchId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -327,7 +321,6 @@ export const usePaginateBatchItems = <TData>({ officeId, batchId, limit, order, 
     checkAcl(BookkeepingExportAcl.canUsePaginateBatchItems({ officeId } ));
     return paginateBatchItems(officeId, batchId, limit, order, filter, page, cursor) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -361,7 +354,6 @@ export const usePaginateBatchItemsInfinite = <TData>({ officeId, batchId, limit,
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -386,7 +378,6 @@ export const useValidateBookkeepingBatch = (options?: AppMutationOptions<typeof 
       return validateBookkeepingBatch(officeId, batchId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -415,7 +406,6 @@ export const useExportBookkeepingBatch = (options?: AppMutationOptions<typeof ex
       return exportBookkeepingBatch(officeId, batchId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -444,7 +434,6 @@ export const useRevertBookkeepingBatch = (options?: AppMutationOptions<typeof re
       return revertBookkeepingBatch(officeId, batchId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -473,7 +462,6 @@ export const useGetVatLineItems = <TData>({ officeId, batchId, order }: { office
     checkAcl(BookkeepingExportAcl.canUseGetVatLineItems({ officeId } ));
     return getVatLineItems(officeId, batchId, order) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 

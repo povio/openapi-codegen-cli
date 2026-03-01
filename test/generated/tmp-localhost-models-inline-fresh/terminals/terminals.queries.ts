@@ -116,7 +116,6 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { data: Te
       return create(data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -147,7 +146,6 @@ export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { lim
     checkAcl(TerminalsAcl.canUsePaginate());
     return paginate(limit, order, filter, page, cursor) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -179,7 +177,6 @@ export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { l
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -206,7 +203,6 @@ export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }:
     checkAcl(TerminalsAcl.canUsePaginateLabels());
     return paginateLabels(limit, order, filter, page, cursor) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -238,7 +234,6 @@ export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor 
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -261,7 +256,6 @@ export const useGetById = <TData>({ id }: { id: string }, options?: AppQueryOpti
     checkAcl(TerminalsAcl.canUseGetById());
     return getById(id) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -286,7 +280,6 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { id: stri
       return update(id, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { id } = variables;
       const updateKeys = [keys.getById(id)];
@@ -316,7 +309,6 @@ export const useArchive = (options?: AppMutationOptions<typeof archive, { id: st
       return archive(id)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -344,7 +336,6 @@ export const useUnarchive = (options?: AppMutationOptions<typeof unarchive, { id
       return unarchive(id)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

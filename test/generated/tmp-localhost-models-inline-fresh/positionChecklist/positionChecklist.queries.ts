@@ -88,7 +88,6 @@ export const useList = <TData>({ officeId, positionId }: { officeId: string, pos
     checkAcl(PositionChecklistAcl.canUseList({ officeId } ));
     return list(officeId, positionId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -114,7 +113,6 @@ export const useApplyTemplates = (options?: AppMutationOptions<typeof applyTempl
       return applyTemplates(officeId, positionId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -144,7 +142,6 @@ export const useComplete = (options?: AppMutationOptions<typeof complete, { offi
       return complete(officeId, positionId, itemId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -174,7 +171,6 @@ export const useUncomplete = (options?: AppMutationOptions<typeof uncomplete, { 
       return uncomplete(officeId, positionId, itemId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -205,7 +201,6 @@ export const useUpdateNotes = (options?: AppMutationOptions<typeof updateNotes, 
       return updateNotes(officeId, positionId, itemId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -235,7 +230,6 @@ export const useReorder = (options?: AppMutationOptions<typeof reorder, { office
       return reorder(officeId, positionId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

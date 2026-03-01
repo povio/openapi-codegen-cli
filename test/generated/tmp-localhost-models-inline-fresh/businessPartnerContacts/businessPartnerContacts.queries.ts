@@ -90,7 +90,6 @@ export const useGetContacts = <TData>({ officeId, businessPartnerId }: { officeI
     checkAcl(BusinessPartnerContactsAcl.canUseGetContacts({ officeId } ));
     return getContacts(officeId, businessPartnerId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -116,7 +115,6 @@ export const useCreateContact = (options?: AppMutationOptions<typeof createConta
       return createContact(officeId, businessPartnerId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -149,7 +147,6 @@ export const usePaginateContactLabels = <TData>({ officeId, businessPartnerId, l
     checkAcl(BusinessPartnerContactsAcl.canUsePaginateContactLabels({ officeId } ));
     return paginateContactLabels(officeId, businessPartnerId, limit, order, filter, page, cursor) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -183,7 +180,6 @@ export const usePaginateContactLabelsInfinite = <TData>({ officeId, businessPart
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -210,7 +206,6 @@ export const useUpdateContact = (options?: AppMutationOptions<typeof updateConta
       return updateContact(contactId, officeId, businessPartnerId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -239,7 +234,6 @@ export const useDeleteContact = (options?: AppMutationOptions<typeof deleteConta
       return deleteContact(contactId, officeId, businessPartnerId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

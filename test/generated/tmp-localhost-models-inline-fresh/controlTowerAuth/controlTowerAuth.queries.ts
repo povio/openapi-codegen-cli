@@ -47,7 +47,6 @@ export const useLogin = (options?: AppMutationOptions<typeof login, { data: Cont
       login(data)
 ,
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -72,7 +71,6 @@ export const useResetPassword = (options?: AppMutationOptions<typeof resetPasswo
       resetPassword(data)
 ,
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

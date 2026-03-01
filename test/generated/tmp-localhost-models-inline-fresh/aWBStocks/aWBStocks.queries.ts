@@ -111,7 +111,6 @@ export const usePaginate = <TData>({ officeId, limit, order, filter, page, curso
     checkAcl(AWBStocksAcl.canUsePaginate({ officeId } ));
     return paginate(officeId, limit, order, filter, page, cursor) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -144,7 +143,6 @@ export const usePaginateInfinite = <TData>({ officeId, limit, order, filter, cur
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -169,7 +167,6 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { officeId
       return create(officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -197,7 +194,6 @@ export const useFindById = <TData>({ stockId, officeId }: { stockId: string, off
     checkAcl(AWBStocksAcl.canUseFindById({ officeId } ));
     return findById(stockId, officeId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -223,7 +219,6 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { stockId:
       return update(stockId, officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { stockId, officeId } = variables;
       const updateKeys = [keys.findById(stockId, officeId)];
@@ -254,7 +249,6 @@ export const useArchive = (options?: AppMutationOptions<typeof archive, { stockI
       return archive(stockId, officeId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { stockId, officeId } = variables;
       const updateKeys = [keys.findById(stockId, officeId)];
@@ -285,7 +279,6 @@ export const useUnarchive = (options?: AppMutationOptions<typeof unarchive, { st
       return unarchive(stockId, officeId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { stockId, officeId } = variables;
       const updateKeys = [keys.findById(stockId, officeId)];
@@ -316,7 +309,6 @@ export const useGenerateNextNumber = (options?: AppMutationOptions<typeof genera
       return generateNextNumber(officeId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

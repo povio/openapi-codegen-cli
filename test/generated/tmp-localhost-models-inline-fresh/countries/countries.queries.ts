@@ -84,7 +84,6 @@ export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { lim
     checkAcl(CountriesAcl.canUsePaginate());
     return paginate(limit, order, filter, page, cursor) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -116,7 +115,6 @@ export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { l
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -143,7 +141,6 @@ export const usePaginateCountryLabels = <TData>({ limit, order, filter, page, cu
     checkAcl(CountriesAcl.canUsePaginateCountryLabels());
     return paginateCountryLabels(limit, order, filter, page, cursor) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -175,7 +172,6 @@ export const usePaginateCountryLabelsInfinite = <TData>({ limit, order, filter, 
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -198,7 +194,6 @@ export const useGetCountryById = <TData>({ id }: { id: string }, options?: AppQu
     checkAcl(CountriesAcl.canUseGetCountryById());
     return getCountryById(id) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 

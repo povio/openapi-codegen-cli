@@ -101,7 +101,6 @@ export const useFindProfile = <TData>(options?: AppQueryOptions<typeof findProfi
     queryKey: keys.findProfile(),
     queryFn: findProfile,
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -125,7 +124,6 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { data: Cu
       return create(data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -156,7 +154,6 @@ export const useList = <TData>({ limit, order, filter, page, cursor }: { limit: 
     checkAcl(CustomersAcl.canUseList());
     return list(limit, order, filter, page, cursor) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -188,7 +185,6 @@ export const useListInfinite = <TData>({ limit, order, filter, cursor }: { limit
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -211,7 +207,6 @@ export const useFindById = <TData>({ customerId }: { customerId: string }, optio
     checkAcl(CustomersAcl.canUseFindById());
     return findById(customerId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -236,7 +231,6 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { customer
       return update(customerId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { customerId } = variables;
       const updateKeys = [keys.findById(customerId)];
@@ -266,7 +260,6 @@ export const useDeactivate = (options?: AppMutationOptions<typeof deactivate, { 
       return deactivate(id)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -294,7 +287,6 @@ export const useReactivate = (options?: AppMutationOptions<typeof reactivate, { 
       return reactivate(id)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

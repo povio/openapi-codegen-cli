@@ -128,7 +128,6 @@ export const useListCargosByPositionId = <TData>({ officeId, positionId, limit, 
     checkAcl(PositionCargoAcl.canUseListCargosByPositionId({ officeId } ));
     return listCargosByPositionId(officeId, positionId, limit, order, page, cursor) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -161,7 +160,6 @@ export const useListCargosByPositionIdInfinite = <TData>({ officeId, positionId,
       return pageParam * limitParam < totalItems ? pageParam + 1 : null;
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -187,7 +185,6 @@ export const useCreateCargo = (options?: AppMutationOptions<typeof createCargo, 
       return createCargo(officeId, positionId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -215,7 +212,6 @@ export const useListCargoLabels = <TData>({ officeId, positionId }: { officeId: 
     checkAcl(PositionCargoAcl.canUseListCargoLabels({ officeId } ));
     return listCargoLabels(officeId, positionId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -239,7 +235,6 @@ export const useGetCargoSummary = <TData>({ officeId, positionId }: { officeId: 
     checkAcl(PositionCargoAcl.canUseGetCargoSummary({ officeId } ));
     return getCargoSummary(officeId, positionId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -264,7 +259,6 @@ export const useGetCargoById = <TData>({ officeId, positionId, cargoId }: { offi
     checkAcl(PositionCargoAcl.canUseGetCargoById({ officeId } ));
     return getCargoById(officeId, positionId, cargoId) },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
   });
 };
 
@@ -291,7 +285,6 @@ export const useUpdateCargo = (options?: AppMutationOptions<typeof updateCargo, 
       return updateCargo(officeId, positionId, cargoId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, positionId, cargoId } = variables;
       const updateKeys = [keys.getCargoById(officeId, positionId, cargoId)];
@@ -323,7 +316,6 @@ export const useDeleteCargo = (options?: AppMutationOptions<typeof deleteCargo, 
       return deleteCargo(officeId, positionId, cargoId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -354,7 +346,6 @@ export const useCreateBulkCargos = (options?: AppMutationOptions<typeof createBu
       return createBulkCargos(numberOfCargos, officeId, positionId, data)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -384,7 +375,6 @@ export const useDuplicateCargo = (options?: AppMutationOptions<typeof duplicateC
       return duplicateCargo(officeId, positionId, cargoId)
     },
     ...options,
-    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, positionId, cargoId } = variables;
       const updateKeys = [keys.getCargoById(officeId, positionId, cargoId)];
