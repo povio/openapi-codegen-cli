@@ -26,11 +26,6 @@ export function readAssetSync(fileName: string) {
   return readFileSync(assetPath);
 }
 
-export function readHbsTemplateSync(templateName: string) {
-  const templatePath = `src/generators/templates/${templateName}.hbs`;
-  return readFileSync(templatePath);
-}
-
 export function getOutputFileName({ output, fileName }: { output: string; fileName: string }) {
   return `${output}/${fileName}`;
 }
