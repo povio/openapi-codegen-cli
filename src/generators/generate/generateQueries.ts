@@ -12,7 +12,7 @@ import {
   AXIOS_REQUEST_CONFIG_NAME,
   AXIOS_REQUEST_CONFIG_TYPE,
 } from "@/generators/const/endpoints.const";
-import { PACKAGE_IMPORT_PATH } from "@/generators/const/package.const";
+import { ACL_PACKAGE_IMPORT_PATH, PACKAGE_IMPORT_PATH } from "@/generators/const/package.const";
 import { QUERIES_MODULE_NAME, QUERY_HOOKS, QUERY_IMPORT } from "@/generators/const/queries.const";
 import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
 import { Endpoint, EndpointParameter } from "@/generators/types/endpoint";
@@ -43,7 +43,6 @@ import {
 import { getInfiniteQueryName, getQueryName } from "@/generators/utils/generate/generate.query.utils";
 import {
   getAppRestClientImportPath,
-  getAclCheckImportPath,
   getMutationEffectsImportPath,
   getQueryModulesImportPath,
   getQueryTypesImportPath,
@@ -111,7 +110,7 @@ export function generateQueries(params: GenerateTypeParams) {
   const hasAclCheck = resolver.options.checkAcl && aclEndpoints.length > 0;
   const aclCheckImport: Import = {
     bindings: [ACL_CHECK_HOOK],
-    from: getAclCheckImportPath(resolver.options),
+    from: ACL_PACKAGE_IMPORT_PATH,
   };
 
   const queryTypesImport: Import = {

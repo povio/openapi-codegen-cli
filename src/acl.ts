@@ -2,4 +2,5 @@
 export { AbilityContext } from "./lib/acl/ability.context";
 export { createAclGuard } from "./lib/acl/AclGuard";
 export { Can } from "./lib/acl/Can";
+export { useAclCheck } from "./lib/acl/useAclCheck";
 export type { AppAbilities, AppAbility } from "./lib/acl/appAbility.types";

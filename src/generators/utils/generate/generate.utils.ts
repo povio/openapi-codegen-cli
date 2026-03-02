@@ -1,4 +1,4 @@
-import { ACL_APP_ABILITY_FILE, ACL_CHECK_FILE } from "@/generators/const/acl.const";
+import { ACL_APP_ABILITY_FILE } from "@/generators/const/acl.const";
 import {
   APP_REST_CLIENT_FILE,
   MUTATION_EFFECTS_FILE,
@@ -59,10 +59,6 @@ export function getQueryTypesImportPath(options: GenerateOptions) {
 
 export function getMutationEffectsImportPath(options: GenerateOptions) {
   return `${getImportPath(options)}${MUTATION_EFFECTS_FILE.fileName}`;
-}
-
-export function getAclCheckImportPath(options: GenerateOptions) {
-  return `${getImportPath(options)}${ACL_CHECK_FILE.fileName}`;
 }
 
 export function getZodExtendedImportPath(options: GenerateOptions) {
