@@ -123,7 +123,7 @@ export function generateQueries(params: GenerateTypeParams) {
 
   const queryTypesImport: Import = {
     bindings: [
-      "OpenApiQueryConfig",
+      ...(mutationEndpoints.length > 0 ? ["OpenApiQueryConfig"] : []),
     ],
     typeBindings: [
       ...(queryEndpoints.length > 0 ? [QUERY_OPTIONS_TYPES.query] : []),
