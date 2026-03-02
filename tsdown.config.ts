@@ -2,7 +2,7 @@ import { defineConfig } from "tsdown";
 import packageJson from "./package.json" with { type: "json" };
 
 export default defineConfig({
-  entry: ["./src/sh.ts", "./src/generator.ts", "./src/index.ts", "./src/vite.ts", "./src/acl.ts"],
+  entry: ["./src/sh.ts", "./src/generator.ts", "./src/index.ts", "./src/vite.ts", "./src/acl.ts", "./src/zod.ts"],
   format: "esm",
   platform: "node",
   target: "esnext",
