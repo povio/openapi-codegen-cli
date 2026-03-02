@@ -434,8 +434,6 @@ function renderQueryJsDocs({
   endpoint: Endpoint;
   mode: "query" | "mutation" | "infiniteQuery";
 }) {
-  // TODO(perf-migration): parity mismatch vs legacy HBS around infinite-query JSDoc param lines
-  // for some endpoints; keep experimental renderer opt-in until this is resolved.
   const lines: string[] = ["/** "];
 
   if (mode === "infiniteQuery") {
@@ -669,7 +667,6 @@ function renderQuery({
   lines.push(
     `export const ${getQueryName(endpoint)} = <TData>(${endpointParams ? `{ ${endpointArgs} }: { ${endpointParams} }, ` : ""}options?: AppQueryOptions<typeof ${importedEndpoint}, TData>${hasAxiosRequestConfig ? `, ${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => {`,
   );
-  lines.push("  const queryConfig = OpenApiQueryConfig.useConfig();");
   if (hasAclCheck) {
     lines.push(`  const { checkAcl } = ${ACL_CHECK_HOOK}();`);
   }
@@ -971,6 +968,7 @@ function renderInfiniteQuery({
   );
   lines.push("    },");
   lines.push("    ...options,");
+  lines.push("    onError: options?.onError ?? queryConfig.onError,");
   lines.push("  });");
   lines.push("};");
   return lines.join("\n");
