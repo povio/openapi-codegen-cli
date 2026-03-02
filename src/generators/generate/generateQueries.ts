@@ -90,11 +90,8 @@ export function generateQueries(params: GenerateTypeParams) {
   const queryImport: Import = {
     bindings: [
       ...(queryEndpoints.length > 0 ? [QUERY_HOOKS.query] : []),
-      ...(queryEndpoints.length > 0 ? ["UseQueryResult"] : []),
       ...(resolver.options.infiniteQueries && infiniteQueryEndpoints.length > 0 ? [QUERY_HOOKS.infiniteQuery] : []),
-      ...(resolver.options.infiniteQueries && infiniteQueryEndpoints.length > 0 ? ["UseInfiniteQueryResult"] : []),
       ...(mutationEndpoints.length > 0 ? [QUERY_HOOKS.mutation] : []),
-      ...(mutationEndpoints.length > 0 ? ["UseMutationResult"] : []),
     ],
     from: QUERY_IMPORT.from,
   };
