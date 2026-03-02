@@ -677,7 +677,7 @@ function renderQueryOptions({
 
   const lines: string[] = [];
   lines.push(
-    `export const ${getQueryOptionsName(endpoint)} = (${endpointParams ? `{ ${endpointArgs} }: { ${endpointParams} }` : ""}${hasAxiosRequestConfig ? `${endpointParams ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => ({`,
+    `const ${getQueryOptionsName(endpoint)} = (${endpointParams ? `{ ${endpointArgs} }: { ${endpointParams} }` : ""}${hasAxiosRequestConfig ? `${endpointParams ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => ({`,
   );
   lines.push(`  queryKey: keys.${getEndpointName(endpoint)}(${endpointArgs}),`);
   lines.push(
@@ -710,7 +710,7 @@ function renderInfiniteQueryOptions({
 
   const lines: string[] = [];
   lines.push(
-    `export const ${getInfiniteQueryOptionsName(endpoint)} = (${endpointParams ? `{ ${endpointArgsWithoutPage} }: { ${endpointParams} }` : ""}${hasAxiosRequestConfig ? `${endpointParams ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => ({`,
+    `const ${getInfiniteQueryOptionsName(endpoint)} = (${endpointParams ? `{ ${endpointArgsWithoutPage} }: { ${endpointParams} }` : ""}${hasAxiosRequestConfig ? `${endpointParams ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => ({`,
   );
   lines.push(`  queryKey: keys.${getEndpointName(endpoint)}Infinite(${endpointArgsWithoutPage}),`);
   lines.push(
@@ -810,7 +810,6 @@ function renderQuery({
   lines.push(
     `export const ${getQueryName(endpoint)} = <TData>(${endpointParams ? `{ ${endpointArgs} }: { ${endpointParams} }, ` : ""}options?: AppQueryOptions<typeof ${inlineEndpoints ? getEndpointName(endpoint) : getImportedEndpointName(endpoint, resolver.options)}, TData>${hasAxiosRequestConfig ? `, ${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => {`,
   );
-  lines.push("  const queryConfig = OpenApiQueryConfig.useConfig();");
   if (hasAclCheck) {
     lines.push(`  const { checkAcl } = ${ACL_CHECK_HOOK}();`);
   }
@@ -827,7 +826,6 @@ function renderQuery({
     lines.push("    },");
   }
   lines.push("    ...options,");
-  lines.push("    onError: options?.onError ?? queryConfig.onError,");
   lines.push("  });");
   lines.push("};");
   return lines.join("\n");
@@ -1081,7 +1079,6 @@ function renderInfiniteQuery({
   lines.push(
     `export const ${getInfiniteQueryName(endpoint)} = <TData>(${endpointParams ? `{ ${endpointArgsWithoutPage} }: { ${endpointParams} }, ` : ""}options?: AppInfiniteQueryOptions<typeof ${inlineEndpoints ? getEndpointName(endpoint) : getImportedEndpointName(endpoint, resolver.options)}, TData>${hasAxiosRequestConfig ? `, ${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => {`,
   );
-  lines.push("  const queryConfig = OpenApiQueryConfig.useConfig();");
   if (hasAclCheck) {
     lines.push(`  const { checkAcl } = ${ACL_CHECK_HOOK}();`);
   }
@@ -1096,7 +1093,6 @@ function renderInfiniteQuery({
     lines.push("    },");
   }
   lines.push("    ...options,");
-  lines.push("    onError: options?.onError ?? queryConfig.onError,");
   lines.push("  });");
   lines.push("};");
   return lines.join("\n");
