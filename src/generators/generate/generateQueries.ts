@@ -745,10 +745,10 @@ function renderPrefetchQuery({
 
   const lines: string[] = [];
   lines.push(
-    `export const ${getPrefetchQueryName(endpoint)} = (queryClient: QueryClient, ${endpointParams ? `{ ${endpointArgs} }: { ${endpointParams} }, ` : ""}${hasAxiosRequestConfig ? `${AXIOS_REQUEST_CONFIG_NAME}: ${AXIOS_REQUEST_CONFIG_TYPE}, ` : ""}options?: Omit<Parameters<QueryClient["prefetchQuery"]>[0], "queryKey" | "queryFn">) => {`,
+    `export const ${getPrefetchQueryName(endpoint)} = (queryClient: QueryClient, ${endpointParams ? `{ ${endpointArgs} }: { ${endpointParams} }, ` : ""}${hasAxiosRequestConfig ? `${AXIOS_REQUEST_CONFIG_NAME}: ${AXIOS_REQUEST_CONFIG_TYPE}, ` : ""}options?: Omit<Parameters<QueryClient["prefetchQuery"]>[0], "queryKey" | "queryFn">): void => {`,
   );
   lines.push(
-    `  return queryClient.prefetchQuery({ ...${getQueryOptionsName(endpoint)}(${endpointParams ? `{ ${endpointArgs} }` : ""}${hasAxiosRequestConfig ? `${endpointParams ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}` : ""}), ...options });`,
+    `  void queryClient.prefetchQuery({ ...${getQueryOptionsName(endpoint)}(${endpointParams ? `{ ${endpointArgs} }` : ""}${hasAxiosRequestConfig ? `${endpointParams ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}` : ""}), ...options });`,
   );
   lines.push("};");
   return lines.join("\n");
@@ -771,10 +771,10 @@ function renderPrefetchInfiniteQuery({
 
   const lines: string[] = [];
   lines.push(
-    `export const ${getPrefetchInfiniteQueryName(endpoint)} = (queryClient: QueryClient, ${endpointParams ? `{ ${endpointArgs} }: { ${endpointParams} }, ` : ""}${hasAxiosRequestConfig ? `${AXIOS_REQUEST_CONFIG_NAME}: ${AXIOS_REQUEST_CONFIG_TYPE}, ` : ""}options?: Omit<Parameters<QueryClient["prefetchInfiniteQuery"]>[0], "queryKey" | "queryFn" | "initialPageParam" | "getNextPageParam">) => {`,
+    `export const ${getPrefetchInfiniteQueryName(endpoint)} = (queryClient: QueryClient, ${endpointParams ? `{ ${endpointArgs} }: { ${endpointParams} }, ` : ""}${hasAxiosRequestConfig ? `${AXIOS_REQUEST_CONFIG_NAME}: ${AXIOS_REQUEST_CONFIG_TYPE}, ` : ""}options?: Omit<Parameters<QueryClient["prefetchInfiniteQuery"]>[0], "queryKey" | "queryFn" | "initialPageParam" | "getNextPageParam">): void => {`,
   );
   lines.push(
-    `  return queryClient.prefetchInfiniteQuery({ ...${getInfiniteQueryOptionsName(endpoint)}(${endpointParams ? `{ ${endpointArgs} }` : ""}${hasAxiosRequestConfig ? `${endpointParams ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}` : ""}), ...options });`,
+    `  void queryClient.prefetchInfiniteQuery({ ...${getInfiniteQueryOptionsName(endpoint)}(${endpointParams ? `{ ${endpointArgs} }` : ""}${hasAxiosRequestConfig ? `${endpointParams ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}` : ""}), ...options });`,
   );
   lines.push("};");
   return lines.join("\n");
