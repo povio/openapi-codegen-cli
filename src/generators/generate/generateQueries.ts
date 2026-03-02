@@ -40,7 +40,14 @@ import {
   getEndpointsImports,
   getModelsImports,
 } from "@/generators/utils/generate/generate.imports.utils";
-import { getInfiniteQueryName, getQueryName } from "@/generators/utils/generate/generate.query.utils";
+import {
+  getInfiniteQueryName,
+  getInfiniteQueryOptionsName,
+  getPrefetchInfiniteQueryName,
+  getPrefetchQueryName,
+  getQueryName,
+  getQueryOptionsName,
+} from "@/generators/utils/generate/generate.query.utils";
 import {
   getAppRestClientImportPath,
   getQueryModulesImportPath,
@@ -86,6 +93,7 @@ export function generateQueries(params: GenerateTypeParams) {
 
   const queryImport: Import = {
     bindings: [
+      ...(resolver.options.prefetchQueries && queryEndpoints.length > 0 ? ["QueryClient"] : []),
       ...(queryEndpoints.length > 0 ? [QUERY_HOOKS.query] : []),
       ...(resolver.options.infiniteQueries && infiniteQueryEndpoints.length > 0 ? [QUERY_HOOKS.infiniteQuery] : []),
       ...(mutationEndpoints.length > 0 ? [QUERY_HOOKS.mutation] : []),
@@ -233,8 +241,14 @@ export function generateQueries(params: GenerateTypeParams) {
   for (const endpoint of endpoints) {
     const endpointInfo = endpointGroups.infoByEndpoint.get(endpoint);
     if (endpointInfo?.query) {
+      lines.push(renderQueryOptions({ resolver, endpoint, inlineEndpoints }));
+      lines.push("");
       lines.push(renderQuery({ resolver, endpoint, inlineEndpoints }));
       lines.push("");
+      if (resolver.options.prefetchQueries) {
+        lines.push(renderPrefetchQuery({ resolver, endpoint }));
+        lines.push("");
+      }
     }
     if (endpointInfo?.mutation) {
       lines.push(
@@ -248,8 +262,14 @@ export function generateQueries(params: GenerateTypeParams) {
       lines.push("");
     }
     if (endpointInfo?.infiniteQuery) {
+      lines.push(renderInfiniteQueryOptions({ resolver, endpoint, inlineEndpoints }));
+      lines.push("");
       lines.push(renderInfiniteQuery({ resolver, endpoint, inlineEndpoints }));
       lines.push("");
+      if (resolver.options.prefetchQueries) {
+        lines.push(renderPrefetchInfiniteQuery({ resolver, endpoint }));
+        lines.push("");
+      }
     }
   }
 
@@ -636,6 +656,130 @@ function renderInlineEndpointConfig(resolver: SchemaResolver, endpoint: Endpoint
   return lines.join("\n");
 }
 
+function renderQueryOptions({
+  resolver,
+  endpoint,
+  inlineEndpoints,
+}: {
+  resolver: SchemaResolver;
+  endpoint: Endpoint;
+  inlineEndpoints: boolean;
+}) {
+  const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
+  const tag = getEndpointTag(endpoint, resolver.options);
+  const endpointParams = renderEndpointParams(resolver, endpoint, {
+    modelNamespaceTag: tag,
+  });
+  const endpointArgs = renderEndpointArgs(resolver, endpoint, {});
+  const endpointFunction = inlineEndpoints
+    ? getEndpointName(endpoint)
+    : getImportedEndpointName(endpoint, resolver.options);
+
+  const lines: string[] = [];
+  lines.push(
+    `export const ${getQueryOptionsName(endpoint)} = (${endpointParams ? `{ ${endpointArgs} }: { ${endpointParams} }` : ""}${hasAxiosRequestConfig ? `${endpointParams ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => ({`,
+  );
+  lines.push(`  queryKey: keys.${getEndpointName(endpoint)}(${endpointArgs}),`);
+  lines.push(
+    `  queryFn: () => ${endpointFunction}(${endpointArgs}${hasAxiosRequestConfig ? `${endpointArgs ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}` : ""}),`,
+  );
+  lines.push("});");
+  return lines.join("\n");
+}
+
+function renderInfiniteQueryOptions({
+  resolver,
+  endpoint,
+  inlineEndpoints,
+}: {
+  resolver: SchemaResolver;
+  endpoint: Endpoint;
+  inlineEndpoints: boolean;
+}) {
+  const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
+  const tag = getEndpointTag(endpoint, resolver.options);
+  const endpointParams = renderEndpointParams(resolver, endpoint, {
+    excludePageParam: true,
+    modelNamespaceTag: tag,
+  });
+  const endpointArgsWithoutPage = renderEndpointArgs(resolver, endpoint, { excludePageParam: true });
+  const endpointArgsWithPage = renderEndpointArgs(resolver, endpoint, { replacePageParam: true });
+  const endpointFunction = inlineEndpoints
+    ? getEndpointName(endpoint)
+    : getImportedEndpointName(endpoint, resolver.options);
+
+  const lines: string[] = [];
+  lines.push(
+    `export const ${getInfiniteQueryOptionsName(endpoint)} = (${endpointParams ? `{ ${endpointArgsWithoutPage} }: { ${endpointParams} }` : ""}${hasAxiosRequestConfig ? `${endpointParams ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => ({`,
+  );
+  lines.push(`  queryKey: keys.${getEndpointName(endpoint)}Infinite(${endpointArgsWithoutPage}),`);
+  lines.push(
+    `  queryFn: ({ pageParam }: { pageParam: number }) => ${endpointFunction}(${endpointArgsWithPage}${hasAxiosRequestConfig ? `, ${AXIOS_REQUEST_CONFIG_NAME}` : ""}),`,
+  );
+  lines.push("  initialPageParam: 1,");
+  lines.push(
+    `  getNextPageParam: ({ ${resolver.options.infiniteQueryResponseParamNames.page}, ${resolver.options.infiniteQueryResponseParamNames.totalItems}, ${resolver.options.infiniteQueryResponseParamNames.limit}: limitParam }) => {`,
+  );
+  lines.push(`    const pageParam = ${resolver.options.infiniteQueryResponseParamNames.page} ?? 1;`);
+  lines.push(
+    `    return pageParam * limitParam < ${resolver.options.infiniteQueryResponseParamNames.totalItems} ? pageParam + 1 : null;`,
+  );
+  lines.push("  },");
+  lines.push("});");
+  return lines.join("\n");
+}
+
+function renderPrefetchQuery({
+  resolver,
+  endpoint,
+}: {
+  resolver: SchemaResolver;
+  endpoint: Endpoint;
+}) {
+  const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
+  const tag = getEndpointTag(endpoint, resolver.options);
+  const endpointParams = renderEndpointParams(resolver, endpoint, {
+    modelNamespaceTag: tag,
+  });
+  const endpointArgs = renderEndpointArgs(resolver, endpoint, {});
+
+  const lines: string[] = [];
+  lines.push(
+    `export const ${getPrefetchQueryName(endpoint)} = (queryClient: QueryClient, ${endpointParams ? `{ ${endpointArgs} }: { ${endpointParams} }, ` : ""}${hasAxiosRequestConfig ? `${AXIOS_REQUEST_CONFIG_NAME}: ${AXIOS_REQUEST_CONFIG_TYPE}, ` : ""}options?: Omit<Parameters<QueryClient["prefetchQuery"]>[0], "queryKey" | "queryFn">) => {`,
+  );
+  lines.push(
+    `  return queryClient.prefetchQuery({ ...${getQueryOptionsName(endpoint)}(${endpointParams ? `{ ${endpointArgs} }` : ""}${hasAxiosRequestConfig ? `${endpointParams ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}` : ""}), ...options });`,
+  );
+  lines.push("};");
+  return lines.join("\n");
+}
+
+function renderPrefetchInfiniteQuery({
+  resolver,
+  endpoint,
+}: {
+  resolver: SchemaResolver;
+  endpoint: Endpoint;
+}) {
+  const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
+  const tag = getEndpointTag(endpoint, resolver.options);
+  const endpointParams = renderEndpointParams(resolver, endpoint, {
+    excludePageParam: true,
+    modelNamespaceTag: tag,
+  });
+  const endpointArgs = renderEndpointArgs(resolver, endpoint, { excludePageParam: true });
+
+  const lines: string[] = [];
+  lines.push(
+    `export const ${getPrefetchInfiniteQueryName(endpoint)} = (queryClient: QueryClient, ${endpointParams ? `{ ${endpointArgs} }: { ${endpointParams} }, ` : ""}${hasAxiosRequestConfig ? `${AXIOS_REQUEST_CONFIG_NAME}: ${AXIOS_REQUEST_CONFIG_TYPE}, ` : ""}options?: Omit<Parameters<QueryClient["prefetchInfiniteQuery"]>[0], "queryKey" | "queryFn" | "initialPageParam" | "getNextPageParam">) => {`,
+  );
+  lines.push(
+    `  return queryClient.prefetchInfiniteQuery({ ...${getInfiniteQueryOptionsName(endpoint)}(${endpointParams ? `{ ${endpointArgs} }` : ""}${hasAxiosRequestConfig ? `${endpointParams ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}` : ""}), ...options });`,
+  );
+  lines.push("};");
+  return lines.join("\n");
+}
+
 function renderQuery({
   resolver,
   endpoint,
@@ -657,36 +801,33 @@ function renderQuery({
     optionalPathParams: resolver.options.workspaceContext,
     modelNamespaceTag: tag,
   });
-  const hasQueryFn = endpointArgs.length > 0 || hasAxiosRequestConfig || hasAclCheck;
-  const hasQueryFnBody = Boolean(hasAclCheck) || Object.keys(workspaceParamReplacements).length > 0;
-  const importedEndpoint = inlineEndpoints
-    ? getEndpointName(endpoint)
-    : getImportedEndpointName(endpoint, resolver.options);
+  const queryOptionsName = getQueryOptionsName(endpoint);
+  const hasQueryFnOverride = hasAclCheck;
+  const queryOptionsArgs = `${resolvedEndpointArgs ? `{ ${resolvedEndpointArgs} }` : ""}${hasAxiosRequestConfig ? `${resolvedEndpointArgs ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}` : ""}`;
 
   const lines: string[] = [];
   lines.push(renderQueryJsDocs({ resolver, endpoint, mode: "query", tag }));
   lines.push(
-    `export const ${getQueryName(endpoint)} = <TData>(${endpointParams ? `{ ${endpointArgs} }: { ${endpointParams} }, ` : ""}options?: AppQueryOptions<typeof ${importedEndpoint}, TData>${hasAxiosRequestConfig ? `, ${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => {`,
+    `export const ${getQueryName(endpoint)} = <TData>(${endpointParams ? `{ ${endpointArgs} }: { ${endpointParams} }, ` : ""}options?: AppQueryOptions<typeof ${inlineEndpoints ? getEndpointName(endpoint) : getImportedEndpointName(endpoint, resolver.options)}, TData>${hasAxiosRequestConfig ? `, ${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => {`,
   );
+  lines.push("  const queryConfig = OpenApiQueryConfig.useConfig();");
   if (hasAclCheck) {
     lines.push(`  const { checkAcl } = ${ACL_CHECK_HOOK}();`);
   }
   lines.push(...renderWorkspaceParamResolutions({ replacements: workspaceParamReplacements, indent: "  " }));
   lines.push("  ");
   lines.push(`  return ${QUERY_HOOKS.query}({`);
-  lines.push(`    queryKey: keys.${getEndpointName(endpoint)}(${resolvedEndpointArgs}),`);
-  if (hasQueryFn) {
-    lines.push(`    queryFn: () => ${hasQueryFnBody ? "{ " : ""}`);
+  lines.push(`    ...${queryOptionsName}(${queryOptionsArgs}),`);
+  if (hasQueryFnOverride) {
+    lines.push("    queryFn: async () => {");
     if (hasAclCheck) {
       lines.push(renderAclCheckCall(resolver, endpoint, workspaceParamReplacements, "    "));
     }
-    lines.push(
-      `    ${hasQueryFnBody ? "return " : ""}${importedEndpoint}(${resolvedEndpointArgs}${hasAxiosRequestConfig ? `${resolvedEndpointArgs ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}` : ""})${hasQueryFnBody ? " }" : ""},`,
-    );
-  } else {
-    lines.push(`    queryFn: ${importedEndpoint},`);
+    lines.push(`      return ${queryOptionsName}(${queryOptionsArgs}).queryFn();`);
+    lines.push("    },");
   }
   lines.push("    ...options,");
+  lines.push("    onError: options?.onError ?? queryConfig.onError,");
   lines.push("  });");
   lines.push("};");
   return lines.join("\n");
@@ -931,46 +1072,31 @@ function renderInfiniteQuery({
     { excludePageParam: true },
     workspaceParamReplacements,
   );
-  const resolvedEndpointArgsWithPage = renderEndpointArgs(
-    resolver,
-    endpoint,
-    { replacePageParam: true },
-    workspaceParamReplacements,
-  );
-  const endpointFunction = inlineEndpoints
-    ? getEndpointName(endpoint)
-    : getImportedEndpointName(endpoint, resolver.options);
-  const hasQueryFnBody = Boolean(hasAclCheck) || Object.keys(workspaceParamReplacements).length > 0;
+  const queryOptionsName = getInfiniteQueryOptionsName(endpoint);
+  const queryOptionsArgs = `${resolvedEndpointArgsWithoutPage ? `{ ${resolvedEndpointArgsWithoutPage} }` : ""}${hasAxiosRequestConfig ? `${resolvedEndpointArgsWithoutPage ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}` : ""}`;
+  const hasQueryFnOverride = hasAclCheck;
 
   const lines: string[] = [];
   lines.push(renderQueryJsDocs({ resolver, endpoint, mode: "infiniteQuery", tag }));
   lines.push(
-    `export const ${getInfiniteQueryName(endpoint)} = <TData>(${endpointParams ? `{ ${endpointArgsWithoutPage} }: { ${endpointParams} }, ` : ""}options?: AppInfiniteQueryOptions<typeof ${endpointFunction}, TData>${hasAxiosRequestConfig ? `, ${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => {`,
+    `export const ${getInfiniteQueryName(endpoint)} = <TData>(${endpointParams ? `{ ${endpointArgsWithoutPage} }: { ${endpointParams} }, ` : ""}options?: AppInfiniteQueryOptions<typeof ${inlineEndpoints ? getEndpointName(endpoint) : getImportedEndpointName(endpoint, resolver.options)}, TData>${hasAxiosRequestConfig ? `, ${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => {`,
   );
+  lines.push("  const queryConfig = OpenApiQueryConfig.useConfig();");
   if (hasAclCheck) {
     lines.push(`  const { checkAcl } = ${ACL_CHECK_HOOK}();`);
   }
   lines.push(...renderWorkspaceParamResolutions({ replacements: workspaceParamReplacements, indent: "  " }));
   lines.push("");
   lines.push(`  return ${QUERY_HOOKS.infiniteQuery}({`);
-  lines.push(`    queryKey: keys.${getEndpointName(endpoint)}Infinite(${resolvedEndpointArgsWithoutPage}),`);
-  lines.push(`    queryFn: ({ pageParam }) => ${hasQueryFnBody ? "{ " : ""}`);
-  if (hasAclCheck) {
-    lines.push(renderAclCheckCall(resolver, endpoint, workspaceParamReplacements, "    "));
+  lines.push(`    ...${queryOptionsName}(${queryOptionsArgs}),`);
+  if (hasQueryFnOverride) {
+    lines.push("    queryFn: async ({ pageParam }) => {");
+    lines.push(renderAclCheckCall(resolver, endpoint, workspaceParamReplacements, "      "));
+    lines.push(`      return ${queryOptionsName}(${queryOptionsArgs}).queryFn({ pageParam });`);
+    lines.push("    },");
   }
-  lines.push(
-    `    ${hasQueryFnBody ? "return " : ""}${endpointFunction}(${resolvedEndpointArgsWithPage}${hasAxiosRequestConfig ? `, ${AXIOS_REQUEST_CONFIG_NAME}` : ""})${hasQueryFnBody ? " }" : ""},`,
-  );
-  lines.push("    initialPageParam: 1,");
-  lines.push(
-    `    getNextPageParam: ({ ${resolver.options.infiniteQueryResponseParamNames.page}, ${resolver.options.infiniteQueryResponseParamNames.totalItems}, ${resolver.options.infiniteQueryResponseParamNames.limit}: limitParam }) => {`,
-  );
-  lines.push(`      const pageParam = ${resolver.options.infiniteQueryResponseParamNames.page} ?? 1;`);
-  lines.push(
-    `      return pageParam * limitParam < ${resolver.options.infiniteQueryResponseParamNames.totalItems} ? pageParam + 1 : null;`,
-  );
-  lines.push("    },");
   lines.push("    ...options,");
+  lines.push("    onError: options?.onError ?? queryConfig.onError,");
   lines.push("  });");
   lines.push("};");
   return lines.join("\n");

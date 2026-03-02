@@ -27,6 +27,7 @@ interface QueriesGenerateOptions {
   axiosRequestConfig?: boolean;
   mutationEffects?: boolean;
   workspaceContext?: boolean;
+  prefetchQueries?: boolean;
 }
 
 interface InfiniteQueriesGenerateOptions {

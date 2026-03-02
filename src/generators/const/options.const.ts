@@ -61,6 +61,7 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   axiosRequestConfig: false,
   mutationEffects: true,
   workspaceContext: false,
+  prefetchQueries: true,
   // Infinite queries options
   infiniteQueries: false,
   infiniteQueryParamNames: {
