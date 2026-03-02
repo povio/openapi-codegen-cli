@@ -1,7 +1,7 @@
 import { AppRestClient } from "@/data/app-rest-client";
 import { z } from "zod";
 import { ZodExtended } from "@/data/zod.extended";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, UseQueryResult, useMutation, UseMutationResult } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
 import { OpenApiQueryConfig, AppQueryOptions, AppMutationOptions } from "@povio/openapi-codegen-cli";
@@ -76,7 +76,6 @@ export const keys = {
  * @statusCodes [200]
  */
 export const useGetUserProfile = <TData>(options?: AppQueryOptions<typeof getUserProfile, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   
   return useQuery({
     queryKey: keys.getUserProfile(),
@@ -102,6 +101,7 @@ export const useUpdateUserData = (options?: AppMutationOptions<typeof updateUser
       updateUserData(data)
 ,
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -126,6 +126,7 @@ export const useUpdateUserProfile = (options?: AppMutationOptions<typeof updateU
       updateUserProfile(data)
 ,
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -150,6 +151,7 @@ export const useUpdatePassword = (options?: AppMutationOptions<typeof updatePass
       updatePassword(data)
 ,
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -174,6 +176,7 @@ export const useUpdateEmailPreferences = (options?: AppMutationOptions<typeof up
       updateEmailPreferences(data)
 ,
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -197,6 +200,7 @@ export const useUpdateProjectAccess = (options?: AppMutationOptions<typeof updat
       updateProjectAccess()
 ,
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

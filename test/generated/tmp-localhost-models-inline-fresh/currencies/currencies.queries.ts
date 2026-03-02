@@ -1,7 +1,7 @@
 import { AppRestClient } from "@/data/app-rest-client";
 import { z } from "zod";
 import { ZodExtended } from "@/data/zod.extended";
-import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, UseQueryResult, useInfiniteQuery, UseInfiniteQueryResult, useMutation, UseMutationResult } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
 import { useAclCheck } from "@/data/acl/useAclCheck";
@@ -112,7 +112,6 @@ export const keys = {
  * @statusCodes [200, 401]
  */
 export const useList = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: CurrenciesModels.CurrencyPaginationFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof list, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -138,7 +137,6 @@ export const useList = <TData>({ limit, order, filter, page, cursor }: { limit: 
  * @statusCodes [200, 401]
  */
 export const useListInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: CurrenciesModels.CurrencyPaginationFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof list, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
@@ -175,6 +173,7 @@ export const useCreateCurrency = (options?: AppMutationOptions<typeof createCurr
       return createCurrency(data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -196,7 +195,6 @@ export const useCreateCurrency = (options?: AppMutationOptions<typeof createCurr
  * @statusCodes [200, 401]
  */
 export const usePaginateCurrencyLabels = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: CurrenciesModels.CurrencyPaginationFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof paginateCurrencyLabels, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -222,7 +220,6 @@ export const usePaginateCurrencyLabels = <TData>({ limit, order, filter, page, c
  * @statusCodes [200, 401]
  */
 export const usePaginateCurrencyLabelsInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: CurrenciesModels.CurrencyPaginationFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof paginateCurrencyLabels, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
@@ -249,7 +246,6 @@ export const usePaginateCurrencyLabelsInfinite = <TData>({ limit, order, filter,
  * @statusCodes [200, 401]
  */
 export const useGetCurrencyById = <TData>({ isoCode }: { isoCode: string }, options?: AppQueryOptions<typeof getCurrencyById, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -282,6 +278,7 @@ export const useUpdateCurrency = (options?: AppMutationOptions<typeof updateCurr
       return updateCurrency(isoCode, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { isoCode } = variables;
       const updateKeys = [keys.getCurrencyById(isoCode)];
@@ -306,7 +303,6 @@ export const useUpdateCurrency = (options?: AppMutationOptions<typeof updateCurr
  * @statusCodes [200, 401]
  */
 export const usePaginateCurrencyLabelsByOffice = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: CurrenciesModels.CurrencyPaginationFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof paginateCurrencyLabelsByOffice, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -333,7 +329,6 @@ export const usePaginateCurrencyLabelsByOffice = <TData>({ officeId, limit, orde
  * @statusCodes [200, 401]
  */
 export const usePaginateCurrencyLabelsByOfficeInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: CurrenciesModels.CurrencyPaginationFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof paginateCurrencyLabelsByOffice, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({

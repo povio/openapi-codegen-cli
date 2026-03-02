@@ -1,7 +1,7 @@
 import { AppRestClient } from "@/data/app-rest-client";
 import { z } from "zod";
 import { ZodExtended } from "@/data/zod.extended";
-import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, UseQueryResult, useInfiniteQuery, UseInfiniteQueryResult, useMutation, UseMutationResult } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
 import { useAclCheck } from "@/data/acl/useAclCheck";
@@ -95,7 +95,6 @@ export const keys = {
  * @statusCodes [200, 401]
  */
 export const useFindProfile = <TData>(options?: AppQueryOptions<typeof findProfile, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   
   return useQuery({
     queryKey: keys.findProfile(),
@@ -124,6 +123,7 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { data: Cu
       return create(data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -145,7 +145,6 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { data: Cu
  * @statusCodes [200, 401]
  */
 export const useList = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: CustomersModels.CustomerPaginationFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof list, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -171,7 +170,6 @@ export const useList = <TData>({ limit, order, filter, page, cursor }: { limit: 
  * @statusCodes [200, 401]
  */
 export const useListInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: CustomersModels.CustomerPaginationFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof list, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
@@ -198,7 +196,6 @@ export const useListInfinite = <TData>({ limit, order, filter, cursor }: { limit
  * @statusCodes [200, 401]
  */
 export const useFindById = <TData>({ customerId }: { customerId: string }, options?: AppQueryOptions<typeof findById, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -231,6 +228,7 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { customer
       return update(customerId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { customerId } = variables;
       const updateKeys = [keys.findById(customerId)];
@@ -260,6 +258,7 @@ export const useDeactivate = (options?: AppMutationOptions<typeof deactivate, { 
       return deactivate(id)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -287,6 +286,7 @@ export const useReactivate = (options?: AppMutationOptions<typeof reactivate, { 
       return reactivate(id)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

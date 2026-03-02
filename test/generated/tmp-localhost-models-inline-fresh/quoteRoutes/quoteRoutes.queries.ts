@@ -1,7 +1,7 @@
 import { AppRestClient } from "@/data/app-rest-client";
 import { z } from "zod";
 import { ZodExtended } from "@/data/zod.extended";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, UseQueryResult, useMutation, UseMutationResult } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
 import { useAclCheck } from "@/data/acl/useAclCheck";
@@ -85,11 +85,10 @@ export const keys = {
  * @param { string } officeId Path parameter
  * @param { string } quoteId Path parameter
  * @param { AppQueryOptions } options Query options
- * @returns { UseQueryResult<CommonModels.RouteListResponseDto> } 
+ * @returns { UseQueryResult<QuoteRoutesModels.RouteListResponseDto> } 
  * @statusCodes [200, 401]
  */
 export const useListRoutes = <TData>({ officeId, quoteId }: { officeId: string, quoteId: string }, options?: AppQueryOptions<typeof listRoutes, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -108,12 +107,12 @@ export const useListRoutes = <TData>({ officeId, quoteId }: { officeId: string, 
  * @param { string } officeId Path parameter
  * @param { string } quoteId Path parameter
  * @param { string } routeId Path parameter
- * @param { CommonModels.CreateRoutePointRequestDto } data Body parameter
+ * @param { QuoteRoutesModels.CreateRoutePointRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
- * @returns { UseMutationResult<CommonModels.RoutePointResponseDto> } 
+ * @returns { UseMutationResult<QuoteRoutesModels.RoutePointResponseDto> } 
  * @statusCodes [201, 401]
  */
-export const useCreateRoutePoint = (options?: AppMutationOptions<typeof createRoutePoint, { officeId: string, quoteId: string, routeId: string, data: CommonModels.CreateRoutePointRequestDto }> & MutationEffectsOptions) => {
+export const useCreateRoutePoint = (options?: AppMutationOptions<typeof createRoutePoint, { officeId: string, quoteId: string, routeId: string, data: QuoteRoutesModels.CreateRoutePointRequestDto }> & MutationEffectsOptions) => {
   const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
@@ -124,6 +123,7 @@ export const useCreateRoutePoint = (options?: AppMutationOptions<typeof createRo
       return createRoutePoint(officeId, quoteId, routeId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -139,12 +139,12 @@ export const useCreateRoutePoint = (options?: AppMutationOptions<typeof createRo
  * @param { string } quoteId Path parameter
  * @param { string } routeId Path parameter
  * @param { string } pointId Path parameter
- * @param { CommonModels.UpdateRoutePointRequestDto } data Body parameter
+ * @param { QuoteRoutesModels.UpdateRoutePointRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
- * @returns { UseMutationResult<CommonModels.RoutePointResponseDto> } 
+ * @returns { UseMutationResult<QuoteRoutesModels.RoutePointResponseDto> } 
  * @statusCodes [200, 401]
  */
-export const useUpdateRoutePoint = (options?: AppMutationOptions<typeof updateRoutePoint, { officeId: string, quoteId: string, routeId: string, pointId: string, data: CommonModels.UpdateRoutePointRequestDto }> & MutationEffectsOptions) => {
+export const useUpdateRoutePoint = (options?: AppMutationOptions<typeof updateRoutePoint, { officeId: string, quoteId: string, routeId: string, pointId: string, data: QuoteRoutesModels.UpdateRoutePointRequestDto }> & MutationEffectsOptions) => {
   const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
@@ -155,6 +155,7 @@ export const useUpdateRoutePoint = (options?: AppMutationOptions<typeof updateRo
       return updateRoutePoint(officeId, quoteId, routeId, pointId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -185,6 +186,7 @@ export const useDeleteRoutePoint = (options?: AppMutationOptions<typeof deleteRo
       return deleteRoutePoint(officeId, quoteId, routeId, pointId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -213,6 +215,7 @@ export const useSplitRoutes = (options?: AppMutationOptions<typeof splitRoutes, 
       return splitRoutes(officeId, quoteId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -226,12 +229,12 @@ export const useSplitRoutes = (options?: AppMutationOptions<typeof splitRoutes, 
  * @permission Requires `canUseMergeRoutes` ability 
  * @param { string } officeId Path parameter
  * @param { string } quoteId Path parameter
- * @param { CommonModels.MergeRoutesRequestDto } data Body parameter
+ * @param { QuoteRoutesModels.MergeRoutesRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [204, 401]
  */
-export const useMergeRoutes = (options?: AppMutationOptions<typeof mergeRoutes, { officeId: string, quoteId: string, data: CommonModels.MergeRoutesRequestDto }> & MutationEffectsOptions) => {
+export const useMergeRoutes = (options?: AppMutationOptions<typeof mergeRoutes, { officeId: string, quoteId: string, data: QuoteRoutesModels.MergeRoutesRequestDto }> & MutationEffectsOptions) => {
   const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
@@ -242,6 +245,7 @@ export const useMergeRoutes = (options?: AppMutationOptions<typeof mergeRoutes, 
       return mergeRoutes(officeId, quoteId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -256,12 +260,12 @@ export const useMergeRoutes = (options?: AppMutationOptions<typeof mergeRoutes, 
  * @param { string } officeId Path parameter
  * @param { string } quoteId Path parameter
  * @param { string } routeId Path parameter
- * @param { CommonModels.CopyRouteRequestDto } data Body parameter
+ * @param { QuoteRoutesModels.CopyRouteRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [204, 401]
  */
-export const useCopyRoute = (options?: AppMutationOptions<typeof copyRoute, { officeId: string, quoteId: string, routeId: string, data: CommonModels.CopyRouteRequestDto }> & MutationEffectsOptions) => {
+export const useCopyRoute = (options?: AppMutationOptions<typeof copyRoute, { officeId: string, quoteId: string, routeId: string, data: QuoteRoutesModels.CopyRouteRequestDto }> & MutationEffectsOptions) => {
   const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
@@ -272,6 +276,7 @@ export const useCopyRoute = (options?: AppMutationOptions<typeof copyRoute, { of
       return copyRoute(officeId, quoteId, routeId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

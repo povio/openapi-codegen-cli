@@ -1,7 +1,7 @@
 import axios, {  } from "axios";
 import { AppRestClient } from "@/data/app-rest-client";
 import { ZodExtended } from "@/data/zod.extended";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, UseQueryResult, useMutation, UseMutationResult } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
 import { useAclCheck } from "@/data/acl/useAclCheck";
@@ -91,6 +91,7 @@ export const useUpload = (options?: AppMutationOptions<typeof upload, { officeId
       return uploadInstructions;
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -119,6 +120,7 @@ export const usePostOfficesMasterDataImportByOfficeId = (options?: AppMutationOp
       return postOfficesMasterDataImportByOfficeId(officeId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -137,7 +139,6 @@ export const usePostOfficesMasterDataImportByOfficeId = (options?: AppMutationOp
  * @statusCodes [200, 401]
  */
 export const useGetImportStatus = <TData>({ jobId, officeId }: { jobId: string, officeId: string }, options?: AppQueryOptions<typeof getImportStatus, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({

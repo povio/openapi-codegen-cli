@@ -1,7 +1,7 @@
 import { AppRestClient } from "@/data/app-rest-client";
 import { z } from "zod";
 import { ZodExtended } from "@/data/zod.extended";
-import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
+import { useQuery, UseQueryResult, useInfiniteQuery, UseInfiniteQueryResult } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { useAclCheck } from "@/data/acl/useAclCheck";
 import { PositionProfitChangeTrackingAcl } from "./positionProfitChangeTracking.acl";
@@ -59,7 +59,6 @@ export const keys = {
  * @statusCodes [200, 401]
  */
 export const useFindProfitChangeGroups = <TData>({ officeId, positionId, limit, order, filter, page, cursor }: { officeId: string, positionId: string, limit: number, order?: string, filter?: PositionProfitChangeTrackingModels.PositionProfitChangeTrackingFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof findProfitChangeGroups, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -87,7 +86,6 @@ export const useFindProfitChangeGroups = <TData>({ officeId, positionId, limit, 
  * @statusCodes [200, 401]
  */
 export const useFindProfitChangeGroupsInfinite = <TData>({ officeId, positionId, limit, order, filter, cursor }: { officeId: string, positionId: string, limit: number, order?: string, filter?: PositionProfitChangeTrackingModels.PositionProfitChangeTrackingFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof findProfitChangeGroups, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
@@ -116,7 +114,6 @@ export const useFindProfitChangeGroupsInfinite = <TData>({ officeId, positionId,
  * @statusCodes [200, 401]
  */
 export const useFindProfitChangeGroupDetail = <TData>({ groupId, officeId, positionId }: { groupId: string, officeId: string, positionId: string }, options?: AppQueryOptions<typeof findProfitChangeGroupDetail, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({

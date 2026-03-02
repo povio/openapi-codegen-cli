@@ -1,7 +1,7 @@
 import { AppRestClient } from "@/data/app-rest-client";
 import { z } from "zod";
 import { ZodExtended } from "@/data/zod.extended";
-import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, UseQueryResult, useInfiniteQuery, UseInfiniteQueryResult, useMutation, UseMutationResult } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
 import { useAclCheck } from "@/data/acl/useAclCheck";
@@ -81,7 +81,6 @@ export const keys = {
  * @statusCodes [200, 401]
  */
 export const useGetContacts = <TData>({ officeId, businessPartnerId }: { officeId: string, businessPartnerId: string }, options?: AppQueryOptions<typeof getContacts, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -115,6 +114,7 @@ export const useCreateContact = (options?: AppMutationOptions<typeof createConta
       return createContact(officeId, businessPartnerId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -138,7 +138,6 @@ export const useCreateContact = (options?: AppMutationOptions<typeof createConta
  * @statusCodes [200, 401]
  */
 export const usePaginateContactLabels = <TData>({ officeId, businessPartnerId, limit, order, filter, page, cursor }: { officeId: string, businessPartnerId: string, limit: number, order?: string, filter?: BusinessPartnerContactsModels.BusinessPartnerContactFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof paginateContactLabels, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -166,7 +165,6 @@ export const usePaginateContactLabels = <TData>({ officeId, businessPartnerId, l
  * @statusCodes [200, 401]
  */
 export const usePaginateContactLabelsInfinite = <TData>({ officeId, businessPartnerId, limit, order, filter, cursor }: { officeId: string, businessPartnerId: string, limit: number, order?: string, filter?: BusinessPartnerContactsModels.BusinessPartnerContactFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof paginateContactLabels, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
@@ -206,6 +204,7 @@ export const useUpdateContact = (options?: AppMutationOptions<typeof updateConta
       return updateContact(contactId, officeId, businessPartnerId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -234,6 +233,7 @@ export const useDeleteContact = (options?: AppMutationOptions<typeof deleteConta
       return deleteContact(contactId, officeId, businessPartnerId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

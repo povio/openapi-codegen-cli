@@ -1,7 +1,7 @@
 import { AppRestClient } from "@/data/app-rest-client";
 import { z } from "zod";
 import { ZodExtended } from "@/data/zod.extended";
-import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, UseQueryResult, useInfiniteQuery, UseInfiniteQueryResult, useMutation, UseMutationResult } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
 import { useAclCheck } from "@/data/acl/useAclCheck";
@@ -110,7 +110,6 @@ export const keys = {
  * @statusCodes [200, 401]
  */
 export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: HsCodesModels.HsCodePaginationFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof paginate, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -136,7 +135,6 @@ export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { lim
  * @statusCodes [200, 401]
  */
 export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: HsCodesModels.HsCodePaginationFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof paginate, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
@@ -173,6 +171,7 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { data: Hs
       return create(data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -194,7 +193,6 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { data: Hs
  * @statusCodes [200, 401]
  */
 export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: HsCodesModels.HsCodeLabelFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof paginateLabels, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -220,7 +218,6 @@ export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }:
  * @statusCodes [200, 401]
  */
 export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: HsCodesModels.HsCodeLabelFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof paginateLabels, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
@@ -247,7 +244,6 @@ export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor 
  * @statusCodes [200, 401]
  */
 export const useFindById = <TData>({ id }: { id: string }, options?: AppQueryOptions<typeof findById, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -280,6 +276,7 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { id: stri
       return update(id, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { id } = variables;
       const updateKeys = [keys.findById(id)];
@@ -309,6 +306,7 @@ export const useArchive = (options?: AppMutationOptions<typeof archive, { id: st
       return archive(id)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { id } = variables;
       const updateKeys = [keys.findById(id)];
@@ -338,6 +336,7 @@ export const useUnarchive = (options?: AppMutationOptions<typeof unarchive, { id
       return unarchive(id)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { id } = variables;
       const updateKeys = [keys.findById(id)];

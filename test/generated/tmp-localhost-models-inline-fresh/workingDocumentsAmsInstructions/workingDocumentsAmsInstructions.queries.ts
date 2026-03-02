@@ -1,7 +1,7 @@
 import { AppRestClient } from "@/data/app-rest-client";
 import { z } from "zod";
 import { ZodExtended } from "@/data/zod.extended";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, UseQueryResult, useMutation, UseMutationResult } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
 import { useAclCheck } from "@/data/acl/useAclCheck";
@@ -96,6 +96,7 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { position
       return create(positionId, officeId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -115,7 +116,6 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { position
  * @statusCodes [200, 401]
  */
 export const useGetAMSInstructionsData = <TData>({ positionId, amsInstructionsId, officeId }: { positionId: string, amsInstructionsId: string, officeId: string }, options?: AppQueryOptions<typeof getAMSInstructionsData, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -150,6 +150,7 @@ export const useUpdateAMSInstructionsData = (options?: AppMutationOptions<typeof
       return updateAMSInstructionsData(positionId, amsInstructionsId, officeId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { positionId, amsInstructionsId, officeId } = variables;
       const updateKeys = [keys.getAMSInstructionsData(positionId, amsInstructionsId, officeId)];
@@ -181,6 +182,7 @@ export const useDeleteAMSInstructions = (options?: AppMutationOptions<typeof del
       return deleteAMSInstructions(positionId, amsInstructionsId, officeId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -200,7 +202,6 @@ export const useDeleteAMSInstructions = (options?: AppMutationOptions<typeof del
  * @statusCodes [200, 401]
  */
 export const usePreviewAMSInstructions = <TData>({ positionId, amsInstructionsId, officeId }: { positionId: string, amsInstructionsId: string, officeId: string }, options?: AppQueryOptions<typeof previewAMSInstructions, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -234,6 +235,7 @@ export const usePreviewAMSInstructionsMutation = (options?: AppMutationOptions<t
       return previewAMSInstructions(positionId, amsInstructionsId, officeId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { positionId, amsInstructionsId, officeId } = variables;
       const updateKeys = [keys.previewAMSInstructions(positionId, amsInstructionsId, officeId)];
@@ -250,12 +252,12 @@ export const usePreviewAMSInstructionsMutation = (options?: AppMutationOptions<t
  * @param { string } positionId Path parameter
  * @param { string } amsInstructionsId Path parameter
  * @param { string } officeId Path parameter
- * @param { CommonModels.GenerateWorkingDocumentRequestDto } data Body parameter
+ * @param { WorkingDocumentsAmsInstructionsModels.GenerateWorkingDocumentRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [201, 401]
  */
-export const useGenerateAMSInstructions = (options?: AppMutationOptions<typeof generateAMSInstructions, { positionId: string, amsInstructionsId: string, officeId: string, data: CommonModels.GenerateWorkingDocumentRequestDto }> & MutationEffectsOptions) => {
+export const useGenerateAMSInstructions = (options?: AppMutationOptions<typeof generateAMSInstructions, { positionId: string, amsInstructionsId: string, officeId: string, data: WorkingDocumentsAmsInstructionsModels.GenerateWorkingDocumentRequestDto }> & MutationEffectsOptions) => {
   const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
@@ -266,6 +268,7 @@ export const useGenerateAMSInstructions = (options?: AppMutationOptions<typeof g
       return generateAMSInstructions(positionId, amsInstructionsId, officeId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

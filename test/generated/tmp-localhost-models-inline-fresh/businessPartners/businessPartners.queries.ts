@@ -2,7 +2,7 @@ import axios, {  } from "axios";
 import { AppRestClient } from "@/data/app-rest-client";
 import { z } from "zod";
 import { ZodExtended } from "@/data/zod.extended";
-import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, UseQueryResult, useInfiniteQuery, UseInfiniteQueryResult, useMutation, UseMutationResult } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
 import { useAclCheck } from "@/data/acl/useAclCheck";
@@ -226,7 +226,6 @@ export const keys = {
  * @statusCodes [200, 401]
  */
 export const usePaginate = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: BusinessPartnersModels.BusinessPartnerFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof paginate, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -253,7 +252,6 @@ export const usePaginate = <TData>({ officeId, limit, order, filter, page, curso
  * @statusCodes [200, 401]
  */
 export const usePaginateInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: BusinessPartnersModels.BusinessPartnerFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof paginate, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
@@ -291,6 +289,7 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { officeId
       return create(officeId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -312,7 +311,6 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { officeId
  * @statusCodes [200, 401]
  */
 export const usePaginateLabels = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: BusinessPartnersModels.BusinessPartnerLabelsFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof paginateLabels, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -338,7 +336,6 @@ export const usePaginateLabels = <TData>({ officeId, limit, order, filter, page,
  * @statusCodes [200, 401]
  */
 export const usePaginateLabelsInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: BusinessPartnersModels.BusinessPartnerLabelsFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof paginateLabels, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
@@ -366,7 +363,6 @@ export const usePaginateLabelsInfinite = <TData>({ officeId, limit, order, filte
  * @statusCodes [200, 401]
  */
 export const useGetById = <TData>({ officeId, id }: { officeId: string, id: string }, options?: AppQueryOptions<typeof getById, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -400,6 +396,7 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { officeId
       return update(officeId, id, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, id } = variables;
       const updateKeys = [keys.getById(officeId, id)];
@@ -430,6 +427,7 @@ export const useArchive = (options?: AppMutationOptions<typeof archive, { office
       return archive(officeId, id)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -458,6 +456,7 @@ export const useUnarchive = (options?: AppMutationOptions<typeof unarchive, { of
       return unarchive(officeId, id)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -486,6 +485,7 @@ export const useLock = (options?: AppMutationOptions<typeof lock, { officeId: st
       return lock(officeId, id)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -514,6 +514,7 @@ export const useUnlock = (options?: AppMutationOptions<typeof unlock, { officeId
       return unlock(officeId, id)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -532,7 +533,6 @@ export const useUnlock = (options?: AppMutationOptions<typeof unlock, { officeId
  * @statusCodes [200, 401]
  */
 export const useGetRemarks = <TData>({ officeId, id }: { officeId: string, id: string }, options?: AppQueryOptions<typeof getRemarks, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -566,6 +566,7 @@ export const useCreateRemark = (options?: AppMutationOptions<typeof createRemark
       return createRemark(officeId, id, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -595,6 +596,7 @@ export const useUpdateRemark = (options?: AppMutationOptions<typeof updateRemark
       return updateRemark(officeId, id, remarkId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -624,6 +626,7 @@ export const useDeleteRemark = (options?: AppMutationOptions<typeof deleteRemark
       return deleteRemark(officeId, id, remarkId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -642,7 +645,6 @@ export const useDeleteRemark = (options?: AppMutationOptions<typeof deleteRemark
  * @statusCodes [200, 401]
  */
 export const useGetBasicInfo = <TData>({ officeId, id }: { officeId: string, id: string }, options?: AppQueryOptions<typeof getBasicInfo, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -676,6 +678,7 @@ export const useUpdateBasicInfo = (options?: AppMutationOptions<typeof updateBas
       return updateBasicInfo(officeId, id, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, id } = variables;
       const updateKeys = [keys.getBasicInfo(officeId, id)];
@@ -733,6 +736,7 @@ export const useCreateSignatureUploadInstructions = (options?: AppMutationOption
       return uploadInstructions;
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -751,7 +755,6 @@ export const useCreateSignatureUploadInstructions = (options?: AppMutationOption
  * @statusCodes [200, 401]
  */
 export const useGetCargoAgentInfo = <TData>({ officeId, id }: { officeId: string, id: string }, options?: AppQueryOptions<typeof getCargoAgentInfo, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -785,6 +788,7 @@ export const useUpdateCargoAgent = (options?: AppMutationOptions<typeof updateCa
       return updateCargoAgent(officeId, id, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, id } = variables;
       const updateKeys = [keys.getCargoAgentInfo(officeId, id)];
@@ -805,7 +809,6 @@ export const useUpdateCargoAgent = (options?: AppMutationOptions<typeof updateCa
  * @statusCodes [200, 401]
  */
 export const useGetCarrierInformation = <TData>({ officeId, id }: { officeId: string, id: string }, options?: AppQueryOptions<typeof getCarrierInformation, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -839,6 +842,7 @@ export const useUpdateCarrier = (options?: AppMutationOptions<typeof updateCarri
       return updateCarrier(officeId, id, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, id } = variables;
       const updateKeys = [keys.getCarrierInformation(officeId, id)];

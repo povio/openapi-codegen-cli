@@ -2,7 +2,7 @@ import axios, {  } from "axios";
 import { AppRestClient } from "@/data/app-rest-client";
 import { z } from "zod";
 import { ZodExtended } from "@/data/zod.extended";
-import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, UseQueryResult, useInfiniteQuery, UseInfiniteQueryResult, useMutation, UseMutationResult } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
 import { useAclCheck } from "@/data/acl/useAclCheck";
@@ -151,7 +151,6 @@ export const keys = {
  * @statusCodes [200, 401]
  */
 export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: OfficesModels.OfficeFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof paginate, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   
   return useQuery({
     queryKey: keys.paginate(limit, order, filter, page, cursor),
@@ -174,7 +173,6 @@ export const usePaginate = <TData>({ limit, order, filter, page, cursor }: { lim
  * @statusCodes [200, 401]
  */
 export const usePaginateInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: OfficesModels.OfficeFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof paginate, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
 
   return useInfiniteQuery({
     queryKey: keys.paginateInfinite(limit, order, filter, cursor),
@@ -209,6 +207,7 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { data: Of
       return create(data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -225,7 +224,6 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { data: Of
  * @statusCodes [200, 401]
  */
 export const useFindAllLabels = <TData>({ search }: { search?: string }, options?: AppQueryOptions<typeof findAllLabels, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   
   return useQuery({
     queryKey: keys.findAllLabels(search),
@@ -248,7 +246,6 @@ export const useFindAllLabels = <TData>({ search }: { search?: string }, options
  * @statusCodes [200, 401]
  */
 export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: OfficesModels.OfficeLabelFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof paginateLabels, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   
   return useQuery({
     queryKey: keys.paginateLabels(limit, order, filter, page, cursor),
@@ -271,7 +268,6 @@ export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }:
  * @statusCodes [200, 401]
  */
 export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: OfficesModels.OfficeLabelFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof paginateLabels, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
 
   return useInfiniteQuery({
     queryKey: keys.paginateLabelsInfinite(limit, order, filter, cursor),
@@ -296,7 +292,6 @@ export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor 
  * @statusCodes [200, 401]
  */
 export const useGet = <TData>({ id }: { id: string }, options?: AppQueryOptions<typeof get, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -329,6 +324,7 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { id: stri
       return update(id, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -383,6 +379,7 @@ export const useUploadDocumentImage = (options?: AppMutationOptions<typeof uploa
       return uploadInstructions;
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -411,6 +408,7 @@ export const useCreateBankAccount = (options?: AppMutationOptions<typeof createB
       return createBankAccount(officeId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -440,6 +438,7 @@ export const useUpdateBankAccount = (options?: AppMutationOptions<typeof updateB
       return updateBankAccount(accountId, officeId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -468,6 +467,7 @@ export const useDeleteBankAccount = (options?: AppMutationOptions<typeof deleteB
       return deleteBankAccount(accountId, officeId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -523,6 +523,7 @@ export const useUploadBankAccountFooter = (options?: AppMutationOptions<typeof u
       return uploadInstructions;
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

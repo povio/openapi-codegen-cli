@@ -1,6 +1,6 @@
 import { AppRestClient } from "@/data/app-rest-client";
 import { ZodExtended } from "@/data/zod.extended";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, UseQueryResult, useMutation, UseMutationResult } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
 import { useAclCheck } from "@/data/acl/useAclCheck";
@@ -79,7 +79,6 @@ export const keys = {
  * @statusCodes [200, 401]
  */
 export const useList = <TData>({ officeId, positionId }: { officeId: string, positionId: string }, options?: AppQueryOptions<typeof list, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -113,6 +112,7 @@ export const useApplyTemplates = (options?: AppMutationOptions<typeof applyTempl
       return applyTemplates(officeId, positionId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -142,6 +142,7 @@ export const useComplete = (options?: AppMutationOptions<typeof complete, { offi
       return complete(officeId, positionId, itemId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -171,6 +172,7 @@ export const useUncomplete = (options?: AppMutationOptions<typeof uncomplete, { 
       return uncomplete(officeId, positionId, itemId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -201,6 +203,7 @@ export const useUpdateNotes = (options?: AppMutationOptions<typeof updateNotes, 
       return updateNotes(officeId, positionId, itemId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -230,6 +233,7 @@ export const useReorder = (options?: AppMutationOptions<typeof reorder, { office
       return reorder(officeId, positionId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

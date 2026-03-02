@@ -1,7 +1,7 @@
 import { AppRestClient } from "@/data/app-rest-client";
 import { z } from "zod";
 import { ZodExtended } from "@/data/zod.extended";
-import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, UseQueryResult, useInfiniteQuery, UseInfiniteQueryResult, useMutation, UseMutationResult } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
 import { useAclCheck } from "@/data/acl/useAclCheck";
@@ -94,7 +94,7 @@ export const keys = {
  * @permission Requires `canUseCreate` ability 
  * @param { EmploymentModels.EmploymentCreateRequest } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
- * @returns { UseMutationResult<CommonModels.EmploymentResponse> } 
+ * @returns { UseMutationResult<EmploymentModels.EmploymentResponse> } 
  * @statusCodes [201, 401]
  */
 export const useCreate = (options?: AppMutationOptions<typeof create, { data: EmploymentModels.EmploymentCreateRequest }> & MutationEffectsOptions) => {
@@ -108,6 +108,7 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { data: Em
       return create(data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -130,7 +131,6 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { data: Em
  * @statusCodes [200, 401]
  */
 export const useList = <TData>({ limit, order, populate, filter, page, cursor }: { limit: number, order?: string, populate?: EmploymentModels.EmploymentListPopulateParam, filter?: EmploymentModels.EmploymentFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof list, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -157,7 +157,6 @@ export const useList = <TData>({ limit, order, populate, filter, page, cursor }:
  * @statusCodes [200, 401]
  */
 export const useListInfinite = <TData>({ limit, order, populate, filter, cursor }: { limit: number, order?: string, populate?: EmploymentModels.EmploymentListPopulateParam, filter?: EmploymentModels.EmploymentFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof list, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
@@ -185,7 +184,6 @@ export const useListInfinite = <TData>({ limit, order, populate, filter, cursor 
  * @statusCodes [200, 401]
  */
 export const useListRoles = <TData>({ officeId, employmentId }: { officeId: string, employmentId: string }, options?: AppQueryOptions<typeof listRoles, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -219,6 +217,7 @@ export const useUpdateRoles = (options?: AppMutationOptions<typeof updateRoles, 
       return updateRoles(officeId, employmentId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -233,7 +232,7 @@ export const useUpdateRoles = (options?: AppMutationOptions<typeof updateRoles, 
  * @param { string } employmentId Path parameter
  * @param { EmploymentModels.UpdateEmploymentRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
- * @returns { UseMutationResult<CommonModels.EmploymentResponse> } 
+ * @returns { UseMutationResult<EmploymentModels.EmploymentResponse> } 
  * @statusCodes [200, 401]
  */
 export const useUpdate = (options?: AppMutationOptions<typeof update, { officeId: string, employmentId: string, data: EmploymentModels.UpdateEmploymentRequestDto }> & MutationEffectsOptions) => {
@@ -247,6 +246,7 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { officeId
       return update(officeId, employmentId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -261,7 +261,7 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { officeId
  * @param { string } officeId Path parameter
  * @param { string } employmentId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
- * @returns { UseMutationResult<CommonModels.EmploymentResponse> } 
+ * @returns { UseMutationResult<EmploymentModels.EmploymentResponse> } 
  * @statusCodes [200, 401]
  */
 export const useArchive = (options?: AppMutationOptions<typeof archive, { officeId: string, employmentId: string }> & MutationEffectsOptions) => {
@@ -275,6 +275,7 @@ export const useArchive = (options?: AppMutationOptions<typeof archive, { office
       return archive(officeId, employmentId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -289,7 +290,7 @@ export const useArchive = (options?: AppMutationOptions<typeof archive, { office
  * @param { string } officeId Path parameter
  * @param { string } employmentId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
- * @returns { UseMutationResult<CommonModels.EmploymentResponse> } 
+ * @returns { UseMutationResult<EmploymentModels.EmploymentResponse> } 
  * @statusCodes [200, 401]
  */
 export const useUnarchive = (options?: AppMutationOptions<typeof unarchive, { officeId: string, employmentId: string }> & MutationEffectsOptions) => {
@@ -303,6 +304,7 @@ export const useUnarchive = (options?: AppMutationOptions<typeof unarchive, { of
       return unarchive(officeId, employmentId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

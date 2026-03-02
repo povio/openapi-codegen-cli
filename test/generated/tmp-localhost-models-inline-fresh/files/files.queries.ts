@@ -2,7 +2,7 @@ import axios, {  } from "axios";
 import { AppRestClient } from "@/data/app-rest-client";
 import { z } from "zod";
 import { ZodExtended } from "@/data/zod.extended";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, UseMutationResult } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
 import { OpenApiQueryConfig, AppMutationOptions } from "@povio/openapi-codegen-cli";
@@ -128,6 +128,7 @@ export const useCreateUpload = (options?: AppMutationOptions<typeof createUpload
       return uploadInstructions;
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -153,6 +154,7 @@ export const useGetEml = (options?: AppMutationOptions<typeof getEml, { officeId
       getEml(officeId, data)
 ,
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -167,7 +169,7 @@ export const useGetEml = (options?: AppMutationOptions<typeof getEml, { officeId
  * @param { string } fileId Path parameter
  * @param { FilesModels.RenameFileRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
- * @returns { UseMutationResult<CommonModels.FileResponseDTO> } 
+ * @returns { UseMutationResult<FilesModels.FileResponseDTO> } 
  * @statusCodes [200, 401]
  */
 export const useRename = (options?: AppMutationOptions<typeof rename, { officeId: string, fileId: string, data: FilesModels.RenameFileRequestDTO }> & MutationEffectsOptions) => {
@@ -179,6 +181,7 @@ export const useRename = (options?: AppMutationOptions<typeof rename, { officeId
       rename(officeId, fileId, data)
 ,
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -204,6 +207,7 @@ export const useMove = (options?: AppMutationOptions<typeof move, { officeId: st
       move(officeId, data)
 ,
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -229,6 +233,7 @@ export const useCopy = (options?: AppMutationOptions<typeof copy, { officeId: st
       copy(officeId, data)
 ,
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -254,6 +259,7 @@ export const useArchive = (options?: AppMutationOptions<typeof archive, { office
       archive(officeId, data)
 ,
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -279,6 +285,7 @@ export const useUnarchive = (options?: AppMutationOptions<typeof unarchive, { of
       unarchive(officeId, data)
 ,
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

@@ -1,7 +1,7 @@
 import { AppRestClient } from "@/data/app-rest-client";
 import { z } from "zod";
 import { ZodExtended } from "@/data/zod.extended";
-import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, UseQueryResult, useInfiniteQuery, UseInfiniteQueryResult, useMutation, UseMutationResult } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
 import { useAclCheck } from "@/data/acl/useAclCheck";
@@ -77,7 +77,6 @@ export const keys = {
  * @statusCodes [200, 401]
  */
 export const useList = <TData>({ officeId, positionId, shippingInstructionsId, limit, page, cursor, filter }: { officeId: string, positionId: string, shippingInstructionsId: string, limit: number, page?: number, cursor?: string, filter?: InttraShippingInstructionMessagesModels.ShippingInstructionMessageFilterDto }, options?: AppQueryOptions<typeof list, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -105,7 +104,6 @@ export const useList = <TData>({ officeId, positionId, shippingInstructionsId, l
  * @statusCodes [200, 401]
  */
 export const useListInfinite = <TData>({ officeId, positionId, shippingInstructionsId, limit, cursor, filter }: { officeId: string, positionId: string, shippingInstructionsId: string, limit: number, cursor?: string, filter?: InttraShippingInstructionMessagesModels.ShippingInstructionMessageFilterDto }, options?: AppInfiniteQueryOptions<typeof list, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
@@ -145,6 +143,7 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { officeId
       return create(officeId, positionId, shippingInstructionsId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -165,7 +164,6 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { officeId
  * @statusCodes [200, 401]
  */
 export const useGetById = <TData>({ officeId, positionId, shippingInstructionsId, messageId }: { officeId: string, positionId: string, shippingInstructionsId: string, messageId: string }, options?: AppQueryOptions<typeof getById, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -201,6 +199,7 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { officeId
       return update(officeId, positionId, shippingInstructionsId, messageId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, positionId, shippingInstructionsId, messageId } = variables;
       const updateKeys = [keys.getById(officeId, positionId, shippingInstructionsId, messageId)];

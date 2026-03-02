@@ -1,6 +1,6 @@
 import { AppRestClient } from "@/data/app-rest-client";
 import { ZodExtended } from "@/data/zod.extended";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, UseMutationResult } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
 import { OpenApiQueryConfig, AppMutationOptions } from "@povio/openapi-codegen-cli";
@@ -47,6 +47,7 @@ export const useLogin = (options?: AppMutationOptions<typeof login, { data: Cont
       login(data)
 ,
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -71,6 +72,7 @@ export const useResetPassword = (options?: AppMutationOptions<typeof resetPasswo
       resetPassword(data)
 ,
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

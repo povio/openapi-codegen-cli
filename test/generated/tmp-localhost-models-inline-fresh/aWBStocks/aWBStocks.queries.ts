@@ -1,7 +1,7 @@
 import { AppRestClient } from "@/data/app-rest-client";
 import { z } from "zod";
 import { ZodExtended } from "@/data/zod.extended";
-import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, UseQueryResult, useInfiniteQuery, UseInfiniteQueryResult, useMutation, UseMutationResult } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
 import { useAclCheck } from "@/data/acl/useAclCheck";
@@ -102,7 +102,6 @@ export const keys = {
  * @statusCodes [200, 401]
  */
 export const usePaginate = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: AWBStocksModels.AWBStockFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof paginate, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -129,7 +128,6 @@ export const usePaginate = <TData>({ officeId, limit, order, filter, page, curso
  * @statusCodes [200, 401]
  */
 export const usePaginateInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: AWBStocksModels.AWBStockFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof paginate, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
@@ -167,6 +165,7 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { officeId
       return create(officeId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -185,7 +184,6 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { officeId
  * @statusCodes [200, 401]
  */
 export const useFindById = <TData>({ stockId, officeId }: { stockId: string, officeId: string }, options?: AppQueryOptions<typeof findById, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -219,6 +217,7 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { stockId:
       return update(stockId, officeId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { stockId, officeId } = variables;
       const updateKeys = [keys.findById(stockId, officeId)];
@@ -249,6 +248,7 @@ export const useArchive = (options?: AppMutationOptions<typeof archive, { stockI
       return archive(stockId, officeId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { stockId, officeId } = variables;
       const updateKeys = [keys.findById(stockId, officeId)];
@@ -279,6 +279,7 @@ export const useUnarchive = (options?: AppMutationOptions<typeof unarchive, { st
       return unarchive(stockId, officeId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { stockId, officeId } = variables;
       const updateKeys = [keys.findById(stockId, officeId)];
@@ -309,6 +310,7 @@ export const useGenerateNextNumber = (options?: AppMutationOptions<typeof genera
       return generateNextNumber(officeId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

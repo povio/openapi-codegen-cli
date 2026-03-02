@@ -1,7 +1,7 @@
 import { AppRestClient } from "@/data/app-rest-client";
 import { z } from "zod";
 import { ZodExtended } from "@/data/zod.extended";
-import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, UseQueryResult, useInfiniteQuery, UseInfiniteQueryResult, useMutation, UseMutationResult } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
 import { useAclCheck } from "@/data/acl/useAclCheck";
@@ -134,7 +134,6 @@ export const keys = {
  * @statusCodes [200, 401]
  */
 export const useListOfficePayments = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: InvoicePaymentsModels.OfficeInvoicePaymentFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof listOfficePayments, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -161,7 +160,6 @@ export const useListOfficePayments = <TData>({ officeId, limit, order, filter, p
  * @statusCodes [200, 401]
  */
 export const useListOfficePaymentsInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: InvoicePaymentsModels.OfficeInvoicePaymentFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof listOfficePayments, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
@@ -199,6 +197,7 @@ export const useBulkCreatePayments = (options?: AppMutationOptions<typeof bulkCr
       return bulkCreatePayments(officeId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -227,6 +226,7 @@ export const useCalculatePayments = (options?: AppMutationOptions<typeof calcula
       return calculatePayments(officeId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -255,6 +255,7 @@ export const useExportOfficePayments = (options?: AppMutationOptions<typeof expo
       return exportOfficePayments(officeId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -276,7 +277,6 @@ export const useExportOfficePayments = (options?: AppMutationOptions<typeof expo
  * @statusCodes [200, 401]
  */
 export const useList = <TData>({ officeId, invoiceId, limit, page, cursor }: { officeId: string, invoiceId: string, limit: number, page?: number, cursor?: string }, options?: AppQueryOptions<typeof list, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -302,7 +302,6 @@ export const useList = <TData>({ officeId, invoiceId, limit, page, cursor }: { o
  * @statusCodes [200, 401]
  */
 export const useListInfinite = <TData>({ officeId, invoiceId, limit, cursor }: { officeId: string, invoiceId: string, limit: number, cursor?: string }, options?: AppInfiniteQueryOptions<typeof list, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
@@ -341,6 +340,7 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { officeId
       return create(officeId, invoiceId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -360,7 +360,6 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { officeId
  * @statusCodes [200, 401]
  */
 export const useGetPaymentById = <TData>({ officeId, invoiceId, paymentId }: { officeId: string, invoiceId: string, paymentId: string }, options?: AppQueryOptions<typeof getPaymentById, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -395,6 +394,7 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { officeId
       return update(officeId, invoiceId, paymentId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, invoiceId, paymentId } = variables;
       const updateKeys = [keys.getPaymentById(officeId, invoiceId, paymentId)];
@@ -426,6 +426,7 @@ export const useDeleteInvoicePayment = (options?: AppMutationOptions<typeof dele
       return deleteInvoicePayment(officeId, invoiceId, paymentId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

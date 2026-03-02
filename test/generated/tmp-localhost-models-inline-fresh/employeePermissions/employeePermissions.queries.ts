@@ -1,7 +1,7 @@
 import { AppRestClient } from "@/data/app-rest-client";
 import { z } from "zod";
 import { ZodExtended } from "@/data/zod.extended";
-import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
+import { useQuery, UseQueryResult, useInfiniteQuery, UseInfiniteQueryResult } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { useAclCheck } from "@/data/acl/useAclCheck";
 import { EmployeePermissionsAcl } from "./employeePermissions.acl";
@@ -60,7 +60,6 @@ export const keys = {
  * @statusCodes [200, 401]
  */
 export const usePaginatePermissions = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: EmployeePermissionsModels.EmployeePermissionFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof paginatePermissions, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -85,7 +84,6 @@ export const usePaginatePermissions = <TData>({ limit, order, filter, page, curs
  * @statusCodes [200, 401]
  */
 export const usePaginatePermissionsInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: EmployeePermissionsModels.EmployeePermissionFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof paginatePermissions, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
@@ -112,7 +110,6 @@ export const usePaginatePermissionsInfinite = <TData>({ limit, order, filter, cu
  * @statusCodes [200, 401]
  */
 export const useFindAll = <TData>({ search }: { search?: string }, options?: AppQueryOptions<typeof findAll, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({

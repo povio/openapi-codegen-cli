@@ -1,7 +1,7 @@
 import { AppRestClient } from "@/data/app-rest-client";
 import { z } from "zod";
 import { ZodExtended } from "@/data/zod.extended";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, UseQueryResult, useMutation, UseMutationResult } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
 import { useAclCheck } from "@/data/acl/useAclCheck";
@@ -72,7 +72,6 @@ export const keys = {
  * @statusCodes [200, 401]
  */
 export const useGetBookkeepingMappings = <TData>({ officeId, businessPartnerId }: { officeId: string, businessPartnerId: string }, options?: AppQueryOptions<typeof getBookkeepingMappings, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -106,6 +105,7 @@ export const useCreateBookkeepingMapping = (options?: AppMutationOptions<typeof 
       return createBookkeepingMapping(officeId, businessPartnerId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -135,6 +135,7 @@ export const useUpdateBookkeepingMapping = (options?: AppMutationOptions<typeof 
       return updateBookkeepingMapping(officeId, businessPartnerId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -165,6 +166,7 @@ export const useUpdateBookkeepingMappingById = (options?: AppMutationOptions<typ
       return updateBookkeepingMappingById(officeId, businessPartnerId, id, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -194,6 +196,7 @@ export const useDeleteBookkeepingMapping = (options?: AppMutationOptions<typeof 
       return deleteBookkeepingMapping(officeId, businessPartnerId, id)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

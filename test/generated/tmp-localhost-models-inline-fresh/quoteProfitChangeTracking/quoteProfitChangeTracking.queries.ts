@@ -1,7 +1,7 @@
 import { AppRestClient } from "@/data/app-rest-client";
 import { z } from "zod";
 import { ZodExtended } from "@/data/zod.extended";
-import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
+import { useQuery, UseQueryResult, useInfiniteQuery, UseInfiniteQueryResult } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { useAclCheck } from "@/data/acl/useAclCheck";
 import { QuoteProfitChangeTrackingAcl } from "./quoteProfitChangeTracking.acl";
@@ -55,7 +55,6 @@ export const keys = {
  * @statusCodes [200, 401]
  */
 export const useFindProfitChangeGroups = <TData>({ officeId, quoteId, limit, page, cursor }: { officeId: string, quoteId: string, limit: number, page?: number, cursor?: string }, options?: AppQueryOptions<typeof findProfitChangeGroups, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -81,7 +80,6 @@ export const useFindProfitChangeGroups = <TData>({ officeId, quoteId, limit, pag
  * @statusCodes [200, 401]
  */
 export const useFindProfitChangeGroupsInfinite = <TData>({ officeId, quoteId, limit, cursor }: { officeId: string, quoteId: string, limit: number, cursor?: string }, options?: AppInfiniteQueryOptions<typeof findProfitChangeGroups, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
@@ -110,7 +108,6 @@ export const useFindProfitChangeGroupsInfinite = <TData>({ officeId, quoteId, li
  * @statusCodes [200, 401]
  */
 export const useFindProfitChangeGroupDetail = <TData>({ groupId, officeId, quoteId }: { groupId: string, officeId: string, quoteId: string }, options?: AppQueryOptions<typeof findProfitChangeGroupDetail, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({

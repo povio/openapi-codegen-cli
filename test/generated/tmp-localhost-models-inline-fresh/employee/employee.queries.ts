@@ -1,7 +1,7 @@
 import { AppRestClient } from "@/data/app-rest-client";
 import { z } from "zod";
 import { ZodExtended } from "@/data/zod.extended";
-import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, UseQueryResult, useInfiniteQuery, UseInfiniteQueryResult, useMutation, UseMutationResult } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
 import { useAclCheck } from "@/data/acl/useAclCheck";
@@ -194,7 +194,6 @@ export const keys = {
  * @statusCodes [200, 401]
  */
 export const usePaginate = <TData>({ limit, order, populate, filter, page, cursor }: { limit: number, order?: string, populate?: EmployeeModels.EmployeePaginatePopulateParam, filter?: EmployeeModels.EmployeeFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof paginate, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -221,7 +220,6 @@ export const usePaginate = <TData>({ limit, order, populate, filter, page, curso
  * @statusCodes [200, 401]
  */
 export const usePaginateInfinite = <TData>({ limit, order, populate, filter, cursor }: { limit: number, order?: string, populate?: EmployeeModels.EmployeePaginatePopulateParam, filter?: EmployeeModels.EmployeeFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof paginate, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
@@ -258,6 +256,7 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { data: Em
       return create(data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -287,6 +286,7 @@ export const useSingeStepCreate = (options?: AppMutationOptions<typeof singeStep
       singeStepCreate(data)
 ,
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -304,7 +304,6 @@ export const useSingeStepCreate = (options?: AppMutationOptions<typeof singeStep
  * @statusCodes [200, 401]
  */
 export const useFindAll = <TData>({ search }: { search?: string }, options?: AppQueryOptions<typeof findAll, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -330,7 +329,6 @@ export const useFindAll = <TData>({ search }: { search?: string }, options?: App
  * @statusCodes [200, 401]
  */
 export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: EmployeeModels.EmployeeLabelFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof paginateLabels, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -356,7 +354,6 @@ export const usePaginateLabels = <TData>({ limit, order, filter, page, cursor }:
  * @statusCodes [200, 401]
  */
 export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: EmployeeModels.EmployeeLabelFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof paginateLabels, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
@@ -378,7 +375,7 @@ export const usePaginateLabelsInfinite = <TData>({ limit, order, filter, cursor 
  * @summary Resend Employee Onboarding Email
  * @param { string } employeeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
- * @returns { UseMutationResult<CommonModels.StatusResponseDto> } 
+ * @returns { UseMutationResult<EmployeeModels.StatusResponseDto> } 
  * @statusCodes [201, 401]
  */
 export const useResendOnboarding = (options?: AppMutationOptions<typeof resendOnboarding, { employeeId: string }> & MutationEffectsOptions) => {
@@ -390,6 +387,7 @@ export const useResendOnboarding = (options?: AppMutationOptions<typeof resendOn
       resendOnboarding(employeeId)
 ,
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -403,7 +401,7 @@ export const useResendOnboarding = (options?: AppMutationOptions<typeof resendOn
  * @param { string } officeId Path parameter
  * @param { string } employeeId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
- * @returns { UseMutationResult<CommonModels.StatusResponseDto> } 
+ * @returns { UseMutationResult<EmployeeModels.StatusResponseDto> } 
  * @statusCodes [201, 401]
  */
 export const useResendOnboardingWithOffice = (options?: AppMutationOptions<typeof resendOnboardingWithOffice, { officeId: string, employeeId: string }> & MutationEffectsOptions) => {
@@ -417,6 +415,7 @@ export const useResendOnboardingWithOffice = (options?: AppMutationOptions<typeo
       return resendOnboardingWithOffice(officeId, employeeId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -436,7 +435,6 @@ export const useResendOnboardingWithOffice = (options?: AppMutationOptions<typeo
  * @statusCodes [200, 401]
  */
 export const useGet = <TData>({ employeeId, populate }: { employeeId: string, populate?: EmployeeModels.EmployeeGetPopulateParam }, options?: AppQueryOptions<typeof get, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -470,6 +468,7 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { employee
       return update(employeeId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { employeeId } = variables;
       const updateKeys = [keys.get(employeeId)];
@@ -490,7 +489,6 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { employee
  * @statusCodes [200, 401]
  */
 export const useGetWithOffice = <TData>({ officeId, employeeId, populate }: { officeId: string, employeeId: string, populate?: EmployeeModels.GetWithOfficePopulateParam }, options?: AppQueryOptions<typeof getWithOffice, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -523,6 +521,7 @@ export const useUpdateWithOffice = (options?: AppMutationOptions<typeof updateWi
       return updateWithOffice(officeId, employeeId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, employeeId } = variables;
       const updateKeys = [keys.get(employeeId), keys.getWithOffice(officeId, employeeId)];
@@ -542,7 +541,6 @@ export const useUpdateWithOffice = (options?: AppMutationOptions<typeof updateWi
  * @statusCodes [200, 401]
  */
 export const useListRoles = <TData>({ employeeId }: { employeeId: string }, options?: AppQueryOptions<typeof listRoles, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -575,6 +573,7 @@ export const useUpdateRoles = (options?: AppMutationOptions<typeof updateRoles, 
       return updateRoles(employeeId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -602,6 +601,7 @@ export const useArchive = (options?: AppMutationOptions<typeof archive, { employ
       return archive(employeeId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { employeeId } = variables;
       const updateKeys = [keys.get(employeeId)];
@@ -631,6 +631,7 @@ export const useUnarchive = (options?: AppMutationOptions<typeof unarchive, { em
       return unarchive(employeeId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { employeeId } = variables;
       const updateKeys = [keys.get(employeeId)];

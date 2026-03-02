@@ -1,7 +1,7 @@
 import { AppRestClient } from "@/data/app-rest-client";
 import { z } from "zod";
 import { ZodExtended } from "@/data/zod.extended";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, UseQueryResult, useMutation, UseMutationResult } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
 import { useAclCheck } from "@/data/acl/useAclCheck";
@@ -126,6 +126,7 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { position
       return create(positionId, officeId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -145,7 +146,6 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { position
  * @statusCodes [200, 401]
  */
 export const useGetHouseBlData = <TData>({ positionId, houseBlId, officeId }: { positionId: string, houseBlId: string, officeId: string }, options?: AppQueryOptions<typeof getHouseBlData, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -180,6 +180,7 @@ export const useUpdateHouseBlData = (options?: AppMutationOptions<typeof updateH
       return updateHouseBlData(positionId, houseBlId, officeId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { positionId, houseBlId, officeId } = variables;
       const updateKeys = [keys.getHouseBlData(positionId, houseBlId, officeId)];
@@ -211,6 +212,7 @@ export const useDeleteHouseBl = (options?: AppMutationOptions<typeof deleteHouse
       return deleteHouseBl(positionId, houseBlId, officeId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -230,7 +232,6 @@ export const useDeleteHouseBl = (options?: AppMutationOptions<typeof deleteHouse
  * @statusCodes [200, 401]
  */
 export const usePreviewHouseBl = <TData>({ positionId, houseBlId, officeId }: { positionId: string, houseBlId: string, officeId: string }, options?: AppQueryOptions<typeof previewHouseBl, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -264,6 +265,7 @@ export const usePreviewHouseBlMutation = (options?: AppMutationOptions<typeof pr
       return previewHouseBl(positionId, houseBlId, officeId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { positionId, houseBlId, officeId } = variables;
       const updateKeys = [keys.previewHouseBl(positionId, houseBlId, officeId), keys.previewHouseBlEml(positionId, houseBlId, officeId)];
@@ -285,7 +287,6 @@ export const usePreviewHouseBlMutation = (options?: AppMutationOptions<typeof pr
  * @statusCodes [200, 401]
  */
 export const usePreviewHouseBlEml = <TData>({ positionId, houseBlId, officeId }: { positionId: string, houseBlId: string, officeId: string }, options?: AppQueryOptions<typeof previewHouseBlEml, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -319,6 +320,7 @@ export const usePreviewHouseBlEmlMutation = (options?: AppMutationOptions<typeof
       return previewHouseBlEml(positionId, houseBlId, officeId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { positionId, houseBlId, officeId } = variables;
       const updateKeys = [keys.previewHouseBl(positionId, houseBlId, officeId), keys.previewHouseBlEml(positionId, houseBlId, officeId)];
@@ -335,12 +337,12 @@ export const usePreviewHouseBlEmlMutation = (options?: AppMutationOptions<typeof
  * @param { string } positionId Path parameter
  * @param { string } houseBlId Path parameter
  * @param { string } officeId Path parameter
- * @param { CommonModels.GenerateWorkingDocumentRequestDto } data Body parameter
+ * @param { WorkingDocumentsHouseBlModels.GenerateWorkingDocumentRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [201, 401]
  */
-export const useGenerateHouseBl = (options?: AppMutationOptions<typeof generateHouseBl, { positionId: string, houseBlId: string, officeId: string, data: CommonModels.GenerateWorkingDocumentRequestDto }> & MutationEffectsOptions) => {
+export const useGenerateHouseBl = (options?: AppMutationOptions<typeof generateHouseBl, { positionId: string, houseBlId: string, officeId: string, data: WorkingDocumentsHouseBlModels.GenerateWorkingDocumentRequestDto }> & MutationEffectsOptions) => {
   const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
@@ -351,6 +353,7 @@ export const useGenerateHouseBl = (options?: AppMutationOptions<typeof generateH
       return generateHouseBl(positionId, houseBlId, officeId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -365,12 +368,12 @@ export const useGenerateHouseBl = (options?: AppMutationOptions<typeof generateH
  * @param { string } positionId Path parameter
  * @param { string } houseBlId Path parameter
  * @param { string } officeId Path parameter
- * @param { CommonModels.GenerateWorkingDocumentRequestDto } data Body parameter
+ * @param { WorkingDocumentsHouseBlModels.GenerateWorkingDocumentRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
  */
-export const useGenerateDocumentEml = (options?: AppMutationOptions<typeof generateDocumentEml, { positionId: string, houseBlId: string, officeId: string, data: CommonModels.GenerateWorkingDocumentRequestDto }> & MutationEffectsOptions) => {
+export const useGenerateDocumentEml = (options?: AppMutationOptions<typeof generateDocumentEml, { positionId: string, houseBlId: string, officeId: string, data: WorkingDocumentsHouseBlModels.GenerateWorkingDocumentRequestDto }> & MutationEffectsOptions) => {
   const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
@@ -381,6 +384,7 @@ export const useGenerateDocumentEml = (options?: AppMutationOptions<typeof gener
       return generateDocumentEml(positionId, houseBlId, officeId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { positionId, houseBlId, officeId } = variables;
       const updateKeys = [keys.previewHouseBl(positionId, houseBlId, officeId), keys.previewHouseBlEml(positionId, houseBlId, officeId)];

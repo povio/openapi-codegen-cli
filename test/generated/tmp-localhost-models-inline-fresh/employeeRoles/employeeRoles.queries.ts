@@ -1,7 +1,7 @@
 import { AppRestClient } from "@/data/app-rest-client";
 import { z } from "zod";
 import { ZodExtended } from "@/data/zod.extended";
-import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, UseQueryResult, useInfiniteQuery, UseInfiniteQueryResult, useMutation, UseMutationResult } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
 import { useAclCheck } from "@/data/acl/useAclCheck";
@@ -125,7 +125,6 @@ export const keys = {
  * @statusCodes [200, 401]
  */
 export const useList = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: EmployeeRolesModels.EmployeeRolePaginationFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof list, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -151,7 +150,6 @@ export const useList = <TData>({ limit, order, filter, page, cursor }: { limit: 
  * @statusCodes [200, 401]
  */
 export const useListInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: EmployeeRolesModels.EmployeeRolePaginationFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof list, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
@@ -174,7 +172,7 @@ export const useListInfinite = <TData>({ limit, order, filter, cursor }: { limit
  * @permission Requires `canUseCreate` ability 
  * @param { EmployeeRolesModels.EmployeeRoleCreateRequest } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
- * @returns { UseMutationResult<CommonModels.EmployeeRoleResponse> } 
+ * @returns { UseMutationResult<EmployeeRolesModels.EmployeeRoleResponse> } 
  * @statusCodes [201, 401]
  */
 export const useCreate = (options?: AppMutationOptions<typeof create, { data: EmployeeRolesModels.EmployeeRoleCreateRequest }> & MutationEffectsOptions) => {
@@ -188,6 +186,7 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { data: Em
       return create(data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -200,13 +199,12 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { data: Em
  * @summary List all employee roles with only their labels
  * @permission Requires `canUseLabels` ability 
  * @param { string } search Query parameter
- * @param { CommonModels.EmployeeRoleContext } context Query parameter
+ * @param { EmployeeRolesModels.EmployeeRoleContext } context Query parameter
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<EmployeeRolesModels.LabelsResponse> } 
  * @statusCodes [200, 401]
  */
-export const useLabels = <TData>({ search, context }: { search?: string, context?: CommonModels.EmployeeRoleContext }, options?: AppQueryOptions<typeof labels, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
+export const useLabels = <TData>({ search, context }: { search?: string, context?: EmployeeRolesModels.EmployeeRoleContext }, options?: AppQueryOptions<typeof labels, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -224,11 +222,10 @@ export const useLabels = <TData>({ search, context }: { search?: string, context
  * @permission Requires `canUseFind` ability 
  * @param { string } roleId Path parameter
  * @param { AppQueryOptions } options Query options
- * @returns { UseQueryResult<CommonModels.EmployeeRoleResponse> } 
+ * @returns { UseQueryResult<EmployeeRolesModels.EmployeeRoleResponse> } 
  * @statusCodes [200, 401]
  */
 export const useFind = <TData>({ roleId }: { roleId: string }, options?: AppQueryOptions<typeof find, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -247,7 +244,7 @@ export const useFind = <TData>({ roleId }: { roleId: string }, options?: AppQuer
  * @param { string } roleId Path parameter
  * @param { EmployeeRolesModels.EmployeeRoleUpdateRequest } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
- * @returns { UseMutationResult<CommonModels.EmployeeRoleResponse> } 
+ * @returns { UseMutationResult<EmployeeRolesModels.EmployeeRoleResponse> } 
  * @statusCodes [200, 401]
  */
 export const useUpdate = (options?: AppMutationOptions<typeof update, { roleId: string, data: EmployeeRolesModels.EmployeeRoleUpdateRequest }> & MutationEffectsOptions) => {
@@ -261,6 +258,7 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { roleId: 
       return update(roleId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { roleId } = variables;
       const updateKeys = [keys.find(roleId)];
@@ -276,7 +274,7 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { roleId: 
  * @permission Requires `canUseDeleteEmployeesRolesByRoleId` ability 
  * @param { string } roleId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
- * @returns { UseMutationResult<CommonModels.StatusResponseDto> } 
+ * @returns { UseMutationResult<EmployeeRolesModels.StatusResponseDto> } 
  * @statusCodes [200, 401]
  */
 export const useDeleteEmployeesRolesByRoleId = (options?: AppMutationOptions<typeof deleteEmployeesRolesByRoleId, { roleId: string }> & MutationEffectsOptions) => {
@@ -290,6 +288,7 @@ export const useDeleteEmployeesRolesByRoleId = (options?: AppMutationOptions<typ
       return deleteEmployeesRolesByRoleId(roleId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -309,7 +308,6 @@ export const useDeleteEmployeesRolesByRoleId = (options?: AppMutationOptions<typ
  * @statusCodes [200, 401]
  */
 export const usePaginatePermissions = <TData>({ roleId }: { roleId: string }, options?: AppQueryOptions<typeof paginatePermissions, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -343,6 +341,7 @@ export const useTogglePermission = (options?: AppMutationOptions<typeof togglePe
       return togglePermission(roleId, permission, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -357,7 +356,7 @@ export const useTogglePermission = (options?: AppMutationOptions<typeof togglePe
  * @param { string } roleId Path parameter
  * @param { EmployeeRolesModels.CopyEmployeeRoleDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
- * @returns { UseMutationResult<CommonModels.EmployeeRoleResponse> } 
+ * @returns { UseMutationResult<EmployeeRolesModels.EmployeeRoleResponse> } 
  * @statusCodes [201, 401]
  */
 export const useCopy = (options?: AppMutationOptions<typeof copy, { roleId: string, data: EmployeeRolesModels.CopyEmployeeRoleDto }> & MutationEffectsOptions) => {
@@ -371,6 +370,7 @@ export const useCopy = (options?: AppMutationOptions<typeof copy, { roleId: stri
       return copy(roleId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { roleId } = variables;
       const updateKeys = [keys.find(roleId)];

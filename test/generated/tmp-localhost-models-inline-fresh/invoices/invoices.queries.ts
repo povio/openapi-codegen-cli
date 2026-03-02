@@ -2,7 +2,7 @@ import axios, {  } from "axios";
 import { AppRestClient } from "@/data/app-rest-client";
 import { z } from "zod";
 import { ZodExtended } from "@/data/zod.extended";
-import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, UseQueryResult, useInfiniteQuery, UseInfiniteQueryResult, useMutation, UseMutationResult } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
 import { useAclCheck } from "@/data/acl/useAclCheck";
@@ -392,7 +392,6 @@ export const keys = {
  * @statusCodes [200, 401]
  */
 export const useGetInvoicesEml = <TData>({ officeId, invoiceIds }: { officeId: string, invoiceIds?: InvoicesModels.GetInvoicesEmlInvoiceIdsParam }, options?: AppQueryOptions<typeof getInvoicesEml, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -425,6 +424,7 @@ export const useGetInvoicesEmlMutation = (options?: AppMutationOptions<typeof ge
       return getInvoicesEml(officeId, invoiceIds)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId } = variables;
       const updateKeys = [keys.getInvoicesEml(officeId)];
@@ -450,7 +450,6 @@ export const useGetInvoicesEmlMutation = (options?: AppMutationOptions<typeof ge
  * @statusCodes [200, 401]
  */
 export const useFind = <TData>({ officeId, positionId, limit, order, filter, page, cursor }: { officeId: string, positionId: string, limit: number, order?: string, filter?: InvoicesModels.InvoiceFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof find, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -478,7 +477,6 @@ export const useFind = <TData>({ officeId, positionId, limit, order, filter, pag
  * @statusCodes [200, 401]
  */
 export const useFindInfinite = <TData>({ officeId, positionId, limit, order, filter, cursor }: { officeId: string, positionId: string, limit: number, order?: string, filter?: InvoicesModels.InvoiceFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof find, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
@@ -517,6 +515,7 @@ export const useChangeIncomingCustomer = (options?: AppMutationOptions<typeof ch
       return changeIncomingCustomer(officeId, invoiceId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, invoiceId } = variables;
       const updateKeys = [keys.getDetail(officeId, invoiceId)];
@@ -533,15 +532,14 @@ export const useChangeIncomingCustomer = (options?: AppMutationOptions<typeof ch
  * @param { string } officeId Path parameter
  * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
  * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): invoiceNumber, issuingDate, invoiceType, amount, netAmount, currencyNotation, dueDate, status, paidOn, serviceDate, internalNumber, positionNumber, invoiceDirection, receiver, receiverCountry, paidAmount, totalVat, dunningBlock, invoiceInReview, isInvoiceOk, isVatOk, comments, salesRepName, isExportedToBookkeeping, createdAt, customerReferenceOverride, externalSystemId. Example: `invoiceNumber`
- * @param { CommonModels.OfficeInvoiceFilterDto } filter Query parameter
+ * @param { InvoicesModels.OfficeInvoiceFilterDto } filter Query parameter
  * @param { number } page Query parameter. 1-indexed page number to begin from
  * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<InvoicesModels.FindByOfficeResponse> } 
  * @statusCodes [200, 401]
  */
-export const useFindByOffice = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: CommonModels.OfficeInvoiceFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof findByOffice, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
+export const useFindByOffice = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: InvoicesModels.OfficeInvoiceFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof findByOffice, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -560,15 +558,14 @@ export const useFindByOffice = <TData>({ officeId, limit, order, filter, page, c
  * @param { string } officeId Path parameter
  * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
  * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): invoiceNumber, issuingDate, invoiceType, amount, netAmount, currencyNotation, dueDate, status, paidOn, serviceDate, internalNumber, positionNumber, invoiceDirection, receiver, receiverCountry, paidAmount, totalVat, dunningBlock, invoiceInReview, isInvoiceOk, isVatOk, comments, salesRepName, isExportedToBookkeeping, createdAt, customerReferenceOverride, externalSystemId. Example: `invoiceNumber`
- * @param { CommonModels.OfficeInvoiceFilterDto } filter Query parameter
+ * @param { InvoicesModels.OfficeInvoiceFilterDto } filter Query parameter
  * @param { number } page Query parameter. 1-indexed page number to begin from
  * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<InvoicesModels.FindByOfficeResponse> } 
  * @statusCodes [200, 401]
  */
-export const useFindByOfficeInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: CommonModels.OfficeInvoiceFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof findByOffice, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
+export const useFindByOfficeInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: InvoicesModels.OfficeInvoiceFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof findByOffice, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
@@ -606,6 +603,7 @@ export const useCreateDraft = (options?: AppMutationOptions<typeof createDraft, 
       return createDraft(officeId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -634,6 +632,7 @@ export const useExportInvoices = (options?: AppMutationOptions<typeof exportInvo
       return exportInvoices(officeId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId } = variables;
       const updateKeys = [keys.getInvoicesEml(officeId)];
@@ -664,6 +663,7 @@ export const useExportCharges = (options?: AppMutationOptions<typeof exportCharg
       return exportCharges(officeId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId } = variables;
       const updateKeys = [keys.getInvoicesEml(officeId)];
@@ -689,7 +689,6 @@ export const useExportCharges = (options?: AppMutationOptions<typeof exportCharg
  * @statusCodes [200, 401]
  */
 export const useGetUnCharges = <TData>({ officeId, positionId, limit, order, filter, page, cursor }: { officeId: string, positionId: string, limit: number, order?: string, filter?: InvoicesModels.UninvoicedChargePaginationDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof getUnCharges, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -717,7 +716,6 @@ export const useGetUnCharges = <TData>({ officeId, positionId, limit, order, fil
  * @statusCodes [200, 401]
  */
 export const useGetUnChargesInfinite = <TData>({ officeId, positionId, limit, order, filter, cursor }: { officeId: string, positionId: string, limit: number, order?: string, filter?: InvoicesModels.UninvoicedChargePaginationDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof getUnCharges, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
@@ -741,13 +739,12 @@ export const useGetUnChargesInfinite = <TData>({ officeId, positionId, limit, or
  * @param { string } officeId Path parameter
  * @param { string } invoiceId Path parameter
  * @param { string } search Query parameter
- * @param { CommonModels.PositionAvailablePartnersUseCase } useCase Query parameter. When provided and office toggle is enabled, restrict available partners to finance relationships (customer/vendor).
+ * @param { InvoicesModels.PositionAvailablePartnersUseCase } useCase Query parameter. When provided and office toggle is enabled, restrict available partners to finance relationships (customer/vendor).
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<InvoicesModels.InvoicesListAvailablePartnersForResponse> } 
  * @statusCodes [200, 401]
  */
-export const useListAvailablePartnersFor = <TData>({ officeId, invoiceId, search, useCase }: { officeId: string, invoiceId: string, search?: string, useCase?: CommonModels.PositionAvailablePartnersUseCase }, options?: AppQueryOptions<typeof listAvailablePartnersFor, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
+export const useListAvailablePartnersFor = <TData>({ officeId, invoiceId, search, useCase }: { officeId: string, invoiceId: string, search?: string, useCase?: InvoicesModels.PositionAvailablePartnersUseCase }, options?: AppQueryOptions<typeof listAvailablePartnersFor, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -774,7 +771,6 @@ export const useListAvailablePartnersFor = <TData>({ officeId, invoiceId, search
  * @statusCodes [200, 401]
  */
 export const useGetOfficeUnCharges = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: InvoicesModels.UninvoicedChargesFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof getOfficeUnCharges, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -801,7 +797,6 @@ export const useGetOfficeUnCharges = <TData>({ officeId, limit, order, filter, p
  * @statusCodes [200, 401]
  */
 export const useGetOfficeUnChargesInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: InvoicesModels.UninvoicedChargesFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof getOfficeUnCharges, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
@@ -839,6 +834,7 @@ export const useExportUnCharges = (options?: AppMutationOptions<typeof exportUnC
       return exportUnCharges(officeId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId } = variables;
       const updateKeys = [keys.getInvoicesEml(officeId)];
@@ -868,6 +864,7 @@ export const useCreateDirect = (options?: AppMutationOptions<typeof createDirect
       return createDirect(officeId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -897,6 +894,7 @@ export const useAddChargeToDirect = (options?: AppMutationOptions<typeof addChar
       return addChargeToDirect(officeId, invoiceId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, invoiceId } = variables;
       const updateKeys = [keys.getDetail(officeId, invoiceId)];
@@ -928,6 +926,7 @@ export const useUpdateCharges = (options?: AppMutationOptions<typeof updateCharg
       return updateCharges(officeId, invoiceId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, invoiceId } = variables;
       const updateKeys = [keys.getDetail(officeId, invoiceId)];
@@ -959,6 +958,7 @@ export const useRemoveChargeFromDirect = (options?: AppMutationOptions<typeof re
       return removeChargeFromDirect(officeId, invoiceId, chargeId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, invoiceId } = variables;
       const updateKeys = [keys.getDetail(officeId, invoiceId)];
@@ -979,7 +979,6 @@ export const useRemoveChargeFromDirect = (options?: AppMutationOptions<typeof re
  * @statusCodes [200, 401, default]
  */
 export const useGetDetail = <TData>({ officeId, invoiceId }: { officeId: string, invoiceId: string }, options?: AppQueryOptions<typeof getDetail, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -1013,6 +1012,7 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { officeId
       return update(officeId, invoiceId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, invoiceId } = variables;
       const updateKeys = [keys.getDetail(officeId, invoiceId)];
@@ -1043,6 +1043,7 @@ export const useDeleteInvoice = (options?: AppMutationOptions<typeof deleteInvoi
       return deleteInvoice(officeId, invoiceId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -1072,6 +1073,7 @@ export const useFix = (options?: AppMutationOptions<typeof fix, { officeId: stri
       return fix(officeId, invoiceId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, invoiceId } = variables;
       const updateKeys = [keys.getDetail(officeId, invoiceId)];
@@ -1102,6 +1104,7 @@ export const useGenerate = (options?: AppMutationOptions<typeof generate, { offi
       return generate(officeId, invoiceId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -1131,6 +1134,7 @@ export const useUpdateIssuedVatRules = (options?: AppMutationOptions<typeof upda
       return updateIssuedVatRules(officeId, invoiceId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, invoiceId } = variables;
       const updateKeys = [keys.getDetail(officeId, invoiceId)];
@@ -1162,6 +1166,7 @@ export const useUpdateIssuedCharges = (options?: AppMutationOptions<typeof updat
       return updateIssuedCharges(officeId, invoiceId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, invoiceId } = variables;
       const updateKeys = [keys.getDetail(officeId, invoiceId)];
@@ -1192,6 +1197,7 @@ export const useIssue = (options?: AppMutationOptions<typeof issue, { officeId: 
       return issue(officeId, invoiceId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, invoiceId } = variables;
       const updateKeys = [keys.getInvoicesEml(officeId), keys.getPreview(officeId, invoiceId), keys.getInvoiceEml(officeId, invoiceId)];
@@ -1222,6 +1228,7 @@ export const useReportHungarian = (options?: AppMutationOptions<typeof reportHun
       return reportHungarian(officeId, invoiceId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -1250,6 +1257,7 @@ export const useGenerateIncoming = (options?: AppMutationOptions<typeof generate
       return generateIncoming(officeId, invoiceId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, invoiceId } = variables;
       const updateKeys = [keys.getInvoicesEml(officeId), keys.getPreview(officeId, invoiceId), keys.getInvoiceEml(officeId, invoiceId)];
@@ -1280,6 +1288,7 @@ export const useRegister = (options?: AppMutationOptions<typeof register, { offi
       return register(officeId, invoiceId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, invoiceId } = variables;
       const updateKeys = [keys.getDetail(officeId, invoiceId)];
@@ -1300,7 +1309,6 @@ export const useRegister = (options?: AppMutationOptions<typeof register, { offi
  * @statusCodes [200, 401]
  */
 export const useGetPreview = <TData>({ officeId, invoiceId }: { officeId: string, invoiceId: string }, options?: AppQueryOptions<typeof getPreview, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -1333,6 +1341,7 @@ export const useGetPreviewMutation = (options?: AppMutationOptions<typeof getPre
       return getPreview(officeId, invoiceId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, invoiceId } = variables;
       const updateKeys = [keys.getInvoicesEml(officeId), keys.getPreview(officeId, invoiceId), keys.getInvoiceEml(officeId, invoiceId)];
@@ -1353,7 +1362,6 @@ export const useGetPreviewMutation = (options?: AppMutationOptions<typeof getPre
  * @statusCodes [200, 401]
  */
 export const useGetInvoiceEml = <TData>({ officeId, invoiceId }: { officeId: string, invoiceId: string }, options?: AppQueryOptions<typeof getInvoiceEml, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -1386,6 +1394,7 @@ export const useGetInvoiceEmlMutation = (options?: AppMutationOptions<typeof get
       return getInvoiceEml(officeId, invoiceId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, invoiceId } = variables;
       const updateKeys = [keys.getInvoicesEml(officeId), keys.getPreview(officeId, invoiceId), keys.getInvoiceEml(officeId, invoiceId)];
@@ -1443,6 +1452,7 @@ export const usePrepareDocumentUpload = (options?: AppMutationOptions<typeof pre
       return uploadInstructions;
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -1471,6 +1481,7 @@ export const useCancel = (options?: AppMutationOptions<typeof cancel, { officeId
       return cancel(officeId, invoiceId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, invoiceId } = variables;
       const updateKeys = [keys.getDetail(officeId, invoiceId)];
@@ -1501,6 +1512,7 @@ export const useIssueCreditNote = (options?: AppMutationOptions<typeof issueCred
       return issueCreditNote(officeId, invoiceId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, invoiceId } = variables;
       const updateKeys = [keys.getDetail(officeId, invoiceId)];

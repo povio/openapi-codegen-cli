@@ -1,7 +1,7 @@
 import { AppRestClient } from "@/data/app-rest-client";
 import { z } from "zod";
 import { ZodExtended } from "@/data/zod.extended";
-import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
+import { useQuery, UseQueryResult, useInfiniteQuery, UseInfiniteQueryResult } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { useAclCheck } from "@/data/acl/useAclCheck";
 import { IntegrationMessagesAcl } from "./integrationMessages.acl";
@@ -49,7 +49,6 @@ export const keys = {
  * @statusCodes [200, 401]
  */
 export const useList = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: IntegrationMessagesModels.IntegrationMessageFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof list, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -76,7 +75,6 @@ export const useList = <TData>({ officeId, limit, order, filter, page, cursor }:
  * @statusCodes [200, 401]
  */
 export const useListInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: IntegrationMessagesModels.IntegrationMessageFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof list, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({

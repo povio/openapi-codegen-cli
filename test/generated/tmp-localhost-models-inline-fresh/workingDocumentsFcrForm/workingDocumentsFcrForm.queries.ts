@@ -1,7 +1,7 @@
 import { AppRestClient } from "@/data/app-rest-client";
 import { z } from "zod";
 import { ZodExtended } from "@/data/zod.extended";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, UseQueryResult, useMutation, UseMutationResult } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
 import { useAclCheck } from "@/data/acl/useAclCheck";
@@ -96,6 +96,7 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { position
       return create(positionId, officeId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -115,7 +116,6 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { position
  * @statusCodes [200, 401]
  */
 export const useGetFcrData = <TData>({ positionId, fcrId, officeId }: { positionId: string, fcrId: string, officeId: string }, options?: AppQueryOptions<typeof getFcrData, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -150,6 +150,7 @@ export const useUpdateFcrData = (options?: AppMutationOptions<typeof updateFcrDa
       return updateFcrData(positionId, fcrId, officeId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { positionId, fcrId, officeId } = variables;
       const updateKeys = [keys.getFcrData(positionId, fcrId, officeId)];
@@ -181,6 +182,7 @@ export const useDeleteFcr = (options?: AppMutationOptions<typeof deleteFcr, { po
       return deleteFcr(positionId, fcrId, officeId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -200,7 +202,6 @@ export const useDeleteFcr = (options?: AppMutationOptions<typeof deleteFcr, { po
  * @statusCodes [200, 401]
  */
 export const usePreviewFcr = <TData>({ positionId, fcrId, officeId }: { positionId: string, fcrId: string, officeId: string }, options?: AppQueryOptions<typeof previewFcr, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -234,6 +235,7 @@ export const usePreviewFcrMutation = (options?: AppMutationOptions<typeof previe
       return previewFcr(positionId, fcrId, officeId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { positionId, fcrId, officeId } = variables;
       const updateKeys = [keys.previewFcr(positionId, fcrId, officeId)];
@@ -250,12 +252,12 @@ export const usePreviewFcrMutation = (options?: AppMutationOptions<typeof previe
  * @param { string } positionId Path parameter
  * @param { string } fcrId Path parameter
  * @param { string } officeId Path parameter
- * @param { CommonModels.GenerateWorkingDocumentRequestDto } data Body parameter
+ * @param { WorkingDocumentsFcrFormModels.GenerateWorkingDocumentRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [201, 401]
  */
-export const useGenerateFcr = (options?: AppMutationOptions<typeof generateFcr, { positionId: string, fcrId: string, officeId: string, data: CommonModels.GenerateWorkingDocumentRequestDto }> & MutationEffectsOptions) => {
+export const useGenerateFcr = (options?: AppMutationOptions<typeof generateFcr, { positionId: string, fcrId: string, officeId: string, data: WorkingDocumentsFcrFormModels.GenerateWorkingDocumentRequestDto }> & MutationEffectsOptions) => {
   const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
@@ -266,6 +268,7 @@ export const useGenerateFcr = (options?: AppMutationOptions<typeof generateFcr, 
       return generateFcr(positionId, fcrId, officeId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

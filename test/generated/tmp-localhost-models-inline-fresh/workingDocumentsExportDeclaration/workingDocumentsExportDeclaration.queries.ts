@@ -1,7 +1,7 @@
 import { AppRestClient } from "@/data/app-rest-client";
 import { z } from "zod";
 import { ZodExtended } from "@/data/zod.extended";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, UseQueryResult, useMutation, UseMutationResult } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
 import { useAclCheck } from "@/data/acl/useAclCheck";
@@ -96,6 +96,7 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { position
       return create(positionId, officeId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -115,7 +116,6 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { position
  * @statusCodes [200, 401]
  */
 export const useGetExportDeclarationData = <TData>({ officeId, positionId, exportDeclarationId }: { officeId: string, positionId: string, exportDeclarationId: string }, options?: AppQueryOptions<typeof getExportDeclarationData, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -150,6 +150,7 @@ export const useUpdateExportDeclarationData = (options?: AppMutationOptions<type
       return updateExportDeclarationData(officeId, positionId, exportDeclarationId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, positionId, exportDeclarationId } = variables;
       const updateKeys = [keys.getExportDeclarationData(officeId, positionId, exportDeclarationId)];
@@ -181,6 +182,7 @@ export const useDeleteExportDeclaration = (options?: AppMutationOptions<typeof d
       return deleteExportDeclaration(positionId, exportDeclarationId, officeId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -200,7 +202,6 @@ export const useDeleteExportDeclaration = (options?: AppMutationOptions<typeof d
  * @statusCodes [200, 401]
  */
 export const usePreviewExportDeclaration = <TData>({ officeId, positionId, exportDeclarationId }: { officeId: string, positionId: string, exportDeclarationId: string }, options?: AppQueryOptions<typeof previewExportDeclaration, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -234,6 +235,7 @@ export const usePreviewExportDeclarationMutation = (options?: AppMutationOptions
       return previewExportDeclaration(officeId, positionId, exportDeclarationId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, positionId, exportDeclarationId } = variables;
       const updateKeys = [keys.previewExportDeclaration(officeId, positionId, exportDeclarationId)];
@@ -250,12 +252,12 @@ export const usePreviewExportDeclarationMutation = (options?: AppMutationOptions
  * @param { string } officeId Path parameter
  * @param { string } positionId Path parameter
  * @param { string } exportDeclarationId Path parameter
- * @param { CommonModels.GenerateWorkingDocumentRequestDto } data Body parameter
+ * @param { WorkingDocumentsExportDeclarationModels.GenerateWorkingDocumentRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<void> } 
  * @statusCodes [201, 401]
  */
-export const useGenerateExportDeclaration = (options?: AppMutationOptions<typeof generateExportDeclaration, { officeId: string, positionId: string, exportDeclarationId: string, data: CommonModels.GenerateWorkingDocumentRequestDto }> & MutationEffectsOptions) => {
+export const useGenerateExportDeclaration = (options?: AppMutationOptions<typeof generateExportDeclaration, { officeId: string, positionId: string, exportDeclarationId: string, data: WorkingDocumentsExportDeclarationModels.GenerateWorkingDocumentRequestDto }> & MutationEffectsOptions) => {
   const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
@@ -266,6 +268,7 @@ export const useGenerateExportDeclaration = (options?: AppMutationOptions<typeof
       return generateExportDeclaration(officeId, positionId, exportDeclarationId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

@@ -1,7 +1,7 @@
 import { AppRestClient } from "@/data/app-rest-client";
 import { z } from "zod";
 import { ZodExtended } from "@/data/zod.extended";
-import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, UseQueryResult, useInfiniteQuery, UseInfiniteQueryResult, useMutation, UseMutationResult } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
 import { useAclCheck } from "@/data/acl/useAclCheck";
@@ -80,7 +80,6 @@ export const keys = {
  * @statusCodes [200, 401]
  */
 export const useGet = <TData>({ officeId, filter, limit, order, page, cursor }: { officeId: string, filter: PaymentConfirmationsModels.PaymentConfirmationItemFilterDto, limit: number, order?: string, page?: number, cursor?: string }, options?: AppQueryOptions<typeof get, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -107,7 +106,6 @@ export const useGet = <TData>({ officeId, filter, limit, order, page, cursor }: 
  * @statusCodes [200, 401]
  */
 export const useGetInfinite = <TData>({ officeId, filter, limit, order, cursor }: { officeId: string, filter: PaymentConfirmationsModels.PaymentConfirmationItemFilterDto, limit: number, order?: string, cursor?: string }, options?: AppInfiniteQueryOptions<typeof get, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
@@ -145,6 +143,7 @@ export const useGenerate = (options?: AppMutationOptions<typeof generate, { offi
       return generate(officeId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -173,6 +172,7 @@ export const useGetEml = (options?: AppMutationOptions<typeof getEml, { officeId
       return getEml(officeId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

@@ -1,7 +1,7 @@
 import { AppRestClient } from "@/data/app-rest-client";
 import { z } from "zod";
 import { ZodExtended } from "@/data/zod.extended";
-import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
+import { useQuery, UseQueryResult, useInfiniteQuery, UseInfiniteQueryResult } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { OpenApiQueryConfig, AppQueryOptions, AppInfiniteQueryOptions } from "@povio/openapi-codegen-cli";
 import { ControlTowerBookingsModels } from "./controlTowerBookings.models";
@@ -63,7 +63,6 @@ export const keys = {
  * @statusCodes [200, 401]
  */
 export const useFindAll = <TData>({ limit, order, filter, page, cursor }: { limit: number, order?: string, filter?: ControlTowerBookingsModels.BookingFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof findAll, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   
   return useQuery({
     queryKey: keys.findAll(limit, order, filter, page, cursor),
@@ -86,7 +85,6 @@ export const useFindAll = <TData>({ limit, order, filter, page, cursor }: { limi
  * @statusCodes [200, 401]
  */
 export const useFindAllInfinite = <TData>({ limit, order, filter, cursor }: { limit: number, order?: string, filter?: ControlTowerBookingsModels.BookingFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof findAll, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
 
   return useInfiniteQuery({
     queryKey: keys.findAllInfinite(limit, order, filter, cursor),
@@ -110,7 +108,6 @@ export const useFindAllInfinite = <TData>({ limit, order, filter, cursor }: { li
  * @statusCodes [200, 401]
  */
 export const useFindById = <TData>({ id }: { id: string }, options?: AppQueryOptions<typeof findById, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   
   return useQuery({
     queryKey: keys.findById(id),
@@ -130,7 +127,6 @@ export const useFindById = <TData>({ id }: { id: string }, options?: AppQueryOpt
  * @statusCodes [200, 401]
  */
 export const useFindPackageById = <TData>({ packageId, bookingId }: { packageId: string, bookingId: string }, options?: AppQueryOptions<typeof findPackageById, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   
   return useQuery({
     queryKey: keys.findPackageById(packageId, bookingId),

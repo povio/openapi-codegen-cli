@@ -1,7 +1,7 @@
 import { AppRestClient } from "@/data/app-rest-client";
 import { z } from "zod";
 import { ZodExtended } from "@/data/zod.extended";
-import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, UseQueryResult, useInfiniteQuery, UseInfiniteQueryResult, useMutation, UseMutationResult } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
 import { useAclCheck } from "@/data/acl/useAclCheck";
@@ -119,7 +119,6 @@ export const keys = {
  * @statusCodes [200, 401]
  */
 export const useListCargosByPositionId = <TData>({ officeId, positionId, limit, order, page, cursor }: { officeId: string, positionId: string, limit: number, order?: PositionCargoModels.ListCargosByPositionIdOrderParam, page?: number, cursor?: string }, options?: AppQueryOptions<typeof listCargosByPositionId, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -146,7 +145,6 @@ export const useListCargosByPositionId = <TData>({ officeId, positionId, limit, 
  * @statusCodes [200, 401]
  */
 export const useListCargosByPositionIdInfinite = <TData>({ officeId, positionId, limit, order, cursor }: { officeId: string, positionId: string, limit: number, order?: PositionCargoModels.ListCargosByPositionIdOrderParam, cursor?: string }, options?: AppInfiniteQueryOptions<typeof listCargosByPositionId, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
@@ -169,12 +167,12 @@ export const useListCargosByPositionIdInfinite = <TData>({ officeId, positionId,
  * @permission Requires `canUseCreateCargo` ability 
  * @param { string } officeId Path parameter
  * @param { string } positionId Path parameter
- * @param { CommonModels.CreatePositionCargoDTO } data Body parameter
+ * @param { PositionCargoModels.CreatePositionCargoDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
- * @returns { UseMutationResult<CommonModels.PositionCargoResponseDTO> } 
+ * @returns { UseMutationResult<PositionCargoModels.PositionCargoResponseDTO> } 
  * @statusCodes [201, 401]
  */
-export const useCreateCargo = (options?: AppMutationOptions<typeof createCargo, { officeId: string, positionId: string, data: CommonModels.CreatePositionCargoDTO }> & MutationEffectsOptions) => {
+export const useCreateCargo = (options?: AppMutationOptions<typeof createCargo, { officeId: string, positionId: string, data: PositionCargoModels.CreatePositionCargoDTO }> & MutationEffectsOptions) => {
   const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
@@ -185,6 +183,7 @@ export const useCreateCargo = (options?: AppMutationOptions<typeof createCargo, 
       return createCargo(officeId, positionId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -203,7 +202,6 @@ export const useCreateCargo = (options?: AppMutationOptions<typeof createCargo, 
  * @statusCodes [200, 401]
  */
 export const useListCargoLabels = <TData>({ officeId, positionId }: { officeId: string, positionId: string }, options?: AppQueryOptions<typeof listCargoLabels, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -226,7 +224,6 @@ export const useListCargoLabels = <TData>({ officeId, positionId }: { officeId: 
  * @statusCodes [200, 401]
  */
 export const useGetCargoSummary = <TData>({ officeId, positionId }: { officeId: string, positionId: string }, options?: AppQueryOptions<typeof getCargoSummary, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -246,11 +243,10 @@ export const useGetCargoSummary = <TData>({ officeId, positionId }: { officeId: 
  * @param { string } positionId Path parameter
  * @param { string } cargoId Path parameter
  * @param { AppQueryOptions } options Query options
- * @returns { UseQueryResult<CommonModels.PositionCargoResponseDTO> } 
+ * @returns { UseQueryResult<PositionCargoModels.PositionCargoResponseDTO> } 
  * @statusCodes [200, 401]
  */
 export const useGetCargoById = <TData>({ officeId, positionId, cargoId }: { officeId: string, positionId: string, cargoId: string }, options?: AppQueryOptions<typeof getCargoById, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -269,12 +265,12 @@ export const useGetCargoById = <TData>({ officeId, positionId, cargoId }: { offi
  * @param { string } officeId Path parameter
  * @param { string } positionId Path parameter
  * @param { string } cargoId Path parameter
- * @param { CommonModels.UpdatePositionCargoDTO } data Body parameter
+ * @param { PositionCargoModels.UpdatePositionCargoDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
- * @returns { UseMutationResult<CommonModels.PositionCargoResponseDTO> } 
+ * @returns { UseMutationResult<PositionCargoModels.PositionCargoResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useUpdateCargo = (options?: AppMutationOptions<typeof updateCargo, { officeId: string, positionId: string, cargoId: string, data: CommonModels.UpdatePositionCargoDTO }> & MutationEffectsOptions) => {
+export const useUpdateCargo = (options?: AppMutationOptions<typeof updateCargo, { officeId: string, positionId: string, cargoId: string, data: PositionCargoModels.UpdatePositionCargoDTO }> & MutationEffectsOptions) => {
   const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
@@ -285,6 +281,7 @@ export const useUpdateCargo = (options?: AppMutationOptions<typeof updateCargo, 
       return updateCargo(officeId, positionId, cargoId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, positionId, cargoId } = variables;
       const updateKeys = [keys.getCargoById(officeId, positionId, cargoId)];
@@ -316,6 +313,7 @@ export const useDeleteCargo = (options?: AppMutationOptions<typeof deleteCargo, 
       return deleteCargo(officeId, positionId, cargoId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -330,12 +328,12 @@ export const useDeleteCargo = (options?: AppMutationOptions<typeof deleteCargo, 
  * @param { number } numberOfCargos Path parameter
  * @param { string } officeId Path parameter
  * @param { string } positionId Path parameter
- * @param { CommonModels.CreatePositionCargoDTO } data Body parameter
+ * @param { PositionCargoModels.CreatePositionCargoDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<PositionCargoModels.PositionCargoCreateBulkCargosResponse> } 
  * @statusCodes [201, 401]
  */
-export const useCreateBulkCargos = (options?: AppMutationOptions<typeof createBulkCargos, { numberOfCargos: number, officeId: string, positionId: string, data: CommonModels.CreatePositionCargoDTO }> & MutationEffectsOptions) => {
+export const useCreateBulkCargos = (options?: AppMutationOptions<typeof createBulkCargos, { numberOfCargos: number, officeId: string, positionId: string, data: PositionCargoModels.CreatePositionCargoDTO }> & MutationEffectsOptions) => {
   const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
@@ -346,6 +344,7 @@ export const useCreateBulkCargos = (options?: AppMutationOptions<typeof createBu
       return createBulkCargos(numberOfCargos, officeId, positionId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -361,7 +360,7 @@ export const useCreateBulkCargos = (options?: AppMutationOptions<typeof createBu
  * @param { string } positionId Path parameter
  * @param { string } cargoId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
- * @returns { UseMutationResult<CommonModels.PositionCargoResponseDTO> } 
+ * @returns { UseMutationResult<PositionCargoModels.PositionCargoResponseDTO> } 
  * @statusCodes [201, 401]
  */
 export const useDuplicateCargo = (options?: AppMutationOptions<typeof duplicateCargo, { officeId: string, positionId: string, cargoId: string }> & MutationEffectsOptions) => {
@@ -375,6 +374,7 @@ export const useDuplicateCargo = (options?: AppMutationOptions<typeof duplicateC
       return duplicateCargo(officeId, positionId, cargoId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, positionId, cargoId } = variables;
       const updateKeys = [keys.getCargoById(officeId, positionId, cargoId)];

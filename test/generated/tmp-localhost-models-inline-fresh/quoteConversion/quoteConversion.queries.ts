@@ -1,6 +1,6 @@
 import { AppRestClient } from "@/data/app-rest-client";
 import { ZodExtended } from "@/data/zod.extended";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, UseMutationResult } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
 import { useAclCheck } from "@/data/acl/useAclCheck";
@@ -31,7 +31,7 @@ export const moduleName = QueryModule.QuoteConversion;
  * @param { string } quoteId Path parameter
  * @param { QuoteConversionModels.ConvertQuoteToPositionRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
- * @returns { UseMutationResult<CommonModels.PositionCoreResponseDto> } Quote converted to position successfully
+ * @returns { UseMutationResult<QuoteConversionModels.PositionCoreResponseDto> } Quote converted to position successfully
  * @statusCodes [201, 400, 401, 404]
  */
 export const useConvertQuoteToPosition = (options?: AppMutationOptions<typeof convertQuoteToPosition, { officeId: string, quoteId: string, data: QuoteConversionModels.ConvertQuoteToPositionRequestDto }> & MutationEffectsOptions) => {
@@ -45,6 +45,7 @@ export const useConvertQuoteToPosition = (options?: AppMutationOptions<typeof co
       return convertQuoteToPosition(officeId, quoteId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

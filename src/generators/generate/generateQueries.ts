@@ -58,7 +58,7 @@ import { getNamespaceName } from "@/generators/utils/namespace.utils";
 import { isSchemaObject } from "@/generators/utils/openapi-schema.utils";
 import { isParamMediaTypeAllowed } from "@/generators/utils/openapi.utils";
 import { getDestructuredVariables, isInfiniteQuery, isMutation, isQuery } from "@/generators/utils/query.utils";
-import { shouldInlineEndpointsForTag } from "@/generators/utils/tag.utils";
+import { getEndpointTag, shouldInlineEndpointsForTag } from "@/generators/utils/tag.utils";
 import { isNamedZodSchema } from "@/generators/utils/zod-schema.utils";
 import { invalidVariableNameCharactersToCamel } from "@/generators/utils/js.utils";
 
@@ -429,10 +429,12 @@ function renderQueryJsDocs({
   resolver,
   endpoint,
   mode,
+  tag,
 }: {
   resolver: SchemaResolver;
   endpoint: Endpoint;
   mode: "query" | "mutation" | "infiniteQuery";
+  tag: string;
 }) {
   const lines: string[] = ["/** "];
 
@@ -460,6 +462,7 @@ function renderQueryJsDocs({
 
   const params = getEndpointParamMapping(resolver, endpoint, {
     ...(mode !== "infiniteQuery" ? { includeFileParam: true } : {}),
+    modelNamespaceTag: tag,
   });
   for (const endpointParam of params) {
     lines.push(
@@ -481,6 +484,8 @@ function renderQueryJsDocs({
   const resultType = `${withAxiosResponse ? "AxiosResponse<" : ""}${getImportedZodSchemaInferedTypeName(
     resolver,
     endpoint.response,
+    undefined,
+    tag,
   )}${withAxiosResponse ? ">" : ""}`;
 
   if (mode === "query") {
@@ -648,6 +653,7 @@ function renderQuery({
 }) {
   const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
   const hasAclCheck = resolver.options.checkAcl && endpoint.acl;
+  const tag = getEndpointTag(endpoint, resolver.options);
   const workspaceParamReplacements = resolver.options.workspaceContext
     ? getWorkspaceParamReplacements(resolver, endpoint)
     : {};
@@ -655,6 +661,7 @@ function renderQuery({
   const resolvedEndpointArgs = renderEndpointArgs(resolver, endpoint, {}, workspaceParamReplacements);
   const endpointParams = renderEndpointParams(resolver, endpoint, {
     optionalPathParams: resolver.options.workspaceContext,
+    modelNamespaceTag: tag,
   });
   const hasQueryFn = endpointArgs.length > 0 || hasAxiosRequestConfig || hasAclCheck;
   const hasQueryFnBody = Boolean(hasAclCheck) || Object.keys(workspaceParamReplacements).length > 0;
@@ -663,7 +670,7 @@ function renderQuery({
     : getImportedEndpointName(endpoint, resolver.options);
 
   const lines: string[] = [];
-  lines.push(renderQueryJsDocs({ resolver, endpoint, mode: "query" }));
+  lines.push(renderQueryJsDocs({ resolver, endpoint, mode: "query", tag }));
   lines.push(
     `export const ${getQueryName(endpoint)} = <TData>(${endpointParams ? `{ ${endpointArgs} }: { ${endpointParams} }, ` : ""}options?: AppQueryOptions<typeof ${importedEndpoint}, TData>${hasAxiosRequestConfig ? `, ${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => {`,
   );
@@ -705,12 +712,14 @@ function renderMutation({
   const hasAclCheck = resolver.options.checkAcl && endpoint.acl;
   const hasMutationEffects = resolver.options.mutationEffects;
   const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
+  const tag = getEndpointTag(endpoint, resolver.options);
   const workspaceParamReplacements = resolver.options.workspaceContext
     ? getWorkspaceParamReplacements(resolver, endpoint)
     : {};
   const endpointParams = renderEndpointParams(resolver, endpoint, {
     includeFileParam: true,
     optionalPathParams: resolver.options.workspaceContext,
+    modelNamespaceTag: tag,
   });
   const resolvedEndpointArgs = renderEndpointArgs(resolver, endpoint, {}, workspaceParamReplacements);
   const destructuredMutationArgs = renderEndpointArgs(resolver, endpoint, { includeFileParam: true });
@@ -728,7 +737,7 @@ function renderMutation({
     : endpointParams;
 
   const lines: string[] = [];
-  lines.push(renderQueryJsDocs({ resolver, endpoint, mode: "mutation" }));
+  lines.push(renderQueryJsDocs({ resolver, endpoint, mode: "mutation", tag }));
   lines.push(
     `export const ${getQueryName(endpoint, true)} = (options?: AppMutationOptions<typeof ${endpointFunction}, { ${mutationVariablesType} }>${hasMutationEffects ? ` & ${MUTATION_EFFECTS.optionsType}` : ""}${hasAxiosRequestConfig ? `, ${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => {`,
   );
@@ -912,12 +921,14 @@ function renderInfiniteQuery({
 }) {
   const hasAclCheck = resolver.options.checkAcl && endpoint.acl;
   const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
+  const tag = getEndpointTag(endpoint, resolver.options);
   const workspaceParamReplacements = resolver.options.workspaceContext
     ? getWorkspaceParamReplacements(resolver, endpoint)
     : {};
   const endpointParams = renderEndpointParams(resolver, endpoint, {
     excludePageParam: true,
     optionalPathParams: resolver.options.workspaceContext,
+    modelNamespaceTag: tag,
   });
   const endpointArgsWithoutPage = renderEndpointArgs(resolver, endpoint, { excludePageParam: true });
   const resolvedEndpointArgsWithoutPage = renderEndpointArgs(
@@ -926,7 +937,6 @@ function renderInfiniteQuery({
     { excludePageParam: true },
     workspaceParamReplacements,
   );
-  const endpointArgsWithPage = renderEndpointArgs(resolver, endpoint, { replacePageParam: true });
   const resolvedEndpointArgsWithPage = renderEndpointArgs(
     resolver,
     endpoint,
@@ -939,11 +949,10 @@ function renderInfiniteQuery({
   const hasQueryFnBody = Boolean(hasAclCheck) || Object.keys(workspaceParamReplacements).length > 0;
 
   const lines: string[] = [];
-  lines.push(renderQueryJsDocs({ resolver, endpoint, mode: "infiniteQuery" }));
+  lines.push(renderQueryJsDocs({ resolver, endpoint, mode: "infiniteQuery", tag }));
   lines.push(
     `export const ${getInfiniteQueryName(endpoint)} = <TData>(${endpointParams ? `{ ${endpointArgsWithoutPage} }: { ${endpointParams} }, ` : ""}options?: AppInfiniteQueryOptions<typeof ${endpointFunction}, TData>${hasAxiosRequestConfig ? `, ${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => {`,
   );
-  lines.push("  const queryConfig = OpenApiQueryConfig.useConfig();");
   if (hasAclCheck) {
     lines.push(`  const { checkAcl } = ${ACL_CHECK_HOOK}();`);
   }
@@ -968,7 +977,6 @@ function renderInfiniteQuery({
   );
   lines.push("    },");
   lines.push("    ...options,");
-  lines.push("    onError: options?.onError ?? queryConfig.onError,");
   lines.push("  });");
   lines.push("};");
   return lines.join("\n");

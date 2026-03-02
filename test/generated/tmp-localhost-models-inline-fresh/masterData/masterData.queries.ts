@@ -1,7 +1,7 @@
 import { AppRestClient } from "@/data/app-rest-client";
 import { z } from "zod";
 import { ZodExtended } from "@/data/zod.extended";
-import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
+import { useQuery, UseQueryResult, useInfiniteQuery, UseInfiniteQueryResult } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { useAclCheck } from "@/data/acl/useAclCheck";
 import { MasterDataAcl } from "./masterData.acl";
@@ -60,7 +60,6 @@ export const keys = {
  * @statusCodes [200, 401]
  */
 export const useFindAll = <TData>({ officeId, types, search }: { officeId: string, types: MasterDataModels.MasterDataFindAllTypesParam, search?: string }, options?: AppQueryOptions<typeof findAll, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -87,7 +86,6 @@ export const useFindAll = <TData>({ officeId, types, search }: { officeId: strin
  * @statusCodes [200, 401]
  */
 export const usePaginate = <TData>({ officeId, types, limit, search, page, cursor }: { officeId: string, types: MasterDataModels.MasterDataPaginateTypesParam, limit: number, search?: string, page?: number, cursor?: string }, options?: AppQueryOptions<typeof paginate, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -114,7 +112,6 @@ export const usePaginate = <TData>({ officeId, types, limit, search, page, curso
  * @statusCodes [200, 401]
  */
 export const usePaginateInfinite = <TData>({ officeId, types, limit, search, cursor }: { officeId: string, types: MasterDataModels.MasterDataPaginateTypesParam, limit: number, search?: string, cursor?: string }, options?: AppInfiniteQueryOptions<typeof paginate, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({

@@ -1,7 +1,7 @@
 import { AppRestClient } from "@/data/app-rest-client";
 import { z } from "zod";
 import { ZodExtended } from "@/data/zod.extended";
-import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, UseQueryResult, useInfiniteQuery, UseInfiniteQueryResult, useMutation, UseMutationResult } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
 import { OpenApiQueryConfig, AppQueryOptions, AppInfiniteQueryOptions, AppMutationOptions } from "@povio/openapi-codegen-cli";
@@ -87,7 +87,6 @@ export const keys = {
  * @statusCodes [200, 401]
  */
 export const useGetTree = <TData>({ officeId, folderId }: { officeId: string, folderId: string }, options?: AppQueryOptions<typeof getTree, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   
   return useQuery({
     queryKey: keys.getTree(officeId, folderId),
@@ -112,7 +111,6 @@ export const useGetTree = <TData>({ officeId, folderId }: { officeId: string, fo
  * @statusCodes [200, 401]
  */
 export const useGetContent = <TData>({ officeId, folderId, limit, order, filter, page, cursor }: { officeId: string, folderId: string, limit: number, order?: FoldersModels.GetContentOrderParam, filter?: FoldersModels.FolderContentFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof getContent, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   
   return useQuery({
     queryKey: keys.getContent(officeId, folderId, limit, order, filter, page, cursor),
@@ -137,7 +135,6 @@ export const useGetContent = <TData>({ officeId, folderId, limit, order, filter,
  * @statusCodes [200, 401]
  */
 export const useGetContentInfinite = <TData>({ officeId, folderId, limit, order, filter, cursor }: { officeId: string, folderId: string, limit: number, order?: FoldersModels.GetContentOrderParam, filter?: FoldersModels.FolderContentFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof getContent, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
 
   return useInfiniteQuery({
     queryKey: keys.getContentInfinite(officeId, folderId, limit, order, filter, cursor),
@@ -171,6 +168,7 @@ export const useRename = (options?: AppMutationOptions<typeof rename, { officeId
       rename(officeId, folderId, data)
 ,
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -196,6 +194,7 @@ export const useDeleteFolder = (options?: AppMutationOptions<typeof deleteFolder
       deleteFolder(officeId, folderId)
 ,
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -221,6 +220,7 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { officeId
       create(officeId, data)
 ,
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -246,6 +246,7 @@ export const useMove = (options?: AppMutationOptions<typeof move, { officeId: st
       move(officeId, data)
 ,
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

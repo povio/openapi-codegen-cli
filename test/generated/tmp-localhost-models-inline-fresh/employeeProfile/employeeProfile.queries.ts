@@ -1,6 +1,6 @@
 import { AppRestClient } from "@/data/app-rest-client";
 import { ZodExtended } from "@/data/zod.extended";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, UseQueryResult, useMutation, UseMutationResult } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
 import { OpenApiQueryConfig, AppQueryOptions, AppMutationOptions } from "@povio/openapi-codegen-cli";
@@ -40,7 +40,6 @@ export const keys = {
  * @statusCodes [200, 401]
  */
 export const useGetProfile = <TData>(options?: AppQueryOptions<typeof getProfile, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   
   return useQuery({
     queryKey: keys.getProfile(),
@@ -66,6 +65,7 @@ export const useUpdateProfile = (options?: AppMutationOptions<typeof updateProfi
       updateProfile(data)
 ,
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const updateKeys = [keys.getProfile()];
       await runMutationEffects(resData, variables, options, updateKeys);

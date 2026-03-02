@@ -1,7 +1,7 @@
 import { AppRestClient } from "@/data/app-rest-client";
 import { z } from "zod";
 import { ZodExtended } from "@/data/zod.extended";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, UseQueryResult } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { OpenApiQueryConfig, AppQueryOptions } from "@povio/openapi-codegen-cli";
 import { ControlTowerCalendarModels } from "./controlTowerCalendar.models";
@@ -47,7 +47,6 @@ export const keys = {
  * @statusCodes [200, 401]
  */
 export const useGetCalendar = <TData>({ from, to, type, search, poNumbers, containerNumbers, bookingNumbers }: { from: string, to: string, type: ControlTowerCalendarModels.CalendarTypeEnum, search?: string, poNumbers?: ControlTowerCalendarModels.GetCalendarPoNumbersParam, containerNumbers?: ControlTowerCalendarModels.GetCalendarContainerNumbersParam, bookingNumbers?: ControlTowerCalendarModels.GetCalendarBookingNumbersParam }, options?: AppQueryOptions<typeof getCalendar, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   
   return useQuery({
     queryKey: keys.getCalendar(from, to, type, search, poNumbers, containerNumbers, bookingNumbers),

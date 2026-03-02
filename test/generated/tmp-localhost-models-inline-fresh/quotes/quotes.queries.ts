@@ -1,7 +1,7 @@
 import { AppRestClient } from "@/data/app-rest-client";
 import { z } from "zod";
 import { ZodExtended } from "@/data/zod.extended";
-import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, UseQueryResult, useInfiniteQuery, UseInfiniteQueryResult, useMutation, UseMutationResult } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
 import { useAclCheck } from "@/data/acl/useAclCheck";
@@ -158,7 +158,6 @@ export const keys = {
  * @statusCodes [200, 401]
  */
 export const usePaginate = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: QuotesModels.QuoteFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof paginate, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -185,7 +184,6 @@ export const usePaginate = <TData>({ officeId, limit, order, filter, page, curso
  * @statusCodes [200, 401]
  */
 export const usePaginateInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: QuotesModels.QuoteFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof paginate, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
@@ -223,6 +221,7 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { officeId
       return create(officeId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -237,13 +236,12 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { officeId
  * @param { string } officeId Path parameter
  * @param { string } quoteId Path parameter
  * @param { string } search Query parameter
- * @param { CommonModels.PositionAvailablePartnersUseCase } useCase Query parameter. When provided and office toggle is enabled, restrict available partners to finance relationships (customer/vendor).
+ * @param { QuotesModels.PositionAvailablePartnersUseCase } useCase Query parameter. When provided and office toggle is enabled, restrict available partners to finance relationships (customer/vendor).
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<QuotesModels.QuotesListAvailablePartnersForResponse> } 
  * @statusCodes [200, 401]
  */
-export const useListAvailablePartnersFor = <TData>({ officeId, quoteId, search, useCase }: { officeId: string, quoteId: string, search?: string, useCase?: CommonModels.PositionAvailablePartnersUseCase }, options?: AppQueryOptions<typeof listAvailablePartnersFor, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
+export const useListAvailablePartnersFor = <TData>({ officeId, quoteId, search, useCase }: { officeId: string, quoteId: string, search?: string, useCase?: QuotesModels.PositionAvailablePartnersUseCase }, options?: AppQueryOptions<typeof listAvailablePartnersFor, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -276,6 +274,7 @@ export const useExportQuotes = (options?: AppMutationOptions<typeof exportQuotes
       return exportQuotes(officeId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -294,7 +293,6 @@ export const useExportQuotes = (options?: AppMutationOptions<typeof exportQuotes
  * @statusCodes [200, 401]
  */
 export const useGetById = <TData>({ officeId, quoteId }: { officeId: string, quoteId: string }, options?: AppQueryOptions<typeof getById, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -328,6 +326,7 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { officeId
       return update(officeId, quoteId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, quoteId } = variables;
       const updateKeys = [keys.getById(officeId, quoteId)];
@@ -358,6 +357,7 @@ export const useCancel = (options?: AppMutationOptions<typeof cancel, { officeId
       return cancel(officeId, quoteId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, quoteId } = variables;
       const updateKeys = [keys.getById(officeId, quoteId)];
@@ -389,6 +389,7 @@ export const useDuplicate = (options?: AppMutationOptions<typeof duplicate, { of
       return duplicate(officeId, quoteId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, quoteId } = variables;
       const updateKeys = [keys.getById(officeId, quoteId)];
@@ -409,7 +410,6 @@ export const useDuplicate = (options?: AppMutationOptions<typeof duplicate, { of
  * @statusCodes [200, 401]
  */
 export const useGetInvolvedParties = <TData>({ officeId, quoteId }: { officeId: string, quoteId: string }, options?: AppQueryOptions<typeof getInvolvedParties, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -427,12 +427,12 @@ export const useGetInvolvedParties = <TData>({ officeId, quoteId }: { officeId: 
  * @permission Requires `canUseCreateInvolvedParty` ability 
  * @param { string } officeId Path parameter
  * @param { string } quoteId Path parameter
- * @param { CommonModels.CreateInvolvedPartyRequestDto } data Body parameter
+ * @param { QuotesModels.CreateInvolvedPartyRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
- * @returns { UseMutationResult<CommonModels.InvolvedPartyResponseDto> } 
+ * @returns { UseMutationResult<QuotesModels.InvolvedPartyResponseDto> } 
  * @statusCodes [201, 401]
  */
-export const useCreateInvolvedParty = (options?: AppMutationOptions<typeof createInvolvedParty, { officeId: string, quoteId: string, data: CommonModels.CreateInvolvedPartyRequestDto }> & MutationEffectsOptions) => {
+export const useCreateInvolvedParty = (options?: AppMutationOptions<typeof createInvolvedParty, { officeId: string, quoteId: string, data: QuotesModels.CreateInvolvedPartyRequestDto }> & MutationEffectsOptions) => {
   const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
@@ -443,6 +443,7 @@ export const useCreateInvolvedParty = (options?: AppMutationOptions<typeof creat
       return createInvolvedParty(officeId, quoteId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -457,12 +458,12 @@ export const useCreateInvolvedParty = (options?: AppMutationOptions<typeof creat
  * @param { string } officeId Path parameter
  * @param { string } quoteId Path parameter
  * @param { string } partyId Path parameter
- * @param { CommonModels.UpdateInvolvedPartyDto } data Body parameter
+ * @param { QuotesModels.UpdateInvolvedPartyDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
- * @returns { UseMutationResult<CommonModels.InvolvedPartyResponseDto> } 
+ * @returns { UseMutationResult<QuotesModels.InvolvedPartyResponseDto> } 
  * @statusCodes [200, 401]
  */
-export const useUpdateInvolvedParty = (options?: AppMutationOptions<typeof updateInvolvedParty, { officeId: string, quoteId: string, partyId: string, data: CommonModels.UpdateInvolvedPartyDto }> & MutationEffectsOptions) => {
+export const useUpdateInvolvedParty = (options?: AppMutationOptions<typeof updateInvolvedParty, { officeId: string, quoteId: string, partyId: string, data: QuotesModels.UpdateInvolvedPartyDto }> & MutationEffectsOptions) => {
   const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
@@ -473,6 +474,7 @@ export const useUpdateInvolvedParty = (options?: AppMutationOptions<typeof updat
       return updateInvolvedParty(officeId, quoteId, partyId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -502,6 +504,7 @@ export const useDeleteInvolvedParty = (options?: AppMutationOptions<typeof delet
       return deleteInvolvedParty(officeId, quoteId, partyId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

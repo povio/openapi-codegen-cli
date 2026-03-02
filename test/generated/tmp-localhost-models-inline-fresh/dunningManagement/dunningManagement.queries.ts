@@ -1,7 +1,7 @@
 import { AppRestClient } from "@/data/app-rest-client";
 import { z } from "zod";
 import { ZodExtended } from "@/data/zod.extended";
-import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, UseQueryResult, useInfiniteQuery, UseInfiniteQueryResult, useMutation, UseMutationResult } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
 import { useAclCheck } from "@/data/acl/useAclCheck";
@@ -83,7 +83,6 @@ export const keys = {
  * @statusCodes [200, 401]
  */
 export const useListDunnings = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: DunningManagementModels.DunningFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof listDunnings, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -110,7 +109,6 @@ export const useListDunnings = <TData>({ officeId, limit, order, filter, page, c
  * @statusCodes [200, 401]
  */
 export const useListDunningsInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: DunningManagementModels.DunningFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof listDunnings, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
@@ -149,6 +147,7 @@ export const useCreateDunningWithInvoices = (options?: AppMutationOptions<typeof
       return createDunningWithInvoices(partnerId, officeId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -164,7 +163,6 @@ export const useCreateDunningWithInvoices = (options?: AppMutationOptions<typeof
  * @statusCodes [200, 401]
  */
 export const useDataGenFake = <TData>(options?: AppQueryOptions<typeof dataGenFake, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   
   return useQuery({
     queryKey: keys.dataGenFake(),
@@ -184,7 +182,6 @@ export const useDataGenFake = <TData>(options?: AppQueryOptions<typeof dataGenFa
  * @statusCodes [200, 401]
  */
 export const useGetDunningEml = <TData>({ officeId, dunningId }: { officeId: string, dunningId: string }, options?: AppQueryOptions<typeof getDunningEml, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -217,6 +214,7 @@ export const useGetDunningEmlMutation = (options?: AppMutationOptions<typeof get
       return getDunningEml(officeId, dunningId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, dunningId } = variables;
       const updateKeys = [keys.getDunningEml(officeId, dunningId)];

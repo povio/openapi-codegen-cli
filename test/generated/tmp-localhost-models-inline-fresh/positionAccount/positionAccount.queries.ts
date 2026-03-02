@@ -1,5 +1,5 @@
 import { AppRestClient } from "@/data/app-rest-client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, UseQueryResult } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { useAclCheck } from "@/data/acl/useAclCheck";
 import { PositionAccountAcl } from "./positionAccount.acl";
@@ -34,7 +34,6 @@ export const keys = {
  * @statusCodes [200, 401]
  */
 export const useGet = <TData>({ positionId, officeId }: { positionId: string, officeId: string }, options?: AppQueryOptions<typeof get, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({

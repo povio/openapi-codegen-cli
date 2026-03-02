@@ -1,7 +1,7 @@
 import { AppRestClient } from "@/data/app-rest-client";
 import { z } from "zod";
 import { ZodExtended } from "@/data/zod.extended";
-import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, UseQueryResult, useInfiniteQuery, UseInfiniteQueryResult, useMutation, UseMutationResult } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
 import { useAclCheck } from "@/data/acl/useAclCheck";
@@ -208,7 +208,6 @@ export const keys = {
  * @statusCodes [200, 401]
  */
 export const useFindAll = <TData>({ officeId, limit, filter, page, cursor }: { officeId: string, limit: number, filter?: PositionsModels.PositionLabelsFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof findAll, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -234,7 +233,6 @@ export const useFindAll = <TData>({ officeId, limit, filter, page, cursor }: { o
  * @statusCodes [200, 401]
  */
 export const useFindAllInfinite = <TData>({ officeId, limit, filter, cursor }: { officeId: string, limit: number, filter?: PositionsModels.PositionLabelsFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof findAll, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
@@ -266,7 +264,6 @@ export const useFindAllInfinite = <TData>({ officeId, limit, filter, cursor }: {
  * @statusCodes [200, 401]
  */
 export const usePaginate = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: PositionsModels.PositionFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof paginate, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -293,7 +290,6 @@ export const usePaginate = <TData>({ officeId, limit, order, filter, page, curso
  * @statusCodes [200, 401]
  */
 export const usePaginateInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: PositionsModels.PositionFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof paginate, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
@@ -317,7 +313,7 @@ export const usePaginateInfinite = <TData>({ officeId, limit, order, filter, cur
  * @param { string } officeId Path parameter
  * @param { PositionsModels.CreatePositionRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
- * @returns { UseMutationResult<CommonModels.PositionCoreResponseDto> } Position created successfully
+ * @returns { UseMutationResult<PositionsModels.PositionCoreResponseDto> } Position created successfully
  * @statusCodes [201, 400, 401, 404]
  */
 export const useCreate = (options?: AppMutationOptions<typeof create, { officeId: string, data: PositionsModels.CreatePositionRequestDto }> & MutationEffectsOptions) => {
@@ -331,6 +327,7 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { officeId
       return create(officeId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -348,7 +345,6 @@ export const useCreate = (options?: AppMutationOptions<typeof create, { officeId
  * @statusCodes [200, 401]
  */
 export const useTotalProfit = <TData>({ officeId }: { officeId: string }, options?: AppQueryOptions<typeof totalProfit, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -367,13 +363,12 @@ export const useTotalProfit = <TData>({ officeId }: { officeId: string }, option
  * @param { string } officeId Path parameter
  * @param { string } positionId Path parameter
  * @param { string } search Query parameter
- * @param { CommonModels.PositionAvailablePartnersUseCase } useCase Query parameter. When provided and office toggle is enabled, restrict available partners to finance relationships (customer/vendor).
+ * @param { PositionsModels.PositionAvailablePartnersUseCase } useCase Query parameter. When provided and office toggle is enabled, restrict available partners to finance relationships (customer/vendor).
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<PositionsModels.PositionsListAvailablePartnersForResponse> } 
  * @statusCodes [200, 401]
  */
-export const useListAvailablePartnersFor = <TData>({ officeId, positionId, search, useCase }: { officeId: string, positionId: string, search?: string, useCase?: CommonModels.PositionAvailablePartnersUseCase }, options?: AppQueryOptions<typeof listAvailablePartnersFor, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
+export const useListAvailablePartnersFor = <TData>({ officeId, positionId, search, useCase }: { officeId: string, positionId: string, search?: string, useCase?: PositionsModels.PositionAvailablePartnersUseCase }, options?: AppQueryOptions<typeof listAvailablePartnersFor, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -406,6 +401,7 @@ export const useExportPositions = (options?: AppMutationOptions<typeof exportPos
       return exportPositions(officeId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -420,11 +416,10 @@ export const useExportPositions = (options?: AppMutationOptions<typeof exportPos
  * @param { string } officeId Path parameter
  * @param { string } positionId Path parameter
  * @param { AppQueryOptions } options Query options
- * @returns { UseQueryResult<CommonModels.PositionCoreResponseDto> } Position retrieved successfully
+ * @returns { UseQueryResult<PositionsModels.PositionCoreResponseDto> } Position retrieved successfully
  * @statusCodes [200, 401, 403, 404]
  */
 export const useGet = <TData>({ officeId, positionId }: { officeId: string, positionId: string }, options?: AppQueryOptions<typeof get, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -444,7 +439,7 @@ export const useGet = <TData>({ officeId, positionId }: { officeId: string, posi
  * @param { string } positionId Path parameter
  * @param { PositionsModels.UpdatePositionDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
- * @returns { UseMutationResult<CommonModels.PositionCoreResponseDto> } Position updated successfully
+ * @returns { UseMutationResult<PositionsModels.PositionCoreResponseDto> } Position updated successfully
  * @statusCodes [200, 400, 401, 404]
  */
 export const useUpdate = (options?: AppMutationOptions<typeof update, { officeId: string, positionId: string, data: PositionsModels.UpdatePositionDto }> & MutationEffectsOptions) => {
@@ -458,6 +453,7 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { officeId
       return update(officeId, positionId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, positionId } = variables;
       const updateKeys = [keys.get(officeId, positionId)];
@@ -478,7 +474,6 @@ export const useUpdate = (options?: AppMutationOptions<typeof update, { officeId
  * @statusCodes [200, 401]
  */
 export const useListRouteLabels = <TData>({ officeId, positionId }: { officeId: string, positionId: string }, options?: AppQueryOptions<typeof listRouteLabels, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -501,7 +496,6 @@ export const useListRouteLabels = <TData>({ officeId, positionId }: { officeId: 
  * @statusCodes [200, 401, 404]
  */
 export const useGetDuplicateDefaultParameters = <TData>({ officeId, positionId }: { officeId: string, positionId: string }, options?: AppQueryOptions<typeof getDuplicateDefaultParameters, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -521,7 +515,7 @@ export const useGetDuplicateDefaultParameters = <TData>({ officeId, positionId }
  * @param { string } positionId Path parameter
  * @param { PositionsModels.DuplicatePositionRequestDto } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
- * @returns { UseMutationResult<CommonModels.PositionCoreResponseDto> } Position duplicated successfully
+ * @returns { UseMutationResult<PositionsModels.PositionCoreResponseDto> } Position duplicated successfully
  * @statusCodes [201, 400, 401, 404]
  */
 export const useDuplicate = (options?: AppMutationOptions<typeof duplicate, { officeId: string, positionId: string, data: PositionsModels.DuplicatePositionRequestDto }> & MutationEffectsOptions) => {
@@ -535,6 +529,7 @@ export const useDuplicate = (options?: AppMutationOptions<typeof duplicate, { of
       return duplicate(officeId, positionId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, positionId } = variables;
       const updateKeys = [keys.get(officeId, positionId)];
@@ -551,7 +546,7 @@ export const useDuplicate = (options?: AppMutationOptions<typeof duplicate, { of
  * @param { string } officeId Path parameter
  * @param { string } positionId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
- * @returns { UseMutationResult<CommonModels.PositionCoreResponseDto> } Position cancelled successfully
+ * @returns { UseMutationResult<PositionsModels.PositionCoreResponseDto> } Position cancelled successfully
  * @statusCodes [200, 400, 401, 403, 404]
  */
 export const useCancel = (options?: AppMutationOptions<typeof cancel, { officeId: string, positionId: string }> & MutationEffectsOptions) => {
@@ -565,6 +560,7 @@ export const useCancel = (options?: AppMutationOptions<typeof cancel, { officeId
       return cancel(officeId, positionId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, positionId } = variables;
       const updateKeys = [keys.get(officeId, positionId)];
@@ -581,7 +577,7 @@ export const useCancel = (options?: AppMutationOptions<typeof cancel, { officeId
  * @param { string } officeId Path parameter
  * @param { string } positionId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
- * @returns { UseMutationResult<CommonModels.PositionCoreResponseDto> } Position reverted successfully
+ * @returns { UseMutationResult<PositionsModels.PositionCoreResponseDto> } Position reverted successfully
  * @statusCodes [200, 400, 401, 403, 404]
  */
 export const useRevertCancel = (options?: AppMutationOptions<typeof revertCancel, { officeId: string, positionId: string }> & MutationEffectsOptions) => {
@@ -595,6 +591,7 @@ export const useRevertCancel = (options?: AppMutationOptions<typeof revertCancel
       return revertCancel(officeId, positionId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, positionId } = variables;
       const updateKeys = [keys.get(officeId, positionId)];
@@ -626,6 +623,7 @@ export const useLinkChild = (options?: AppMutationOptions<typeof linkChild, { of
       return linkChild(officeId, positionId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -655,6 +653,7 @@ export const useUnlinkChild = (options?: AppMutationOptions<typeof unlinkChild, 
       return unlinkChild(officeId, positionId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -676,7 +675,6 @@ export const useUnlinkChild = (options?: AppMutationOptions<typeof unlinkChild, 
  * @statusCodes [200, 401]
  */
 export const useListChild = <TData>({ officeId, positionId, limit, page, cursor }: { officeId: string, positionId: string, limit: number, page?: number, cursor?: string }, options?: AppQueryOptions<typeof listChild, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -702,7 +700,6 @@ export const useListChild = <TData>({ officeId, positionId, limit, page, cursor 
  * @statusCodes [200, 401]
  */
 export const useListChildInfinite = <TData>({ officeId, positionId, limit, cursor }: { officeId: string, positionId: string, limit: number, cursor?: string }, options?: AppInfiniteQueryOptions<typeof listChild, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({

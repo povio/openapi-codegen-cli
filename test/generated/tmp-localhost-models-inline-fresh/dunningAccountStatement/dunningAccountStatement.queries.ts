@@ -1,7 +1,7 @@
 import { AppRestClient } from "@/data/app-rest-client";
 import { z } from "zod";
 import { ZodExtended } from "@/data/zod.extended";
-import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, UseQueryResult, useInfiniteQuery, UseInfiniteQueryResult, useMutation, UseMutationResult } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
 import { useAclCheck } from "@/data/acl/useAclCheck";
@@ -72,7 +72,6 @@ export const keys = {
  * @statusCodes [200, 401]
  */
 export const useDataGenFake = <TData>(options?: AppQueryOptions<typeof dataGenFake, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
   
   return useQuery({
     queryKey: keys.dataGenFake(),
@@ -88,15 +87,14 @@ export const useDataGenFake = <TData>(options?: AppQueryOptions<typeof dataGenFa
  * @param { string } officeId Path parameter
  * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
  * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): invoiceNumber, issuingDate, invoiceType, amount, netAmount, currencyNotation, dueDate, status, paidOn, serviceDate, internalNumber, positionNumber, invoiceDirection, receiver, receiverCountry, paidAmount, totalVat, dunningBlock, invoiceInReview, isInvoiceOk, isVatOk, comments, salesRepName, isExportedToBookkeeping, createdAt, customerReferenceOverride, externalSystemId. Example: `invoiceNumber`
- * @param { CommonModels.OfficeInvoiceFilterDto } filter Query parameter
+ * @param { DunningAccountStatementModels.OfficeInvoiceFilterDto } filter Query parameter
  * @param { number } page Query parameter. 1-indexed page number to begin from
  * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppQueryOptions } options Query options
  * @returns { UseQueryResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
  */
-export const useGenerateAccountStatement = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: CommonModels.OfficeInvoiceFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof generateAccountStatement, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
+export const useGenerateAccountStatement = <TData>({ officeId, limit, order, filter, page, cursor }: { officeId: string, limit: number, order?: string, filter?: DunningAccountStatementModels.OfficeInvoiceFilterDto, page?: number, cursor?: string }, options?: AppQueryOptions<typeof generateAccountStatement, TData>) => {
   const { checkAcl } = useAclCheck();
   
   return useQuery({
@@ -115,14 +113,14 @@ export const useGenerateAccountStatement = <TData>({ officeId, limit, order, fil
  * @param { string } officeId Path parameter
  * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
  * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): invoiceNumber, issuingDate, invoiceType, amount, netAmount, currencyNotation, dueDate, status, paidOn, serviceDate, internalNumber, positionNumber, invoiceDirection, receiver, receiverCountry, paidAmount, totalVat, dunningBlock, invoiceInReview, isInvoiceOk, isVatOk, comments, salesRepName, isExportedToBookkeeping, createdAt, customerReferenceOverride, externalSystemId. Example: `invoiceNumber`
- * @param { CommonModels.OfficeInvoiceFilterDto } filter Query parameter
+ * @param { DunningAccountStatementModels.OfficeInvoiceFilterDto } filter Query parameter
  * @param { number } page Query parameter. 1-indexed page number to begin from
  * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
  * @returns { UseMutationResult<AxiosResponse<z.instanceof(Blob)>> } 
  * @statusCodes [200, 401]
  */
-export const useGenerateAccountStatementMutation = (options?: AppMutationOptions<typeof generateAccountStatement, { officeId: string, limit: number, order?: string, filter?: CommonModels.OfficeInvoiceFilterDto, page?: number, cursor?: string }> & MutationEffectsOptions) => {
+export const useGenerateAccountStatementMutation = (options?: AppMutationOptions<typeof generateAccountStatement, { officeId: string, limit: number, order?: string, filter?: DunningAccountStatementModels.OfficeInvoiceFilterDto, page?: number, cursor?: string }> & MutationEffectsOptions) => {
   const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
@@ -133,6 +131,7 @@ export const useGenerateAccountStatementMutation = (options?: AppMutationOptions
       return generateAccountStatement(officeId, limit, order, filter, page, cursor)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       const { officeId, limit } = variables;
       const updateKeys = [keys.generateAccountStatement(officeId, limit)];
@@ -149,15 +148,14 @@ export const useGenerateAccountStatementMutation = (options?: AppMutationOptions
  * @param { string } officeId Path parameter
  * @param { number } limit Query parameter. Items per response. Minimum: `1`. Maximum: `100`. Default: `20`
  * @param { string } order Query parameter. Order by fields (comma separated with +/- prefix): invoiceNumber, issuingDate, invoiceType, amount, netAmount, currencyNotation, dueDate, status, paidOn, serviceDate, internalNumber, positionNumber, invoiceDirection, receiver, receiverCountry, paidAmount, totalVat, dunningBlock, invoiceInReview, isInvoiceOk, isVatOk, comments, salesRepName, isExportedToBookkeeping, createdAt, customerReferenceOverride, externalSystemId. Example: `invoiceNumber`
- * @param { CommonModels.OfficeInvoiceFilterDto } filter Query parameter
+ * @param { DunningAccountStatementModels.OfficeInvoiceFilterDto } filter Query parameter
  * @param { number } page Query parameter. 1-indexed page number to begin from
  * @param { string } cursor Query parameter. ID of item to start after
  * @param { AppInfiniteQueryOptions } options Infinite query options
  * @returns { UseInfiniteQueryResult<z.instanceof(Blob)> } 
  * @statusCodes [200, 401]
  */
-export const useGenerateAccountStatementInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: CommonModels.OfficeInvoiceFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof generateAccountStatement, TData>) => {
-  const queryConfig = OpenApiQueryConfig.useConfig();
+export const useGenerateAccountStatementInfinite = <TData>({ officeId, limit, order, filter, cursor }: { officeId: string, limit: number, order?: string, filter?: DunningAccountStatementModels.OfficeInvoiceFilterDto, cursor?: string }, options?: AppInfiniteQueryOptions<typeof generateAccountStatement, TData>) => {
   const { checkAcl } = useAclCheck();
 
   return useInfiniteQuery({
@@ -195,6 +193,7 @@ export const useGetAccountStatementEml = (options?: AppMutationOptions<typeof ge
       return getAccountStatementEml(officeId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);

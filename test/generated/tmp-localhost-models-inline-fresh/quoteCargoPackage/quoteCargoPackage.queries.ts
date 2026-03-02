@@ -1,7 +1,7 @@
 import { AppRestClient } from "@/data/app-rest-client";
 import { z } from "zod";
 import { ZodExtended } from "@/data/zod.extended";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, UseMutationResult } from "@tanstack/react-query";
 import { QueryModule } from "@/data/queryModules";
 import { MutationEffectsOptions, useMutationEffects } from "@/data/useMutationEffects";
 import { useAclCheck } from "@/data/acl/useAclCheck";
@@ -65,12 +65,12 @@ export const moduleName = QueryModule.QuoteCargoPackage;
  * @param { string } officeId Path parameter
  * @param { string } quoteId Path parameter
  * @param { string } cargoId Path parameter
- * @param { CommonModels.CreatePositionCargoPackageDTO } data Body parameter
+ * @param { QuoteCargoPackageModels.CreatePositionCargoPackageDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
- * @returns { UseMutationResult<CommonModels.PositionCargoPackageResponseDTO> } 
+ * @returns { UseMutationResult<QuoteCargoPackageModels.PositionCargoPackageResponseDTO> } 
  * @statusCodes [201, 401]
  */
-export const useCreatePackage = (options?: AppMutationOptions<typeof createPackage, { officeId: string, quoteId: string, cargoId: string, data: CommonModels.CreatePositionCargoPackageDTO }> & MutationEffectsOptions) => {
+export const useCreatePackage = (options?: AppMutationOptions<typeof createPackage, { officeId: string, quoteId: string, cargoId: string, data: QuoteCargoPackageModels.CreatePositionCargoPackageDTO }> & MutationEffectsOptions) => {
   const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
@@ -81,6 +81,7 @@ export const useCreatePackage = (options?: AppMutationOptions<typeof createPacka
       return createPackage(officeId, quoteId, cargoId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -96,12 +97,12 @@ export const useCreatePackage = (options?: AppMutationOptions<typeof createPacka
  * @param { string } quoteId Path parameter
  * @param { string } cargoId Path parameter
  * @param { string } packageId Path parameter
- * @param { CommonModels.UpdatePositionCargoPackageDTO } data Body parameter
+ * @param { QuoteCargoPackageModels.UpdatePositionCargoPackageDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
- * @returns { UseMutationResult<CommonModels.PositionCargoPackageResponseDTO> } 
+ * @returns { UseMutationResult<QuoteCargoPackageModels.PositionCargoPackageResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useUpdatePackage = (options?: AppMutationOptions<typeof updatePackage, { officeId: string, quoteId: string, cargoId: string, packageId: string, data: CommonModels.UpdatePositionCargoPackageDTO }> & MutationEffectsOptions) => {
+export const useUpdatePackage = (options?: AppMutationOptions<typeof updatePackage, { officeId: string, quoteId: string, cargoId: string, packageId: string, data: QuoteCargoPackageModels.UpdatePositionCargoPackageDTO }> & MutationEffectsOptions) => {
   const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
@@ -112,6 +113,7 @@ export const useUpdatePackage = (options?: AppMutationOptions<typeof updatePacka
       return updatePackage(officeId, quoteId, cargoId, packageId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -142,6 +144,7 @@ export const useDeletePackage = (options?: AppMutationOptions<typeof deletePacka
       return deletePackage(officeId, quoteId, cargoId, packageId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -158,7 +161,7 @@ export const useDeletePackage = (options?: AppMutationOptions<typeof deletePacka
  * @param { string } cargoId Path parameter
  * @param { string } packageId Path parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
- * @returns { UseMutationResult<CommonModels.PositionCargoPackageResponseDTO> } 
+ * @returns { UseMutationResult<QuoteCargoPackageModels.PositionCargoPackageResponseDTO> } 
  * @statusCodes [201, 401]
  */
 export const useDuplicatePackage = (options?: AppMutationOptions<typeof duplicatePackage, { officeId: string, quoteId: string, cargoId: string, packageId: string }> & MutationEffectsOptions) => {
@@ -172,6 +175,7 @@ export const useDuplicatePackage = (options?: AppMutationOptions<typeof duplicat
       return duplicatePackage(officeId, quoteId, cargoId, packageId)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
@@ -187,12 +191,12 @@ export const useDuplicatePackage = (options?: AppMutationOptions<typeof duplicat
  * @param { string } quoteId Path parameter
  * @param { string } cargoId Path parameter
  * @param { string } packageId Path parameter
- * @param { CommonModels.MovePositionCargoPackageRequestDTO } data Body parameter
+ * @param { QuoteCargoPackageModels.MovePositionCargoPackageRequestDTO } data Body parameter
  * @param { AppMutationOptions & MutationEffectsOptions } options Mutation options
- * @returns { UseMutationResult<CommonModels.PositionCargoPackageResponseDTO> } 
+ * @returns { UseMutationResult<QuoteCargoPackageModels.PositionCargoPackageResponseDTO> } 
  * @statusCodes [200, 401]
  */
-export const useMovePackage = (options?: AppMutationOptions<typeof movePackage, { officeId: string, quoteId: string, cargoId: string, packageId: string, data: CommonModels.MovePositionCargoPackageRequestDTO }> & MutationEffectsOptions) => {
+export const useMovePackage = (options?: AppMutationOptions<typeof movePackage, { officeId: string, quoteId: string, cargoId: string, packageId: string, data: QuoteCargoPackageModels.MovePositionCargoPackageRequestDTO }> & MutationEffectsOptions) => {
   const queryConfig = OpenApiQueryConfig.useConfig();
   const { checkAcl } = useAclCheck();
   const { runMutationEffects } = useMutationEffects({ currentModule: moduleName });
@@ -203,6 +207,7 @@ export const useMovePackage = (options?: AppMutationOptions<typeof movePackage, 
       return movePackage(officeId, quoteId, cargoId, packageId, data)
     },
     ...options,
+    onError: options?.onError ?? queryConfig.onError,
     onSuccess: async (resData, variables, onMutateResult, context) => {
       await runMutationEffects(resData, variables, options);
       options?.onSuccess?.(resData, variables, onMutateResult, context);
