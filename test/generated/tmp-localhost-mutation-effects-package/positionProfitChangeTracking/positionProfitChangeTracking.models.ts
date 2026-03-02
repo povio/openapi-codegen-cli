@@ -1,0 +1,21 @@
+import { CommonModels } from "@/data/common/common.models";
+
+export namespace PositionProfitChangeTrackingModels {
+  export const PositionProfitChangeTrackingFindProfitChangeGroupsResponseSchema = CommonModels.PositionProfitChangeTrackingFindProfitChangeGroupsResponseSchema;
+  export const PositionProfitChangeTrackingFindProfitChangeGroupsOrderParamEnumSchema = CommonModels.PositionProfitChangeTrackingFindProfitChangeGroupsOrderParamEnumSchema;
+  export const PositionProfitChangeTrackingFilterDtoSchema = CommonModels.PositionProfitChangeTrackingFilterDtoSchema;
+  export const PositionAccountProfitChangeGroupDetailDtoSchema = CommonModels.PositionAccountProfitChangeGroupDetailDtoSchema;
+  export const PaginationDtoSchema = CommonModels.PaginationDtoSchema;
+  export const PositionAccountProfitChangeGroupDtoSchema = CommonModels.PositionAccountProfitChangeGroupDtoSchema;
+  export const UserPreviewDtoSchema = CommonModels.UserPreviewDtoSchema;
+  export const PositionAccountProfitChangeEntryDtoSchema = CommonModels.PositionAccountProfitChangeEntryDtoSchema;
+  export type PositionProfitChangeTrackingFindProfitChangeGroupsResponse = CommonModels.PositionProfitChangeTrackingFindProfitChangeGroupsResponse;
+  export type PositionProfitChangeTrackingFindProfitChangeGroupsOrderParamEnum = CommonModels.PositionProfitChangeTrackingFindProfitChangeGroupsOrderParamEnum;
+  export type PositionProfitChangeTrackingFilterDto = CommonModels.PositionProfitChangeTrackingFilterDto;
+  export type PositionAccountProfitChangeGroupDetailDto = CommonModels.PositionAccountProfitChangeGroupDetailDto;
+  export type PaginationDto = CommonModels.PaginationDto;
+  export type PositionAccountProfitChangeGroupDto = CommonModels.PositionAccountProfitChangeGroupDto;
+  export type UserPreviewDto = CommonModels.UserPreviewDto;
+  export type PositionAccountProfitChangeEntryDto = CommonModels.PositionAccountProfitChangeEntryDto;
+  export const PositionProfitChangeTrackingFindProfitChangeGroupsOrderParamEnum = CommonModels.PositionProfitChangeTrackingFindProfitChangeGroupsOrderParamEnum;
+}

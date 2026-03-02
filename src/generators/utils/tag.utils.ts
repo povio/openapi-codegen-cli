@@ -21,3 +21,14 @@ export function getEndpointTag(endpoint: Endpoint, options: GenerateOptions) {
 export function isTagExcluded(tag: string, options: GenerateOptions) {
   return options.excludeTags.some((excludeTag) => excludeTag.toLowerCase() === tag.toLowerCase());
 }
+
+export function shouldInlineEndpointsForTag(tag: string, options: GenerateOptions) {
+  if (!options.inlineEndpoints) {
+    return false;
+  }
+
+  const isExcludedModule = (options.inlineEndpointsExcludeModules ?? []).some(
+    (moduleName) => formatTag(moduleName).toLowerCase() === tag.toLowerCase(),
+  );
+  return !isExcludedModule;
+}

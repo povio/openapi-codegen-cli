@@ -1,6 +1,6 @@
 {
   "name": "@povio/openapi-codegen-cli",
-  "version": "2.0.8-rc.5",
+  "version": "2.0.8-rc.23",
   "keywords": [
     "codegen",
     "openapi",
@@ -16,58 +16,72 @@
     "url": "git+https://github.com/povio/openapi-codegen-cli.git"
   },
   "bin": {
-    "openapi-codegen": "./dist/sh.js"
+    "openapi-codegen": "./dist/sh.mjs"
   },
   "files": [
     "README.md",
     "dist/*",
-    "src/assets/**",
-    "src/generators/templates/**"
+    "src/assets/**"
   ],
+  "type": "module",
   "main": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
+  "types": "./dist/index.d.mts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.mjs"
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    },
+    "./vite": {
+      "types": "./dist/vite.d.mts",
+      "import": "./dist/vite.mjs"
     },
     "./generator": {
-      "types": "./dist/generator.d.ts",
-      "import": "./dist/generator.js",
-      "require": "./dist/generator.js"
+      "types": "./dist/generator.d.mts",
+      "import": "./dist/generator.mjs"
     },
     "./acl": {
-      "types": "./dist/acl.d.ts",
-      "import": "./dist/acl.mjs",
-      "require": "./dist/acl.mjs"
+      "types": "./dist/acl.d.mts",
+      "import": "./dist/acl.mjs"
+    },
+    "./zod": {
+      "types": "./dist/zod.d.mts",
+      "import": "./dist/zod.mjs"
     }
   },
   "scripts": {
     "start": "node --import tsx ./src/sh.ts",
     "test": "vitest run",
     "test:watch": "vitest",
-    "build:clean": "rm -rf ./dist",
-    "build:client": "vite build",
-    "build:cli": "node ./esbuild.mjs && chmod +x ./dist/sh.js",
-    "build": "yarn build:clean && yarn build:cli && yarn build:client",
-    "start:dist": "node ./dist/sh.js",
+    "build": "tsdown",
+    "start:dist": "node ./dist/sh.mjs",
+    "gen:base": "rm -rf ./test/generated/base && mkdir -p ./test/generated/base && pnpm start generate --config ./test/config.mjs --output ./test/generated/base --no-prettier",
+    "gen:next": "rm -rf ./test/generated/next && mkdir -p ./test/generated/next && pnpm start generate --config ./test/config.mjs --output ./test/generated/next --no-prettier",
+    "test:generated-eq": "vitest run ./src/generators/generated-output-eq.test.ts",
+    "gen:verify": "pnpm gen:base && pnpm gen:next && pnpm test:generated-eq",
     "typecheck": "tsc --noEmit",
     "lint": "oxlint --type-aware --fix",
     "lint:check": "oxlint --type-aware",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
-    "check": "yarn typecheck && yarn lint && yarn test",
-    "push": "yarn exec ./scripts/publish.sh",
-    "dev:generate": "rm -rf ./output && yarn start generate --config ./test/config.ts",
-    "dev:check": "yarn start check --config ./test/config.ts"
+    "check": "pnpm typecheck && pnpm lint && pnpm test",
+    "push": "node ./scripts/publish.mjs",
+    "dev:generate": "rm -rf ./output && pnpm start generate --config ./test/config.mjs",
+    "dev:check": "pnpm start check --config ./test/config.mjs",
+    "snapshot:openapi-localhost": "node ./scripts/snapshot-openapi-localhost.mjs",
+    "bench:vite-codegen": "node ./scripts/benchmark-vite-codegen.mjs"
   },
   "dependencies": {
-    "i18next": "^25.8.11",
-    "import-fresh": "^3.3.1"
+    "@apidevtools/swagger-parser": "^10.1.0",
+    "i18next": "^25.8.13",
+    "import-fresh": "^3.3.1",
+    "prompt-sync": "^4.2.0",
+    "reflect-metadata": "^0.2.2",
+    "ts-pattern": "^5.9.0",
+    "typescript": "^5.9.3",
+    "yargs": "^18.0.0",
+    "openapi-types": "^12.1.3"
   },
   "devDependencies": {
-    "@apidevtools/swagger-parser": "^10.1.0",
     "@casl/ability": "^6.8.0",
     "@casl/react": "^5.0.1",
     "@tanstack/react-query": "~5.90.21",
@@ -76,25 +90,16 @@
     "@types/react": "^19.2.14",
     "@types/yargs": "^17.0.35",
     "@vitejs/plugin-react": "^5.1.4",
-    "axios": "^1.13.5",
-    "esbuild": "0.27.3",
-    "handlebars": "^4.7.8",
-    "openapi-types": "^12.1.3",
     "oxfmt": "^0.34.0",
-    "oxlint": "^1.49.0",
-    "oxlint-tsgolint": "^0.14.1",
-    "prompt-sync": "^4.2.0",
+    "oxlint": "^1.50.0",
+    "oxlint-tsgolint": "^0.15.0",
     "react": "^19.2.4",
-    "reflect-metadata": "^0.2.2",
-    "ts-pattern": "^5.9.0",
+    "tsdown": "^0.21.0-beta.1",
     "tsx": "^4.21.0",
     "type-fest": "^5.4.4",
-    "typescript": "^5.9.3",
-    "vite": "^7.3.1",
+    "vite": "npm:rolldown-vite@^7.3.1",
     "vite-plugin-dts": "^4.5.4",
-    "vitest": "4.0.18",
-    "yargs": "^18.0.0",
-    "zod": "^4.3.6"
+    "vitest": "4.0.18"
   },
   "peerDependencies": {
     "@casl/ability": "^6.7.3",
@@ -102,6 +107,7 @@
     "@tanstack/react-query": "^5.90.21",
     "axios": "^1.13.1",
     "react": "^19.1.0",
+    "vite": "^6.0.0 || ^7.0.0",
     "zod": "^4.1.12"
   },
   "peerDependenciesMeta": {
@@ -110,12 +116,14 @@
     },
     "@casl/react": {
       "optional": true
+    },
+    "vite": {
+      "optional": true
     }
   },
   "engines": {
     "node": ">= 14",
-    "npm": ">= 8",
-    "yarn": ">= 3.2"
+    "pnpm": ">= 9"
   },
-  "packageManager": "yarn@4.2.2"
+  "packageManager": "pnpm@10.4.0"
 }

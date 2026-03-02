@@ -1,0 +1,47 @@
+import { CommonModels } from "@/data/common/common.models";
+
+export namespace PositionAccountItemsModels {
+  export const PositionAccountItemsCreateResponseSchema = CommonModels.PositionAccountItemsCreateResponseSchema;
+  export const CreatePositionAccountItemsRequestDtoSchema = CommonModels.CreatePositionAccountItemsRequestDtoSchema;
+  export const DeletePositionAccountItemsRequestDtoSchema = CommonModels.DeletePositionAccountItemsRequestDtoSchema;
+  export const PositionAccountItemsUpdateResponseSchema = CommonModels.PositionAccountItemsUpdateResponseSchema;
+  export const UpdatePositionAccountItemsRequestDtoSchema = CommonModels.UpdatePositionAccountItemsRequestDtoSchema;
+  export const PositionAccountItemsDuplicateResponseSchema = CommonModels.PositionAccountItemsDuplicateResponseSchema;
+  export const DuplicatePositionAccountItemsRequestDtoSchema = CommonModels.DuplicatePositionAccountItemsRequestDtoSchema;
+  export const ReassignResponseSchema = CommonModels.ReassignResponseSchema;
+  export const ReassignPositionAccountItemsRequestDtoSchema = CommonModels.ReassignPositionAccountItemsRequestDtoSchema;
+  export const ReorderPositionAccountItemRequestDtoSchema = CommonModels.ReorderPositionAccountItemRequestDtoSchema;
+  export const PositionAccountItemDtoResponseSchema = CommonModels.PositionAccountItemDtoResponseSchema;
+  export const PositionAccountItemTypeEnumSchema = CommonModels.PositionAccountItemTypeEnumSchema;
+  export const PositionChargeDtoResponseSchema = CommonModels.PositionChargeDtoResponseSchema;
+  export const PositionTextDtoResponseSchema = CommonModels.PositionTextDtoResponseSchema;
+  export const CreatePositionAccountItemRequestDtoSchema = CommonModels.CreatePositionAccountItemRequestDtoSchema;
+  export const UpdatePositionAccountItemWithIdRequestDtoSchema = CommonModels.UpdatePositionAccountItemWithIdRequestDtoSchema;
+  export const CreatePositionChargeDataRequestDtoSchema = CommonModels.CreatePositionChargeDataRequestDtoSchema;
+  export const CreatePositionTextDataRequestDtoSchema = CommonModels.CreatePositionTextDataRequestDtoSchema;
+  export const UpdatePositionAccountItemRequestDtoSchema = CommonModels.UpdatePositionAccountItemRequestDtoSchema;
+  export const UpdatePositionChargeDataRequestDtoSchema = CommonModels.UpdatePositionChargeDataRequestDtoSchema;
+  export const UpdatePositionTextDataRequestDtoSchema = CommonModels.UpdatePositionTextDataRequestDtoSchema;
+  export type PositionAccountItemsCreateResponse = CommonModels.PositionAccountItemsCreateResponse;
+  export type CreatePositionAccountItemsRequestDto = CommonModels.CreatePositionAccountItemsRequestDto;
+  export type DeletePositionAccountItemsRequestDto = CommonModels.DeletePositionAccountItemsRequestDto;
+  export type PositionAccountItemsUpdateResponse = CommonModels.PositionAccountItemsUpdateResponse;
+  export type UpdatePositionAccountItemsRequestDto = CommonModels.UpdatePositionAccountItemsRequestDto;
+  export type PositionAccountItemsDuplicateResponse = CommonModels.PositionAccountItemsDuplicateResponse;
+  export type DuplicatePositionAccountItemsRequestDto = CommonModels.DuplicatePositionAccountItemsRequestDto;
+  export type ReassignResponse = CommonModels.ReassignResponse;
+  export type ReassignPositionAccountItemsRequestDto = CommonModels.ReassignPositionAccountItemsRequestDto;
+  export type ReorderPositionAccountItemRequestDto = CommonModels.ReorderPositionAccountItemRequestDto;
+  export type PositionAccountItemDtoResponse = CommonModels.PositionAccountItemDtoResponse;
+  export type PositionAccountItemTypeEnum = CommonModels.PositionAccountItemTypeEnum;
+  export type PositionChargeDtoResponse = CommonModels.PositionChargeDtoResponse;
+  export type PositionTextDtoResponse = CommonModels.PositionTextDtoResponse;
+  export type CreatePositionAccountItemRequestDto = CommonModels.CreatePositionAccountItemRequestDto;
+  export type UpdatePositionAccountItemWithIdRequestDto = CommonModels.UpdatePositionAccountItemWithIdRequestDto;
+  export type CreatePositionChargeDataRequestDto = CommonModels.CreatePositionChargeDataRequestDto;
+  export type CreatePositionTextDataRequestDto = CommonModels.CreatePositionTextDataRequestDto;
+  export type UpdatePositionAccountItemRequestDto = CommonModels.UpdatePositionAccountItemRequestDto;
+  export type UpdatePositionChargeDataRequestDto = CommonModels.UpdatePositionChargeDataRequestDto;
+  export type UpdatePositionTextDataRequestDto = CommonModels.UpdatePositionTextDataRequestDto;
+  export const PositionAccountItemTypeEnum = CommonModels.PositionAccountItemTypeEnum;
+}

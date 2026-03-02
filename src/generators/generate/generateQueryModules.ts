@@ -1,5 +1,4 @@
 import { GenerateType, GenerateTypeParams } from "@/generators/types/generate";
-import { getHbsTemplateDelegate } from "@/generators/utils/hbs/hbs-template.utils";
 import { getNamespaceName } from "@/generators/utils/namespace.utils";
 
 export function generateQueryModules({ resolver, data }: Omit<GenerateTypeParams, "tag">) {
@@ -17,7 +16,11 @@ export function generateQueryModules({ resolver, data }: Omit<GenerateTypeParams
     });
   });
 
-  const hbsTemplate = getHbsTemplateDelegate(resolver, "query-modules");
-
-  return hbsTemplate({ modules });
+  const lines: string[] = [];
+  lines.push("export const enum QueryModule {");
+  for (const module of modules) {
+    lines.push(`   ${module.tag} = "${module.namespace}",`);
+  }
+  lines.push("}");
+  return lines.join("\n");
 }

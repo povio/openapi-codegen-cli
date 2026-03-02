@@ -1,9 +1,7 @@
-import { ACL_APP_ABILITY_FILE, ACL_CHECK_FILE } from "@/generators/const/acl.const";
+import { ACL_APP_ABILITY_FILE } from "@/generators/const/acl.const";
 import {
   APP_REST_CLIENT_FILE,
-  MUTATION_EFFECTS_FILE,
   QUERY_MODULES_FILE,
-  ZOD_EXTENDED_FILE,
 } from "@/generators/const/deps.const";
 import { DEFAULT_GENERATE_OPTIONS } from "@/generators/const/options.const";
 import { GenerateFile, GenerateType } from "@/generators/types/generate";
@@ -53,16 +51,8 @@ export function getQueryModulesImportPath(options: GenerateOptions) {
   return `${getImportPath(options)}${QUERY_MODULES_FILE.fileName}`;
 }
 
-export function getMutationEffectsImportPath(options: GenerateOptions) {
-  return `${getImportPath(options)}${MUTATION_EFFECTS_FILE.fileName}`;
-}
-
-export function getAclCheckImportPath(options: GenerateOptions) {
-  return `${getImportPath(options)}${ACL_CHECK_FILE.fileName}`;
-}
-
-export function getZodExtendedImportPath(options: GenerateOptions) {
-  return `${getImportPath(options)}${ZOD_EXTENDED_FILE.fileName}`;
+export function getQueryTypesImportPath(options: GenerateOptions) {
+  return options.queryTypesImportPath;
 }
 
 export function getAppAbilitiesImportPath(options: GenerateOptions) {

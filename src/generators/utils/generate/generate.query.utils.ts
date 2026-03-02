@@ -14,6 +14,18 @@ export const getQueryName = (endpoint: Endpoint, mutation?: boolean) => {
 export const getInfiniteQueryName = (endpoint: Endpoint) =>
   `use${capitalize(snakeToCamel(endpoint.operationName))}Infinite`;
 
+export const getQueryOptionsName = (endpoint: Endpoint) =>
+  `${snakeToCamel(endpoint.operationName)}QueryOptions`;
+
+export const getInfiniteQueryOptionsName = (endpoint: Endpoint) =>
+  `${snakeToCamel(endpoint.operationName)}InfiniteQueryOptions`;
+
+export const getPrefetchQueryName = (endpoint: Endpoint) =>
+  `prefetch${capitalize(snakeToCamel(endpoint.operationName))}`;
+
+export const getPrefetchInfiniteQueryName = (endpoint: Endpoint) =>
+  `prefetch${capitalize(snakeToCamel(endpoint.operationName))}Infinite`;
+
 export const getImportedQueryName = (endpoint: Endpoint, options: GenerateOptions) => {
   const namespacePrefix = options.tsNamespaces
     ? `${getNamespaceName({ type: GenerateType.Queries, tag: getEndpointTag(endpoint, options), options })}.`

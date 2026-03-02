@@ -1,0 +1,41 @@
+import { CommonModels } from "@/data/common/common.models";
+
+export namespace EmploymentModels {
+  export const EmploymentResponseSchema = CommonModels.EmploymentResponseSchema;
+  export const EmploymentCreateRequestSchema = CommonModels.EmploymentCreateRequestSchema;
+  export const EmploymentListResponseSchema = CommonModels.EmploymentListResponseSchema;
+  export const EmploymentListOrderParamEnumSchema = CommonModels.EmploymentListOrderParamEnumSchema;
+  export const EmploymentListPopulateParamSchema = CommonModels.EmploymentListPopulateParamSchema;
+  export const EmploymentFilterDtoSchema = CommonModels.EmploymentFilterDtoSchema;
+  export const EmploymentListRolesResponseSchema = CommonModels.EmploymentListRolesResponseSchema;
+  export const EmploymentUpdateRolesResponseSchema = CommonModels.EmploymentUpdateRolesResponseSchema;
+  export const EmploymentRoleMembershipsUpdateRequestSchema = CommonModels.EmploymentRoleMembershipsUpdateRequestSchema;
+  export const UpdateEmploymentRequestDtoSchema = CommonModels.UpdateEmploymentRequestDtoSchema;
+  export const EmployeeOfficeResponseSchema = CommonModels.EmployeeOfficeResponseSchema;
+  export const EmploymentEmployeeResponseSchema = CommonModels.EmploymentEmployeeResponseSchema;
+  export const EmployeeRoleResponseSchema = CommonModels.EmployeeRoleResponseSchema;
+  export const PaginationDtoSchema = CommonModels.PaginationDtoSchema;
+  export const EmployeeRoleContextSchema = CommonModels.EmployeeRoleContextSchema;
+  export const EmploymentPaginationPopulateFieldsSchema = CommonModels.EmploymentPaginationPopulateFieldsSchema;
+  export const EmploymentRoleMemberResponseSchema = CommonModels.EmploymentRoleMemberResponseSchema;
+  export type EmploymentResponse = CommonModels.EmploymentResponse;
+  export type EmploymentCreateRequest = CommonModels.EmploymentCreateRequest;
+  export type EmploymentListResponse = CommonModels.EmploymentListResponse;
+  export type EmploymentListOrderParamEnum = CommonModels.EmploymentListOrderParamEnum;
+  export type EmploymentListPopulateParam = CommonModels.EmploymentListPopulateParam;
+  export type EmploymentFilterDto = CommonModels.EmploymentFilterDto;
+  export type EmploymentListRolesResponse = CommonModels.EmploymentListRolesResponse;
+  export type EmploymentUpdateRolesResponse = CommonModels.EmploymentUpdateRolesResponse;
+  export type EmploymentRoleMembershipsUpdateRequest = CommonModels.EmploymentRoleMembershipsUpdateRequest;
+  export type UpdateEmploymentRequestDto = CommonModels.UpdateEmploymentRequestDto;
+  export type EmployeeOfficeResponse = CommonModels.EmployeeOfficeResponse;
+  export type EmploymentEmployeeResponse = CommonModels.EmploymentEmployeeResponse;
+  export type EmployeeRoleResponse = CommonModels.EmployeeRoleResponse;
+  export type PaginationDto = CommonModels.PaginationDto;
+  export type EmployeeRoleContext = CommonModels.EmployeeRoleContext;
+  export type EmploymentPaginationPopulateFields = CommonModels.EmploymentPaginationPopulateFields;
+  export type EmploymentRoleMemberResponse = CommonModels.EmploymentRoleMemberResponse;
+  export const EmploymentListOrderParamEnum = CommonModels.EmploymentListOrderParamEnum;
+  export const EmployeeRoleContext = CommonModels.EmployeeRoleContext;
+  export const EmploymentPaginationPopulateFields = CommonModels.EmploymentPaginationPopulateFields;
+}

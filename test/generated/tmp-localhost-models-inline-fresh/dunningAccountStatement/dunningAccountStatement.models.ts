@@ -1,0 +1,40 @@
+import { CommonModels } from "@/data/common/common.models";
+
+export namespace DunningAccountStatementModels {
+  export const AccountStatementPdfPayloadDTOSchema = CommonModels.AccountStatementPdfPayloadDTOSchema;
+  export const GenerateAccountStatementOrderParamEnumSchema = CommonModels.GenerateAccountStatementOrderParamEnumSchema;
+  export const OfficeInvoiceFilterDtoSchema = CommonModels.OfficeInvoiceFilterDtoSchema;
+  export const OfficeInvoiceListQueryDtoSchema = CommonModels.OfficeInvoiceListQueryDtoSchema;
+  export const AccountStatementPdfPayloadBusinessPartnerDtoSchema = CommonModels.AccountStatementPdfPayloadBusinessPartnerDtoSchema;
+  export const AccountStatementInvoicesByCurrencyAndDirectionDtoSchema = CommonModels.AccountStatementInvoicesByCurrencyAndDirectionDtoSchema;
+  export const AccountStatementPdfPayloadBankAccountDtoSchema = CommonModels.AccountStatementPdfPayloadBankAccountDtoSchema;
+  export const ConfigBlockDtoSchema = CommonModels.ConfigBlockDtoSchema;
+  export const DateRangeDtoSchema = CommonModels.DateRangeDtoSchema;
+  export const InvoiceDirectionEnumSchema = CommonModels.InvoiceDirectionEnumSchema;
+  export const InvoiceTypeEnumSchema = CommonModels.InvoiceTypeEnumSchema;
+  export const BooleanFilterEnumSchema = CommonModels.BooleanFilterEnumSchema;
+  export const InvoiceStatusEnumSchema = CommonModels.InvoiceStatusEnumSchema;
+  export const AccountStatementPdfPayloadInvoiceDtoSchema = CommonModels.AccountStatementPdfPayloadInvoiceDtoSchema;
+  export const LocaleEnumSchema = CommonModels.LocaleEnumSchema;
+  export type AccountStatementPdfPayloadDTO = CommonModels.AccountStatementPdfPayloadDTO;
+  export type GenerateAccountStatementOrderParamEnum = CommonModels.GenerateAccountStatementOrderParamEnum;
+  export type OfficeInvoiceFilterDto = CommonModels.OfficeInvoiceFilterDto;
+  export type OfficeInvoiceListQueryDto = CommonModels.OfficeInvoiceListQueryDto;
+  export type AccountStatementPdfPayloadBusinessPartnerDto = CommonModels.AccountStatementPdfPayloadBusinessPartnerDto;
+  export type AccountStatementInvoicesByCurrencyAndDirectionDto = CommonModels.AccountStatementInvoicesByCurrencyAndDirectionDto;
+  export type AccountStatementPdfPayloadBankAccountDto = CommonModels.AccountStatementPdfPayloadBankAccountDto;
+  export type ConfigBlockDto = CommonModels.ConfigBlockDto;
+  export type DateRangeDto = CommonModels.DateRangeDto;
+  export type InvoiceDirectionEnum = CommonModels.InvoiceDirectionEnum;
+  export type InvoiceTypeEnum = CommonModels.InvoiceTypeEnum;
+  export type BooleanFilterEnum = CommonModels.BooleanFilterEnum;
+  export type InvoiceStatusEnum = CommonModels.InvoiceStatusEnum;
+  export type AccountStatementPdfPayloadInvoiceDto = CommonModels.AccountStatementPdfPayloadInvoiceDto;
+  export type LocaleEnum = CommonModels.LocaleEnum;
+  export const GenerateAccountStatementOrderParamEnum = CommonModels.GenerateAccountStatementOrderParamEnum;
+  export const InvoiceDirectionEnum = CommonModels.InvoiceDirectionEnum;
+  export const InvoiceTypeEnum = CommonModels.InvoiceTypeEnum;
+  export const BooleanFilterEnum = CommonModels.BooleanFilterEnum;
+  export const InvoiceStatusEnum = CommonModels.InvoiceStatusEnum;
+  export const LocaleEnum = CommonModels.LocaleEnum;
+}

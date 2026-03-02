@@ -3,9 +3,7 @@ import { match } from "ts-pattern";
 
 import { ALLOWED_PATH_IN } from "@/generators/const/openapi.const";
 import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
-import { getZodChain } from "@/generators/core/zod/getZodChain";
-import { getEnumZodSchemaCodeFromEnumNames, getZodSchema } from "@/generators/core/zod/getZodSchema";
-import { resolveZodSchemaName } from "@/generators/core/zod/resolveZodSchemaName";
+import { getEnumZodSchemaCodeFromEnumNames } from "@/generators/core/zod/getZodSchema";
 import { EndpointParameter } from "@/generators/types/endpoint";
 import { ParameterObject } from "@/generators/types/openapi";
 import {
@@ -18,6 +16,7 @@ import {
   getParamZodSchemaName,
   getZodSchemaOperationName,
 } from "@/generators/utils/zod-schema.utils";
+import { resolveEndpointZodSchema } from "./resolveEndpointZodSchema";
 
 export function getEndpointParameter({
   resolver,
@@ -80,23 +79,13 @@ export function getEndpointParameter({
     parameterSortingEnumSchemaName = enumZodSchemaName;
   }
 
-  const zodSchema = getZodSchema({
-    schema,
+  const zodSchemaName = resolveEndpointZodSchema({
     resolver,
+    schema,
     meta: { isRequired: paramObj.in === "path" ? true : (paramObj.required ?? false) },
     tag,
-  });
-
-  const schemaObject = resolver.resolveObject(schema);
-
-  const zodChain = getZodChain({ schema: schemaObject, meta: zodSchema.meta, options: resolver.options });
-
-  const zodSchemaName = resolveZodSchemaName({
-    schema: schemaObject,
-    zodSchema: zodSchema.assign(zodSchema.getCodeString(tag) + zodChain),
     fallbackName,
-    resolver,
-    tag,
+    composeBeforeResolve: true,
   });
 
   return {

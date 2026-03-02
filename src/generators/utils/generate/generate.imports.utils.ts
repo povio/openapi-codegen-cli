@@ -43,7 +43,10 @@ export function getModelsImports({
     getTag,
     getEntityName: (zodSchema) => getZodSchemaInferedTypeName(zodSchema, resolver.options),
     options: resolver.options,
-  });
+  }).map((importData) => ({
+    ...importData,
+    ...(resolver.options.tsNamespaces ? {} : { typeOnly: true }),
+  }));
 
   return mergeImports(resolver.options, zodSchemaImports, zodSchemaTypeImports);
 }
@@ -181,7 +184,8 @@ function getImports<T>({
 }) {
   const imports = new Map<string, Import>();
   entities.forEach((entity) => {
-    const tag = getTag(entity);
+    const tag =
+      type === GenerateType.Models && options.modelsInCommon && options.splitByTags ? currentTag : getTag(entity);
     if (!imports.has(tag)) {
       const sameTagDir = currentTag === tag;
       imports.set(tag, {
@@ -200,14 +204,29 @@ export function mergeImports(options: GenerateOptions, ...importArrs: Import[][]
   importArrs.forEach((imports) => {
     imports.forEach((importItem) => {
       if (!merged.has(importItem.from)) {
-        merged.set(importItem.from, importItem);
-      } else if (!options.tsNamespaces) {
-        merged.get(importItem.from)!.bindings.push(...importItem.bindings);
+        merged.set(importItem.from, {
+          ...importItem,
+          bindings: importItem.typeOnly ? [] : [...importItem.bindings],
+          typeBindings: [...(importItem.typeBindings ?? []), ...(importItem.typeOnly ? importItem.bindings : [])],
+        });
+      } else {
+        const existing = merged.get(importItem.from)!;
+        if (!options.tsNamespaces && !importItem.typeOnly) {
+          existing.bindings.push(...importItem.bindings);
+        }
+        existing.typeBindings = [
+          ...(existing.typeBindings ?? []),
+          ...(importItem.typeBindings ?? []),
+          ...(importItem.typeOnly ? importItem.bindings : []),
+        ];
+        existing.typeOnly = false;
       }
     });
   });
   return Array.from(merged.values()).map((importItem) => ({
     ...importItem,
     bindings: getUniqueArray(importItem.bindings),
+    typeBindings: getUniqueArray(importItem.typeBindings ?? []).filter((binding) => !importItem.bindings.includes(binding)),
+    typeOnly: Boolean(importItem.typeOnly && importItem.bindings.length === 0 && (importItem.typeBindings?.length ?? 0) > 0),
   }));
 }
