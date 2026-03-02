@@ -85,7 +85,8 @@ export function generateQueries(params: GenerateTypeParams) {
   const hasAxiosImport = hasAxiosRequestConfig || hasAxiosDefaultImport;
   const axiosImport: Import = {
     defaultImport: hasAxiosDefaultImport ? AXIOS_DEFAULT_IMPORT_NAME : undefined,
-    bindings: hasAxiosRequestConfig ? [AXIOS_REQUEST_CONFIG_TYPE] : [],
+    bindings: [],
+    typeBindings: hasAxiosRequestConfig ? [AXIOS_REQUEST_CONFIG_TYPE] : [],
     from: AXIOS_IMPORT.from,
   };
 
@@ -109,7 +110,8 @@ export function generateQueries(params: GenerateTypeParams) {
 
   const hasMutationEffectsImport = hasMutationEffects && mutationEndpoints.length > 0;
   const mutationEffectsImport: Import = {
-    bindings: [...(mutationEndpoints.length > 0 ? [MUTATION_EFFECTS.optionsType, MUTATION_EFFECTS.hookName] : [])],
+    bindings: [...(mutationEndpoints.length > 0 ? [MUTATION_EFFECTS.hookName] : [])],
+    typeBindings: [...(mutationEndpoints.length > 0 ? [MUTATION_EFFECTS.optionsType] : [])],
     from: PACKAGE_IMPORT_PATH,
   };
 
@@ -122,6 +124,8 @@ export function generateQueries(params: GenerateTypeParams) {
   const queryTypesImport: Import = {
     bindings: [
       "OpenApiQueryConfig",
+    ],
+    typeBindings: [
       ...(queryEndpoints.length > 0 ? [QUERY_OPTIONS_TYPES.query] : []),
       ...(resolver.options.infiniteQueries && infiniteQueryEndpoints.length > 0
         ? [QUERY_OPTIONS_TYPES.infiniteQuery]
@@ -313,11 +317,15 @@ function getEndpointParamMapping(
 }
 
 function renderImport(importData: Import) {
+  const namedImports = [
+    ...importData.bindings,
+    ...((importData.typeBindings ?? []).map((binding) => (importData.typeOnly ? binding : `type ${binding}`))),
+  ];
   const names = [
     ...(importData.defaultImport ? [importData.defaultImport] : []),
-    ...(importData.bindings ? [`{ ${importData.bindings.join(", ")} }`] : []),
+    ...(namedImports.length > 0 ? [`{ ${namedImports.join(", ")} }`] : []),
   ].join(", ");
-  return `import ${names} from "${importData.from}";`;
+  return `import${importData.typeOnly ? " type" : ""} ${names} from "${importData.from}";`;
 }
 
 function renderEndpointParams(

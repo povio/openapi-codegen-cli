@@ -7,6 +7,7 @@ import { Endpoint } from "./endpoint";
 export interface Import {
   defaultImport?: string;
   bindings: string[];
+  typeBindings?: string[];
   from: string;
   typeOnly?: boolean;
 }

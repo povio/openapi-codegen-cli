@@ -39,7 +39,8 @@ export function generateEndpoints({ resolver, data, tag }: GenerateTypeParams) {
   const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
   const hasAxiosImport = hasAxiosRequestConfig;
   const axiosImport: Import = {
-    bindings: hasAxiosRequestConfig ? [AXIOS_REQUEST_CONFIG_TYPE] : [],
+    bindings: [],
+    typeBindings: hasAxiosRequestConfig ? [AXIOS_REQUEST_CONFIG_TYPE] : [],
     from: AXIOS_IMPORT.from,
   };
 
@@ -125,11 +126,15 @@ export function generateEndpoints({ resolver, data, tag }: GenerateTypeParams) {
 }
 
 function renderImport(importData: Import) {
+  const namedImports = [
+    ...importData.bindings,
+    ...((importData.typeBindings ?? []).map((binding) => (importData.typeOnly ? binding : `type ${binding}`))),
+  ];
   const names = [
     ...(importData.defaultImport ? [importData.defaultImport] : []),
-    ...(importData.bindings ? [`{ ${importData.bindings.join(", ")} }`] : []),
+    ...(namedImports.length > 0 ? [`{ ${namedImports.join(", ")} }`] : []),
   ].join(", ");
-  return `import ${names} from "${importData.from}";`;
+  return `import${importData.typeOnly ? " type" : ""} ${names} from "${importData.from}";`;
 }
 
 function renderEndpointParams(

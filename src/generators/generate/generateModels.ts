@@ -182,11 +182,15 @@ function getUsedSchemaNames({
 }
 
 function renderImport(importData: Import) {
+  const namedImports = [
+    ...importData.bindings,
+    ...((importData.typeBindings ?? []).map((binding) => (importData.typeOnly ? binding : `type ${binding}`))),
+  ];
   const names = [
     ...(importData.defaultImport ? [importData.defaultImport] : []),
-    ...(importData.bindings ? [`{ ${importData.bindings.join(", ")} }`] : []),
+    ...(namedImports.length > 0 ? [`{ ${namedImports.join(", ")} }`] : []),
   ].join(", ");
-  return `import ${names} from "${importData.from}";`;
+  return `import${importData.typeOnly ? " type" : ""} ${names} from "${importData.from}";`;
 }
 
 function renderModelJsDocs({

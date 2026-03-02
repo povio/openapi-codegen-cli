@@ -24,10 +24,8 @@ export function generateAcl({ resolver, data, tag }: GenerateTypeParams) {
   const { hasAdditionalAbilityImports, modelsImports, endpoints } = aclData;
 
   const caslAbilityTupleImport: Import = {
-    bindings: [
-      CASL_ABILITY_BINDING.abilityTuple,
-      ...(hasAdditionalAbilityImports ? [CASL_ABILITY_BINDING.forcedSubject, CASL_ABILITY_BINDING.subject] : []),
-    ],
+    bindings: [...(hasAdditionalAbilityImports ? [CASL_ABILITY_BINDING.forcedSubject, CASL_ABILITY_BINDING.subject] : [])],
+    typeBindings: [CASL_ABILITY_BINDING.abilityTuple],
     from: CASL_ABILITY_IMPORT.from,
   };
 
@@ -58,13 +56,15 @@ export function generateAppAcl({ resolver, data }: Omit<GenerateTypeParams, "tag
   const { appAbilitiesType, hasAdditionalAbilityImports, modelsImports } = getAppAbilitiesType({ resolver, data });
 
   const caslAbilityTupleImport: Import = {
-    bindings: [
+    bindings: [],
+    typeBindings: [
       CASL_ABILITY_BINDING.pureAbility,
       CASL_ABILITY_BINDING.abilityTuple,
       ...(!appAbilitiesType ? [CASL_ABILITY_BINDING.subjectType] : []),
       ...(hasAdditionalAbilityImports ? [CASL_ABILITY_BINDING.forcedSubject] : []),
     ],
     from: CASL_ABILITY_IMPORT.from,
+    typeOnly: true,
   };
 
   const lines: string[] = [];
@@ -90,11 +90,15 @@ export function generateAppAcl({ resolver, data }: Omit<GenerateTypeParams, "tag
 }
 
 function renderImport(importData: Import) {
+  const namedImports = [
+    ...importData.bindings,
+    ...((importData.typeBindings ?? []).map((binding) => (importData.typeOnly ? binding : `type ${binding}`))),
+  ];
   const names = [
     ...(importData.defaultImport ? [importData.defaultImport] : []),
-    ...(importData.bindings ? [`{ ${importData.bindings.join(", ")} }`] : []),
+    ...(namedImports.length > 0 ? [`{ ${namedImports.join(", ")} }`] : []),
   ].join(", ");
-  return `import ${names} from "${importData.from}";`;
+  return `import${importData.typeOnly ? " type" : ""} ${names} from "${importData.from}";`;
 }
 
 function renderAbilityFunction(endpoint: Endpoint) {
