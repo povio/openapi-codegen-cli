@@ -12,7 +12,7 @@ import {
   AXIOS_REQUEST_CONFIG_NAME,
   AXIOS_REQUEST_CONFIG_TYPE,
 } from "@/generators/const/endpoints.const";
-import { ACL_PACKAGE_IMPORT_PATH, PACKAGE_IMPORT_PATH } from "@/generators/const/package.const";
+import { ACL_PACKAGE_IMPORT_PATH, PACKAGE_IMPORT_PATH, ZOD_PACKAGE_IMPORT_PATH } from "@/generators/const/package.const";
 import { QUERIES_MODULE_NAME, QUERY_HOOKS, QUERY_IMPORT } from "@/generators/const/queries.const";
 import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
 import { Endpoint, EndpointParameter } from "@/generators/types/endpoint";
@@ -43,10 +43,8 @@ import {
 import { getInfiniteQueryName, getQueryName } from "@/generators/utils/generate/generate.query.utils";
 import {
   getAppRestClientImportPath,
-  getMutationEffectsImportPath,
   getQueryModulesImportPath,
   getQueryTypesImportPath,
-  getZodExtendedImportPath,
 } from "@/generators/utils/generate/generate.utils";
 import {
   getImportedZodSchemaInferedTypeName,
@@ -104,7 +102,7 @@ export function generateQueries(params: GenerateTypeParams) {
   const hasMutationEffectsImport = hasMutationEffects && mutationEndpoints.length > 0;
   const mutationEffectsImport: Import = {
     bindings: [...(mutationEndpoints.length > 0 ? [MUTATION_EFFECTS.optionsType, MUTATION_EFFECTS.hookName] : [])],
-    from: getMutationEffectsImportPath(resolver.options),
+    from: PACKAGE_IMPORT_PATH,
   };
 
   const hasAclCheck = resolver.options.checkAcl && aclEndpoints.length > 0;
@@ -151,7 +149,7 @@ export function generateQueries(params: GenerateTypeParams) {
   };
   const zodExtendedImport: Import = {
     bindings: [ZOD_EXTENDED.namespace],
-    from: getZodExtendedImportPath(resolver.options),
+    from: ZOD_PACKAGE_IMPORT_PATH,
   };
 
   const modelsImports = getModelsImports({
@@ -745,7 +743,7 @@ function renderMutation({
     lines.push("  const workspaceContext = OpenApiWorkspaceContext.useContext();");
   }
   if (hasMutationEffects) {
-    lines.push(`  const { runMutationEffects } = useMutationEffects({ currentModule: ${QUERIES_MODULE_NAME} });`);
+    lines.push(`  const { runMutationEffects } = useMutationEffects<typeof ${QUERY_MODULE_ENUM}.${tag}>({ currentModule: ${QUERIES_MODULE_NAME} });`);
   }
   lines.push("");
   lines.push(`  return ${QUERY_HOOKS.mutation}({`);

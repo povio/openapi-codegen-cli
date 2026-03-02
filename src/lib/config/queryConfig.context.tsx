@@ -6,25 +6,24 @@ import type { QueryKey } from "@tanstack/react-query";
 export type QueryModule = string | number | symbol;
 
 export type InvalidationMapFunc<TData = any, TVariables = any> = (data: TData, variables: TVariables) => QueryKey[];
-export type InvalidationMap<TData = any, TVariables = any> = Record<
-  QueryModule,
-  InvalidationMapFunc<TData, TVariables>
+export type InvalidationMap<TQueryModule extends QueryModule = QueryModule, TData = any, TVariables = any> = Partial<
+  Record<TQueryModule, InvalidationMapFunc<TData, TVariables>>
 >;
 
 export namespace OpenApiQueryConfig {
-  interface Type {
+  export interface Type<TQueryModule extends QueryModule = QueryModule> {
     preferUpdate?: boolean;
     invalidateCurrentModule?: boolean;
-    invalidationMap?: InvalidationMap;
+    invalidationMap?: InvalidationMap<TQueryModule>;
     crossTabInvalidation?: boolean;
     onError?: (error: unknown) => void;
   }
 
   const Context = createContext<Type>({});
 
-  type ProviderProps = Type;
+  type ProviderProps<TQueryModule extends QueryModule = QueryModule> = Type<TQueryModule>;
 
-  export const Provider = ({
+  export function Provider<TQueryModule extends QueryModule = QueryModule>({
     preferUpdate,
     invalidateCurrentModule,
     invalidationMap,
@@ -32,17 +31,17 @@ export namespace OpenApiQueryConfig {
     onError,
 
     children,
-  }: PropsWithChildren<ProviderProps>) => {
-    const value = useMemo(
+  }: PropsWithChildren<ProviderProps<TQueryModule>>) {
+    const value = useMemo<Type<TQueryModule>>(
       () => ({ preferUpdate, invalidateCurrentModule, invalidationMap, crossTabInvalidation, onError }),
       [preferUpdate, invalidateCurrentModule, invalidationMap, crossTabInvalidation, onError],
     );
 
-    return <Context.Provider value={value}>{children}</Context.Provider>;
-  };
+    return <Context.Provider value={value as Type}>{children}</Context.Provider>;
+  }
 
-  export const useConfig = () => {
+  export const useConfig = <TQueryModule extends QueryModule = QueryModule>() => {
     const context = use(Context);
-    return context ?? {};
+    return (context ?? {}) as Type<TQueryModule>;
   };
 }

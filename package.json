@@ -1,6 +1,6 @@
 {
   "name": "@povio/openapi-codegen-cli",
-  "version": "2.0.8-rc.17",
+  "version": "2.0.8-rc.18",
   "keywords": [
     "codegen",
     "openapi",
@@ -42,6 +42,10 @@
     "./acl": {
       "types": "./dist/acl.d.mts",
       "import": "./dist/acl.mjs"
+    },
+    "./zod": {
+      "types": "./dist/zod.d.mts",
+      "import": "./dist/zod.mjs"
     }
   },
   "scripts": {

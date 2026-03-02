@@ -1,5 +1,6 @@
 import { APP_REST_CLIENT_NAME, ZOD_EXTENDED } from "@/generators/const/deps.const";
 import { AXIOS_IMPORT, AXIOS_REQUEST_CONFIG_NAME, AXIOS_REQUEST_CONFIG_TYPE } from "@/generators/const/endpoints.const";
+import { ZOD_PACKAGE_IMPORT_PATH } from "@/generators/const/package.const";
 import { ZOD_IMPORT } from "@/generators/const/zod.const";
 import { Endpoint, EndpointParameter } from "@/generators/types/endpoint";
 import { GenerateType, GenerateTypeParams, Import } from "@/generators/types/generate";
@@ -14,7 +15,7 @@ import {
   mapEndpointParamsToFunctionParams,
   requiresBody,
 } from "@/generators/utils/generate/generate.endpoints.utils";
-import { getAppRestClientImportPath, getZodExtendedImportPath } from "@/generators/utils/generate/generate.utils";
+import { getAppRestClientImportPath } from "@/generators/utils/generate/generate.utils";
 import { shouldInlineEndpointsForTag } from "@/generators/utils/tag.utils";
 import { getImportedZodSchemaName } from "@/generators/utils/generate/generate.zod.utils";
 import { getNamespaceName } from "@/generators/utils/namespace.utils";
@@ -56,7 +57,7 @@ export function generateEndpoints({ resolver, data, tag }: GenerateTypeParams) {
   const hasZodExtendedImport = resolver.options.parseRequestParams && endpointParamsParseSchemas.length > 0;
   const zodExtendedImport: Import = {
     bindings: [ZOD_EXTENDED.namespace],
-    from: getZodExtendedImportPath(resolver.options),
+    from: ZOD_PACKAGE_IMPORT_PATH,
   };
 
   const modelsImports = getModelsImports({
