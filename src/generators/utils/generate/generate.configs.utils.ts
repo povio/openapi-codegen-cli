@@ -127,13 +127,14 @@ export function getBuilderConfigs({ data, tag, resolver }: GenerateTypeParams) {
       const body = getEndpointBody(createEndpoint);
       if (body) {
         importedZodSchemas.push(body.zodSchema);
-      }
 
-      config.create = {
-        acl: getAclConfig(createEndpoint, resolver.options),
-        mutation: getImportedQueryName(createEndpoint, resolver.options),
-        inputDefs: getInputsConfig(resolver, body),
-      };
+        config.create = {
+          acl: getAclConfig(createEndpoint, resolver.options),
+          schema: getImportedZodSchemaName(resolver, body.zodSchema),
+          mutation: createEndpoint,
+          inputDefs: getInputsConfig(resolver, body),
+        };
+      }
     }
 
     // Update config
@@ -144,13 +145,14 @@ export function getBuilderConfigs({ data, tag, resolver }: GenerateTypeParams) {
       const body = getEndpointBody(updateEndpoint);
       if (body) {
         importedZodSchemas.push(body.zodSchema);
-      }
 
-      config.update = {
-        acl: getAclConfig(updateEndpoint, resolver.options),
-        mutation: getImportedQueryName(updateEndpoint, resolver.options),
-        inputDefs: getInputsConfig(resolver, body),
-      };
+        config.update = {
+          acl: getAclConfig(updateEndpoint, resolver.options),
+          schema: getImportedZodSchemaName(resolver, body.zodSchema),
+          mutation: updateEndpoint,
+          inputDefs: getInputsConfig(resolver, body),
+        };
+      }
     }
 
     // Delete config
@@ -158,10 +160,15 @@ export function getBuilderConfigs({ data, tag, resolver }: GenerateTypeParams) {
     if (deleteEndpoint) {
       importedEndpoints.push(deleteEndpoint);
 
-      config.delete = {
-        acl: getAclConfig(deleteEndpoint, resolver.options),
-        mutation: getImportedQueryName(deleteEndpoint, resolver.options),
-      };
+      const body = getEndpointBody(deleteEndpoint);
+      if (body) {
+        importedZodSchemas.push(body.zodSchema);
+
+        config.delete = {
+          acl: getAclConfig(deleteEndpoint, resolver.options),
+          mutation: deleteEndpoint,
+        };
+      }
     }
 
     // Bulk delete config
@@ -172,13 +179,14 @@ export function getBuilderConfigs({ data, tag, resolver }: GenerateTypeParams) {
       const body = getEndpointBody(bulkDeleteEndpoint);
       if (body) {
         importedZodSchemas.push(body.zodSchema);
-      }
 
-      config.bulkDelete = {
-        acl: getAclConfig(bulkDeleteEndpoint, resolver.options),
-        mutation: getImportedQueryName(bulkDeleteEndpoint, resolver.options),
-        inputDefs: getInputsConfig(resolver, body),
-      };
+        config.bulkDelete = {
+          acl: getAclConfig(bulkDeleteEndpoint, resolver.options),
+          schema: getImportedZodSchemaName(resolver, body.zodSchema),
+          mutation: bulkDeleteEndpoint,
+          inputDefs: getInputsConfig(resolver, body),
+        };
+      }
     }
 
     return config;

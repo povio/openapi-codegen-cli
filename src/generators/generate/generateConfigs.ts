@@ -1,17 +1,79 @@
-import { BUILDERS_UTILS } from "@/generators/const/deps.const";
+import { ACL_CHECK_HOOK } from "@/generators/const/acl.const";
+import { PACKAGE_IMPORT_PATH, ACL_PACKAGE_IMPORT_PATH } from "@/generators/const/package.const";
+import {
+  MUTATION_EFFECTS, QUERY_MODULE_ENUM, QUERY_OPTIONS_TYPES,
+  BUILDERS_UTILS
+} from '@/generators/const/deps.const';
 import { ZOD_IMPORT } from "@/generators/const/zod.const";
 import { BuilderConfig, DynamicColumnsConfig, DynamicInputsConfig } from "@/generators/types/builder-config";
+import { Endpoint } from "@/generators/types/endpoint";
 import { GenerateType, GenerateTypeParams, Import } from "@/generators/types/generate";
+import { getImportedEndpointName, mapEndpointParamsToFunctionParams } from "@/generators/utils/generate/generate.endpoints.utils";
+import { getEndpointsImports } from "@/generators/utils/generate/generate.imports.utils";
 import { getBuilderConfigs } from "@/generators/utils/generate/generate.configs.utils";
 import { getNamespaceName } from "@/generators/utils/namespace.utils";
+import { getQueryModulesImportPath, getQueryTypesImportPath } from "@/generators/utils/generate/generate.utils";
+import { getEndpointTag } from "@/generators/utils/tag.utils";
+import { capitalize, snakeToCamel } from "@/generators/utils/string.utils";
+import { QUERY_HOOKS } from '@/generators/const/queries.const';
 
 export function generateConfigs(generateTypeParams: GenerateTypeParams) {
-  const { configs, hasZodImport, modelsImports, queriesImports, aclImports } = getBuilderConfigs(generateTypeParams);
+  const { configs, hasZodImport, modelsImports, aclImports } = getBuilderConfigs(generateTypeParams);
   if (configs.length === 0) {
     return;
   }
 
   const { resolver, tag } = generateTypeParams;
+
+  const endpoints = configs.flatMap(config => [
+    config.create?.mutation,
+    config.update?.mutation,
+    config.delete?.mutation,
+    config.bulkDelete?.mutation
+  ]).filter((m): m is Endpoint => typeof m !== 'string' && m !== undefined);
+
+  const hasMutation = endpoints.length > 0;
+  const hasAclCheck = resolver.options.checkAcl && endpoints.some(e => e.acl);
+  const hasMutationEffects = resolver.options.mutationEffects && hasMutation;
+  const hasWorkspaceContext = resolver.options.workspaceContext && endpoints.some(e => resolver.options.workspaceContext); // Simplified check
+
+  const endpointsImports = getEndpointsImports({
+    tag,
+    endpoints,
+    options: resolver.options,
+  });
+
+  const queryImport: Import = {
+    bindings: [QUERY_HOOKS.mutation],
+    from: "@tanstack/react-query",
+  };
+
+  const queryTypesImport: Import = {
+    bindings: ["OpenApiQueryConfig"],
+    typeBindings: [QUERY_OPTIONS_TYPES.mutation],
+    from: getQueryTypesImportPath(resolver.options),
+  };
+
+  const mutationEffectsImport: Import = {
+    bindings: [MUTATION_EFFECTS.hookName],
+    typeBindings: [MUTATION_EFFECTS.optionsType],
+    from: PACKAGE_IMPORT_PATH,
+  };
+
+  const queryModulesImport: Import = {
+    bindings: [QUERY_MODULE_ENUM],
+    from: getQueryModulesImportPath(resolver.options),
+  };
+
+  const aclCheckImport: Import = {
+    bindings: [ACL_CHECK_HOOK],
+    from: ACL_PACKAGE_IMPORT_PATH,
+  };
+
+  const workspaceContextImport: Import = {
+    bindings: ["OpenApiWorkspaceContext"],
+    from: PACKAGE_IMPORT_PATH,
+  };
 
   const hasDynamicInputsImport = configs.some(
     (config) => config.readAll.filters || config.create?.inputDefs || config.update?.inputDefs, // || config.bulkDelete?.inputDefs,
@@ -40,9 +102,24 @@ export function generateConfigs(generateTypeParams: GenerateTypeParams) {
   for (const modelsImport of modelsImports) {
     lines.push(renderImport(modelsImport));
   }
-  for (const queriesImport of queriesImports) {
-    lines.push(renderImport(queriesImport));
+  // Endpoints are needed for inlined mutations
+  for (const endpointsImport of endpointsImports) {
+    lines.push(renderImport(endpointsImport));
   }
+
+  if (hasMutation) {
+    lines.push(renderImport(queryImport));
+    lines.push(renderImport(queryTypesImport));
+  if (hasMutationEffects) {
+    lines.push(renderImport(queryModulesImport));
+    lines.push(renderImport(mutationEffectsImport));
+  }
+  lines.push(renderImport(aclCheckImport));
+  if (hasWorkspaceContext) {
+    lines.push(renderImport(workspaceContextImport));
+  }
+  }
+
   for (const aclImport of aclImports) {
     lines.push(renderImport(aclImport));
   }
@@ -55,7 +132,7 @@ export function generateConfigs(generateTypeParams: GenerateTypeParams) {
   }
 
   for (const config of configs) {
-    lines.push(renderBuilderConfig(config));
+    lines.push(renderBuilderConfig(config, generateTypeParams));
     lines.push("");
   }
 
@@ -111,7 +188,61 @@ function renderColumnsConfig(columnsConfig: DynamicColumnsConfig) {
   return lines.join("\n");
 }
 
-function renderBuilderConfig(config: BuilderConfig) {
+function renderMutationContent(resolver: any, endpoint: Endpoint, tag: string) {
+  const hasAclCheck = resolver.options.checkAcl && endpoint.acl;
+  const hasMutationEffects = resolver.options.mutationEffects;
+  const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
+  const endpointTag = getEndpointTag(endpoint, resolver.options);
+
+  const endpointParams = mapEndpointParamsToFunctionParams(resolver, endpoint, {
+    includeFileParam: true,
+    modelNamespaceTag: endpointTag,
+  });
+
+  const endpointParamsStr = endpointParams.map(p => `${p.name}${p.required ? '' : '?'}: ${p.type}`).join('; ');
+
+  const destructuredMutationArgs = endpointParams.map(p => p.name).join(', ');
+  const endpointFunction = getImportedEndpointName(endpoint, resolver.options);
+
+  const mutationVariablesType = endpoint.mediaUpload
+    ? `{ ${endpointParamsStr}${endpointParamsStr ? "; " : ""}abortController?: AbortController; onUploadProgress?: (progress: { loaded: number; total: number }) => void }`
+    : `{ ${endpointParamsStr} }`;
+
+  const lines: string[] = [];
+  lines.push(`(options?: AppMutationOptions<typeof ${endpointFunction}, ${mutationVariablesType}>${hasAxiosRequestConfig ? `, config?: AxiosRequestConfig` : ""}) => {`);
+  lines.push("  const queryConfig = OpenApiQueryConfig.useConfig();");
+
+  if (hasMutationEffects) {
+    lines.push(`  const { runMutationEffects } = useMutationEffects<typeof ${QUERY_MODULE_ENUM}.${endpointTag}>({ currentModule: ${QUERY_MODULE_ENUM}.${tag} });`);
+  }
+  lines.push(`  const { checkAcl } = ${ACL_CHECK_HOOK}();`);
+  lines.push("");
+  lines.push(`  return ${QUERY_HOOKS.mutation}({`);
+
+  const mutationFnArg = destructuredMutationArgs
+    ? `{ ${destructuredMutationArgs}${endpoint.mediaUpload ? `${destructuredMutationArgs ? ", " : ""}abortController, onUploadProgress` : ""} }`
+    : "";
+
+  lines.push(`    mutationFn: (${mutationFnArg}) => {`);
+  if (hasAclCheck) {
+     lines.push(`      checkAcl(${getNamespaceName({ type: GenerateType.Acl, tag: endpointTag, options: resolver.options })}.canUse${capitalize(snakeToCamel(endpoint.operationName))}({ ${destructuredMutationArgs} }));`);
+  }
+  lines.push(`      return ${endpointFunction}(${destructuredMutationArgs}${hasAxiosRequestConfig ? `${destructuredMutationArgs ? ", " : ""}config` : ""});`);
+  lines.push("    },");
+  if (hasMutationEffects) {
+    lines.push("    onSuccess: async (...args) => {");
+    lines.push("      await runMutationEffects();");
+    lines.push("      await options?.onSuccess?.(...args);");
+    lines.push("    },");
+  }
+  lines.push("    ...options,");
+  lines.push("  });");
+  lines.push("}");
+  return lines.map(line => "        " + line).join("\n").trimStart();
+}
+
+function renderBuilderConfig(config: BuilderConfig, params: GenerateTypeParams) {
+  const { resolver, tag } = params;
   const lines: string[] = [];
   lines.push(`export const ${config.name} = {`);
   lines.push("    meta: {");
@@ -152,10 +283,10 @@ function renderBuilderConfig(config: BuilderConfig) {
     if (config.create.acl) {
       lines.push(`        acl: ${config.create.acl},`);
     }
-    if (config.create.inputDefs) {
-      lines.push(`        schema: ${config.create.inputDefs.schema},`);
+    if (config.create.schema) {
+      lines.push(`        schema: ${config.create.schema},`);
     }
-    lines.push(`        mutation: ${config.create.mutation},`);
+    lines.push(`        mutation: ${typeof config.create.mutation === 'string' ? config.create.mutation : renderMutationContent(resolver, config.create.mutation, tag)},`);
     if (config.create.inputDefs) {
       lines.push(`        inputDefs: ${BUILDERS_UTILS.dynamicInputs}(${renderInputsConfig(config.create.inputDefs)})`);
     }
@@ -167,10 +298,10 @@ function renderBuilderConfig(config: BuilderConfig) {
     if (config.update.acl) {
       lines.push(`        acl: ${config.update.acl},`);
     }
-    if (config.update.inputDefs) {
-      lines.push(`        schema: ${config.update.inputDefs.schema},`);
+    if (config.update.schema) {
+      lines.push(`        schema: ${config.update.schema},`);
     }
-    lines.push(`        mutation: ${config.update.mutation},`);
+    lines.push(`        mutation: ${typeof config.update.mutation === 'string' ? config.update.mutation : renderMutationContent(resolver, config.update.mutation, tag)},`);
     if (config.update.inputDefs) {
       lines.push(`        inputDefs: ${BUILDERS_UTILS.dynamicInputs}(${renderInputsConfig(config.update.inputDefs)})`);
     }
@@ -182,7 +313,22 @@ function renderBuilderConfig(config: BuilderConfig) {
     if (config.delete.acl) {
       lines.push(`        acl: ${config.delete.acl},`);
     }
-    lines.push(`        mutation: ${config.delete.mutation},`);
+    lines.push(`        mutation: ${typeof config.delete.mutation === 'string' ? config.delete.mutation : renderMutationContent(resolver, config.delete.mutation, tag)},`);
+    lines.push("    },");
+  }
+
+  if (config.bulkDelete) {
+    lines.push("    bulkDelete: {");
+    if (config.bulkDelete.acl) {
+      lines.push(`        acl: ${config.bulkDelete.acl},`);
+    }
+    if (config.bulkDelete.schema) {
+      lines.push(`        schema: ${config.bulkDelete.schema},`);
+    }
+    lines.push(`        mutation: ${typeof config.bulkDelete.mutation === 'string' ? config.bulkDelete.mutation : renderMutationContent(resolver, config.bulkDelete.mutation, tag)},`);
+    if (config.bulkDelete.inputDefs) {
+      lines.push(`        inputDefs: ${BUILDERS_UTILS.dynamicInputs}(${renderInputsConfig(config.bulkDelete.inputDefs)})`);
+    }
     lines.push("    },");
   }
 
