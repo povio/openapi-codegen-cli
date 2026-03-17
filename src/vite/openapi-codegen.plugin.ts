@@ -2,15 +2,20 @@ import path from "path";
 
 import { runGenerate } from "@/generators/run/generate.runner";
 import { OpenAPICodegenConfig } from "@/generators/types/config";
+import { GenerateFileFormatter } from "@/generators/types/generate";
 import { Profiler } from "@/helpers/profile.helper";
 
 import type { Plugin, ResolvedConfig, ViteDevServer } from "vite";
 
-export function openApiCodegen(config: OpenAPICodegenConfig): Plugin {
+export type OpenApiCodegenViteConfig = OpenAPICodegenConfig & {
+  formatGeneratedFile?: GenerateFileFormatter;
+};
+
+export function openApiCodegen(config: OpenApiCodegenViteConfig): Plugin {
   let resolvedViteConfig: ResolvedConfig | undefined;
   let queue: Promise<void> = Promise.resolve();
   const isLocalInput = typeof config.input === "string" && !/^https?:\/\//i.test(config.input);
-  const normalizedConfig = { ...config };
+  const { formatGeneratedFile, ...normalizedConfig } = config;
 
   const enqueueGenerate = () => {
     queue = queue.then(async () => {
@@ -21,7 +26,7 @@ export function openApiCodegen(config: OpenAPICodegenConfig): Plugin {
 
       const fileConfig = normalizePaths(normalizedConfig, currentConfig.root);
       const profiler = new Profiler(process.env.OPENAPI_CODEGEN_PROFILE === "1");
-      await runGenerate({ fileConfig, profiler });
+      await runGenerate({ fileConfig, formatGeneratedFile, profiler });
     });
   };
 

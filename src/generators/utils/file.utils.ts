@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 
-import { GenerateFileData } from "@/generators/types/generate";
+import { GenerateFileData, GenerateFileFormatter } from "@/generators/types/generate";
 
 function readFileSync(filePath: string) {
   const moduleDir = path.dirname(fileURLToPath(import.meta.url));
@@ -30,6 +30,19 @@ export function getOutputFileName({ output, fileName }: { output: string; fileNa
   return `${output}/${fileName}`;
 }
 
+type WriteGenerateFileDataOptions = {
+  formatGeneratedFile?: GenerateFileFormatter;
+};
+
+function hashString(input: string) {
+  let hash = 2166136261;
+  for (let i = 0; i < input.length; i += 1) {
+    hash ^= input.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(16);
+}
+
 function writeFileWithDirSync(file: string, data: string) {
   const dir = path.dirname(file);
 
@@ -39,7 +52,9 @@ function writeFileWithDirSync(file: string, data: string) {
 
   if (fs.existsSync(file)) {
     const existingData = fs.readFileSync(file, "utf-8");
-    if (existingData === data) {
+    const existingHash = hashString(existingData);
+    const nextHash = hashString(data);
+    if (existingHash === nextHash && existingData === data) {
       return;
     }
   }
@@ -47,10 +62,16 @@ function writeFileWithDirSync(file: string, data: string) {
   fs.writeFileSync(file, data, "utf-8");
 }
 
-function writeFileSync({ fileName, content }: GenerateFileData) {
-  writeFileWithDirSync(fileName, content);
+async function writeFile({ fileName, content }: GenerateFileData, options?: WriteGenerateFileDataOptions) {
+  const formattedContent = options?.formatGeneratedFile
+    ? await options.formatGeneratedFile({ fileName, content })
+    : content;
+
+  writeFileWithDirSync(fileName, formattedContent);
 }
 
-export function writeGenerateFileData(filesData: GenerateFileData[]) {
-  filesData.forEach(writeFileSync);
+export async function writeGenerateFileData(filesData: GenerateFileData[], options?: WriteGenerateFileDataOptions) {
+  for (const file of filesData) {
+    await writeFile(file, options);
+  }
 }

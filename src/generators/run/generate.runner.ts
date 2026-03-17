@@ -6,6 +6,7 @@ import { OpenAPIV3 } from "openapi-types";
 
 import { resolveConfig } from "@/generators/core/resolveConfig";
 import { generateCodeFromOpenAPIDoc } from "@/generators/generateCodeFromOpenAPIDoc";
+import { GenerateFileFormatter } from "@/generators/types/generate";
 import { GenerateOptions } from "@/generators/types/options";
 import { writeGenerateFileData } from "@/generators/utils/file.utils";
 import { Profiler } from "@/helpers/profile.helper";
@@ -25,6 +26,7 @@ type GenerateStats = {
 export async function runGenerate({
   fileConfig,
   params,
+  formatGeneratedFile,
   profiler = new Profiler(process.env.OPENAPI_CODEGEN_PROFILE === "1"),
 }: {
   fileConfig?: Partial<GenerateOptions> | null;
@@ -34,6 +36,7 @@ export async function runGenerate({
       inlineEndpointsExcludeModules: string;
     }
   >;
+  formatGeneratedFile?: GenerateFileFormatter;
   profiler?: Profiler;
 }) {
   const config = profiler.runSync("config.resolve", () => resolveConfig({ fileConfig, params: params ?? {} }));
@@ -51,7 +54,9 @@ export async function runGenerate({
   }
 
   const filesData = profiler.runSync("generate.total", () => generateCodeFromOpenAPIDoc(openApiDoc, config, profiler));
-  profiler.runSync("files.write", () => writeGenerateFileData(filesData));
+  await profiler.runAsync("files.write", async () => {
+    await writeGenerateFileData(filesData, { formatGeneratedFile });
+  });
   const stats = getGenerateStats(filesData, config);
 
   if (config.incremental) {

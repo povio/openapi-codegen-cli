@@ -12,7 +12,11 @@ import {
   AXIOS_REQUEST_CONFIG_NAME,
   AXIOS_REQUEST_CONFIG_TYPE,
 } from "@/generators/const/endpoints.const";
-import { ACL_PACKAGE_IMPORT_PATH, PACKAGE_IMPORT_PATH, ZOD_PACKAGE_IMPORT_PATH } from "@/generators/const/package.const";
+import {
+  ACL_PACKAGE_IMPORT_PATH,
+  PACKAGE_IMPORT_PATH,
+  ZOD_PACKAGE_IMPORT_PATH,
+} from "@/generators/const/package.const";
 import { QUERIES_MODULE_NAME, QUERY_HOOKS, QUERY_IMPORT } from "@/generators/const/queries.const";
 import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
 import { Endpoint, EndpointParameter } from "@/generators/types/endpoint";
@@ -122,9 +126,7 @@ export function generateQueries(params: GenerateTypeParams) {
   };
 
   const queryTypesImport: Import = {
-    bindings: [
-      ...(mutationEndpoints.length > 0 ? ["OpenApiQueryConfig"] : []),
-    ],
+    bindings: [...(mutationEndpoints.length > 0 ? ["OpenApiQueryConfig"] : [])],
     typeBindings: [
       ...(queryEndpoints.length > 0 ? [QUERY_OPTIONS_TYPES.query] : []),
       ...(resolver.options.infiniteQueries && infiniteQueryEndpoints.length > 0
@@ -319,7 +321,7 @@ function getEndpointParamMapping(
 function renderImport(importData: Import) {
   const namedImports = [
     ...importData.bindings,
-    ...((importData.typeBindings ?? []).map((binding) => (importData.typeOnly ? binding : `type ${binding}`))),
+    ...(importData.typeBindings ?? []).map((binding) => (importData.typeOnly ? binding : `type ${binding}`)),
   ];
   const names = [
     ...(importData.defaultImport ? [importData.defaultImport] : []),
@@ -544,11 +546,7 @@ function renderQueryKeys({
       `    ${getEndpointName(endpoint)}: (${renderEndpointParams(resolver, endpoint, {
         pathParamsRequiredOnly: true,
         modelNamespaceTag: tag,
-      })}) => [...keys.all, "${endpoint.path}", ${renderEndpointArgs(
-        resolver,
-        endpoint,
-        {},
-      )}] as const,`,
+      })}) => [...keys.all, "${endpoint.path}", ${renderEndpointArgs(resolver, endpoint, {})}] as const,`,
     );
     if (resolver.options.infiniteQueries && isInfiniteQuery(endpoint, resolver.options)) {
       lines.push(
@@ -737,13 +735,7 @@ function renderInfiniteQueryOptions({
   return lines.join("\n");
 }
 
-function renderPrefetchQuery({
-  resolver,
-  endpoint,
-}: {
-  resolver: SchemaResolver;
-  endpoint: Endpoint;
-}) {
+function renderPrefetchQuery({ resolver, endpoint }: { resolver: SchemaResolver; endpoint: Endpoint }) {
   const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
   const tag = getEndpointTag(endpoint, resolver.options);
   const endpointParams = renderEndpointParams(resolver, endpoint, {
@@ -762,13 +754,7 @@ function renderPrefetchQuery({
   return lines.join("\n");
 }
 
-function renderPrefetchInfiniteQuery({
-  resolver,
-  endpoint,
-}: {
-  resolver: SchemaResolver;
-  endpoint: Endpoint;
-}) {
+function renderPrefetchInfiniteQuery({ resolver, endpoint }: { resolver: SchemaResolver; endpoint: Endpoint }) {
   const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
   const tag = getEndpointTag(endpoint, resolver.options);
   const endpointParams = renderEndpointParams(resolver, endpoint, {
@@ -890,7 +876,9 @@ function renderMutation({
     lines.push("  const workspaceContext = OpenApiWorkspaceContext.useContext();");
   }
   if (hasMutationEffects) {
-    lines.push(`  const { runMutationEffects } = useMutationEffects<typeof ${QUERY_MODULE_ENUM}.${tag}>({ currentModule: ${QUERIES_MODULE_NAME} });`);
+    lines.push(
+      `  const { runMutationEffects } = useMutationEffects<typeof ${QUERY_MODULE_ENUM}.${tag}>({ currentModule: ${QUERIES_MODULE_NAME} });`,
+    );
   }
   lines.push("");
   lines.push(`  return ${QUERY_HOOKS.mutation}({`);

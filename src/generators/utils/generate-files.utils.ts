@@ -1,8 +1,5 @@
 import { ACL_APP_ABILITY_FILE } from "@/generators/const/acl.const";
-import {
-  APP_REST_CLIENT_FILE,
-  QUERY_MODULES_FILE,
-} from "@/generators/const/deps.const";
+import { APP_REST_CLIENT_FILE, QUERY_MODULES_FILE } from "@/generators/const/deps.const";
 import { DEFAULT_GENERATE_OPTIONS } from "@/generators/const/options.const";
 import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
 import { generateAppAcl } from "@/generators/generate/generateAcl";

@@ -184,7 +184,7 @@ function getUsedSchemaNames({
 function renderImport(importData: Import) {
   const namedImports = [
     ...importData.bindings,
-    ...((importData.typeBindings ?? []).map((binding) => (importData.typeOnly ? binding : `type ${binding}`))),
+    ...(importData.typeBindings ?? []).map((binding) => (importData.typeOnly ? binding : `type ${binding}`)),
   ];
   const names = [
     ...(importData.defaultImport ? [importData.defaultImport] : []),

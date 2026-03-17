@@ -14,8 +14,7 @@ export const getQueryName = (endpoint: Endpoint, mutation?: boolean) => {
 export const getInfiniteQueryName = (endpoint: Endpoint) =>
   `use${capitalize(snakeToCamel(endpoint.operationName))}Infinite`;
 
-export const getQueryOptionsName = (endpoint: Endpoint) =>
-  `${snakeToCamel(endpoint.operationName)}QueryOptions`;
+export const getQueryOptionsName = (endpoint: Endpoint) => `${snakeToCamel(endpoint.operationName)}QueryOptions`;
 
 export const getInfiniteQueryOptionsName = (endpoint: Endpoint) =>
   `${snakeToCamel(endpoint.operationName)}InfiniteQueryOptions`;

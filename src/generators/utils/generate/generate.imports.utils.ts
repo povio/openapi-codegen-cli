@@ -226,7 +226,11 @@ export function mergeImports(options: GenerateOptions, ...importArrs: Import[][]
   return Array.from(merged.values()).map((importItem) => ({
     ...importItem,
     bindings: getUniqueArray(importItem.bindings),
-    typeBindings: getUniqueArray(importItem.typeBindings ?? []).filter((binding) => !importItem.bindings.includes(binding)),
-    typeOnly: Boolean(importItem.typeOnly && importItem.bindings.length === 0 && (importItem.typeBindings?.length ?? 0) > 0),
+    typeBindings: getUniqueArray(importItem.typeBindings ?? []).filter(
+      (binding) => !importItem.bindings.includes(binding),
+    ),
+    typeOnly: Boolean(
+      importItem.typeOnly && importItem.bindings.length === 0 && (importItem.typeBindings?.length ?? 0) > 0,
+    ),
   }));
 }

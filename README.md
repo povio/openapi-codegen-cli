@@ -242,12 +242,17 @@ export default defineConfig({
       output: "./src/data",
       inlineEndpoints: true,
       incremental: true,
+      formatGeneratedFile: async ({ fileName, content }) => {
+        void fileName;
+        return content;
+      },
     }),
   ],
 });
 ```
 
 The plugin runs on both `vite serve` and `vite build`, and watches local OpenAPI files in dev mode.
+If you provide `formatGeneratedFile`, the plugin formats each generated file in memory before comparing and writing it, which helps avoid unnecessary HMR when the formatted output is unchanged.
 
 ### Enums
 

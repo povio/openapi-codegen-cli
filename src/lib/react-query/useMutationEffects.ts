@@ -44,8 +44,9 @@ export function useMutationEffects<TQueryModule extends QueryModule = QueryModul
         keyA.length === keyB.length && keyA.every((item, index) => item === keyB[index]);
       const isQueryKeyPrefix = (queryKey: QueryKey, prefixKey: QueryKey) =>
         prefixKey.length <= queryKey.length && prefixKey.every((item, index) => item === queryKey[index]);
-      const mappedInvalidationKeys = invalidationMap?.[currentModule]?.(data, variables)
-        ?? config.invalidationMap?.[currentModule]?.(data, variables);
+      const mappedInvalidationKeys =
+        invalidationMap?.[currentModule]?.(data, variables) ??
+        config.invalidationMap?.[currentModule]?.(data, variables);
 
       const shouldInvalidateQuery = (queryKey: QueryKey) => {
         const isUpdateKey = updateKeys?.some((key) => isQueryKeyEqual(queryKey, key));

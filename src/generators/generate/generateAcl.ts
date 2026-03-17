@@ -24,7 +24,9 @@ export function generateAcl({ resolver, data, tag }: GenerateTypeParams) {
   const { hasAdditionalAbilityImports, modelsImports, endpoints } = aclData;
 
   const caslAbilityTupleImport: Import = {
-    bindings: [...(hasAdditionalAbilityImports ? [CASL_ABILITY_BINDING.forcedSubject, CASL_ABILITY_BINDING.subject] : [])],
+    bindings: [
+      ...(hasAdditionalAbilityImports ? [CASL_ABILITY_BINDING.forcedSubject, CASL_ABILITY_BINDING.subject] : []),
+    ],
     typeBindings: [CASL_ABILITY_BINDING.abilityTuple],
     from: CASL_ABILITY_IMPORT.from,
   };
@@ -92,7 +94,7 @@ export function generateAppAcl({ resolver, data }: Omit<GenerateTypeParams, "tag
 function renderImport(importData: Import) {
   const namedImports = [
     ...importData.bindings,
-    ...((importData.typeBindings ?? []).map((binding) => (importData.typeOnly ? binding : `type ${binding}`))),
+    ...(importData.typeBindings ?? []).map((binding) => (importData.typeOnly ? binding : `type ${binding}`)),
   ];
   const names = [
     ...(importData.defaultImport ? [importData.defaultImport] : []),

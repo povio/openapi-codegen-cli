@@ -50,3 +50,5 @@ export interface GenerateFileData {
   fileName: string;
   content: string;
 }
+
+export type GenerateFileFormatter = (file: GenerateFileData) => string | Promise<string>;
