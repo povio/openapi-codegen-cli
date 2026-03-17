@@ -60,7 +60,7 @@ export async function runGenerate({
   const stats = getGenerateStats(filesData, config);
 
   if (config.incremental) {
-    writeCache(cacheFilePath, { openApiHash, optionsHash });
+    await writeCache(cacheFilePath, { openApiHash, optionsHash }, formatGeneratedFile);
   }
 
   return { skipped: false, config, stats };
@@ -133,12 +133,10 @@ function readCache(filePath: string): CacheData | null {
   }
 }
 
-function writeCache(filePath: string, data: CacheData) {
-  const dir = path.dirname(filePath);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-  fs.writeFileSync(filePath, JSON.stringify(data), "utf-8");
+async function writeCache(filePath: string, data: CacheData, formatGeneratedFile?: GenerateFileFormatter) {
+  await writeGenerateFileData([{ fileName: filePath, content: JSON.stringify(data) }], {
+    formatGeneratedFile,
+  });
 }
 
 function hashString(input: string) {
