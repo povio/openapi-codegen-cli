@@ -16,13 +16,14 @@ import { getSchemaDescriptions } from "./generate.openapi.utils";
 export const getZodSchemaInferedTypeName = (zodSchemaName: string, options: GenerateOptions) =>
   removeSuffix(zodSchemaName, options.schemaSuffix);
 
-export const getImportedZodSchemaName = (resolver: SchemaResolver, zodSchemaName: string) => {
+export const getImportedZodSchemaName = (resolver: SchemaResolver, zodSchemaName: string, namespaceTag?: string) => {
   if (!isNamedZodSchema(zodSchemaName)) {
     return zodSchemaName;
   }
 
+  const tag = namespaceTag ?? resolver.getTagByZodSchemaName(zodSchemaName);
   const namespacePrefix = resolver.options.tsNamespaces
-    ? `${getNamespaceName({ type: GenerateType.Models, tag: resolver.getTagByZodSchemaName(zodSchemaName), options: resolver.options })}.`
+    ? `${getNamespaceName({ type: GenerateType.Models, tag, options: resolver.options })}.`
     : "";
   return `${namespacePrefix}${zodSchemaName}`;
 };
@@ -31,14 +32,15 @@ export const getImportedZodSchemaInferedTypeName = (
   resolver: SchemaResolver,
   zodSchemaName: string,
   currentTag?: string,
+  namespaceTag?: string,
 ) => {
   if (!isNamedZodSchema(zodSchemaName)) {
     return zodSchemaName === VOID_SCHEMA ? "void" : zodSchemaName;
   }
 
-  const tag = resolver.getTagByZodSchemaName(zodSchemaName);
+  const tag = namespaceTag ?? resolver.getTagByZodSchemaName(zodSchemaName);
   const namespacePrefix =
-    resolver.options.tsNamespaces && tag !== currentTag
+    resolver.options.tsNamespaces && (Boolean(namespaceTag) || tag !== currentTag)
       ? `${getNamespaceName({ type: GenerateType.Models, tag, options: resolver.options })}.`
       : "";
   return `${namespacePrefix}${getZodSchemaInferedTypeName(zodSchemaName, resolver.options)}`;

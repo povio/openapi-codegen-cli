@@ -1,0 +1,46 @@
+import { CommonModels } from "@/data/common/common.models";
+
+export namespace DunningManagementModels {
+  export const ListDunningsResponseSchema = CommonModels.ListDunningsResponseSchema;
+  export const ListDunningsOrderParamEnumSchema = CommonModels.ListDunningsOrderParamEnumSchema;
+  export const DunningFilterDtoSchema = CommonModels.DunningFilterDtoSchema;
+  export const DunningResponseDtoSchema = CommonModels.DunningResponseDtoSchema;
+  export const CreateDunningWithInvoicesRequestDTOSchema = CommonModels.CreateDunningWithInvoicesRequestDTOSchema;
+  export const DunningPdfPayloadDTOSchema = CommonModels.DunningPdfPayloadDTOSchema;
+  export const PaginationDtoSchema = CommonModels.PaginationDtoSchema;
+  export const DunningPartnerDtoSchema = CommonModels.DunningPartnerDtoSchema;
+  export const DunningStatusSchema = CommonModels.DunningStatusSchema;
+  export const DunningConfirmedByDtoSchema = CommonModels.DunningConfirmedByDtoSchema;
+  export const EditorContentResponseDtoSchema = CommonModels.EditorContentResponseDtoSchema;
+  export const DunningPdfBusinessPartnerDTOSchema = CommonModels.DunningPdfBusinessPartnerDTOSchema;
+  export const DunningPdfInvoiceDTOSchema = CommonModels.DunningPdfInvoiceDTOSchema;
+  export const DunningPdfTotalDTOSchema = CommonModels.DunningPdfTotalDTOSchema;
+  export const DunningPdfBankAccountDTOSchema = CommonModels.DunningPdfBankAccountDTOSchema;
+  export const DunningPdfConfigDTOSchema = CommonModels.DunningPdfConfigDTOSchema;
+  export const LanguageEnumSchema = CommonModels.LanguageEnumSchema;
+  export const DunningPdfUpcomingInvoiceDTOSchema = CommonModels.DunningPdfUpcomingInvoiceDTOSchema;
+  export const LocaleEnumSchema = CommonModels.LocaleEnumSchema;
+  export type ListDunningsResponse = CommonModels.ListDunningsResponse;
+  export type ListDunningsOrderParamEnum = CommonModels.ListDunningsOrderParamEnum;
+  export type DunningFilterDto = CommonModels.DunningFilterDto;
+  export type DunningResponseDto = CommonModels.DunningResponseDto;
+  export type CreateDunningWithInvoicesRequestDTO = CommonModels.CreateDunningWithInvoicesRequestDTO;
+  export type DunningPdfPayloadDTO = CommonModels.DunningPdfPayloadDTO;
+  export type PaginationDto = CommonModels.PaginationDto;
+  export type DunningPartnerDto = CommonModels.DunningPartnerDto;
+  export type DunningStatus = CommonModels.DunningStatus;
+  export type DunningConfirmedByDto = CommonModels.DunningConfirmedByDto;
+  export type EditorContentResponseDto = CommonModels.EditorContentResponseDto;
+  export type DunningPdfBusinessPartnerDTO = CommonModels.DunningPdfBusinessPartnerDTO;
+  export type DunningPdfInvoiceDTO = CommonModels.DunningPdfInvoiceDTO;
+  export type DunningPdfTotalDTO = CommonModels.DunningPdfTotalDTO;
+  export type DunningPdfBankAccountDTO = CommonModels.DunningPdfBankAccountDTO;
+  export type DunningPdfConfigDTO = CommonModels.DunningPdfConfigDTO;
+  export type LanguageEnum = CommonModels.LanguageEnum;
+  export type DunningPdfUpcomingInvoiceDTO = CommonModels.DunningPdfUpcomingInvoiceDTO;
+  export type LocaleEnum = CommonModels.LocaleEnum;
+  export const ListDunningsOrderParamEnum = CommonModels.ListDunningsOrderParamEnum;
+  export const DunningStatus = CommonModels.DunningStatus;
+  export const LanguageEnum = CommonModels.LanguageEnum;
+  export const LocaleEnum = CommonModels.LocaleEnum;
+}

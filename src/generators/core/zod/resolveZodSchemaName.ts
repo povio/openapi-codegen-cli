@@ -7,6 +7,8 @@ import { getZodSchemaName, isNamedZodSchema } from "@/generators/utils/zod-schem
 
 import { ZodSchema } from "./ZodSchema.class";
 
+const resolverResolveZodSchemaNameCache = new WeakMap<SchemaResolver, Map<string, string>>();
+
 export function resolveZodSchemaName({
   schema,
   zodSchema,
@@ -21,6 +23,16 @@ export function resolveZodSchemaName({
   tag: string;
 }): string {
   const result = zodSchema.getCodeString();
+  const cacheKey = `${zodSchema.ref ?? ""}|${fallbackName ?? ""}|${tag}|${zodSchema.complexity}|${result}`;
+  let cacheForResolver = resolverResolveZodSchemaNameCache.get(resolver);
+  if (!cacheForResolver) {
+    cacheForResolver = new Map();
+    resolverResolveZodSchemaNameCache.set(resolver, cacheForResolver);
+  }
+  const cachedName = cacheForResolver.get(cacheKey);
+  if (cachedName) {
+    return cachedName;
+  }
 
   if ((!isNamedZodSchema(result) || zodSchema.ref === undefined) && fallbackName) {
     // result is simple enough that it doesn't need to be assigned to a variable
@@ -43,6 +55,7 @@ export function resolveZodSchemaName({
     resolver.setZodSchema(zodSchemaName, result, tag);
     resolver.addZodSchemaForCompositeCode(result, zodSchema, zodSchemaName, schema);
 
+    cacheForResolver.set(cacheKey, zodSchemaName);
     return zodSchemaName;
   }
 
@@ -57,14 +70,19 @@ export function resolveZodSchemaName({
 
     // ref result is simple enough that it doesn't need to be assigned to a variable
     if (complexity < COMPLEXITY_THRESHOLD) {
-      return resolver.getCodeByZodSchemaName(result)!;
+      const resolvedName = resolver.getCodeByZodSchemaName(result)!;
+      cacheForResolver.set(cacheKey, resolvedName);
+      return resolvedName;
     }
 
+    cacheForResolver.set(cacheKey, result);
     return result;
   }
 
   if (zodSchema.ref) {
-    return resolver.getZodSchemaNameByRef(zodSchema.ref);
+    const resolvedRefName = resolver.getZodSchemaNameByRef(zodSchema.ref);
+    cacheForResolver.set(cacheKey, resolvedRefName);
+    return resolvedRefName;
   }
 
   throw new Error(`Invalid ref: ${zodSchema.ref}`);

@@ -48,12 +48,14 @@ export function mapEndpointParamsToFunctionParams(
     includeFileParam?: boolean;
     includeOnlyRequiredParams?: boolean;
     pathParamsRequiredOnly?: boolean;
+    optionalPathParams?: boolean;
+    modelNamespaceTag?: string;
   },
 ) {
   const params = endpoint.parameters.map((param) => {
     let type = "string";
     if (isNamedZodSchema(param.zodSchema)) {
-      type = getImportedZodSchemaInferedTypeName(resolver, param.zodSchema);
+      type = getImportedZodSchemaInferedTypeName(resolver, param.zodSchema, undefined, options?.modelNamespaceTag);
     } else if (param.parameterObject?.schema && isSchemaObject(param.parameterObject.schema)) {
       const openApiSchemaType = (param.parameterObject?.schema as OpenAPIV3.SchemaObject)?.type;
       if (openApiSchemaType && isPrimitiveType(openApiSchemaType)) {
@@ -102,7 +104,10 @@ export function mapEndpointParamsToFunctionParams(
         options?.replacePageParam && param.name === resolver.options.infiniteQueryParamNames.page
           ? "pageParam"
           : param.name,
-      required: param.required && (param.paramType === "Path" || !options?.pathParamsRequiredOnly),
+      required:
+        options?.optionalPathParams && param.paramType === "Path"
+          ? false
+          : param.required && (param.paramType === "Path" || !options?.pathParamsRequiredOnly),
     }));
 }
 
