@@ -18,8 +18,11 @@ export function getEndpointTag(endpoint: Endpoint, options: GenerateOptions) {
   return formatTag(tag ?? options.defaultTag);
 }
 
-export function isTagExcluded(tag: string, options: GenerateOptions) {
-  return options.excludeTags.some((excludeTag) => excludeTag.toLowerCase() === tag.toLowerCase());
+export function isTagIncluded(tag: string, options: GenerateOptions) {
+  if (options.includeTags.length === 0) {
+    return true;
+  }
+  return options.includeTags.some((includeTag) => includeTag.toLowerCase() === tag.toLowerCase());
 }
 
 export function shouldInlineEndpointsForTag(tag: string, options: GenerateOptions) {

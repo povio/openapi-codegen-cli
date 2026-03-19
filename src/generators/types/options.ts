@@ -68,7 +68,7 @@ interface BaseGenerateOptions {
   incremental?: boolean;
   splitByTags: boolean;
   defaultTag: string;
-  excludeTags: string[];
+  includeTags: string[];
   excludePathRegex: string;
   excludeRedundantZodSchemas: boolean;
   tsNamespaces: boolean;

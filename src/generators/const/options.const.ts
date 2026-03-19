@@ -11,7 +11,7 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   incremental: true,
   splitByTags: true,
   defaultTag: "Common",
-  excludeTags: [],
+  includeTags: [],
   excludePathRegex: "",
   excludeRedundantZodSchemas: true,
   tsNamespaces: true,
