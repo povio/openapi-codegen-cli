@@ -31,8 +31,9 @@ export async function runGenerate({
 }: {
   fileConfig?: Partial<GenerateOptions> | null;
   params?: Partial<
-    Omit<GenerateOptions, "includeTags" | "inlineEndpointsExcludeModules"> & {
+    Omit<GenerateOptions, "includeTags" | "excludeTags" | "inlineEndpointsExcludeModules"> & {
       includeTags: string;
+      excludeTags: string;
       inlineEndpointsExcludeModules: string;
     }
   >;

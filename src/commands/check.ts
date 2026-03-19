@@ -10,10 +10,17 @@ import SwaggerParser from "@apidevtools/swagger-parser";
 export type CheckParams = {
   config?: string;
   includeTags?: string;
+  excludeTags?: string;
   verbose?: boolean;
 } & Partial<Pick<GenerateOptions, "input" | "splitByTags" | "defaultTag">>;
 
-export async function check({ verbose, config: configParam, includeTags: _includeTagsParam, ...params }: CheckParams) {
+export async function check({
+  verbose,
+  config: configParam,
+  includeTags: _includeTagsParam,
+  excludeTags: _excludeTagsParam,
+  ...params
+}: CheckParams) {
   const start = Date.now();
 
   if (verbose) {

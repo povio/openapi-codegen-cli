@@ -19,10 +19,13 @@ export function getEndpointTag(endpoint: Endpoint, options: GenerateOptions) {
 }
 
 export function isTagIncluded(tag: string, options: GenerateOptions) {
-  if (options.includeTags.length === 0) {
+  if (options.includeTags.some((includeTag) => includeTag.toLowerCase() === tag.toLowerCase())) {
     return true;
   }
-  return options.includeTags.some((includeTag) => includeTag.toLowerCase() === tag.toLowerCase());
+  if (options.excludeTags.some((excludeTag) => excludeTag.toLowerCase() === tag.toLowerCase())) {
+    return false;
+  }
+  return options.includeTags.length === 0;
 }
 
 export function shouldInlineEndpointsForTag(tag: string, options: GenerateOptions) {

@@ -8,6 +8,7 @@ import { Profiler } from "@/helpers/profile.helper";
 export type GenerateParams = {
   config?: string;
   includeTags?: string;
+  excludeTags?: string;
   inlineEndpointsExcludeModules?: string;
   prettier?: boolean;
   verbose?: boolean;

@@ -77,6 +77,7 @@ yarn openapi-codegen generate --config my-config.ts
   --defaultTag                        (Requires `--splitByTags`) Default tag for shared code across multiple tags (default: 'Common')
 
   --includeTags                       Comma-separated list of tags to include in generation
+  --excludeTags                       Comma-separated list of tags to exclude from generation
   --excludePathRegex                  Exclude operations whose paths match the given regular expression
   --excludeRedundantZodSchemas        Exclude any redundant Zod schemas (default: true)
 
@@ -116,6 +117,7 @@ yarn openapi-codegen generate --config my-config.ts
   --defaultTag                        (Requires `--splitByTags`) Default tag for shared code across multiple tags (default: 'Common')
 
   --includeTags                       Comma-separated list of tags to include in generation
+  --excludeTags                       Comma-separated list of tags to exclude from generation
   --excludePathRegex                  Exclude operations whose paths match the given regular expression
   --excludeRedundantZodSchemas        Exclude any redundant Zod schemas (default: true)
 ```

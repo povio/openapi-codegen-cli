@@ -4,12 +4,13 @@ import { deepMerge } from "@/generators/utils/object.utils";
 
 export function resolveConfig({
   fileConfig = {},
-  params: { includeTags, inlineEndpointsExcludeModules, ...options },
+  params: { includeTags, excludeTags, inlineEndpointsExcludeModules, ...options },
 }: {
   fileConfig?: Partial<GenerateOptions> | null;
   params: Partial<
-    Omit<GenerateOptions, "includeTags" | "inlineEndpointsExcludeModules"> & {
+    Omit<GenerateOptions, "includeTags" | "excludeTags" | "inlineEndpointsExcludeModules"> & {
       includeTags: string;
+      excludeTags: string;
       inlineEndpointsExcludeModules: string;
     }
   >;
@@ -17,6 +18,7 @@ export function resolveConfig({
   const resolvedConfig = deepMerge(DEFAULT_GENERATE_OPTIONS, fileConfig ?? {}, {
     ...options,
     includeTags: includeTags?.split(","),
+    excludeTags: excludeTags?.split(","),
     inlineEndpointsExcludeModules: inlineEndpointsExcludeModules?.split(","),
   });
   resolvedConfig.checkAcl = resolvedConfig.acl && resolvedConfig.checkAcl;

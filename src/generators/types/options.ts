@@ -69,6 +69,7 @@ interface BaseGenerateOptions {
   splitByTags: boolean;
   defaultTag: string;
   includeTags: string[];
+  excludeTags: string[];
   excludePathRegex: string;
   excludeRedundantZodSchemas: boolean;
   tsNamespaces: boolean;

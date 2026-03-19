@@ -34,6 +34,9 @@ class GenerateOptions implements GenerateParams {
   @YargOption({ envAlias: "includeTags" })
   includeTags?: string;
 
+  @YargOption({ envAlias: "excludeTags" })
+  excludeTags?: string;
+
   @YargOption({ envAlias: "excludePathRegex" })
   excludePathRegex?: string;
 
