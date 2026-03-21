@@ -17,6 +17,7 @@ export type GenerateParams = {
     GenerateOptions,
     | "input"
     | "output"
+    | "clearOutput"
     | "incremental"
     | "tsNamespaces"
     | "tsPath"

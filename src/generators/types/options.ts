@@ -65,6 +65,7 @@ interface GenerateConfig {
 interface BaseGenerateOptions {
   input: string;
   output: string;
+  clearOutput?: boolean;
   incremental?: boolean;
   splitByTags: boolean;
   defaultTag: string;

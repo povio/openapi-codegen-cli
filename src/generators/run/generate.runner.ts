@@ -1,6 +1,4 @@
 import fs from "fs";
-import path from "path";
-
 import SwaggerParser from "@apidevtools/swagger-parser";
 import { OpenAPIV3 } from "openapi-types";
 
@@ -10,13 +8,6 @@ import { GenerateFileFormatter } from "@/generators/types/generate";
 import { GenerateOptions } from "@/generators/types/options";
 import { writeGenerateFileData } from "@/generators/utils/file.utils";
 import { Profiler } from "@/helpers/profile.helper";
-
-const CACHE_FILE_NAME = ".openapi-codegen-cache.json";
-
-type CacheData = {
-  openApiHash: string;
-  optionsHash: string;
-};
 
 type GenerateStats = {
   generatedFilesCount: number;
@@ -43,26 +34,16 @@ export async function runGenerate({
   const config = profiler.runSync("config.resolve", () => resolveConfig({ fileConfig, params: params ?? {} }));
   const openApiDoc = await getOpenApiDoc(config.input, profiler);
 
-  const openApiHash = hashString(stableStringify(openApiDoc));
-  const optionsHash = hashString(stableStringify(getCacheableConfig(config)));
-  const cacheFilePath = path.resolve(config.output, CACHE_FILE_NAME);
-
-  if (config.incremental) {
-    const cached = readCache(cacheFilePath);
-    if (cached && cached.openApiHash === openApiHash && cached.optionsHash === optionsHash) {
-      return { skipped: true, config, stats: { generatedFilesCount: 0, generatedModulesCount: 0 } };
-    }
-  }
-
   const filesData = profiler.runSync("generate.total", () => generateCodeFromOpenAPIDoc(openApiDoc, config, profiler));
+  if (config.clearOutput) {
+    profiler.runSync("files.clearOutput", () => {
+      fs.rmSync(config.output, { force: true, recursive: true });
+    });
+  }
   await profiler.runAsync("files.write", async () => {
     await writeGenerateFileData(filesData, { formatGeneratedFile });
   });
   const stats = getGenerateStats(filesData, config);
-
-  if (config.incremental) {
-    await writeCache(cacheFilePath, { openApiHash, optionsHash }, formatGeneratedFile);
-  }
 
   return { skipped: false, config, stats };
 }
@@ -114,53 +95,6 @@ function hasExternalRef(value: unknown): boolean {
   }
 
   return false;
-}
-
-function getCacheableConfig(config: GenerateOptions) {
-  const { output, incremental, ...cacheableConfig } = config;
-  void output;
-  void incremental;
-  return cacheableConfig;
-}
-
-function readCache(filePath: string): CacheData | null {
-  if (!fs.existsSync(filePath)) {
-    return null;
-  }
-  try {
-    return JSON.parse(fs.readFileSync(filePath, "utf-8")) as CacheData;
-  } catch {
-    return null;
-  }
-}
-
-async function writeCache(filePath: string, data: CacheData, formatGeneratedFile?: GenerateFileFormatter) {
-  await writeGenerateFileData([{ fileName: filePath, content: JSON.stringify(data) }], {
-    formatGeneratedFile,
-  });
-}
-
-function hashString(input: string) {
-  let hash = 2166136261;
-  for (let i = 0; i < input.length; i += 1) {
-    hash ^= input.charCodeAt(i);
-    hash = Math.imul(hash, 16777619);
-  }
-  return (hash >>> 0).toString(16);
-}
-
-function stableStringify(input: unknown): string {
-  if (input === null || typeof input !== "object") {
-    return JSON.stringify(input);
-  }
-
-  if (Array.isArray(input)) {
-    return `[${input.map((item) => stableStringify(item)).join(",")}]`;
-  }
-
-  const obj = input as Record<string, unknown>;
-  const keys = Object.keys(obj).sort((a, b) => a.localeCompare(b));
-  return `{${keys.map((key) => `${JSON.stringify(key)}:${stableStringify(obj[key])}`).join(",")}}`;
 }
 
 function getGenerateStats(filesData: { fileName: string }[], config: GenerateOptions): GenerateStats {
