@@ -1,4 +1,5 @@
 import fs from "fs";
+import path from "path";
 import SwaggerParser from "@apidevtools/swagger-parser";
 import { OpenAPIV3 } from "openapi-types";
 
