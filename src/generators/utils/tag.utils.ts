@@ -19,10 +19,11 @@ export function getEndpointTag(endpoint: Endpoint, options: GenerateOptions) {
 }
 
 export function isTagIncluded(tag: string, options: GenerateOptions) {
-  if (options.includeTags.some((includeTag) => includeTag.toLowerCase() === tag.toLowerCase())) {
+  const normalizedTag = formatTag(tag).toLowerCase();
+  if (options.includeTags.some((includeTag) => formatTag(includeTag).toLowerCase() === normalizedTag)) {
     return true;
   }
-  if (options.excludeTags.some((excludeTag) => excludeTag.toLowerCase() === tag.toLowerCase())) {
+  if (options.excludeTags.some((excludeTag) => formatTag(excludeTag).toLowerCase() === normalizedTag)) {
     return false;
   }
   return options.includeTags.length === 0;

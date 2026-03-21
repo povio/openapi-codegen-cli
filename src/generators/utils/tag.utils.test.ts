@@ -42,5 +42,25 @@ describe("Utils: tag", () => {
       expect(isTagIncluded("auth", { ...options, includeTags: ["AUTH"], excludeTags: [] })).toBe(true);
       expect(isTagIncluded("AUTH", { ...options, includeTags: [], excludeTags: ["auth"] })).toBe(false);
     });
+
+    test("matches human-readable includeTags against normalized operation tags", () => {
+      expect(
+        isTagIncluded("WorkingDocumentsTemplatedDocument", {
+          ...options,
+          includeTags: ["WorkingDocuments - templated-document"],
+          excludeTags: [],
+        }),
+      ).toBe(true);
+    });
+
+    test("matches human-readable excludeTags against normalized operation tags", () => {
+      expect(
+        isTagIncluded("WorkingDocumentsTemplatedDocument", {
+          ...options,
+          includeTags: [],
+          excludeTags: ["WorkingDocuments - templated-document"],
+        }),
+      ).toBe(false);
+    });
   });
 });
