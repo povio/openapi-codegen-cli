@@ -28,6 +28,7 @@ export function openApiCodegen(config: OpenApiCodegenViteConfig): Plugin {
       const profiler = new Profiler(process.env.OPENAPI_CODEGEN_PROFILE === "1");
       await runGenerate({ fileConfig, formatGeneratedFile, profiler });
     });
+    return queue;
   };
 
   const setupWatcher = (server: ViteDevServer) => {
@@ -49,10 +50,11 @@ export function openApiCodegen(config: OpenApiCodegenViteConfig): Plugin {
     configResolved(config) {
       resolvedViteConfig = config;
     },
-    buildStart() {
-      enqueueGenerate();
+    async buildStart() {
+      await enqueueGenerate();
     },
-    configureServer(server) {
+    async configureServer(server) {
+      await enqueueGenerate();
       setupWatcher(server);
     },
   };

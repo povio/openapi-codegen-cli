@@ -1,4 +1,3 @@
-import fs from "fs";
 import path from "path";
 import SwaggerParser from "@apidevtools/swagger-parser";
 import { OpenAPIV3 } from "openapi-types";
@@ -7,7 +6,7 @@ import { resolveConfig } from "@/generators/core/resolveConfig";
 import { generateCodeFromOpenAPIDoc } from "@/generators/generateCodeFromOpenAPIDoc";
 import { GenerateFileFormatter } from "@/generators/types/generate";
 import { GenerateOptions } from "@/generators/types/options";
-import { writeGenerateFileData } from "@/generators/utils/file.utils";
+import { removeStaleGeneratedFiles, writeGenerateFileData } from "@/generators/utils/file.utils";
 import { Profiler } from "@/helpers/profile.helper";
 
 type GenerateStats = {
@@ -37,8 +36,8 @@ export async function runGenerate({
 
   const filesData = profiler.runSync("generate.total", () => generateCodeFromOpenAPIDoc(openApiDoc, config, profiler));
   if (config.clearOutput) {
-    profiler.runSync("files.clearOutput", () => {
-      fs.rmSync(config.output, { force: true, recursive: true });
+    profiler.runSync("files.removeStaleGenerated", () => {
+      removeStaleGeneratedFiles({ output: config.output, filesData, options: config });
     });
   }
   await profiler.runAsync("files.write", async () => {
