@@ -179,6 +179,10 @@ export class SchemaResolver {
       return this.options.defaultTag;
     }
 
+    if (this.options.modelsInCommon) {
+      return formatTag(this.options.defaultTag);
+    }
+
     const extractedEnumZodSchema = this.extractedEnumZodSchemaData.find((data) => data.zodSchemaName === zodSchemaName);
     if (extractedEnumZodSchema) {
       return formatTag(extractedEnumZodSchema.tag ?? this.options.defaultTag);
