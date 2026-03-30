@@ -351,6 +351,20 @@ function renderEndpointArgs(
     .join(", ");
 }
 
+function renderEndpointObjectArgs(
+  resolver: SchemaResolver,
+  endpoint: Endpoint,
+  options: Parameters<typeof mapEndpointParamsToFunctionParams>[2],
+  replacements?: Record<string, string>,
+) {
+  return getEndpointParamMapping(resolver, endpoint, options)
+    .map((param) => {
+      const replacement = replacements?.[param.name];
+      return replacement && replacement !== param.name ? `${param.name}: ${replacement}` : param.name;
+    })
+    .join(", ");
+}
+
 function renderEndpointParamDescription(endpointParam: ReturnType<typeof mapEndpointParamsToFunctionParams>[0]) {
   const strs = [`${endpointParam.paramType} parameter`];
   const description = endpointParam.parameterObject?.description || endpointParam.bodyObject?.description;
@@ -790,7 +804,7 @@ function renderQuery({
     ? getWorkspaceParamReplacements(resolver, endpoint)
     : {};
   const endpointArgs = renderEndpointArgs(resolver, endpoint, {});
-  const resolvedEndpointArgs = renderEndpointArgs(resolver, endpoint, {}, workspaceParamReplacements);
+  const resolvedEndpointArgs = renderEndpointObjectArgs(resolver, endpoint, {}, workspaceParamReplacements);
   const endpointParams = renderEndpointParams(resolver, endpoint, {
     optionalPathParams: resolver.options.workspaceContext,
     modelNamespaceTag: tag,
@@ -1060,7 +1074,7 @@ function renderInfiniteQuery({
     modelNamespaceTag: tag,
   });
   const endpointArgsWithoutPage = renderEndpointArgs(resolver, endpoint, { excludePageParam: true });
-  const resolvedEndpointArgsWithoutPage = renderEndpointArgs(
+  const resolvedEndpointArgsWithoutPage = renderEndpointObjectArgs(
     resolver,
     endpoint,
     { excludePageParam: true },
