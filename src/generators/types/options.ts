@@ -26,7 +26,7 @@ interface QueriesGenerateOptions {
   queryTypesImportPath: string;
   axiosRequestConfig?: boolean;
   mutationEffects?: boolean;
-  workspaceContext?: boolean;
+  workspaceContext?: string[];
   prefetchQueries?: boolean;
 }
 

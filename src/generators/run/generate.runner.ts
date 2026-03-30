@@ -22,10 +22,11 @@ export async function runGenerate({
 }: {
   fileConfig?: Partial<GenerateOptions> | null;
   params?: Partial<
-    Omit<GenerateOptions, "includeTags" | "excludeTags" | "inlineEndpointsExcludeModules"> & {
+    Omit<GenerateOptions, "includeTags" | "excludeTags" | "inlineEndpointsExcludeModules" | "workspaceContext"> & {
       includeTags: string;
       excludeTags: string;
       inlineEndpointsExcludeModules: string;
+      workspaceContext: string;
     }
   >;
   formatGeneratedFile?: GenerateFileFormatter;

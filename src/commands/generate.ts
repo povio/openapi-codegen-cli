@@ -10,6 +10,7 @@ export type GenerateParams = {
   includeTags?: string;
   excludeTags?: string;
   inlineEndpointsExcludeModules?: string;
+  workspaceContext?: string;
   prettier?: boolean;
   verbose?: boolean;
 } & Partial<
@@ -35,7 +36,6 @@ export type GenerateParams = {
     | "infiniteQueries"
     | "axiosRequestConfig"
     | "mutationEffects"
-    | "workspaceContext"
     | "parseRequestParams"
     | "inlineEndpoints"
     | "builderConfigs"

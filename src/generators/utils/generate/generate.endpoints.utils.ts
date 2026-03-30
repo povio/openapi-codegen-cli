@@ -48,10 +48,12 @@ export function mapEndpointParamsToFunctionParams(
     includeFileParam?: boolean;
     includeOnlyRequiredParams?: boolean;
     pathParamsRequiredOnly?: boolean;
-    optionalPathParams?: boolean;
+    optionalPathParams?: string[];
     modelNamespaceTag?: string;
   },
 ) {
+  const optionalPathParams = options?.optionalPathParams ? new Set(options.optionalPathParams) : undefined;
+
   const params = endpoint.parameters.map((param) => {
     let type = "string";
     if (isNamedZodSchema(param.zodSchema)) {
@@ -105,7 +107,7 @@ export function mapEndpointParamsToFunctionParams(
           ? "pageParam"
           : param.name,
       required:
-        options?.optionalPathParams && param.paramType === "Path"
+        param.paramType === "Path" && optionalPathParams?.has(param.name)
           ? false
           : param.required && (param.paramType === "Path" || !options?.pathParamsRequiredOnly),
     }));

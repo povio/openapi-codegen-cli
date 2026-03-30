@@ -306,7 +306,7 @@ function getEndpointParamMapping(
   const key = JSON.stringify(
     Object.entries(options ?? {})
       .sort(([left], [right]) => left.localeCompare(right))
-      .map(([optionName, optionValue]) => [optionName, Boolean(optionValue)]),
+      .map(([optionName, optionValue]) => [optionName, optionValue]),
   );
   const cached = endpointCache.get(key);
   if (cached) {
@@ -316,6 +316,10 @@ function getEndpointParamMapping(
   const computed = mapEndpointParamsToFunctionParams(resolver, endpoint, options);
   endpointCache.set(key, computed);
   return computed;
+}
+
+function getWorkspaceContextAllowList(workspaceContext: SchemaResolver["options"]["workspaceContext"]) {
+  return new Set(workspaceContext);
 }
 
 function renderImport(importData: Import) {
@@ -398,6 +402,7 @@ function renderEndpointParamDescription(endpointParam: ReturnType<typeof mapEndp
 }
 
 function getWorkspaceParamNames(resolver: SchemaResolver, endpoint: Endpoint) {
+  const allowList = getWorkspaceContextAllowList(resolver.options.workspaceContext);
   const endpointParams = getEndpointParamMapping(resolver, endpoint, {});
   const endpointParamNames = new Set(endpointParams.map((param) => param.name));
   const workspaceParamNames = endpointParams.filter((param) => param.paramType === "Path").map((param) => param.name);
@@ -406,7 +411,7 @@ function getWorkspaceParamNames(resolver: SchemaResolver, endpoint: Endpoint) {
     .map((condition) => invalidVariableNameCharactersToCamel(condition.name))
     .filter((name) => endpointParamNames.has(name));
 
-  return getUniqueArray([...workspaceParamNames, ...aclParamNames]);
+  return getUniqueArray([...workspaceParamNames, ...aclParamNames]).filter((name) => allowList.has(name));
 }
 
 function getWorkspaceParamReplacements(resolver: SchemaResolver, endpoint: Endpoint) {

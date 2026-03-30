@@ -104,7 +104,7 @@ describe("generateQueries workspaceContext", () => {
     const files = generateCodeFromOpenAPIDoc(openApiDoc, {
       ...DEFAULT_GENERATE_OPTIONS,
       output: "test-output",
-      workspaceContext: true,
+      workspaceContext: ["officeId", "positionId", "id"],
       builderConfigs: false,
       prefetchQueries: false,
     });
@@ -123,5 +123,35 @@ describe("generateQueries workspaceContext", () => {
       "getPositionQueryOptions({ officeIdFromWorkspace, positionIdFromWorkspace })",
     );
     expect(queriesFile?.content).not.toContain("findByIdQueryOptions({ idFromWorkspace })");
+  });
+
+  it("only replaces allowlisted workspace context params", () => {
+    const files = generateCodeFromOpenAPIDoc(openApiDoc, {
+      ...DEFAULT_GENERATE_OPTIONS,
+      output: "test-output",
+      workspaceContext: ["officeId"],
+      acl: false,
+      checkAcl: false,
+      builderConfigs: false,
+      prefetchQueries: false,
+    });
+
+    const queriesFile = files.find((file) => file.fileName.endsWith("/workspace/workspace.queries.ts"));
+
+    expect(queriesFile?.content).toContain(
+      "export const useGetPosition = <TData>({ officeId, positionId }: { officeId?: string, positionId: string }, options?: AppQueryOptions<typeof WorkspaceApi.getPosition, TData>) => {",
+    );
+    expect(queriesFile?.content).toContain(
+      "...getPositionQueryOptions({ officeId: officeIdFromWorkspace, positionId }),",
+    );
+    expect(queriesFile?.content).toContain(
+      'const officeIdFromWorkspace = OpenApiWorkspaceContext.resolveParam(workspaceContext, "officeId", officeId);',
+    );
+    expect(queriesFile?.content).not.toContain("const positionIdFromWorkspace =");
+    expect(queriesFile?.content).not.toContain("positionId: positionIdFromWorkspace");
+    expect(queriesFile?.content).toContain(
+      "export const useFindById = <TData>({ id }: { id: string }, options?: AppQueryOptions<typeof WorkspaceApi.findById, TData>) => {",
+    );
+    expect(queriesFile?.content).not.toContain("const idFromWorkspace =");
   });
 });
