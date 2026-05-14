@@ -78,6 +78,30 @@ const openApiDoc = {
         },
       } as OpenAPIV3.OperationObject,
     },
+    "/items": {
+      post: {
+        tags: ["Workspace"],
+        operationId: "createItem",
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/Item" },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: "OK",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Item" },
+              },
+            },
+          },
+        },
+      } as OpenAPIV3.OperationObject,
+    },
   },
   components: {
     schemas: {
@@ -153,5 +177,44 @@ describe("generateQueries workspaceContext", () => {
       "export const useFindById = <TData>({ id }: { id: string }, options?: AppQueryOptions<typeof WorkspaceApi.findById, TData>) => {",
     );
     expect(queriesFile?.content).not.toContain("const idFromWorkspace =");
+  });
+
+  it("does not emit provider onError fallback for mutations by default", () => {
+    const files = generateCodeFromOpenAPIDoc(openApiDoc, {
+      ...DEFAULT_GENERATE_OPTIONS,
+      output: "test-output",
+      acl: false,
+      checkAcl: false,
+      mutationEffects: false,
+      builderConfigs: false,
+      prefetchQueries: false,
+    });
+
+    const queriesFile = files.find((file) => file.fileName.endsWith("/workspace/workspace.queries.ts"));
+
+    expect(queriesFile?.content).not.toContain("OpenApiQueryConfig");
+    expect(queriesFile?.content).not.toContain("const queryConfig = OpenApiQueryConfig.useConfig();");
+    expect(queriesFile?.content).not.toContain("onError: options?.onError ?? queryConfig.onError");
+  });
+
+  it("can use OpenApiQueryConfig.onError as the default onError for mutations", () => {
+    const files = generateCodeFromOpenAPIDoc(openApiDoc, {
+      ...DEFAULT_GENERATE_OPTIONS,
+      output: "test-output",
+      acl: false,
+      checkAcl: false,
+      mutationEffects: false,
+      mutationDefaultOnError: true,
+      builderConfigs: false,
+      prefetchQueries: false,
+    });
+
+    const queriesFile = files.find((file) => file.fileName.endsWith("/workspace/workspace.queries.ts"));
+
+    expect(queriesFile?.content).toContain(
+      "import { OpenApiQueryConfig, type AppQueryOptions, type AppMutationOptions }",
+    );
+    expect(queriesFile?.content).toContain("const queryConfig = OpenApiQueryConfig.useConfig();");
+    expect(queriesFile?.content).toContain("onError: options?.onError ?? queryConfig.onError");
   });
 });

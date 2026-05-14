@@ -42,6 +42,7 @@ export function generateConfigs(generateTypeParams: GenerateTypeParams) {
   const hasMutation = endpoints.length > 0;
   const hasAclCheck = resolver.options.checkAcl && endpoints.some((e) => e.acl);
   const hasMutationEffects = resolver.options.mutationEffects && hasMutation;
+  const hasMutationDefaultOnError = resolver.options.mutationDefaultOnError && hasMutation;
   const hasWorkspaceContext =
     resolver.options.workspaceContext && endpoints.some((e) => resolver.options.workspaceContext); // Simplified check
 
@@ -57,7 +58,7 @@ export function generateConfigs(generateTypeParams: GenerateTypeParams) {
   };
 
   const queryTypesImport: Import = {
-    bindings: ["OpenApiQueryConfig"],
+    bindings: [...(hasMutationDefaultOnError ? ["OpenApiQueryConfig"] : [])],
     typeBindings: [QUERY_OPTIONS_TYPES.mutation],
     from: getQueryTypesImportPath(resolver.options),
   };
@@ -199,6 +200,7 @@ function renderColumnsConfig(columnsConfig: DynamicColumnsConfig) {
 function renderMutationContent(resolver: any, endpoint: Endpoint, tag: string) {
   const hasAclCheck = resolver.options.checkAcl && endpoint.acl;
   const hasMutationEffects = resolver.options.mutationEffects;
+  const hasMutationDefaultOnError = resolver.options.mutationDefaultOnError;
   const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
   const endpointTag = getEndpointTag(endpoint, resolver.options);
 
@@ -220,7 +222,9 @@ function renderMutationContent(resolver: any, endpoint: Endpoint, tag: string) {
   lines.push(
     `(options?: AppMutationOptions<typeof ${endpointFunction}, ${mutationVariablesType}>${hasAxiosRequestConfig ? `, config?: AxiosRequestConfig` : ""}) => {`,
   );
-  lines.push("  const queryConfig = OpenApiQueryConfig.useConfig();");
+  if (hasMutationDefaultOnError) {
+    lines.push("  const queryConfig = OpenApiQueryConfig.useConfig();");
+  }
 
   if (hasMutationEffects) {
     lines.push(
@@ -252,6 +256,9 @@ function renderMutationContent(resolver: any, endpoint: Endpoint, tag: string) {
     lines.push("    },");
   }
   lines.push("    ...options,");
+  if (hasMutationDefaultOnError) {
+    lines.push("    onError: options?.onError ?? queryConfig.onError,");
+  }
   lines.push("  });");
   lines.push("}");
   return lines

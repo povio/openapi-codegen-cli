@@ -95,6 +95,7 @@ export function generateQueries(params: GenerateTypeParams) {
   };
 
   const { queryEndpoints, infiniteQueryEndpoints, mutationEndpoints, aclEndpoints } = endpointGroups;
+  const hasMutationDefaultOnError = resolver.options.mutationDefaultOnError && mutationEndpoints.length > 0;
 
   const queryImport: Import = {
     bindings: [
@@ -126,7 +127,7 @@ export function generateQueries(params: GenerateTypeParams) {
   };
 
   const queryTypesImport: Import = {
-    bindings: [...(mutationEndpoints.length > 0 ? ["OpenApiQueryConfig"] : [])],
+    bindings: [...(hasMutationDefaultOnError ? ["OpenApiQueryConfig"] : [])],
     typeBindings: [
       ...(queryEndpoints.length > 0 ? [QUERY_OPTIONS_TYPES.query] : []),
       ...(resolver.options.infiniteQueries && infiniteQueryEndpoints.length > 0
@@ -857,6 +858,7 @@ function renderMutation({
 }) {
   const hasAclCheck = resolver.options.checkAcl && endpoint.acl;
   const hasMutationEffects = resolver.options.mutationEffects;
+  const hasMutationDefaultOnError = resolver.options.mutationDefaultOnError;
   const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
   const tag = getEndpointTag(endpoint, resolver.options);
   const workspaceParamReplacements = resolver.options.workspaceContext
@@ -887,7 +889,9 @@ function renderMutation({
   lines.push(
     `export const ${getQueryName(endpoint, true)} = (options?: AppMutationOptions<typeof ${endpointFunction}, { ${mutationVariablesType} }>${hasMutationEffects ? ` & ${MUTATION_EFFECTS.optionsType}` : ""}${hasAxiosRequestConfig ? `, ${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => {`,
   );
-  lines.push("  const queryConfig = OpenApiQueryConfig.useConfig();");
+  if (hasMutationDefaultOnError) {
+    lines.push("  const queryConfig = OpenApiQueryConfig.useConfig();");
+  }
   if (hasAclCheck) {
     lines.push(`  const { checkAcl } = ${ACL_CHECK_HOOK}();`);
   }
@@ -959,7 +963,9 @@ function renderMutation({
   }
 
   lines.push("    ...options,");
-  lines.push("    onError: options?.onError ?? queryConfig.onError,");
+  if (hasMutationDefaultOnError) {
+    lines.push("    onError: options?.onError ?? queryConfig.onError,");
+  }
   if (hasMutationEffects) {
     lines.push("    onSuccess: async (resData, variables, onMutateResult, context) => {");
     if (updateQueryEndpoints.length > 0) {

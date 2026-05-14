@@ -92,6 +92,7 @@ yarn openapi-codegen generate --config my-config.ts
   --axiosRequestConfig                Include Axios request config parameters in query hooks (default: false)
   --infiniteQueries                   Generate infinite queries for paginated API endpoints (default: false)
   --mutationEffects                   Add mutation effects options to mutation hooks (default: true)
+  --mutationDefaultOnError            Use OpenApiQueryConfig.onError as the default onError for mutation hooks (default: false)
   --workspaceContext                  Comma-separated list of path/ACL params that generated hooks may resolve from OpenApiWorkspaceContext
   --inlineEndpoints                   Inline endpoint implementations into generated query files (default: false)
   --inlineEndpointsExcludeModules     Comma-separated modules/tags to keep as separate API files while inlineEndpoints=true
@@ -192,6 +193,22 @@ const config: OpenAPICodegenConfig = {
 };
 
 export default config;
+```
+
+### Default mutation errors
+
+Set `mutationDefaultOnError: true` in codegen config (or pass `--mutationDefaultOnError`) to let generated mutation hooks fall back to `OpenApiQueryConfig.Provider` when a mutation call does not define its own `onError`.
+
+```tsx
+import { ErrorHandler, OpenApiQueryConfig } from "@povio/openapi-codegen-cli";
+
+<OpenApiQueryConfig.Provider
+  onError={(error) => {
+    errorToast({ text: ErrorHandler.getErrorMessage(error) });
+  }}
+>
+  <App />
+</OpenApiQueryConfig.Provider>;
 ```
 
 ### OpenApiWorkspaceContext (Path + ACL defaults)
