@@ -8,6 +8,7 @@ import { getEnumZodSchemaCodeFromEnumNames, getZodSchema } from "@/generators/co
 import { resolveZodSchemaName } from "@/generators/core/zod/resolveZodSchemaName";
 import { EndpointParameter } from "@/generators/types/endpoint";
 import { ParameterObject } from "@/generators/types/openapi";
+import { isSchemaObject } from "@/generators/utils/openapi-schema.utils";
 import {
   isParamMediaTypeAllowed,
   isSortingParameterObject,
@@ -89,7 +90,25 @@ export function getEndpointParameter({
 
   const schemaObject = resolver.resolveObject(schema);
 
-  const zodChain = getZodChain({ schema: schemaObject, meta: zodSchema.meta, options: resolver.options });
+  /**
+   * Optional query/header object params (e.g. deepObject `filter`): OpenAPI marks the param
+   * `required: false`, so getZodChain would append `.optional()` to the named schema. The
+   * endpoints template already wraps named optional params with `.optional()` in
+   * `ZodExtended.parse`, which duplicates optionality and breaks consumers that expect a bare
+   * object schema (e.g. builder configs). Keep `.nullable()` / defaults / validations; only
+   * skip the root presence modifier for object-shaped schemas.
+   */
+  const rootIsOptionalQueryOrHeaderObject =
+    (paramObj.in === "query" || paramObj.in === "header") &&
+    !paramObj.required &&
+    isSchemaObject(schemaObject) &&
+    (schemaObject.type === "object" || (!!schemaObject.properties && Object.keys(schemaObject.properties).length > 0));
+
+  const zodChain = getZodChain({
+    schema: schemaObject,
+    meta: rootIsOptionalQueryOrHeaderObject ? { ...zodSchema.meta, isRequired: true } : zodSchema.meta,
+    options: resolver.options,
+  });
 
   const zodSchemaName = resolveZodSchemaName({
     schema: schemaObject,
@@ -110,6 +129,6 @@ export function getEndpointParameter({
       .run() as "Header" | "Query" | "Path",
     zodSchema: zodSchemaName,
     parameterObject: paramObj,
-    parameterSortingEnumSchemaName,
+    ...(parameterSortingEnumSchemaName !== undefined ? { parameterSortingEnumSchemaName } : {}),
   };
 }
