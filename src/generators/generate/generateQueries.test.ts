@@ -222,6 +222,30 @@ describe("generateQueries workspaceContext", () => {
     expect(queriesFile?.content).not.toContain("const normalizeId =");
   });
 
+  it("emits context-aware ACL hooks for allowlisted workspace conditions", () => {
+    const files = generateCodeFromOpenAPIDoc(openApiDoc, {
+      ...DEFAULT_GENERATE_OPTIONS,
+      output: "test-output",
+      workspaceContext: ["officeId"],
+      builderConfigs: false,
+      prefetchQueries: false,
+    });
+
+    const aclFile = files.find((file) => file.fileName.endsWith("/workspace/workspace.acl.ts"));
+
+    expect(aclFile?.content).toContain('import { useWorkspaceContext } from "@povio/openapi-codegen-cli";');
+    expect(aclFile?.content).toContain("object?: { officeId: string, positionId: string,  }");
+    expect(aclFile?.content).toContain("export const useCanUseGetPosition = (");
+    expect(aclFile?.content).toContain("object: { officeId?: string, positionId: string,  }");
+    expect(aclFile?.content).toContain(
+      "const { officeId: officeIdWorkspace } = useWorkspaceContext<{ officeId?: string }>();",
+    );
+    expect(aclFile?.content).toContain("const normalizeOfficeId = object?.officeId ?? officeIdWorkspace;");
+    expect(aclFile?.content).toContain("throw Error(`OfficeId not provided`);");
+    expect(aclFile?.content).toContain("return canUseGetPosition({ ...object, officeId: normalizeOfficeId });");
+    expect(aclFile?.content).not.toContain("positionId: normalizePositionId");
+  });
+
   it("resolves allowlisted workspace params inside mutation callbacks", () => {
     const files = generateCodeFromOpenAPIDoc(openApiDoc, {
       ...DEFAULT_GENERATE_OPTIONS,
