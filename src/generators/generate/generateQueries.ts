@@ -66,6 +66,7 @@ import { getNamespaceName } from "@/generators/utils/namespace.utils";
 import { isSchemaObject } from "@/generators/utils/openapi-schema.utils";
 import { isParamMediaTypeAllowed } from "@/generators/utils/openapi.utils";
 import { getDestructuredVariables, isInfiniteQuery, isMutation, isQuery } from "@/generators/utils/query.utils";
+import { capitalize } from "@/generators/utils/string.utils";
 import { getEndpointTag, shouldInlineEndpointsForTag } from "@/generators/utils/tag.utils";
 import { isNamedZodSchema } from "@/generators/utils/zod-schema.utils";
 import { invalidVariableNameCharactersToCamel } from "@/generators/utils/js.utils";
@@ -142,7 +143,7 @@ export function generateQueries(params: GenerateTypeParams) {
     resolver.options.workspaceContext &&
     endpoints.some((endpoint) => getWorkspaceParamNames(resolver, endpoint).length > 0);
   const workspaceContextImport: Import = {
-    bindings: ["OpenApiWorkspaceContext"],
+    bindings: ["useWorkspaceContext"],
     from: PACKAGE_IMPORT_PATH,
   };
 
@@ -417,15 +418,26 @@ function getWorkspaceParamNames(resolver: SchemaResolver, endpoint: Endpoint) {
 
 function getWorkspaceParamReplacements(resolver: SchemaResolver, endpoint: Endpoint) {
   return Object.fromEntries(
-    getWorkspaceParamNames(resolver, endpoint).map((name) => [name, `${name}FromWorkspace`]),
+    getWorkspaceParamNames(resolver, endpoint).map((name) => [name, `normalize${capitalize(name)}`]),
   ) as Record<string, string>;
 }
 
-function renderWorkspaceParamResolutions({
+function getWorkspaceParamTypes(resolver: SchemaResolver, endpoint: Endpoint, modelNamespaceTag?: string) {
+  const workspaceParamNames = new Set(getWorkspaceParamNames(resolver, endpoint));
+  return Object.fromEntries(
+    getEndpointParamMapping(resolver, endpoint, { modelNamespaceTag })
+      .filter((param) => workspaceParamNames.has(param.name))
+      .map((param) => [param.name, param.type]),
+  ) as Record<string, string>;
+}
+
+function renderWorkspaceContextDestructure({
   replacements,
+  paramTypes,
   indent,
 }: {
   replacements: Record<string, string>;
+  paramTypes: Record<string, string>;
   indent: string;
 }) {
   const workspaceParamNames = Object.keys(replacements);
@@ -433,13 +445,46 @@ function renderWorkspaceParamResolutions({
     return [];
   }
 
-  const lines = [`${indent}const workspaceContext = OpenApiWorkspaceContext.useContext();`];
+  const workspaceParamBindings = workspaceParamNames.map((paramName) => `${paramName}: ${paramName}Workspace`);
+  const workspaceContextType = workspaceParamNames
+    .map((paramName) => `${paramName}?: ${paramTypes[paramName] ?? "unknown"}`)
+    .join("; ");
+  return [
+    `${indent}const { ${workspaceParamBindings.join(", ")} } = useWorkspaceContext<{ ${workspaceContextType} }>();`,
+  ];
+}
+
+function renderWorkspaceParamCoalescing({
+  replacements,
+  indent,
+}: {
+  replacements: Record<string, string>;
+  indent: string;
+}) {
+  const workspaceParamNames = Object.keys(replacements);
+  const lines: string[] = [];
   for (const paramName of workspaceParamNames) {
-    lines.push(
-      `${indent}const ${replacements[paramName]} = OpenApiWorkspaceContext.resolveParam(workspaceContext, "${paramName}", ${paramName});`,
-    );
+    lines.push(`${indent}const ${replacements[paramName]} = ${paramName} ?? ${paramName}Workspace;`);
+    lines.push(`${indent}if (!${replacements[paramName]}) {`);
+    lines.push(`${indent}  throw Error(\`${capitalize(paramName)} not provided\`);`);
+    lines.push(`${indent}}`);
   }
   return lines;
+}
+
+function renderWorkspaceParamResolutions({
+  replacements,
+  paramTypes,
+  indent,
+}: {
+  replacements: Record<string, string>;
+  paramTypes: Record<string, string>;
+  indent: string;
+}) {
+  return [
+    ...renderWorkspaceContextDestructure({ replacements, paramTypes, indent }),
+    ...renderWorkspaceParamCoalescing({ replacements, indent }),
+  ];
 }
 
 function renderAclCheckCall(
@@ -809,6 +854,7 @@ function renderQuery({
   const workspaceParamReplacements = resolver.options.workspaceContext
     ? getWorkspaceParamReplacements(resolver, endpoint)
     : {};
+  const workspaceParamTypes = getWorkspaceParamTypes(resolver, endpoint, tag);
   const endpointArgs = renderEndpointArgs(resolver, endpoint, {});
   const resolvedEndpointArgs = renderEndpointObjectArgs(resolver, endpoint, {}, workspaceParamReplacements);
   const endpointParams = renderEndpointParams(resolver, endpoint, {
@@ -827,7 +873,13 @@ function renderQuery({
   if (hasAclCheck) {
     lines.push(`  const { checkAcl } = ${ACL_CHECK_HOOK}();`);
   }
-  lines.push(...renderWorkspaceParamResolutions({ replacements: workspaceParamReplacements, indent: "  " }));
+  lines.push(
+    ...renderWorkspaceParamResolutions({
+      replacements: workspaceParamReplacements,
+      paramTypes: workspaceParamTypes,
+      indent: "  ",
+    }),
+  );
   lines.push("  ");
   lines.push(`  return ${QUERY_HOOKS.query}({`);
   lines.push(`    ...${queryOptionsName}(${queryOptionsArgs}),`);
@@ -864,6 +916,7 @@ function renderMutation({
   const workspaceParamReplacements = resolver.options.workspaceContext
     ? getWorkspaceParamReplacements(resolver, endpoint)
     : {};
+  const workspaceParamTypes = getWorkspaceParamTypes(resolver, endpoint, tag);
   const endpointParams = renderEndpointParams(resolver, endpoint, {
     includeFileParam: true,
     optionalPathParams: resolver.options.workspaceContext,
@@ -895,9 +948,13 @@ function renderMutation({
   if (hasAclCheck) {
     lines.push(`  const { checkAcl } = ${ACL_CHECK_HOOK}();`);
   }
-  if (Object.keys(workspaceParamReplacements).length > 0) {
-    lines.push("  const workspaceContext = OpenApiWorkspaceContext.useContext();");
-  }
+  lines.push(
+    ...renderWorkspaceContextDestructure({
+      replacements: workspaceParamReplacements,
+      paramTypes: workspaceParamTypes,
+      indent: "  ",
+    }),
+  );
   if (hasMutationEffects) {
     lines.push(
       `  const { runMutationEffects } = useMutationEffects<typeof ${QUERY_MODULE_ENUM}.${tag}>({ currentModule: ${QUERIES_MODULE_NAME} });`,
@@ -912,11 +969,7 @@ function renderMutation({
   lines.push(
     `    mutationFn: ${endpoint.mediaUpload ? "async " : ""}(${mutationFnArg}) => ${hasMutationFnBody ? "{ " : ""}`,
   );
-  for (const [paramName, resolvedParamName] of Object.entries(workspaceParamReplacements)) {
-    lines.push(
-      `      const ${resolvedParamName} = OpenApiWorkspaceContext.resolveParam(workspaceContext, "${paramName}", ${paramName});`,
-    );
-  }
+  lines.push(...renderWorkspaceParamCoalescing({ replacements: workspaceParamReplacements, indent: "      " }));
   if (hasAclCheck) {
     lines.push(renderAclCheckCall(resolver, endpoint, workspaceParamReplacements, "      "));
   }
@@ -972,11 +1025,7 @@ function renderMutation({
       if (destructuredVariables.length > 0) {
         lines.push(`      const { ${destructuredVariables.join(", ")} } = variables;`);
       }
-      for (const [paramName, resolvedParamName] of Object.entries(workspaceParamReplacements)) {
-        lines.push(
-          `      const ${resolvedParamName} = OpenApiWorkspaceContext.resolveParam(workspaceContext, "${paramName}", ${paramName});`,
-        );
-      }
+      lines.push(...renderWorkspaceParamCoalescing({ replacements: workspaceParamReplacements, indent: "      " }));
       lines.push(
         `      const updateKeys = [${updateQueryEndpoints
           .map(
@@ -1079,6 +1128,7 @@ function renderInfiniteQuery({
   const workspaceParamReplacements = resolver.options.workspaceContext
     ? getWorkspaceParamReplacements(resolver, endpoint)
     : {};
+  const workspaceParamTypes = getWorkspaceParamTypes(resolver, endpoint, tag);
   const endpointParams = renderEndpointParams(resolver, endpoint, {
     excludePageParam: true,
     optionalPathParams: resolver.options.workspaceContext,
@@ -1103,7 +1153,13 @@ function renderInfiniteQuery({
   if (hasAclCheck) {
     lines.push(`  const { checkAcl } = ${ACL_CHECK_HOOK}();`);
   }
-  lines.push(...renderWorkspaceParamResolutions({ replacements: workspaceParamReplacements, indent: "  " }));
+  lines.push(
+    ...renderWorkspaceParamResolutions({
+      replacements: workspaceParamReplacements,
+      paramTypes: workspaceParamTypes,
+      indent: "  ",
+    }),
+  );
   lines.push("");
   lines.push(`  return ${QUERY_HOOKS.infiniteQuery}({`);
   lines.push(`    ...${queryOptionsName}(${queryOptionsArgs}),`);

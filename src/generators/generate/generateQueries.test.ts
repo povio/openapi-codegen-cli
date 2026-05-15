@@ -102,6 +102,47 @@ const openApiDoc = {
         },
       } as OpenAPIV3.OperationObject,
     },
+    "/offices/{officeId}/positions": {
+      post: {
+        tags: ["Workspace"],
+        operationId: "createPosition",
+        "x-acl": [
+          {
+            action: "create",
+            subject: "Position",
+            conditions: {
+              officeId: "$params.officeId",
+            },
+          },
+        ],
+        parameters: [
+          {
+            name: "officeId",
+            in: "path",
+            required: true,
+            schema: { type: "string" },
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/Position" },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: "OK",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Position" },
+              },
+            },
+          },
+        },
+      } as OpenAPIV3.OperationObject,
+    },
   },
   components: {
     schemas: {
@@ -136,17 +177,20 @@ describe("generateQueries workspaceContext", () => {
     const queriesFile = files.find((file) => file.fileName.endsWith("/workspace/workspace.queries.ts"));
 
     expect(queriesFile?.content).toContain(
-      "getPositionQueryOptions({ officeId: officeIdFromWorkspace, positionId: positionIdFromWorkspace })",
+      "getPositionQueryOptions({ officeId: normalizeOfficeId, positionId: normalizePositionId })",
     );
     expect(queriesFile?.content).toContain(
-      "return getPositionQueryOptions({ officeId: officeIdFromWorkspace, positionId: positionIdFromWorkspace }).queryFn();",
+      "return getPositionQueryOptions({ officeId: normalizeOfficeId, positionId: normalizePositionId }).queryFn();",
     );
-    expect(queriesFile?.content).toContain("findByIdQueryOptions({ id: idFromWorkspace })");
+    expect(queriesFile?.content).toContain("findByIdQueryOptions({ id: normalizeId })");
+    expect(queriesFile?.content).toContain(
+      "const { officeId: officeIdWorkspace, positionId: positionIdWorkspace } = useWorkspaceContext<{ officeId?: string; positionId?: string }>();",
+    );
+    expect(queriesFile?.content).toContain("const normalizeOfficeId = officeId ?? officeIdWorkspace;");
+    expect(queriesFile?.content).toContain("throw Error(`OfficeId not provided`);");
 
-    expect(queriesFile?.content).not.toContain(
-      "getPositionQueryOptions({ officeIdFromWorkspace, positionIdFromWorkspace })",
-    );
-    expect(queriesFile?.content).not.toContain("findByIdQueryOptions({ idFromWorkspace })");
+    expect(queriesFile?.content).not.toContain("getPositionQueryOptions({ normalizeOfficeId, normalizePositionId })");
+    expect(queriesFile?.content).not.toContain("findByIdQueryOptions({ normalizeId })");
   });
 
   it("only replaces allowlisted workspace context params", () => {
@@ -165,18 +209,42 @@ describe("generateQueries workspaceContext", () => {
     expect(queriesFile?.content).toContain(
       "export const useGetPosition = <TData>({ officeId, positionId }: { officeId?: string, positionId: string }, options?: AppQueryOptions<typeof WorkspaceApi.getPosition, TData>) => {",
     );
+    expect(queriesFile?.content).toContain("...getPositionQueryOptions({ officeId: normalizeOfficeId, positionId }),");
     expect(queriesFile?.content).toContain(
-      "...getPositionQueryOptions({ officeId: officeIdFromWorkspace, positionId }),",
+      "const { officeId: officeIdWorkspace } = useWorkspaceContext<{ officeId?: string }>();",
     );
-    expect(queriesFile?.content).toContain(
-      'const officeIdFromWorkspace = OpenApiWorkspaceContext.resolveParam(workspaceContext, "officeId", officeId);',
-    );
-    expect(queriesFile?.content).not.toContain("const positionIdFromWorkspace =");
-    expect(queriesFile?.content).not.toContain("positionId: positionIdFromWorkspace");
+    expect(queriesFile?.content).toContain("const normalizeOfficeId = officeId ?? officeIdWorkspace;");
+    expect(queriesFile?.content).not.toContain("const normalizePositionId =");
+    expect(queriesFile?.content).not.toContain("positionId: normalizePositionId");
     expect(queriesFile?.content).toContain(
       "export const useFindById = <TData>({ id }: { id: string }, options?: AppQueryOptions<typeof WorkspaceApi.findById, TData>) => {",
     );
-    expect(queriesFile?.content).not.toContain("const idFromWorkspace =");
+    expect(queriesFile?.content).not.toContain("const normalizeId =");
+  });
+
+  it("resolves allowlisted workspace params inside mutation callbacks", () => {
+    const files = generateCodeFromOpenAPIDoc(openApiDoc, {
+      ...DEFAULT_GENERATE_OPTIONS,
+      output: "test-output",
+      workspaceContext: ["officeId"],
+      acl: false,
+      checkAcl: false,
+      mutationEffects: false,
+      builderConfigs: false,
+      prefetchQueries: false,
+    });
+
+    const queriesFile = files.find((file) => file.fileName.endsWith("/workspace/workspace.queries.ts"));
+
+    expect(queriesFile?.content).toContain(
+      "export const useCreatePosition = (options?: AppMutationOptions<typeof WorkspaceApi.createPosition, { officeId?: string, data: WorkspaceModels.Position }>) => {",
+    );
+    expect(queriesFile?.content).toContain(
+      "const { officeId: officeIdWorkspace } = useWorkspaceContext<{ officeId?: string }>();",
+    );
+    expect(queriesFile?.content).toContain("mutationFn: ({ officeId, data }) => { ");
+    expect(queriesFile?.content).toContain("const normalizeOfficeId = officeId ?? officeIdWorkspace;");
+    expect(queriesFile?.content).toContain("return WorkspaceApi.createPosition(normalizeOfficeId, data)");
   });
 
   it("does not emit provider onError fallback for mutations by default", () => {
