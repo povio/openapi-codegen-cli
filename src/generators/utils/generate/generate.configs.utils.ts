@@ -255,6 +255,23 @@ function getInputsConfig(resolver: SchemaResolver, endpointParameter?: EndpointP
   return { schema: getImportedZodSchemaName(resolver, endpointParameter.zodSchema), options: { inputs } };
 }
 
+function resolveReadAllItemZodSchema(
+  resolver: SchemaResolver,
+  endpoint: Endpoint,
+  itemSchema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject,
+  itemsPropertyKey: string,
+): string {
+  if (isReferenceObject(itemSchema)) {
+    return resolver.getZodSchemaNameByRef(itemSchema.$ref);
+  }
+
+  if (isNamedZodSchema(endpoint.response)) {
+    return `${getImportedZodSchemaName(resolver, endpoint.response)}.shape.${itemsPropertyKey}.element`;
+  }
+
+  return ANY_SCHEMA;
+}
+
 function getColumnsConfig(resolver: SchemaResolver, endpoint: Endpoint) {
   const endpointResponse = endpoint.responseObject;
   if (!endpointResponse) {
@@ -294,7 +311,7 @@ function getColumnsConfig(resolver: SchemaResolver, endpoint: Endpoint) {
     return;
   }
 
-  const zodSchema = isReferenceObject(itemSchema) ? resolver.getZodSchemaNameByRef(itemSchema.$ref) : ANY_SCHEMA;
+  const zodSchema = resolveReadAllItemZodSchema(resolver, endpoint, itemSchema, propertyKey);
   const columns = Object.keys(itemSchemaObj?.properties ?? {}).reduce((acc, key) => ({ ...acc, [key]: true }), {});
 
   const sortableEnumSchemaName = endpoint.parameters.find(
