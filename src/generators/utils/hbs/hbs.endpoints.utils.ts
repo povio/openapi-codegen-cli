@@ -5,6 +5,7 @@ import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
 import { Endpoint } from "@/generators/types/endpoint";
 import { GenerateOptions } from "@/generators/types/options";
 import {
+  endpointParamsAllOptional,
   getEndpointBody,
   getEndpointName,
   getEndpointPath,
@@ -23,6 +24,7 @@ enum EndpointsHelpers {
   EndpointBody = "endpointBody",
   EndpointArgs = "endpointArgs",
   EndpointParamDescription = "endpointParamDescription",
+  EndpointParamsAllOptional = "endpointParamsAllOptional",
 }
 
 export function registerEndpointsHbsHelpers(resolver: SchemaResolver) {
@@ -33,6 +35,7 @@ export function registerEndpointsHbsHelpers(resolver: SchemaResolver) {
   registerEndpointBodyHelper();
   registerEndpointArgsHelper(resolver);
   registerEndpointParamDescriptionHelper();
+  registerEndpointParamsAllOptionalHelper(resolver);
 }
 
 function registerEndpointNameHelper() {
@@ -68,6 +71,14 @@ function registerEndpointArgsHelper(resolver: SchemaResolver) {
       mapEndpointParamsToFunctionParams(resolver, endpoint, options.hash)
         .map((param) => param.name)
         .join(", "),
+  );
+}
+
+function registerEndpointParamsAllOptionalHelper(resolver: SchemaResolver) {
+  Handlebars.registerHelper(
+    EndpointsHelpers.EndpointParamsAllOptional,
+    (endpoint: Endpoint, options: { hash: Parameters<typeof mapEndpointParamsToFunctionParams>[2] }) =>
+      endpointParamsAllOptional(resolver, endpoint, options.hash),
   );
 }
 

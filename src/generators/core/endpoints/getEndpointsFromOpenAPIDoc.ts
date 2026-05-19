@@ -122,20 +122,23 @@ export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver) {
 
         const responseObj = <OpenAPIV3.ResponseObject>resolver.resolveObject(operation.responses[statusCode]);
         const mediaTypes = Object.keys(responseObj?.content ?? {});
-        const matchingMediaType = mediaTypes.find(isMediaTypeAllowed);
+        // Prefer any content entry that declares a body schema. Some specs use
+        // non-application media types (e.g. text/json) which would otherwise skip
+        // schema resolution and fall back to z.void() for the whole operation.
+        const matchingMediaType =
+          mediaTypes.find((mt) => {
+            const entry = responseObj.content?.[mt];
+            return !!entry?.schema;
+          }) ?? mediaTypes.find(isMediaTypeAllowed);
 
         let schema: OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject | undefined;
-        let responseZodSchema: string | undefined;
         if (matchingMediaType) {
           endpoint.responseFormat = matchingMediaType;
           schema = responseObj.content?.[matchingMediaType]?.schema;
-        } else {
-          responseZodSchema = VOID_SCHEMA;
-          if (statusCode === "200") {
-            resolver.validationErrors.push(
-              getInvalidStatusCodeError({ received: "200", expected: "204" }, operation, endpoint),
-            );
-          }
+        } else if (statusCode === "200") {
+          resolver.validationErrors.push(
+            getInvalidStatusCodeError({ received: "200", expected: "204" }, operation, endpoint),
+          );
         }
 
         if (schema) {
@@ -158,18 +161,32 @@ export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver) {
             tag,
           });
 
-          responseZodSchema =
+          const responseZodSchema =
             zodSchemaName + getZodChain({ schema: schemaObject, meta: zodSchema.meta, options: resolver.options });
-        }
 
-        if (responseZodSchema) {
           const status = Number(statusCode);
 
           if (isMainResponseStatus(status) && !endpoint.response) {
             endpoint.response = responseZodSchema;
             endpoint.responseObject = responseObj;
             endpoint.responseDescription = responseObj?.description;
-          } else if (statusCode !== "default" && isErrorStatus(status)) {
+          } else if (statusCode === "default" && !endpoint.response) {
+            // Nest/Swagger often puts the JSON body only under `default` while `200` has no content.
+            endpoint.response = responseZodSchema;
+            endpoint.responseObject = responseObj;
+            endpoint.responseDescription = responseObj?.description;
+          } else if (statusCode !== "default" && !Number.isNaN(status) && isErrorStatus(status)) {
+            endpoint.errors.push({
+              zodSchema: responseZodSchema,
+              status,
+              description: responseObj?.description,
+            });
+          }
+        } else {
+          const status = Number(statusCode);
+          const responseZodSchema = VOID_SCHEMA;
+
+          if (statusCode !== "default" && !Number.isNaN(status) && isErrorStatus(status)) {
             endpoint.errors.push({
               zodSchema: responseZodSchema,
               status,
@@ -190,7 +207,10 @@ export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver) {
         );
       }
 
-      endpoint.acl = getEndpointAcl({ resolver, endpoint, operation });
+      const resolvedAcl = getEndpointAcl({ resolver, endpoint, operation });
+      if (resolvedAcl?.length) {
+        endpoint.acl = resolvedAcl;
+      }
 
       if (operation.security?.[0].Authorization && !endpoint.responseStatusCodes.includes("401")) {
         resolver.validationErrors.push(getMissingStatusCodeError("401", operation, endpoint));
