@@ -13,9 +13,10 @@ export const {{infiniteQueryName endpoint}} = <TData>({{#if (endpointParams endp
     {{#if hasQueryFnBody}}return {{/if}}{{importedEndpointName endpoint}}({{{endpointArgs endpoint replacePageParam=true}}}{{#if hasAxiosRequestConfig}}, {{axiosRequestConfigName}}{{/if}})
     {{#if hasQueryFnBody}} }{{/if}},
     initialPageParam: 1,
-    getNextPageParam: ({ {{pageParamName}}, {{totalItemsName}}, {{limitParamName}}: limitParam }) => {
-      const pageParam = {{pageParamName}} ?? 1;
-      return pageParam * limitParam < {{totalItemsName}} ? pageParam + 1 : null;
+    getNextPageParam: (response) => {
+      const pageParam = (response.{{pageParamName}} ?? 1);
+      const limitParam = response.{{limitParamName}};
+      return pageParam * limitParam < response.{{totalItemsName}} ? pageParam + 1 : null;
     },
     ...options,
   });
