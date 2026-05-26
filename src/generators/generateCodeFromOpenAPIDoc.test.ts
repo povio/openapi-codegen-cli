@@ -167,29 +167,34 @@ describe("generateCodeFromOpenAPIDoc", () => {
     const queries = files.find(({ fileName }) => fileName === "output/documents/documents.queries.ts")?.content;
 
     expect(queries).toBeDefined();
+
+    // PUT with path params + body: path params become first arg, body stays in mutationFn, scope added
     expect(queries).toContain(
-      "export const useUpdate = ({ userId, documentId }: { userId: string; documentId: string;  }, options?: AppMutationOptions<typeof DocumentsApi.update, { data: DocumentsModels.UpdateDocumentBody,  }>) => {",
+      "export const useUpdate = ({ userId, documentId }: { userId: string; documentId: string }, options?: AppMutationOptions<typeof DocumentsApi.update, { data: DocumentsModels.UpdateDocumentBody }>) => {",
     );
-    expect(queries).toContain("mutationFn: ( { data } ) =>");
+    expect(queries).toContain("mutationFn: ({ data }) =>");
     expect(queries).toContain("DocumentsApi.update(userId, documentId, data)");
     expect(queries).toContain("scope: { id: `update:${userId}:${documentId}` }");
 
+    // DELETE with only path params: path params become first arg, mutationFn has no args, no TVariables type arg
     expect(queries).toContain(
-      "export const useDeleteDocument = ({ userId, documentId }: { userId: string; documentId: string;  }, options?: AppMutationOptions<typeof DocumentsApi.deleteDocument>) => {",
+      "export const useDeleteDocument = ({ userId, documentId }: { userId: string; documentId: string }, options?: AppMutationOptions<typeof DocumentsApi.deleteDocument>) => {",
     );
     expect(queries).toContain("mutationFn: () =>");
     expect(queries).toContain("DocumentsApi.deleteDocument(userId, documentId)");
     expect(queries).toContain("scope: { id: `deleteDocument:${userId}:${documentId}` }");
 
+    // POST without path params: no scope, no API change
     expect(queries).toContain(
-      "export const useCreate = (options?: AppMutationOptions<typeof DocumentsApi.create, { data: DocumentsModels.UpdateDocumentBody,  }>) => {",
+      "export const useCreate = (options?: AppMutationOptions<typeof DocumentsApi.create, { data: DocumentsModels.UpdateDocumentBody }>) => {",
     );
     expect(queries).not.toContain("scope: { id: `create");
 
+    // POST with path params + media upload: POST is excluded from scoping, no API change
     expect(queries).toContain(
-      "export const useUploadAvatar = (options?: AppMutationOptions<typeof DocumentsApi.uploadAvatar, { userId: string, data: string, file?: File,  abortController?: AbortController, onUploadProgress?: (progress: { loaded: number; total: number }) => void }>) => {",
+      "export const useUploadAvatar = (options?: AppMutationOptions<typeof DocumentsApi.uploadAvatar, { userId: string, data: string, file?: File;",
     );
-    expect(queries).toContain("mutationFn: async ( { userId, data, file, abortController, onUploadProgress } ) =>");
+    expect(queries).toContain("mutationFn: async ({ userId, data, file, abortController, onUploadProgress }) => {");
     expect(queries).toContain("DocumentsApi.uploadAvatar(userId, data)");
     expect(queries).not.toContain("scope: { id: `uploadAvatar:${userId}` }");
   });
