@@ -766,6 +766,77 @@ describe("getEndpointsFromOpenAPIDoc", () => {
     );
   });
 
+  test("uses default response when 200 has no content but default has JSON body", () => {
+    const Widget = {
+      type: "object",
+      properties: { id: { type: "string" } },
+    } as OpenAPIV3.SchemaObject;
+
+    const openApiDoc: OpenAPIV3.Document = {
+      ...baseDoc,
+      components: { schemas: { Widget } },
+      paths: {
+        "/widgets": {
+          get: {
+            tags: ["widget"],
+            operationId: "listWidgets",
+            responses: {
+              "200": {
+                description: "",
+              },
+              default: {
+                description: "",
+                content: {
+                  [JSON_APPLICATION_FORMAT]: {
+                    schema: {
+                      type: "array",
+                      items: { $ref: "#/components/schemas/Widget" },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+
+    const resolver = new SchemaResolver(openApiDoc, generateOptions);
+    const endpoints = getEndpointsFromOpenAPIDoc(resolver);
+
+    expect(endpoints).toEqual([
+      {
+        description: undefined,
+        summary: undefined,
+        errors: [],
+        method: "get",
+        operationName: "listWidgets",
+        parameters: [],
+        path: "/widgets",
+        requestFormat: JSON_APPLICATION_FORMAT,
+        response: "ListWidgetsResponse",
+        responseDescription: "",
+        responseFormat: JSON_APPLICATION_FORMAT,
+        responseObject: {
+          content: {
+            [JSON_APPLICATION_FORMAT]: {
+              schema: { type: "array", items: { $ref: "#/components/schemas/Widget" } },
+            },
+          },
+          description: "",
+        },
+        tags: ["widget"],
+        responseStatusCodes: ["200", "default"],
+        mediaUpload: false,
+        mediaDownload: false,
+      },
+    ]);
+    expect(resolver.getZodSchemas()).toMatchObject({
+      Widget: expect.any(String),
+      ListWidgetsResponse: "z.array(Widget)",
+    });
+  });
+
   test("petstore.yaml", async () => {
     const openApiDoc = (await SwaggerParser.parse("./test/petstore.yaml")) as OpenAPIV3.Document;
     const resolver = new SchemaResolver(openApiDoc, generateOptions);
@@ -1404,8 +1475,16 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         ],
         path: "/user",
         requestFormat: JSON_APPLICATION_FORMAT,
-        response: "z.void()",
+        response: "User",
+        responseDescription: "Successful operation",
         responseFormat: JSON_APPLICATION_FORMAT,
+        responseObject: {
+          content: {
+            [JSON_APPLICATION_FORMAT]: { schema: { $ref: "#/components/schemas/User" } },
+            "application/xml": { schema: { $ref: "#/components/schemas/User" } },
+          },
+          description: "Successful operation",
+        },
         tags: ["user"],
         responseStatusCodes: ["default"],
         mediaUpload: false,

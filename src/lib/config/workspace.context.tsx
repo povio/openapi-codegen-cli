@@ -14,8 +14,8 @@ export namespace OpenApiWorkspaceContext {
     return <Context.Provider value={contextValues}>{children}</Context.Provider>;
   };
 
-  export const useContext = () => {
-    return use(Context);
+  export const useContext = <TValues extends WorkspaceValues = WorkspaceValues>() => {
+    return use(Context) as TValues;
   };
 
   export const resolveParam = <T,>(context: WorkspaceValues, name: string, value: T | null | undefined): T => {
@@ -31,3 +31,6 @@ export namespace OpenApiWorkspaceContext {
     return workspaceValue as T;
   };
 }
+
+export const useWorkspaceContext = <TValues extends WorkspaceValues = WorkspaceValues>() =>
+  OpenApiWorkspaceContext.useContext<TValues>();

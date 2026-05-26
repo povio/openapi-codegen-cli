@@ -76,6 +76,7 @@ yarn openapi-codegen generate --config my-config.ts
   --splitByTags                       Organize output into separate folders based on OpenAPI operation tags (default: true)
   --defaultTag                        (Requires `--splitByTags`) Default tag for shared code across multiple tags (default: 'Common')
 
+  --includeTags                       Comma-separated list of tags to include in generation
   --excludeTags                       Comma-separated list of tags to exclude from generation
   --excludePathRegex                  Exclude operations whose paths match the given regular expression
   --excludeRedundantZodSchemas        Exclude any redundant Zod schemas (default: true)
@@ -91,7 +92,9 @@ yarn openapi-codegen generate --config my-config.ts
   --axiosRequestConfig                Include Axios request config parameters in query hooks (default: false)
   --infiniteQueries                   Generate infinite queries for paginated API endpoints (default: false)
   --mutationEffects                   Add mutation effects options to mutation hooks (default: true)
-  --workspaceContext                  Allow generated hooks to resolve path/ACL params from OpenApiWorkspaceContext (default: false)
+  --mutationScope                     Serialize mutations for the same path-param resource via TanStack scope.id (default: false)
+  --mutationDefaultOnError            Use OpenApiQueryConfig.onError as the default onError for mutation hooks (default: false)
+  --workspaceContext                  Comma-separated list of path/ACL params that generated hooks may resolve from OpenApiWorkspaceContext
   --inlineEndpoints                   Inline endpoint implementations into generated query files (default: false)
   --inlineEndpointsExcludeModules     Comma-separated modules/tags to keep as separate API files while inlineEndpoints=true
   --modelsOnly                        Generate only model files (default: false)
@@ -115,6 +118,7 @@ yarn openapi-codegen generate --config my-config.ts
   --splitByTags                       Organize output into separate folders based on OpenAPI operation tags (default: true)
   --defaultTag                        (Requires `--splitByTags`) Default tag for shared code across multiple tags (default: 'Common')
 
+  --includeTags                       Comma-separated list of tags to include in generation
   --excludeTags                       Comma-separated list of tags to exclude from generation
   --excludePathRegex                  Exclude operations whose paths match the given regular expression
   --excludeRedundantZodSchemas        Exclude any redundant Zod schemas (default: true)
@@ -192,20 +196,36 @@ const config: OpenAPICodegenConfig = {
 export default config;
 ```
 
+### Default mutation errors
+
+Set `mutationDefaultOnError: true` in codegen config (or pass `--mutationDefaultOnError`) to let generated mutation hooks fall back to `OpenApiQueryConfig.Provider` when a mutation call does not define its own `onError`.
+
+```tsx
+import { ErrorHandler, OpenApiQueryConfig } from "@povio/openapi-codegen-cli";
+
+<OpenApiQueryConfig.Provider
+  onError={(error) => {
+    errorToast({ text: ErrorHandler.getErrorMessage(error) });
+  }}
+>
+  <App />
+</OpenApiQueryConfig.Provider>;
+```
+
 ### OpenApiWorkspaceContext (Path + ACL defaults)
 
-Enable `workspaceContext: true` in codegen config (or pass `--workspaceContext`) and wrap your app subtree with `OpenApiWorkspaceContext.Provider` if generated hooks frequently repeat workspace-scoped params (for example `officeId`).
+Set `workspaceContext` to a list of param names in codegen config (or pass `--workspaceContext officeId,projectId`) and wrap your app subtree with `OpenApiWorkspaceContext.Provider` if generated hooks frequently repeat workspace-scoped params.
 
 ```tsx
 import { OpenApiWorkspaceContext } from "@povio/openapi-codegen-cli";
-// openapi-codegen.config.ts -> { workspaceContext: true }
+// openapi-codegen.config.ts -> { workspaceContext: ["officeId", "projectId"] }
 
 <OpenApiWorkspaceContext.Provider values={{ officeId: "office_123" }}>
   <MyWorkspacePages />
 </OpenApiWorkspaceContext.Provider>;
 ```
 
-Generated query/mutation hooks can then omit matching path/ACL params and resolve them from `OpenApiWorkspaceContext`.
+Generated query/mutation hooks can then omit only those matching path/ACL params and resolve them from `OpenApiWorkspaceContext`. Params not listed in `workspaceContext` remain explicit and required.
 
 ### Generation Modes
 

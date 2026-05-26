@@ -1,4 +1,5 @@
 import { ACL_APP_ABILITIES, CASL_ABILITY_BINDING, CASL_ABILITY_IMPORT } from "@/generators/const/acl.const";
+import { PACKAGE_IMPORT_PATH } from "@/generators/const/package.const";
 import { Endpoint } from "@/generators/types/endpoint";
 import { GenerateType, GenerateTypeParams, Import } from "@/generators/types/generate";
 import {
@@ -14,6 +15,7 @@ import {
 } from "@/generators/utils/generate/generate.acl.utils";
 import { getInfiniteQueryName, getQueryName } from "@/generators/utils/generate/generate.query.utils";
 import { getNamespaceName } from "@/generators/utils/namespace.utils";
+import { capitalize } from "@/generators/utils/string.utils";
 
 export function generateAcl({ resolver, data, tag }: GenerateTypeParams) {
   const aclData = getAclData({ resolver, data, tag });
@@ -22,6 +24,7 @@ export function generateAcl({ resolver, data, tag }: GenerateTypeParams) {
   }
 
   const { hasAdditionalAbilityImports, modelsImports, endpoints } = aclData;
+  const hasWorkspaceContext = endpoints.some((endpoint) => getWorkspaceConditionNames(resolver, endpoint).length > 0);
 
   const caslAbilityTupleImport: Import = {
     bindings: [
@@ -30,9 +33,16 @@ export function generateAcl({ resolver, data, tag }: GenerateTypeParams) {
     typeBindings: [CASL_ABILITY_BINDING.abilityTuple],
     from: CASL_ABILITY_IMPORT.from,
   };
+  const workspaceContextImport: Import = {
+    bindings: ["useWorkspaceContext"],
+    from: PACKAGE_IMPORT_PATH,
+  };
 
   const lines: string[] = [];
   lines.push(renderImport(caslAbilityTupleImport));
+  if (hasWorkspaceContext) {
+    lines.push(renderImport(workspaceContextImport));
+  }
   for (const modelsImport of modelsImports) {
     lines.push(renderImport(modelsImport));
   }
@@ -43,7 +53,7 @@ export function generateAcl({ resolver, data, tag }: GenerateTypeParams) {
   }
 
   for (const endpoint of endpoints) {
-    lines.push(renderAbilityFunction(endpoint));
+    lines.push(renderAbilityFunction({ resolver, endpoint }));
     lines.push("");
   }
 
@@ -103,7 +113,74 @@ function renderImport(importData: Import) {
   return `import${importData.typeOnly ? " type" : ""} ${names} from "${importData.from}";`;
 }
 
-function renderAbilityFunction(endpoint: Endpoint) {
+function getWorkspaceContextAllowList(workspaceContext: GenerateTypeParams["resolver"]["options"]["workspaceContext"]) {
+  return new Set(workspaceContext);
+}
+
+function getWorkspaceConditionNames(resolver: GenerateTypeParams["resolver"], endpoint: Endpoint) {
+  const allowList = getWorkspaceContextAllowList(resolver.options.workspaceContext);
+  return (getAbilityConditionsTypes(endpoint) ?? [])
+    .map((condition) => condition.name)
+    .filter((name) => allowList.has(name));
+}
+
+function renderWorkspaceAclHook({
+  resolver,
+  endpoint,
+}: {
+  resolver: GenerateTypeParams["resolver"];
+  endpoint: Endpoint;
+}) {
+  const abilityConditionsTypes = getAbilityConditionsTypes(endpoint) ?? [];
+  const workspaceConditionNames = getWorkspaceConditionNames(resolver, endpoint);
+  if (workspaceConditionNames.length === 0) {
+    return;
+  }
+
+  const workspaceConditionNameSet = new Set(workspaceConditionNames);
+  const objectRequired = abilityConditionsTypes.some(
+    (propertyType) => propertyType.required && !workspaceConditionNameSet.has(propertyType.name),
+  );
+  const objectParams = abilityConditionsTypes
+    .map((propertyType) => {
+      const isWorkspaceCondition = workspaceConditionNameSet.has(propertyType.name);
+      return `${propertyType.name}${propertyType.required && !isWorkspaceCondition ? "" : "?"}: ${(propertyType.type ?? "") + (propertyType.zodSchemaName ?? "")}, `;
+    })
+    .join("");
+  const contextType = abilityConditionsTypes
+    .filter((propertyType) => workspaceConditionNameSet.has(propertyType.name))
+    .map((propertyType) => `${propertyType.name}?: ${(propertyType.type ?? "") + (propertyType.zodSchemaName ?? "")}`)
+    .join("; ");
+  const contextBindings = workspaceConditionNames.map((name) => `${name}: ${name}Workspace`).join(", ");
+
+  const lines: string[] = [];
+  lines.push(`export const use${capitalize(getAbilityFunctionName(endpoint))} = (`);
+  lines.push(`  object${objectRequired ? "" : "?"}: { ${objectParams} } `);
+  lines.push(") => {");
+  lines.push(`  const { ${contextBindings} } = useWorkspaceContext<{ ${contextType} }>();`);
+  for (const conditionName of workspaceConditionNames) {
+    const resolvedName = `normalize${capitalize(conditionName)}`;
+    lines.push(`  const ${resolvedName} = object?.${conditionName} ?? ${conditionName}Workspace;`);
+    lines.push(`  if (!${resolvedName}) {`);
+    lines.push(`    throw Error(\`${capitalize(conditionName)} not provided\`);`);
+    lines.push("  }");
+  }
+  lines.push(
+    `  return ${getAbilityFunctionName(endpoint)}({ ...object, ${workspaceConditionNames
+      .map((conditionName) => `${conditionName}: normalize${capitalize(conditionName)}`)
+      .join(", ")} });`,
+  );
+  lines.push("};");
+  return lines.join("\n");
+}
+
+function renderAbilityFunction({
+  resolver,
+  endpoint,
+}: {
+  resolver: GenerateTypeParams["resolver"];
+  endpoint: Endpoint;
+}) {
   const abilityConditionsTypes = getAbilityConditionsTypes(endpoint) ?? [];
   const hasConditions = hasAbilityConditions(endpoint);
   const lines: string[] = [];
@@ -152,5 +229,10 @@ function renderAbilityFunction(endpoint: Endpoint) {
   lines.push(
     `] as ${CASL_ABILITY_BINDING.abilityTuple}<"${getAbilityAction(endpoint)}", ${getAbilitySubjectTypes(endpoint).join(" | ")}>;`,
   );
+  const workspaceAclHook = renderWorkspaceAclHook({ resolver, endpoint });
+  if (workspaceAclHook) {
+    lines.push("");
+    lines.push(workspaceAclHook);
+  }
   return lines.join("\n");
 }

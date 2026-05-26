@@ -7,8 +7,10 @@ import { Profiler } from "@/helpers/profile.helper";
 
 export type GenerateParams = {
   config?: string;
+  includeTags?: string;
   excludeTags?: string;
   inlineEndpointsExcludeModules?: string;
+  workspaceContext?: string;
   prettier?: boolean;
   verbose?: boolean;
 } & Partial<
@@ -16,6 +18,7 @@ export type GenerateParams = {
     GenerateOptions,
     | "input"
     | "output"
+    | "clearOutput"
     | "incremental"
     | "tsNamespaces"
     | "tsPath"
@@ -33,7 +36,7 @@ export type GenerateParams = {
     | "infiniteQueries"
     | "axiosRequestConfig"
     | "mutationEffects"
-    | "workspaceContext"
+    | "mutationScope"
     | "parseRequestParams"
     | "inlineEndpoints"
     | "builderConfigs"

@@ -48,10 +48,13 @@ export function mapEndpointParamsToFunctionParams(
     includeFileParam?: boolean;
     includeOnlyRequiredParams?: boolean;
     pathParamsRequiredOnly?: boolean;
-    optionalPathParams?: boolean;
+    optionalPathParams?: string[];
     modelNamespaceTag?: string;
+    excludePathParams?: boolean;
   },
 ) {
+  const optionalPathParams = options?.optionalPathParams ? new Set(options.optionalPathParams) : undefined;
+
   const params = endpoint.parameters.map((param) => {
     let type = "string";
     if (isNamedZodSchema(param.zodSchema)) {
@@ -96,7 +99,8 @@ export function mapEndpointParamsToFunctionParams(
       (param) =>
         (!options?.excludeBodyParam || param.name !== BODY_PARAMETER_NAME) &&
         (!options?.excludePageParam || param.name !== resolver.options.infiniteQueryParamNames.page) &&
-        (!options?.includeOnlyRequiredParams || param.required),
+        (!options?.includeOnlyRequiredParams || param.required) &&
+        (!options?.excludePathParams || param.paramType !== "Path"),
     )
     .map((param) => ({
       ...param,
@@ -105,10 +109,23 @@ export function mapEndpointParamsToFunctionParams(
           ? "pageParam"
           : param.name,
       required:
-        options?.optionalPathParams && param.paramType === "Path"
+        param.paramType === "Path" && optionalPathParams?.has(param.name)
           ? false
           : param.required && (param.paramType === "Path" || !options?.pathParamsRequiredOnly),
     }));
+}
+
+/** True when the endpoint has at least one mapped param and every mapped param is optional (safe `= {}` default on the params object). */
+export function endpointParamsAllOptional(
+  resolver: SchemaResolver,
+  endpoint: Endpoint,
+  mapOptions?: Parameters<typeof mapEndpointParamsToFunctionParams>[2],
+): boolean {
+  const params = mapEndpointParamsToFunctionParams(resolver, endpoint, mapOptions);
+  if (params.length === 0) {
+    return false;
+  }
+  return params.every((p) => !p.required);
 }
 
 export function getEndpointConfig(endpoint: Endpoint) {

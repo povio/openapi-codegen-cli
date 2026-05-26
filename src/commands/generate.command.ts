@@ -16,6 +16,9 @@ class GenerateOptions implements GenerateParams {
   @YargOption({ envAlias: "output" })
   output?: string;
 
+  @YargOption({ envAlias: "clearOutput", type: "boolean" })
+  clearOutput?: boolean;
+
   @YargOption({ envAlias: "incremental", type: "boolean" })
   incremental?: boolean;
 
@@ -30,6 +33,9 @@ class GenerateOptions implements GenerateParams {
 
   @YargOption({ envAlias: "defaultTag" })
   defaultTag?: string;
+
+  @YargOption({ envAlias: "includeTags" })
+  includeTags?: string;
 
   @YargOption({ envAlias: "excludeTags" })
   excludeTags?: string;
@@ -70,8 +76,14 @@ class GenerateOptions implements GenerateParams {
   @YargOption({ envAlias: "mutationEffects", type: "boolean" })
   mutationEffects?: boolean;
 
-  @YargOption({ envAlias: "workspaceContext", type: "boolean" })
-  workspaceContext?: boolean;
+  @YargOption({ envAlias: "mutationDefaultOnError", type: "boolean" })
+  mutationDefaultOnError?: boolean;
+
+  @YargOption({ envAlias: "workspaceContext" })
+  workspaceContext?: string;
+
+  @YargOption({ envAlias: "mutationScope", type: "boolean" })
+  mutationScope?: boolean;
 
   @YargOption({ envAlias: "parseRequestParams", type: "boolean" })
   parseRequestParams?: boolean;

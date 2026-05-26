@@ -8,9 +8,11 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   // Base options
   input: "http://localhost:4000/docs-json/",
   output: "output",
+  clearOutput: false,
   incremental: true,
   splitByTags: true,
   defaultTag: "Common",
+  includeTags: [],
   excludeTags: [],
   excludePathRegex: "",
   excludeRedundantZodSchemas: true,
@@ -60,8 +62,10 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   queryTypesImportPath: PACKAGE_IMPORT_PATH,
   axiosRequestConfig: false,
   mutationEffects: true,
-  workspaceContext: false,
+  mutationDefaultOnError: false,
+  workspaceContext: [],
   prefetchQueries: true,
+  mutationScope: false,
   // Infinite queries options
   infiniteQueries: false,
   infiniteQueryParamNames: {

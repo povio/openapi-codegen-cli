@@ -66,6 +66,7 @@ import { getNamespaceName } from "@/generators/utils/namespace.utils";
 import { isSchemaObject } from "@/generators/utils/openapi-schema.utils";
 import { isParamMediaTypeAllowed } from "@/generators/utils/openapi.utils";
 import { getDestructuredVariables, isInfiniteQuery, isMutation, isQuery } from "@/generators/utils/query.utils";
+import { capitalize } from "@/generators/utils/string.utils";
 import { getEndpointTag, shouldInlineEndpointsForTag } from "@/generators/utils/tag.utils";
 import { isNamedZodSchema } from "@/generators/utils/zod-schema.utils";
 import { invalidVariableNameCharactersToCamel } from "@/generators/utils/js.utils";
@@ -95,6 +96,7 @@ export function generateQueries(params: GenerateTypeParams) {
   };
 
   const { queryEndpoints, infiniteQueryEndpoints, mutationEndpoints, aclEndpoints } = endpointGroups;
+  const hasMutationDefaultOnError = resolver.options.mutationDefaultOnError && mutationEndpoints.length > 0;
 
   const queryImport: Import = {
     bindings: [
@@ -126,7 +128,7 @@ export function generateQueries(params: GenerateTypeParams) {
   };
 
   const queryTypesImport: Import = {
-    bindings: [...(mutationEndpoints.length > 0 ? ["OpenApiQueryConfig"] : [])],
+    bindings: [...(hasMutationDefaultOnError ? ["OpenApiQueryConfig"] : [])],
     typeBindings: [
       ...(queryEndpoints.length > 0 ? [QUERY_OPTIONS_TYPES.query] : []),
       ...(resolver.options.infiniteQueries && infiniteQueryEndpoints.length > 0
@@ -141,7 +143,7 @@ export function generateQueries(params: GenerateTypeParams) {
     resolver.options.workspaceContext &&
     endpoints.some((endpoint) => getWorkspaceParamNames(resolver, endpoint).length > 0);
   const workspaceContextImport: Import = {
-    bindings: ["OpenApiWorkspaceContext"],
+    bindings: ["useWorkspaceContext"],
     from: PACKAGE_IMPORT_PATH,
   };
 
@@ -306,7 +308,7 @@ function getEndpointParamMapping(
   const key = JSON.stringify(
     Object.entries(options ?? {})
       .sort(([left], [right]) => left.localeCompare(right))
-      .map(([optionName, optionValue]) => [optionName, Boolean(optionValue)]),
+      .map(([optionName, optionValue]) => [optionName, optionValue]),
   );
   const cached = endpointCache.get(key);
   if (cached) {
@@ -316,6 +318,10 @@ function getEndpointParamMapping(
   const computed = mapEndpointParamsToFunctionParams(resolver, endpoint, options);
   endpointCache.set(key, computed);
   return computed;
+}
+
+function getWorkspaceContextAllowList(workspaceContext: SchemaResolver["options"]["workspaceContext"]) {
+  return new Set(workspaceContext);
 }
 
 function renderImport(importData: Import) {
@@ -348,6 +354,20 @@ function renderEndpointArgs(
 ) {
   return getEndpointParamMapping(resolver, endpoint, options)
     .map((param) => replacements?.[param.name] ?? param.name)
+    .join(", ");
+}
+
+function renderEndpointObjectArgs(
+  resolver: SchemaResolver,
+  endpoint: Endpoint,
+  options: Parameters<typeof mapEndpointParamsToFunctionParams>[2],
+  replacements?: Record<string, string>,
+) {
+  return getEndpointParamMapping(resolver, endpoint, options)
+    .map((param) => {
+      const replacement = replacements?.[param.name];
+      return replacement && replacement !== param.name ? `${param.name}: ${replacement}` : param.name;
+    })
     .join(", ");
 }
 
@@ -384,6 +404,7 @@ function renderEndpointParamDescription(endpointParam: ReturnType<typeof mapEndp
 }
 
 function getWorkspaceParamNames(resolver: SchemaResolver, endpoint: Endpoint) {
+  const allowList = getWorkspaceContextAllowList(resolver.options.workspaceContext);
   const endpointParams = getEndpointParamMapping(resolver, endpoint, {});
   const endpointParamNames = new Set(endpointParams.map((param) => param.name));
   const workspaceParamNames = endpointParams.filter((param) => param.paramType === "Path").map((param) => param.name);
@@ -392,20 +413,31 @@ function getWorkspaceParamNames(resolver: SchemaResolver, endpoint: Endpoint) {
     .map((condition) => invalidVariableNameCharactersToCamel(condition.name))
     .filter((name) => endpointParamNames.has(name));
 
-  return getUniqueArray([...workspaceParamNames, ...aclParamNames]);
+  return getUniqueArray([...workspaceParamNames, ...aclParamNames]).filter((name) => allowList.has(name));
 }
 
 function getWorkspaceParamReplacements(resolver: SchemaResolver, endpoint: Endpoint) {
   return Object.fromEntries(
-    getWorkspaceParamNames(resolver, endpoint).map((name) => [name, `${name}FromWorkspace`]),
+    getWorkspaceParamNames(resolver, endpoint).map((name) => [name, `normalize${capitalize(name)}`]),
   ) as Record<string, string>;
 }
 
-function renderWorkspaceParamResolutions({
+function getWorkspaceParamTypes(resolver: SchemaResolver, endpoint: Endpoint, modelNamespaceTag?: string) {
+  const workspaceParamNames = new Set(getWorkspaceParamNames(resolver, endpoint));
+  return Object.fromEntries(
+    getEndpointParamMapping(resolver, endpoint, { modelNamespaceTag })
+      .filter((param) => workspaceParamNames.has(param.name))
+      .map((param) => [param.name, param.type]),
+  ) as Record<string, string>;
+}
+
+function renderWorkspaceContextDestructure({
   replacements,
+  paramTypes,
   indent,
 }: {
   replacements: Record<string, string>;
+  paramTypes: Record<string, string>;
   indent: string;
 }) {
   const workspaceParamNames = Object.keys(replacements);
@@ -413,13 +445,46 @@ function renderWorkspaceParamResolutions({
     return [];
   }
 
-  const lines = [`${indent}const workspaceContext = OpenApiWorkspaceContext.useContext();`];
+  const workspaceParamBindings = workspaceParamNames.map((paramName) => `${paramName}: ${paramName}Workspace`);
+  const workspaceContextType = workspaceParamNames
+    .map((paramName) => `${paramName}?: ${paramTypes[paramName] ?? "unknown"}`)
+    .join("; ");
+  return [
+    `${indent}const { ${workspaceParamBindings.join(", ")} } = useWorkspaceContext<{ ${workspaceContextType} }>();`,
+  ];
+}
+
+function renderWorkspaceParamCoalescing({
+  replacements,
+  indent,
+}: {
+  replacements: Record<string, string>;
+  indent: string;
+}) {
+  const workspaceParamNames = Object.keys(replacements);
+  const lines: string[] = [];
   for (const paramName of workspaceParamNames) {
-    lines.push(
-      `${indent}const ${replacements[paramName]} = OpenApiWorkspaceContext.resolveParam(workspaceContext, "${paramName}", ${paramName});`,
-    );
+    lines.push(`${indent}const ${replacements[paramName]} = ${paramName} ?? ${paramName}Workspace;`);
+    lines.push(`${indent}if (!${replacements[paramName]}) {`);
+    lines.push(`${indent}  throw Error(\`${capitalize(paramName)} not provided\`);`);
+    lines.push(`${indent}}`);
   }
   return lines;
+}
+
+function renderWorkspaceParamResolutions({
+  replacements,
+  paramTypes,
+  indent,
+}: {
+  replacements: Record<string, string>;
+  paramTypes: Record<string, string>;
+  indent: string;
+}) {
+  return [
+    ...renderWorkspaceContextDestructure({ replacements, paramTypes, indent }),
+    ...renderWorkspaceParamCoalescing({ replacements, indent }),
+  ];
 }
 
 function renderAclCheckCall(
@@ -789,8 +854,9 @@ function renderQuery({
   const workspaceParamReplacements = resolver.options.workspaceContext
     ? getWorkspaceParamReplacements(resolver, endpoint)
     : {};
+  const workspaceParamTypes = getWorkspaceParamTypes(resolver, endpoint, tag);
   const endpointArgs = renderEndpointArgs(resolver, endpoint, {});
-  const resolvedEndpointArgs = renderEndpointArgs(resolver, endpoint, {}, workspaceParamReplacements);
+  const resolvedEndpointArgs = renderEndpointObjectArgs(resolver, endpoint, {}, workspaceParamReplacements);
   const endpointParams = renderEndpointParams(resolver, endpoint, {
     optionalPathParams: resolver.options.workspaceContext,
     modelNamespaceTag: tag,
@@ -807,7 +873,13 @@ function renderQuery({
   if (hasAclCheck) {
     lines.push(`  const { checkAcl } = ${ACL_CHECK_HOOK}();`);
   }
-  lines.push(...renderWorkspaceParamResolutions({ replacements: workspaceParamReplacements, indent: "  " }));
+  lines.push(
+    ...renderWorkspaceParamResolutions({
+      replacements: workspaceParamReplacements,
+      paramTypes: workspaceParamTypes,
+      indent: "  ",
+    }),
+  );
   lines.push("  ");
   lines.push(`  return ${QUERY_HOOKS.query}({`);
   lines.push(`    ...${queryOptionsName}(${queryOptionsArgs}),`);
@@ -838,11 +910,13 @@ function renderMutation({
 }) {
   const hasAclCheck = resolver.options.checkAcl && endpoint.acl;
   const hasMutationEffects = resolver.options.mutationEffects;
+  const hasMutationDefaultOnError = resolver.options.mutationDefaultOnError;
   const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
   const tag = getEndpointTag(endpoint, resolver.options);
   const workspaceParamReplacements = resolver.options.workspaceContext
     ? getWorkspaceParamReplacements(resolver, endpoint)
     : {};
+  const workspaceParamTypes = getWorkspaceParamTypes(resolver, endpoint, tag);
   const endpointParams = renderEndpointParams(resolver, endpoint, {
     includeFileParam: true,
     optionalPathParams: resolver.options.workspaceContext,
@@ -868,13 +942,19 @@ function renderMutation({
   lines.push(
     `export const ${getQueryName(endpoint, true)} = (options?: AppMutationOptions<typeof ${endpointFunction}, { ${mutationVariablesType} }>${hasMutationEffects ? ` & ${MUTATION_EFFECTS.optionsType}` : ""}${hasAxiosRequestConfig ? `, ${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => {`,
   );
-  lines.push("  const queryConfig = OpenApiQueryConfig.useConfig();");
+  if (hasMutationDefaultOnError) {
+    lines.push("  const queryConfig = OpenApiQueryConfig.useConfig();");
+  }
   if (hasAclCheck) {
     lines.push(`  const { checkAcl } = ${ACL_CHECK_HOOK}();`);
   }
-  if (Object.keys(workspaceParamReplacements).length > 0) {
-    lines.push("  const workspaceContext = OpenApiWorkspaceContext.useContext();");
-  }
+  lines.push(
+    ...renderWorkspaceContextDestructure({
+      replacements: workspaceParamReplacements,
+      paramTypes: workspaceParamTypes,
+      indent: "  ",
+    }),
+  );
   if (hasMutationEffects) {
     lines.push(
       `  const { runMutationEffects } = useMutationEffects<typeof ${QUERY_MODULE_ENUM}.${tag}>({ currentModule: ${QUERIES_MODULE_NAME} });`,
@@ -889,11 +969,7 @@ function renderMutation({
   lines.push(
     `    mutationFn: ${endpoint.mediaUpload ? "async " : ""}(${mutationFnArg}) => ${hasMutationFnBody ? "{ " : ""}`,
   );
-  for (const [paramName, resolvedParamName] of Object.entries(workspaceParamReplacements)) {
-    lines.push(
-      `      const ${resolvedParamName} = OpenApiWorkspaceContext.resolveParam(workspaceContext, "${paramName}", ${paramName});`,
-    );
-  }
+  lines.push(...renderWorkspaceParamCoalescing({ replacements: workspaceParamReplacements, indent: "      " }));
   if (hasAclCheck) {
     lines.push(renderAclCheckCall(resolver, endpoint, workspaceParamReplacements, "      "));
   }
@@ -940,18 +1016,16 @@ function renderMutation({
   }
 
   lines.push("    ...options,");
-  lines.push("    onError: options?.onError ?? queryConfig.onError,");
+  if (hasMutationDefaultOnError) {
+    lines.push("    onError: options?.onError ?? queryConfig.onError,");
+  }
   if (hasMutationEffects) {
     lines.push("    onSuccess: async (resData, variables, onMutateResult, context) => {");
     if (updateQueryEndpoints.length > 0) {
       if (destructuredVariables.length > 0) {
         lines.push(`      const { ${destructuredVariables.join(", ")} } = variables;`);
       }
-      for (const [paramName, resolvedParamName] of Object.entries(workspaceParamReplacements)) {
-        lines.push(
-          `      const ${resolvedParamName} = OpenApiWorkspaceContext.resolveParam(workspaceContext, "${paramName}", ${paramName});`,
-        );
-      }
+      lines.push(...renderWorkspaceParamCoalescing({ replacements: workspaceParamReplacements, indent: "      " }));
       lines.push(
         `      const updateKeys = [${updateQueryEndpoints
           .map(
@@ -1054,13 +1128,14 @@ function renderInfiniteQuery({
   const workspaceParamReplacements = resolver.options.workspaceContext
     ? getWorkspaceParamReplacements(resolver, endpoint)
     : {};
+  const workspaceParamTypes = getWorkspaceParamTypes(resolver, endpoint, tag);
   const endpointParams = renderEndpointParams(resolver, endpoint, {
     excludePageParam: true,
     optionalPathParams: resolver.options.workspaceContext,
     modelNamespaceTag: tag,
   });
   const endpointArgsWithoutPage = renderEndpointArgs(resolver, endpoint, { excludePageParam: true });
-  const resolvedEndpointArgsWithoutPage = renderEndpointArgs(
+  const resolvedEndpointArgsWithoutPage = renderEndpointObjectArgs(
     resolver,
     endpoint,
     { excludePageParam: true },
@@ -1078,7 +1153,13 @@ function renderInfiniteQuery({
   if (hasAclCheck) {
     lines.push(`  const { checkAcl } = ${ACL_CHECK_HOOK}();`);
   }
-  lines.push(...renderWorkspaceParamResolutions({ replacements: workspaceParamReplacements, indent: "  " }));
+  lines.push(
+    ...renderWorkspaceParamResolutions({
+      replacements: workspaceParamReplacements,
+      paramTypes: workspaceParamTypes,
+      indent: "  ",
+    }),
+  );
   lines.push("");
   lines.push(`  return ${QUERY_HOOKS.infiniteQuery}({`);
   lines.push(`    ...${queryOptionsName}(${queryOptionsArgs}),`);

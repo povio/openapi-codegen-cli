@@ -28,18 +28,18 @@ export class ApplicationException<CodeT> extends Error {
 export interface ErrorEntry<CodeT> {
   code: CodeT;
   condition?: (error: unknown) => boolean;
-  getMessage: (t: TFunction, error: unknown) => string;
+  getMessage: (t: TFunction<string, undefined>, error: unknown) => string;
 }
 
 export interface ErrorHandlerOptions<CodeT extends string> {
   entries: ErrorEntry<CodeT>[];
-  t?: TFunction;
+  t?: TFunction<string, undefined>;
   onRethrowError?: (error: unknown, exception: ApplicationException<CodeT | GeneralErrorCodes>) => void;
 }
 
 export class ErrorHandler<CodeT extends string> {
   entries: ErrorEntry<CodeT | GeneralErrorCodes>[] = [];
-  private t: TFunction;
+  private t: TFunction<string, undefined>;
   private onRethrowError?: (error: unknown, exception: ApplicationException<CodeT | GeneralErrorCodes>) => void;
 
   constructor({ entries, t = defaultT, onRethrowError }: ErrorHandlerOptions<CodeT>) {
@@ -125,7 +125,7 @@ export class ErrorHandler<CodeT extends string> {
     return code === entry.code;
   }
 
-  public setTranslateFunction(t: TFunction) {
+  public setTranslateFunction(t: TFunction<string, undefined>) {
     this.t = t;
   }
 

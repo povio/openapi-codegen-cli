@@ -9,13 +9,13 @@ import { invalidVariableNameCharactersToCamel } from "./js.utils";
 import { pick } from "./object.utils";
 import { isPathExcluded, pathToVariableName } from "./openapi.utils";
 import { capitalize, removeWord } from "./string.utils";
-import { getOperationTag, isTagExcluded } from "./tag.utils";
+import { getOperationTag, isTagIncluded } from "./tag.utils";
 
 export function isOperationExcluded(operation: OperationObject, options: GenerateOptions) {
   const isDeprecated = operation.deprecated && !options.withDeprecatedEndpoints;
   const tag = getOperationTag(operation, options);
-  const isExcluded = isTagExcluded(tag, options);
-  return isDeprecated || isExcluded;
+  const isIncluded = isTagIncluded(tag, options);
+  return isDeprecated || !isIncluded;
 }
 
 export function getOperationName({

@@ -1,0 +1,55 @@
+{{! Js docs }}
+{{{genQueryJsDocs endpoint mutation=true}}}
+{{! Mutation definition}}
+export const {{queryName endpoint mutation=true}} = ({{#if hasMutationScope}}{ {{#each mutationScopePathParams}}{{this.name}}{{#unless @last}}, {{/unless}}{{/each}} }: { {{#each mutationScopePathParams}}{{this.name}}: {{this.type}}; {{/each}} }, {{/if}}options?: AppMutationOptions<typeof {{importedEndpointName endpoint}}{{#if hasMutationVariables}}, { {{#if hasMutationScope}}{{{genEndpointParams endpoint excludePathParams=true includeFileParam=true}}}{{else}}{{{genEndpointParams endpoint includeFileParam=true}}}{{/if}}{{#if endpoint.mediaUpload}} abortController?: AbortController, onUploadProgress?: (progress: { loaded: number; total: number }) => void{{/if}} }{{/if}}>{{#if hasMutationEffects}} & {{mutationEffectsType}}{{/if}}{{#if hasAxiosRequestConfig}}, {{axiosRequestConfigName}}?: {{axiosRequestConfigType}}{{/if}}) => {
+  {{! Use acl check }}
+  {{#if hasAclCheck}}const { checkAcl } = {{aclCheckHook}}();{{/if}}
+  {{! Use mutation effects }}
+  {{#if hasMutationEffects}}const { runMutationEffects } = useMutationEffects({ currentModule: {{queriesModuleName}} });{{/if}}
+
+  return {{queryHook}}({
+    mutationFn: {{#if endpoint.mediaUpload}}async {{/if}}({{#if hasMutationVariables}} { {{#if hasMutationScope}}{{{endpointArgs endpoint excludePathParams=true includeFileParam=true}}}{{else}}{{{endpointArgs endpoint includeFileParam=true}}}{{/if}}{{#if endpoint.mediaUpload}}, abortController, onUploadProgress{{/if}} } {{/if}}) => {{#if hasMutationFnBody}} { {{/if}}
+      {{#if hasAclCheck}}{{{genAclCheckCall endpoint}}}{{/if}}
+      {{#if endpoint.mediaUpload}}const uploadInstructions = await {{importedEndpointName endpoint}}({{{endpointArgs endpoint}}}{{#if hasAxiosRequestConfig}}{{#if (endpointArgs endpoint)}}, {{/if}}{{axiosRequestConfigName}}{{/if}});
+
+      if (file && uploadInstructions.url) {
+        const method = (data?.method?.toLowerCase() ?? "put") as 'put' | 'post';
+        let dataToSend: File | FormData = file;
+        if (method === "post") {
+          dataToSend = new FormData();
+          if (uploadInstructions.fields) {
+            for (const [key, value] of uploadInstructions.fields) {
+              dataToSend.append(key, value);
+            }
+          }
+          dataToSend.append('file', file);
+        }
+        await axios[method](uploadInstructions.url, dataToSend, {
+          headers: {
+            "Content-Type": file.type,
+          },
+          signal: abortController?.signal,
+          onUploadProgress: onUploadProgress
+          ? (progressEvent) => onUploadProgress({ loaded: progressEvent.loaded, total: progressEvent.total ?? 0 })
+          : undefined,
+        });
+      }
+
+      return uploadInstructions;
+      {{else}}
+      {{#if hasMutationFnBody}}return {{/if}}{{importedEndpointName endpoint}}({{{endpointArgs endpoint}}}{{#if hasAxiosRequestConfig}}{{#if (endpointArgs endpoint)}}, {{/if}}{{axiosRequestConfigName}}{{/if}})
+      {{/if}}
+    {{#if hasMutationFnBody}} }{{/if}},
+    {{#if hasMutationScope}}scope: { id: {{{mutationScopeExpression}}} },
+    {{/if}}...options, {{#if hasMutationEffects}}
+    onSuccess: async (resData, variables, onMutateResult, context) => {
+      {{! Mutation effects }}
+      {{#if updateQueryEndpoints}}
+      {{#if destructuredVariables}}const { {{commaSeparated destructuredVariables }} } = variables;{{/if}}
+      const updateKeys = [{{#each updateQueryEndpoints as | endpoint |}}keys.{{endpointName endpoint}}({{{endpointArgs endpoint includeOnlyRequiredParams=true}}}), {{/each}}];
+      {{/if}}
+      await runMutationEffects(resData, variables, options{{#if updateQueryEndpoints}}, updateKeys{{/if}});
+      options?.onSuccess?.(resData, variables, onMutateResult, context);
+    },{{/if}}
+  });
+};

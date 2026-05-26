@@ -26,8 +26,10 @@ interface QueriesGenerateOptions {
   queryTypesImportPath: string;
   axiosRequestConfig?: boolean;
   mutationEffects?: boolean;
-  workspaceContext?: boolean;
+  mutationDefaultOnError?: boolean;
+  workspaceContext?: string[];
   prefetchQueries?: boolean;
+  mutationScope?: boolean;
 }
 
 interface InfiniteQueriesGenerateOptions {
@@ -65,9 +67,11 @@ interface GenerateConfig {
 interface BaseGenerateOptions {
   input: string;
   output: string;
+  clearOutput?: boolean;
   incremental?: boolean;
   splitByTags: boolean;
   defaultTag: string;
+  includeTags: string[];
   excludeTags: string[];
   excludePathRegex: string;
   excludeRedundantZodSchemas: boolean;
