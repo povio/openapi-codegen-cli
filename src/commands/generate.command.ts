@@ -82,6 +82,9 @@ class GenerateOptions implements GenerateParams {
   @YargOption({ envAlias: "workspaceContext" })
   workspaceContext?: string;
 
+  @YargOption({ envAlias: "mutationScope", type: "boolean" })
+  mutationScope?: boolean;
+
   @YargOption({ envAlias: "parseRequestParams", type: "boolean" })
   parseRequestParams?: boolean;
 

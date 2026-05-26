@@ -50,6 +50,7 @@ export function mapEndpointParamsToFunctionParams(
     pathParamsRequiredOnly?: boolean;
     optionalPathParams?: string[];
     modelNamespaceTag?: string;
+    excludePathParams?: boolean;
   },
 ) {
   const optionalPathParams = options?.optionalPathParams ? new Set(options.optionalPathParams) : undefined;
@@ -98,7 +99,8 @@ export function mapEndpointParamsToFunctionParams(
       (param) =>
         (!options?.excludeBodyParam || param.name !== BODY_PARAMETER_NAME) &&
         (!options?.excludePageParam || param.name !== resolver.options.infiniteQueryParamNames.page) &&
-        (!options?.includeOnlyRequiredParams || param.required),
+        (!options?.includeOnlyRequiredParams || param.required) &&
+        (!options?.excludePathParams || param.paramType !== "Path"),
     )
     .map((param) => ({
       ...param,

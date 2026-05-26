@@ -65,6 +65,7 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   mutationDefaultOnError: false,
   workspaceContext: [],
   prefetchQueries: true,
+  mutationScope: false,
   // Infinite queries options
   infiniteQueries: false,
   infiniteQueryParamNames: {
