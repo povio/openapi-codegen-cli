@@ -38,9 +38,6 @@ importers:
       yargs:
         specifier: ^18.0.0
         version: 18.0.0
-      zod:
-        specifier: ^4.1.12
-        version: 4.3.6
     devDependencies:
       '@casl/ability':
         specifier: ^6.8.0
@@ -96,6 +93,9 @@ importers:
       vitest:
         specifier: 4.0.18
         version: 4.0.18(@types/node@25.3.1)(lightningcss@1.31.1)(tsx@4.21.0)
+      zod:
+        specifier: ^4.3.6
+        version: 4.3.6
 
 packages:
 
