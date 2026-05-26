@@ -113,6 +113,19 @@ export function mapEndpointParamsToFunctionParams(
     }));
 }
 
+/** True when the endpoint has at least one mapped param and every mapped param is optional (safe `= {}` default on the params object). */
+export function endpointParamsAllOptional(
+  resolver: SchemaResolver,
+  endpoint: Endpoint,
+  mapOptions?: Parameters<typeof mapEndpointParamsToFunctionParams>[2],
+): boolean {
+  const params = mapEndpointParamsToFunctionParams(resolver, endpoint, mapOptions);
+  if (params.length === 0) {
+    return false;
+  }
+  return params.every((p) => !p.required);
+}
+
 export function getEndpointConfig(endpoint: Endpoint) {
   const params = endpoint.parameters
     .filter((param) => param.type === "Query")

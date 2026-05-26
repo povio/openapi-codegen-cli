@@ -339,7 +339,7 @@ describe("getMetadataFromOpenAPIDoc", () => {
       isQuery: false,
       isMutation: true,
       params: [{ name: "data", isRequired: true, ...User }],
-      response: { type: "void", metaType: "primitive" },
+      response: { ...User },
     },
     {
       name: "useCreateWithListInput",

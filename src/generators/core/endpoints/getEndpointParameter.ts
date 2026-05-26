@@ -3,9 +3,12 @@ import { match } from "ts-pattern";
 
 import { ALLOWED_PATH_IN } from "@/generators/const/openapi.const";
 import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
-import { getEnumZodSchemaCodeFromEnumNames } from "@/generators/core/zod/getZodSchema";
+import { getZodChain } from "@/generators/core/zod/getZodChain";
+import { getEnumZodSchemaCodeFromEnumNames, getZodSchema } from "@/generators/core/zod/getZodSchema";
+import { resolveZodSchemaName } from "@/generators/core/zod/resolveZodSchemaName";
 import { EndpointParameter } from "@/generators/types/endpoint";
 import { ParameterObject } from "@/generators/types/openapi";
+import { isSchemaObject } from "@/generators/utils/openapi-schema.utils";
 import {
   isParamMediaTypeAllowed,
   isSortingParameterObject,
@@ -16,7 +19,6 @@ import {
   getParamZodSchemaName,
   getZodSchemaOperationName,
 } from "@/generators/utils/zod-schema.utils";
-import { resolveEndpointZodSchema } from "./resolveEndpointZodSchema";
 
 export function getEndpointParameter({
   resolver,
@@ -79,13 +81,41 @@ export function getEndpointParameter({
     parameterSortingEnumSchemaName = enumZodSchemaName;
   }
 
-  const zodSchemaName = resolveEndpointZodSchema({
-    resolver,
+  const zodSchema = getZodSchema({
     schema,
+    resolver,
     meta: { isRequired: paramObj.in === "path" ? true : (paramObj.required ?? false) },
     tag,
+  });
+
+  const schemaObject = resolver.resolveObject(schema);
+
+  /**
+   * Optional query/header object params (e.g. deepObject `filter`): OpenAPI marks the param
+   * `required: false`, so getZodChain would append `.optional()` to the named schema. The
+   * endpoints template already wraps named optional params with `.optional()` in
+   * `ZodExtended.parse`, which duplicates optionality and breaks consumers that expect a bare
+   * object schema (e.g. builder configs). Keep `.nullable()` / defaults / validations; only
+   * skip the root presence modifier for object-shaped schemas.
+   */
+  const rootIsOptionalQueryOrHeaderObject =
+    (paramObj.in === "query" || paramObj.in === "header") &&
+    !paramObj.required &&
+    isSchemaObject(schemaObject) &&
+    (schemaObject.type === "object" || (!!schemaObject.properties && Object.keys(schemaObject.properties).length > 0));
+
+  const zodChain = getZodChain({
+    schema: schemaObject,
+    meta: rootIsOptionalQueryOrHeaderObject ? { ...zodSchema.meta, isRequired: true } : zodSchema.meta,
+    options: resolver.options,
+  });
+
+  const zodSchemaName = resolveZodSchemaName({
+    schema: schemaObject,
+    zodSchema: zodSchema.assign(zodSchema.getCodeString(tag) + zodChain),
     fallbackName,
-    composeBeforeResolve: true,
+    resolver,
+    tag,
   });
 
   return {
@@ -99,6 +129,6 @@ export function getEndpointParameter({
       .run() as "Header" | "Query" | "Path",
     zodSchema: zodSchemaName,
     parameterObject: paramObj,
-    parameterSortingEnumSchemaName,
+    ...(parameterSortingEnumSchemaName !== undefined ? { parameterSortingEnumSchemaName } : {}),
   };
 }
