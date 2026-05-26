@@ -22,6 +22,7 @@ interface QueriesGenerateOptions {
   queryTypesImportPath: string;
   axiosRequestConfig?: boolean;
   mutationEffects?: boolean;
+  mutationScope?: boolean;
 }
 
 interface InfiniteQueriesGenerateOptions {

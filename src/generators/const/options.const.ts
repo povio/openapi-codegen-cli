@@ -53,6 +53,7 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   queryTypesImportPath: PACKAGE_IMPORT_PATH,
   axiosRequestConfig: false,
   mutationEffects: true,
+  mutationScope: false,
   // Infinite queries options
   infiniteQueries: false,
   infiniteQueryParamNames: {

@@ -1,4 +1,5 @@
 import Handlebars from "handlebars";
+import { OpenAPIV3 } from "openapi-types";
 
 import { ACL_CHECK_HOOK, CASL_ABILITY_BINDING } from "@/generators/const/acl.const";
 import { MUTATION_EFFECTS, ZOD_EXTENDED } from "@/generators/const/deps.const";
@@ -13,6 +14,7 @@ import { getAbilityConditionsTypes, hasAbilityConditions } from "@/generators/ut
 import {
   getEndpointBody,
   getEndpointConfig,
+  getEndpointName,
   getUpdateQueryEndpoints,
   hasEndpointConfig,
   mapEndpointParamsToFunctionParams,
@@ -172,8 +174,29 @@ function registerGenerateMutationHelper(resolver: SchemaResolver) {
     }
 
     const updateQueryEndpoints = getUpdateQueryEndpoints(endpoint, queryEndpoints);
-    const destructuredVariables = getDestructuredVariables(resolver, endpoint, updateQueryEndpoints);
     const hasAclCheck = resolver.options.checkAcl && endpoint.acl;
+
+    const pathFuncParams = mapEndpointParamsToFunctionParams(resolver, endpoint).filter(
+      (param) => param.paramType === "Path",
+    );
+    const hasMutationScope =
+      resolver.options.mutationScope === true &&
+      pathFuncParams.length > 0 &&
+      endpoint.method !== OpenAPIV3.HttpMethods.POST;
+    const mutationScopePathParams = hasMutationScope ? pathFuncParams.map(({ name, type }) => ({ name, type })) : [];
+    const mutationScopeExpression = hasMutationScope
+      ? getMutationScopeExpression(getEndpointName(endpoint), mutationScopePathParams.map(({ name }) => name))
+      : undefined;
+    const mutationVariablesParams = mapEndpointParamsToFunctionParams(resolver, endpoint, {
+      excludePathParams: hasMutationScope,
+      includeFileParam: true,
+    });
+
+    const allDestructuredVariables = getDestructuredVariables(resolver, endpoint, updateQueryEndpoints);
+    const pathParamNames = new Set(pathFuncParams.map(({ name }) => name));
+    const destructuredVariables = hasMutationScope
+      ? allDestructuredVariables.filter((name) => !pathParamNames.has(name))
+      : allDestructuredVariables;
 
     return getHbsPartialTemplateDelegate("query-use-mutation")({
       endpoint,
@@ -189,8 +212,16 @@ function registerGenerateMutationHelper(resolver: SchemaResolver) {
       destructuredVariables,
       hasAclCheck,
       aclCheckHook: ACL_CHECK_HOOK,
+      hasMutationScope,
+      mutationScopeExpression,
+      mutationScopePathParams,
+      hasMutationVariables: mutationVariablesParams.length > 0,
     });
   });
+}
+
+function getMutationScopeExpression(endpointName: string, pathParamNames: string[]) {
+  return `\`${[endpointName, ...pathParamNames.map((name) => `\${${name}}`)].join(":")}\``;
 }
 
 function registerGenerateInfiniteQueryHelper(resolver: SchemaResolver) {

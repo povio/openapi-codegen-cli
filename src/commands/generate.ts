@@ -34,6 +34,7 @@ export type GenerateParams = {
     | "infiniteQueries"
     | "axiosRequestConfig"
     | "mutationEffects"
+    | "mutationScope"
     | "parseRequestParams"
     | "builderConfigs"
   >

@@ -48,6 +48,7 @@ export function mapEndpointParamsToFunctionParams(
     includeFileParam?: boolean;
     includeOnlyRequiredParams?: boolean;
     pathParamsRequiredOnly?: boolean;
+    excludePathParams?: boolean;
   },
 ) {
   const params = endpoint.parameters.map((param) => {
@@ -94,7 +95,8 @@ export function mapEndpointParamsToFunctionParams(
       (param) =>
         (!options?.excludeBodyParam || param.name !== BODY_PARAMETER_NAME) &&
         (!options?.excludePageParam || param.name !== resolver.options.infiniteQueryParamNames.page) &&
-        (!options?.includeOnlyRequiredParams || param.required),
+        (!options?.includeOnlyRequiredParams || param.required) &&
+        (!options?.excludePathParams || param.paramType !== "Path"),
     )
     .map((param) => ({
       ...param,

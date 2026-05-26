@@ -64,6 +64,9 @@ class GenerateOptions implements GenerateParams {
   @YargOption({ envAlias: "mutationEffects", type: "boolean" })
   mutationEffects?: boolean;
 
+  @YargOption({ envAlias: "mutationScope", type: "boolean" })
+  mutationScope?: boolean;
+
   @YargOption({ envAlias: "parseRequestParams", type: "boolean" })
   parseRequestParams?: boolean;
 
