@@ -937,10 +937,40 @@ function renderMutation({
     ? `${endpointParams}${endpointParams ? "; " : ""}abortController?: AbortController; onUploadProgress?: (progress: { loaded: number; total: number }) => void`
     : endpointParams;
 
+  const isPost = endpoint.method === "post";
+  const scopeEnabled = !!resolver.options.mutationScope && !isPost;
+  const scopePathParams = scopeEnabled
+    ? mapEndpointParamsToFunctionParams(resolver, endpoint, {}).filter((p) => p.paramType === "Path")
+    : [];
+  const isScoped = scopePathParams.length > 0;
+
+  const nonPathEndpointParams = isScoped
+    ? renderEndpointParams(resolver, endpoint, {
+        includeFileParam: true,
+        optionalPathParams: resolver.options.workspaceContext,
+        modelNamespaceTag: tag,
+        excludePathParams: true,
+      })
+    : endpointParams;
+  const nonPathMutationVariablesType = isScoped
+    ? endpoint.mediaUpload
+      ? `${nonPathEndpointParams}${nonPathEndpointParams ? "; " : ""}abortController?: AbortController; onUploadProgress?: (progress: { loaded: number; total: number }) => void`
+      : nonPathEndpointParams
+    : mutationVariablesType;
+
+  const pathParamFirstArg = isScoped
+    ? `{ ${scopePathParams.map((p) => p.name).join(", ")} }: { ${scopePathParams.map((p) => `${p.name}: ${p.type}`).join("; ")} }, `
+    : "";
+  const mutationOptionsTypeArg = isScoped
+    ? nonPathMutationVariablesType
+      ? `, { ${nonPathMutationVariablesType} }`
+      : ""
+    : `, { ${mutationVariablesType} }`;
+
   const lines: string[] = [];
   lines.push(renderQueryJsDocs({ resolver, endpoint, mode: "mutation", tag }));
   lines.push(
-    `export const ${getQueryName(endpoint, true)} = (options?: AppMutationOptions<typeof ${endpointFunction}, { ${mutationVariablesType} }>${hasMutationEffects ? ` & ${MUTATION_EFFECTS.optionsType}` : ""}${hasAxiosRequestConfig ? `, ${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => {`,
+    `export const ${getQueryName(endpoint, true)} = (${pathParamFirstArg}options?: AppMutationOptions<typeof ${endpointFunction}${mutationOptionsTypeArg}>${hasMutationEffects ? ` & ${MUTATION_EFFECTS.optionsType}` : ""}${hasAxiosRequestConfig ? `, ${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => {`,
   );
   if (hasMutationDefaultOnError) {
     lines.push("  const queryConfig = OpenApiQueryConfig.useConfig();");
@@ -963,9 +993,15 @@ function renderMutation({
   lines.push("");
   lines.push(`  return ${QUERY_HOOKS.mutation}({`);
 
-  const mutationFnArg = endpointParams
-    ? `{ ${destructuredMutationArgs}${endpoint.mediaUpload ? `${destructuredMutationArgs ? ", " : ""}abortController, onUploadProgress` : ""} }`
-    : "";
+  const nonPathDestructuredArgs = isScoped
+    ? renderEndpointArgs(resolver, endpoint, { includeFileParam: true, excludePathParams: true })
+    : destructuredMutationArgs;
+  const effectiveParams = isScoped ? nonPathEndpointParams : endpointParams;
+  const effectiveArgs = isScoped ? nonPathDestructuredArgs : destructuredMutationArgs;
+  const mutationFnArg =
+    effectiveParams || endpoint.mediaUpload
+      ? `{ ${effectiveArgs}${endpoint.mediaUpload ? `${effectiveArgs ? ", " : ""}abortController, onUploadProgress` : ""} }`
+      : "";
   lines.push(
     `    mutationFn: ${endpoint.mediaUpload ? "async " : ""}(${mutationFnArg}) => ${hasMutationFnBody ? "{ " : ""}`,
   );
@@ -1015,6 +1051,10 @@ function renderMutation({
     lines.push(",");
   }
 
+  if (isScoped) {
+    const scopePathParamInterpolations = scopePathParams.map((p) => `:\${${p.name}}`).join("");
+    lines.push(`    scope: { id: \`${getEndpointName(endpoint)}${scopePathParamInterpolations}\` },`);
+  }
   lines.push("    ...options,");
   if (hasMutationDefaultOnError) {
     lines.push("    onError: options?.onError ?? queryConfig.onError,");
@@ -1022,8 +1062,10 @@ function renderMutation({
   if (hasMutationEffects) {
     lines.push("    onSuccess: async (resData, variables, onMutateResult, context) => {");
     if (updateQueryEndpoints.length > 0) {
-      if (destructuredVariables.length > 0) {
-        lines.push(`      const { ${destructuredVariables.join(", ")} } = variables;`);
+      const scopedPathParamNames = new Set(scopePathParams.map((p) => p.name));
+      const variablesDestructure = destructuredVariables.filter((v) => !scopedPathParamNames.has(v));
+      if (variablesDestructure.length > 0) {
+        lines.push(`      const { ${variablesDestructure.join(", ")} } = variables;`);
       }
       lines.push(...renderWorkspaceParamCoalescing({ replacements: workspaceParamReplacements, indent: "      " }));
       lines.push(
