@@ -92,7 +92,10 @@ yarn openapi-codegen generate --config my-config.ts
   --axiosRequestConfig                Include Axios request config parameters in query hooks (default: false)
   --infiniteQueries                   Generate infinite queries for paginated API endpoints (default: false)
   --mutationEffects                   Add mutation effects options to mutation hooks (default: true)
-  --mutationScope                     Serialize mutations for the same path-param resource via TanStack scope.id (default: false)
+  --mutationScope                     Serialize mutations for the same path-param resource via TanStack scope.id (default: false).
+                                      In config files also accepts { include: string[] } or { exclude: string[] } to opt specific
+                                      operations in/out of scoping. Use "Tag/operationId" format for precision (e.g. "EmployeeSettings/update")
+                                      or just "operationId" to match across all tags. Cannot specify both include and exclude.
   --mutationDefaultOnError            Use OpenApiQueryConfig.onError as the default onError for mutation hooks (default: false)
   --workspaceContext                  Comma-separated list of path/ACL params that generated hooks may resolve from OpenApiWorkspaceContext
   --inlineEndpoints                   Inline endpoint implementations into generated query files (default: false)

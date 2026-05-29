@@ -29,7 +29,7 @@ interface QueriesGenerateOptions {
   mutationDefaultOnError?: boolean;
   workspaceContext?: string[];
   prefetchQueries?: boolean;
-  mutationScope?: boolean;
+  mutationScope?: boolean | { include: string[] } | { exclude: string[] };
 }
 
 interface InfiniteQueriesGenerateOptions {

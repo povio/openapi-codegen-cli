@@ -78,6 +78,14 @@ const endpointParamMappingCache = new WeakMap<
 
 export function generateQueries(params: GenerateTypeParams) {
   const { resolver, data, tag } = params;
+
+  const mutationScopeOption = resolver.options.mutationScope;
+  if (mutationScopeOption && typeof mutationScopeOption === "object") {
+    if ("include" in mutationScopeOption && "exclude" in mutationScopeOption) {
+      throw new Error("mutationScope cannot specify both 'include' and 'exclude'");
+    }
+  }
+
   const inlineEndpoints = shouldInlineEndpointsForTag(tag, resolver.options);
   const endpoints = data.get(tag)?.endpoints;
   if (!endpoints || endpoints.length === 0) {
@@ -938,7 +946,19 @@ function renderMutation({
     : endpointParams;
 
   const isPost = endpoint.method === "post";
-  const scopeEnabled = !!resolver.options.mutationScope && !isPost;
+  const mutationScopeOption = resolver.options.mutationScope;
+  const operationId = getEndpointName(endpoint);
+  const scopeMatchKey = `${tag}/${operationId}`;
+  let scopeEnabled = false;
+  if (!isPost && mutationScopeOption) {
+    if (mutationScopeOption === true) {
+      scopeEnabled = true;
+    } else if (typeof mutationScopeOption === "object" && "include" in mutationScopeOption) {
+      scopeEnabled = mutationScopeOption.include.some((id) => id === operationId || id === scopeMatchKey);
+    } else if (typeof mutationScopeOption === "object" && "exclude" in mutationScopeOption) {
+      scopeEnabled = !mutationScopeOption.exclude.some((id) => id === operationId || id === scopeMatchKey);
+    }
+  }
   const scopePathParams = scopeEnabled
     ? mapEndpointParamsToFunctionParams(resolver, endpoint, {}).filter((p) => p.paramType === "Path")
     : [];
