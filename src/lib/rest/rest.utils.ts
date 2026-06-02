@@ -3,7 +3,7 @@ import { isAxiosError } from "axios";
 import { z } from "zod";
 
 export namespace RestUtils {
-  export const extractServerResponseCode = (e: unknown): string | null => {
+  export const extractServerResponseCode = (e: unknown): string | number | null => {
     if (e instanceof z.ZodError) {
       return "validation-exception";
     }
@@ -19,6 +19,10 @@ export namespace RestUtils {
     const data = e.response.data as { code: unknown } | undefined;
 
     if (typeof data?.code === "string") {
+      return data.code;
+    }
+
+    if (typeof data?.code === "number") {
       return data.code;
     }
 
