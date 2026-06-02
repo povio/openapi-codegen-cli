@@ -797,7 +797,7 @@ function renderInfiniteQueryOptions({
   );
   lines.push("  initialPageParam: 1,");
   lines.push(
-    `  getNextPageParam: ({ ${resolver.options.infiniteQueryResponseParamNames.page}, ${resolver.options.infiniteQueryResponseParamNames.totalItems}, ${resolver.options.infiniteQueryResponseParamNames.limit}: limitParam }) => {`,
+    `  getNextPageParam: ({ ${resolver.options.infiniteQueryResponseParamNames.page}, ${resolver.options.infiniteQueryResponseParamNames.totalItems}, ${resolver.options.infiniteQueryResponseParamNames.limit}: limitParam }: Awaited<ReturnType<typeof ${endpointFunction}>>) => {`,
   );
   lines.push(`    const pageParam = ${resolver.options.infiniteQueryResponseParamNames.page} ?? 1;`);
   lines.push(
@@ -835,13 +835,18 @@ function renderPrefetchInfiniteQuery({ resolver, endpoint }: { resolver: SchemaR
     modelNamespaceTag: tag,
   });
   const endpointArgs = renderEndpointArgs(resolver, endpoint, { excludePageParam: true });
+  const optionsArgs = `${endpointParams ? `{ ${endpointArgs} }` : ""}${hasAxiosRequestConfig ? `${endpointParams ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}` : ""}`;
 
   const lines: string[] = [];
   lines.push(
     `export const ${getPrefetchInfiniteQueryName(endpoint)} = (queryClient: QueryClient, ${endpointParams ? `{ ${endpointArgs} }: { ${endpointParams} }, ` : ""}${hasAxiosRequestConfig ? `${AXIOS_REQUEST_CONFIG_NAME}: ${AXIOS_REQUEST_CONFIG_TYPE}, ` : ""}options?: Omit<Parameters<QueryClient["prefetchInfiniteQuery"]>[0], "queryKey" | "queryFn" | "initialPageParam" | "getNextPageParam">): void => {`,
   );
+  // options is cast to {} so it contributes no typed properties to the spread, letting TypeScript
+  // infer TPageParam and TQueryFnData solely from the options factory (via initialPageParam and
+  // queryFn). Without the cast, the options type defaults prefetchInfiniteQuery generics to unknown,
+  // which conflicts with the generated queryFn expecting pageParam: number.
   lines.push(
-    `  void queryClient.prefetchInfiniteQuery({ ...${getInfiniteQueryOptionsName(endpoint)}(${endpointParams ? `{ ${endpointArgs} }` : ""}${hasAxiosRequestConfig ? `${endpointParams ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}` : ""}), ...options });`,
+    `  void queryClient.prefetchInfiniteQuery({ ...${getInfiniteQueryOptionsName(endpoint)}(${optionsArgs}), ...(options as {}) });`,
   );
   lines.push("};");
   return lines.join("\n");
@@ -1007,7 +1012,7 @@ function renderMutation({
   );
   if (hasMutationEffects) {
     lines.push(
-      `  const { runMutationEffects } = useMutationEffects<typeof ${QUERY_MODULE_ENUM}.${tag}>({ currentModule: ${QUERIES_MODULE_NAME} });`,
+      `  const { runMutationEffects } = useMutationEffects<${QUERY_MODULE_ENUM}.${tag}>({ currentModule: ${QUERIES_MODULE_NAME} });`,
     );
   }
   lines.push("");

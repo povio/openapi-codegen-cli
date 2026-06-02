@@ -9,7 +9,7 @@ export interface MutationEffectsOptions<TQueryModule extends QueryModule = Query
   invalidateCurrentModule?: boolean;
   crossTabInvalidation?: boolean;
   invalidationMap?: InvalidationMap<TQueryModule>;
-  invalidateModules?: TQueryModule[];
+  invalidateModules?: QueryModule[];
   invalidateKeys?: QueryKey[];
   preferUpdate?: boolean;
 }
