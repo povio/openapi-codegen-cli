@@ -100,6 +100,33 @@ describe("DomainErrorRegistry", () => {
   it("returns undefined for unregistered code", () => {
     expect(DomainErrorRegistry.getEntry(9999)).toBeUndefined();
   });
+
+  it("registers and retrieves a string code", () => {
+    DomainErrorRegistry.register({ code: "BUSINESS_PARTNER_IS_LOCKED", getMessage: () => "locked" });
+    expect(DomainErrorRegistry.getEntry("BUSINESS_PARTNER_IS_LOCKED")).toBeDefined();
+    expect(DomainErrorRegistry.getEntry("BUSINESS_PARTNER_IS_LOCKED")!.code).toBe("BUSINESS_PARTNER_IS_LOCKED");
+  });
+
+  it("unregisters a string code", () => {
+    DomainErrorRegistry.register({ code: "SOME_ERROR", getMessage: () => "msg" });
+    DomainErrorRegistry.unregister("SOME_ERROR");
+    expect(DomainErrorRegistry.getEntry("SOME_ERROR")).toBeUndefined();
+  });
+
+  it("string '1001' and number 1001 are distinct entries", () => {
+    DomainErrorRegistry.register({ code: "1001", getMessage: () => "string handler" });
+    DomainErrorRegistry.register({ code: 1001, getMessage: () => "number handler" });
+    expect(DomainErrorRegistry.getEntry("1001")!.getMessage({} as never, null)).toBe("string handler");
+    expect(DomainErrorRegistry.getEntry(1001)!.getMessage({} as never, null)).toBe("number handler");
+  });
+
+  it("clear() removes both string and number entries", () => {
+    DomainErrorRegistry.register({ code: "STRING_CODE", getMessage: () => "a" });
+    DomainErrorRegistry.register({ code: 1001, getMessage: () => "b" });
+    DomainErrorRegistry.clear();
+    expect(DomainErrorRegistry.getEntry("STRING_CODE")).toBeUndefined();
+    expect(DomainErrorRegistry.getEntry(1001)).toBeUndefined();
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -200,6 +227,71 @@ describe("ErrorHandler priority", () => {
       } catch (e) {
         expect((e as ApplicationException<never>).message).toBe("shared domain msg");
       }
+    }
+  });
+
+  it("DomainErrorRegistry handles a string code when no per-instance entry matches", () => {
+    DomainErrorRegistry.register({ code: "BUSINESS_PARTNER_IS_LOCKED", getMessage: () => "partner is locked" });
+
+    const handler = new ErrorHandler({ entries: [] });
+    const err = makeAxiosError({ code: "BUSINESS_PARTNER_IS_LOCKED", message: "locked" });
+    try {
+      handler.rethrowError(err);
+    } catch (e) {
+      expect((e as ApplicationException<never>).message).toBe("partner is locked");
+      expect((e as ApplicationException<never>).code).toBe("BUSINESS_PARTNER_IS_LOCKED");
+    }
+  });
+
+  it("per-instance string entry takes priority over registry for the same string code", () => {
+    DomainErrorRegistry.register({ code: "BUSINESS_PARTNER_IS_LOCKED", getMessage: () => "registry message" });
+
+    const handler = new ErrorHandler({
+      entries: [
+        {
+          code: "BUSINESS_PARTNER_IS_LOCKED",
+          condition: (e) => RestUtils.extractServerResponseCode(e) === "BUSINESS_PARTNER_IS_LOCKED",
+          getMessage: () => "instance message",
+        },
+      ],
+    });
+
+    const err = makeAxiosError({ code: "BUSINESS_PARTNER_IS_LOCKED" });
+    try {
+      handler.rethrowError(err);
+    } catch (e) {
+      expect((e as ApplicationException<string>).message).toBe("instance message");
+    }
+  });
+
+  it("string '1001' and number 1001 are matched independently", () => {
+    DomainErrorRegistry.register({ code: "1001", getMessage: () => "string handler" });
+    DomainErrorRegistry.register({ code: 1001, getMessage: () => "number handler" });
+
+    const handler = new ErrorHandler({ entries: [] });
+
+    // numeric code → number handler
+    try {
+      handler.rethrowError(makeNumericDomainAxiosError(1001));
+    } catch (e) {
+      expect((e as ApplicationException<never>).message).toBe("number handler");
+    }
+
+    // string code → string handler
+    try {
+      handler.rethrowError(makeAxiosError({ code: "1001" }));
+    } catch (e) {
+      expect((e as ApplicationException<never>).message).toBe("string handler");
+    }
+  });
+
+  it("unregistered string code falls through to UNKNOWN_ERROR", () => {
+    const handler = new ErrorHandler({ entries: [] });
+    const err = makeAxiosError({ code: "UNREGISTERED_CODE" });
+    try {
+      handler.rethrowError(err);
+    } catch (e) {
+      expect((e as ApplicationException<never>).code).toBe("UNKNOWN_ERROR");
     }
   });
 });

@@ -32,13 +32,13 @@ export interface ErrorEntry<CodeT> {
 }
 
 export interface DomainErrorEntry {
-  code: number;
+  code: string | number;
   condition?: (error: unknown) => boolean;
   getMessage: (t: TFunction<string, undefined>, error: unknown) => string;
 }
 
 export class DomainErrorRegistry {
-  private static readonly entries = new Map<number, DomainErrorEntry>();
+  private static readonly entries = new Map<string | number, DomainErrorEntry>();
 
   static register(entry: DomainErrorEntry): void;
   static register(entries: DomainErrorEntry[]): void;
@@ -49,7 +49,7 @@ export class DomainErrorRegistry {
     }
   }
 
-  static unregister(code: number): void {
+  static unregister(code: string | number): void {
     this.entries.delete(code);
   }
 
@@ -57,7 +57,7 @@ export class DomainErrorRegistry {
     this.entries.clear();
   }
 
-  static getEntry(code: number): DomainErrorEntry | undefined {
+  static getEntry(code: string | number): DomainErrorEntry | undefined {
     return this.entries.get(code);
   }
 }
@@ -176,8 +176,8 @@ export class ErrorHandler<CodeT extends string | number> {
       throw exception;
     }
 
-    // 2. Global domain error registry (numeric codes)
-    if (typeof code === "number") {
+    // 2. Global domain error registry (string or numeric codes)
+    if (code !== null) {
       const registryEntry = DomainErrorRegistry.getEntry(code);
       if (registryEntry && (!registryEntry.condition || registryEntry.condition(error))) {
         const exception = new ApplicationException(registryEntry.getMessage(this.t, error), registryEntry.code, serverMessage);
