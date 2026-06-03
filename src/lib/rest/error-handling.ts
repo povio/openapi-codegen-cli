@@ -31,14 +31,47 @@ export interface ErrorEntry<CodeT> {
   getMessage: (t: TFunction<string, undefined>, error: unknown) => string;
 }
 
-export interface ErrorHandlerOptions<CodeT extends string> {
+export interface DomainErrorEntry {
+  code: string | number;
+  condition?: (error: unknown) => boolean;
+  getMessage: (t: TFunction<string, undefined>, error: unknown) => string;
+}
+
+export class DomainErrorRegistry {
+  private static readonly entries = new Map<string | number, DomainErrorEntry>();
+
+  static register(entry: DomainErrorEntry): void;
+  static register(entries: DomainErrorEntry[]): void;
+  static register(entryOrEntries: DomainErrorEntry | DomainErrorEntry[]): void {
+    const items = Array.isArray(entryOrEntries) ? entryOrEntries : [entryOrEntries];
+    for (const item of items) {
+      this.entries.set(item.code, item);
+    }
+  }
+
+  static unregister(code: string | number): void {
+    this.entries.delete(code);
+  }
+
+  static clear(): void {
+    this.entries.clear();
+  }
+
+  static getEntry(code: string | number): DomainErrorEntry | undefined {
+    return this.entries.get(code);
+  }
+}
+
+export interface ErrorHandlerOptions<CodeT extends string | number> {
   entries: ErrorEntry<CodeT>[];
   t?: TFunction<string, undefined>;
   onRethrowError?: (error: unknown, exception: ApplicationException<CodeT | GeneralErrorCodes>) => void;
 }
 
-export class ErrorHandler<CodeT extends string> {
+export class ErrorHandler<CodeT extends string | number> {
   entries: ErrorEntry<CodeT | GeneralErrorCodes>[] = [];
+  private readonly userEntries: ErrorEntry<CodeT | GeneralErrorCodes>[];
+  private readonly generalEntries: ErrorEntry<CodeT | GeneralErrorCodes>[];
   private t: TFunction<string, undefined>;
   private onRethrowError?: (error: unknown, exception: ApplicationException<CodeT | GeneralErrorCodes>) => void;
 
@@ -114,11 +147,13 @@ export class ErrorHandler<CodeT extends string> {
       },
     };
 
-    // general errors have the lowest priority
-    this.entries = [...entries, dataValidationError, internalError, networkError, canceledError, unknownError];
+    this.userEntries = [...entries];
+    this.generalEntries = [dataValidationError, internalError, networkError, canceledError, unknownError];
+    // combined for public backward compatibility
+    this.entries = [...this.userEntries, ...this.generalEntries];
   }
 
-  private matchesEntry(error: unknown, entry: ErrorEntry<CodeT | GeneralErrorCodes>, code: string | null): boolean {
+  private matchesEntry(error: unknown, entry: ErrorEntry<CodeT | GeneralErrorCodes>, code: string | number | null): boolean {
     if (entry.condition) {
       return entry.condition(error);
     }
@@ -131,13 +166,30 @@ export class ErrorHandler<CodeT extends string> {
 
   public rethrowError(error: unknown): ApplicationException<CodeT | GeneralErrorCodes> {
     const code = RestUtils.extractServerResponseCode(error);
-    const errorEntry = this.entries.find((entry) => this.matchesEntry(error, entry, code))!;
-
     const serverMessage = RestUtils.extractServerErrorMessage(error);
-    const exception = new ApplicationException(errorEntry.getMessage(this.t, error), errorEntry.code, serverMessage);
 
+    // 1. Per-instance custom entries (highest priority)
+    const userEntry = this.userEntries.find((entry) => this.matchesEntry(error, entry, code));
+    if (userEntry) {
+      const exception = new ApplicationException(userEntry.getMessage(this.t, error), userEntry.code, serverMessage);
+      this.onRethrowError?.(error, exception);
+      throw exception;
+    }
+
+    // 2. Global domain error registry (string or numeric codes)
+    if (code !== null) {
+      const registryEntry = DomainErrorRegistry.getEntry(code);
+      if (registryEntry && (!registryEntry.condition || registryEntry.condition(error))) {
+        const exception = new ApplicationException(registryEntry.getMessage(this.t, error), registryEntry.code, serverMessage);
+        this.onRethrowError?.(error, exception as unknown as ApplicationException<CodeT | GeneralErrorCodes>);
+        throw exception;
+      }
+    }
+
+    // 3. Built-in general fallbacks (lowest priority)
+    const generalEntry = this.generalEntries.find((entry) => this.matchesEntry(error, entry, code))!;
+    const exception = new ApplicationException(generalEntry.getMessage(this.t, error), generalEntry.code, serverMessage);
     this.onRethrowError?.(error, exception);
-
     throw exception;
   }
 

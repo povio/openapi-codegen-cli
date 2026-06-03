@@ -8,8 +8,8 @@ export { RestInterceptor } from "./lib/rest/rest-interceptor";
 export { RestUtils } from "./lib/rest/rest.utils";
 
 // Error handling
-export { ApplicationException, ErrorHandler, SharedErrorHandler } from "./lib/rest/error-handling";
-export type { GeneralErrorCodes, ErrorHandlerOptions, ErrorEntry } from "./lib/rest/error-handling";
+export { ApplicationException, ErrorHandler, SharedErrorHandler, DomainErrorRegistry } from "./lib/rest/error-handling";
+export type { GeneralErrorCodes, ErrorHandlerOptions, ErrorEntry, DomainErrorEntry } from "./lib/rest/error-handling";
 
 // React Query types
 export type { AppQueryOptions, AppMutationOptions, AppInfiniteQueryOptions } from "./lib/react-query.types";
