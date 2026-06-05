@@ -2,6 +2,7 @@ import { OpenAPIV3 } from "openapi-types";
 import { describe, expect, test } from "vitest";
 
 import { DEFAULT_GENERATE_OPTIONS } from "./const/options.const";
+import { getDataFromOpenAPIDoc } from "./core/getDataFromOpenAPIDoc";
 import { generateCodeFromOpenAPIDoc } from "./generateCodeFromOpenAPIDoc";
 import { GenerateOptions } from "./types/options";
 
@@ -197,6 +198,96 @@ describe("generateCodeFromOpenAPIDoc", () => {
     expect(queries).toContain("mutationFn: async ({ userId, data, file, abortController, onUploadProgress }) => {");
     expect(queries).toContain("DocumentsApi.uploadAvatar(userId, data)");
     expect(queries).not.toContain("scope: { id: `uploadAvatar:${userId}` }");
+  });
+});
+
+describe("generateCodeFromOpenAPIDoc - inline enum validation for domain error schemas", () => {
+  // Doc with two endpoints:
+  //   - rockets launch: 400 response carries x-domain-error-domain with inline status/code enums
+  //   - widgets list:   200 response has a plain inline enum (no x-domain-error-domain)
+  const mixedDoc = {
+    openapi: "3.0.3",
+    info: { title: "Domain Error Enum Test", version: "1.0.0" },
+    paths: {
+      "/rockets/{id}/launch": {
+        post: {
+          tags: ["rockets"],
+          operationId: "RocketController_launch",
+          parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+          responses: {
+            "200": {
+              description: "Launched",
+              content: { "application/json": { schema: { $ref: "#/components/schemas/StatusResponse" } } },
+            },
+            "400": {
+              description: "Could not launch",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    "x-domain-error-domain": "rocket",
+                    properties: {
+                      status: { type: "string", enum: ["error"] },
+                      code: { type: "number", enum: [1001] },
+                      message: { type: "string" },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      "/widgets": {
+        get: {
+          tags: ["widgets"],
+          operationId: "WidgetController_list",
+          responses: {
+            "200": {
+              description: "OK",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      status: { type: "string", enum: ["active", "inactive"] },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    components: {
+      schemas: {
+        StatusResponse: { type: "object", properties: { status: { type: "string" } } },
+      },
+    },
+  } as unknown as OpenAPIV3.Document;
+
+  test("does not produce not-allowed-inline-enum errors for schemas with x-domain-error-domain", () => {
+    const { resolver } = getDataFromOpenAPIDoc(mixedDoc, DEFAULT_GENERATE_OPTIONS as GenerateOptions);
+    const inlineEnumErrors = resolver.validationErrors.filter((e) => e.type === "not-allowed-inline-enum");
+
+    expect(inlineEnumErrors.every((e) => !e.message.includes("RocketController_launch"))).toBe(true);
+  });
+
+  test("still produces not-allowed-inline-enum errors for normal schemas without x-domain-error-domain", () => {
+    const { resolver } = getDataFromOpenAPIDoc(mixedDoc, DEFAULT_GENERATE_OPTIONS as GenerateOptions);
+    const inlineEnumErrors = resolver.validationErrors.filter((e) => e.type === "not-allowed-inline-enum");
+
+    expect(inlineEnumErrors.some((e) => e.message.includes("WidgetController_list"))).toBe(true);
+  });
+
+  test("generates inline z.enum for domain error status field and does not emit StatusEnumSchema", () => {
+    const files = generateCodeFromOpenAPIDoc(mixedDoc, DEFAULT_GENERATE_OPTIONS as GenerateOptions);
+    const rocketsModels = files.find(({ fileName }) => fileName === "output/rockets/rockets.models.ts")?.content;
+
+    expect(rocketsModels).toBeDefined();
+    expect(rocketsModels).toContain('z.enum(["error"])');
+    expect(rocketsModels).not.toContain("StatusEnumSchema");
   });
 });
 
