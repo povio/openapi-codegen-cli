@@ -102,7 +102,7 @@ export function generateEndpoints({ resolver, data, tag }: GenerateTypeParams) {
       `export const ${getEndpointName(endpoint)} = (${endpointParams}${hasAxiosRequestConfig ? `${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => {`,
     );
     lines.push(`    return ${APP_REST_CLIENT_NAME}.${endpoint.method}(`);
-    lines.push(`        { resSchema: ${getImportedZodSchemaName(resolver, endpoint.response, tag)} },`);
+    lines.push(`        { resSchema: ${getImportedZodSchemaName(resolver, endpoint.response)} },`);
     lines.push(`        \`${getEndpointPath(endpoint)}\`,`);
 
     if (endpointBody) {
