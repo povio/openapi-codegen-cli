@@ -8,6 +8,7 @@ function domainToPascalCase(domain: string): string {
 
 interface DomainErrorDef {
   code: number;
+  name?: string;
   description?: string;
 }
 
@@ -31,7 +32,7 @@ export function generateDomainErrors({
 
         const domainMap = byDomain.get(domain)!;
         if (!domainMap.has(code)) {
-          domainMap.set(code, { code, description: error.description });
+          domainMap.set(code, { code, name: error.domainError.name, description: error.description });
         }
       }
     }
@@ -46,9 +47,10 @@ export function generateDomainErrors({
     const sortedCodes = [...codes.values()].sort((a, b) => a.code - b.code);
 
     const entries = sortedCodes
-      .map(({ code, description }) => {
+      .map(({ code, name, description }) => {
         const comment = description ? `  /** ${description} */\n  ` : "  ";
-        return `${comment}ERROR_${code}: ${code}`;
+        const key = name ?? `ERROR_${code}`;
+        return `${comment}${key}: ${code}`;
       })
       .join(",\n");
 

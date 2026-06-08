@@ -16,14 +16,14 @@ function makeData(endpointGroups: Partial<Endpoint>[][]): GenerateData {
   return data;
 }
 
-function makeEndpointWithDomainError(domain: string, code: number, description?: string): Partial<Endpoint> {
+function makeEndpointWithDomainError(domain: string, code: number, description?: string, name?: string): Partial<Endpoint> {
   return {
     errors: [
       {
         status: 400,
         zodSchema: "z.void()",
         description,
-        domainError: { domain, code },
+        domainError: { domain, code, ...(name ? { name } : {}) },
       },
     ],
   };
@@ -150,6 +150,22 @@ describe("generateDomainErrors", () => {
 
     expect(result).toContain("export const UserAuthDomainErrors = {");
     expect(result).toContain("export type UserAuthDomainErrorCode =");
+  });
+
+  it("uses x-domain-error-name as key when present", () => {
+    const data = makeData([[makeEndpointWithDomainError("rocket", 1001, "Could not launch", "COULD_NOT_LAUNCH")]]);
+    const result = generateDomainErrors({ resolver: stubResolver, data })!;
+
+    expect(result).toContain("COULD_NOT_LAUNCH: 1001");
+    expect(result).not.toContain("ERROR_1001");
+  });
+
+  it("falls back to ERROR_<code> when name is absent", () => {
+    const data = makeData([[makeEndpointWithDomainError("rocket", 1001, "Could not launch")]]);
+    const result = generateDomainErrors({ resolver: stubResolver, data })!;
+
+    expect(result).toContain("ERROR_1001: 1001");
+    expect(result).not.toContain("COULD_NOT_LAUNCH");
   });
 
   it("converts underscore domain to PascalCase", () => {
