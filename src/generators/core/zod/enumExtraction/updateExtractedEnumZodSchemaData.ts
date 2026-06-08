@@ -21,6 +21,10 @@ export function updateExtractedEnumZodSchemaData({
   nameSegments?: string[];
   includeSelf?: boolean;
 } & SchemaInfo) {
+  if (!isReferenceObject(schema) && (schema as Record<string, unknown>)?.["x-domain-error-domain"]) {
+    return;
+  }
+
   if (includeSelf) {
     handleExtractedEnumZodSchemaDataUpdate({ schema, nameSegments, ...params });
   }
