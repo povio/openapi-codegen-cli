@@ -6,6 +6,7 @@ import { getZodSchema } from "@/generators/core/zod/getZodSchema";
 import { resolveZodSchemaName } from "@/generators/core/zod/resolveZodSchemaName";
 import { ZodSchemaMetaData } from "@/generators/core/zod/ZodSchema.class";
 import { isReferenceObject } from "@/generators/utils/openapi-schema.utils";
+import { isNamedZodSchema } from "@/generators/utils/zod-schema.utils";
 
 type EndpointZodSchemaCache = {
   byObject: WeakMap<object, Map<string, string>>;
@@ -85,7 +86,10 @@ export function resolveEndpointZodSchema({
         resolver,
         tag,
       })
-    : `${resolveZodSchemaName({ schema: schemaObject, zodSchema, fallbackName, resolver, tag })}${zodChain}`;
+    : (() => {
+        const name = resolveZodSchemaName({ schema: schemaObject, zodSchema, fallbackName, resolver, tag });
+        return isNamedZodSchema(name) ? name : name + zodChain;
+      })();
 
   entries.set(metaKey, resolved);
   return resolved;
