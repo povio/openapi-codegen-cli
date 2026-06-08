@@ -45,6 +45,8 @@ export function resolveZodSchemaName({
     while (resolver.getCodeByZodSchemaName(zodSchemaName)) {
       if (resolver.getZodSchemaNamesByCompositeCode(result)?.includes(zodSchemaName)) {
         return zodSchemaName;
+      } else if (result === zodSchemaName || result.startsWith(`${zodSchemaName}.`)) {
+        return zodSchemaName;
       } else if (resolver.getCodeByZodSchemaName(zodSchemaName) === zodSchemaName) {
         return zodSchemaName;
       } else {

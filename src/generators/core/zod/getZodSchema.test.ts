@@ -6,7 +6,9 @@ import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
 import { GenerateOptions } from "@/generators/types/options";
 import { getSchemaRef } from "@/generators/utils/openapi.utils";
 
+import { getZodChain } from "./getZodChain";
 import { getZodSchema } from "./getZodSchema";
+import { resolveZodSchemaName } from "./resolveZodSchemaName";
 import { ZodSchemaMetaData } from "./ZodSchema.class";
 
 const generateOptions = {
@@ -26,6 +28,50 @@ const getZodSchemaString = (schema: OpenAPIV3.SchemaObject, meta?: ZodSchemaMeta
     .trim();
 
 describe("getZodSchema", () => {
+  test("reuses referenced component name for single-item allOf fallback collisions", () => {
+    const schema = {
+      allOf: [{ $ref: "#/components/schemas/WorkingDocumentFilterDto" }],
+      nullable: true,
+    } as OpenAPIV3.SchemaObject;
+    const resolver = new SchemaResolver(
+      {
+        openapi: "3.0.3",
+        info: { title: "Test", version: "1.0.0" },
+        paths: {},
+        components: {
+          schemas: {
+            WorkingDocumentFilterDto: {
+              type: "object",
+              properties: {
+                search: { type: "string" },
+              },
+            },
+          },
+        },
+      },
+      DEFAULT_GENERATE_OPTIONS,
+    );
+    const zodSchema = getZodSchema({
+      schema,
+      resolver,
+      meta: { isRequired: false },
+      tag: "workingDocuments",
+    });
+
+    expect(
+      resolveZodSchemaName({
+        schema,
+        zodSchema: zodSchema.assign(
+          zodSchema.getCodeString("workingDocuments", resolver.options) +
+            getZodChain({ schema, meta: zodSchema.meta, options: resolver.options }),
+        ),
+        fallbackName: "WorkingDocumentFilterDto",
+        resolver,
+        tag: "workingDocuments",
+      }),
+    ).toBe("WorkingDocumentFilterDtoSchema");
+  });
+
   test("getZodSchemaString", () => {
     expect(getZodSchemaString({ type: "boolean" })).toStrictEqual("z.boolean()");
     expect(getZodSchemaString({ type: "string" })).toStrictEqual("z.string()");
