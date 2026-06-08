@@ -1,10 +1,18 @@
 /* eslint-disable no-control-regex, no-useless-escape */
+import { OpenAPIV3 } from "openapi-types";
 import { match, P } from "ts-pattern";
 
 import { ALLOWED_PARAM_MEDIA_TYPES, PRIMITIVE_TYPE_LIST } from "@/generators/const/openapi.const";
-import { ParameterObject, PrimitiveType, SingleType, SortingParameterObject } from "@/generators/types/openapi";
+import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
+import {
+  ParameterObject,
+  PrimitiveType,
+  SchemaObjectWithEnumNames,
+  SingleType,
+  SortingParameterObject,
+} from "@/generators/types/openapi";
 
-import { isSchemaObject } from "./openapi-schema.utils";
+import { isReferenceObject, isSchemaObject } from "./openapi-schema.utils";
 import { capitalize, kebabToCamel, snakeToCamel } from "./string.utils";
 
 export const getSchemaRef = (schemaName: string) => `#/components/schemas/${schemaName}`;
@@ -130,12 +138,46 @@ export function replaceHyphenatedPath(path: string) {
   return path;
 }
 
-export const isSortingParameterObject = (param: ParameterObject): param is SortingParameterObject => {
-  const enumNames = param["x-enumNames"];
+export const isSortingParameterObject = (
+  param: ParameterObject,
+  schema: OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject | undefined = param.schema,
+  resolver?: SchemaResolver,
+): param is SortingParameterObject => {
+  const enumNames = getParameterEnumNames(param, schema);
   const hasEnumNames = Array.isArray(enumNames) && enumNames.length > 0;
-  const isStringSchema = !!param.schema && isSchemaObject(param.schema) && param.schema.type === "string";
-  return hasEnumNames && isStringSchema;
+  return hasEnumNames && isStringLikeParameterSchema(schema, resolver);
 };
+
+export function getParameterEnumNames(
+  param: ParameterObject,
+  schema: OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject | undefined = param.schema,
+) {
+  return (
+    param["x-enumNames"] ??
+    (schema && isSchemaObject(schema) ? (schema as SchemaObjectWithEnumNames)["x-enumNames"] : undefined)
+  );
+}
+
+function isStringLikeParameterSchema(
+  schema: OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject | undefined,
+  resolver?: SchemaResolver,
+): boolean {
+  if (!schema) {
+    return false;
+  }
+
+  if (isReferenceObject(schema)) {
+    return resolver ? isStringLikeParameterSchema(resolver.resolveObject(schema), resolver) : true;
+  }
+
+  if (schema.type === "string" || (Array.isArray(schema.type) && schema.type.includes("string"))) {
+    return true;
+  }
+
+  return [...(schema.allOf ?? []), ...(schema.oneOf ?? []), ...(schema.anyOf ?? [])].some((compositeSchema) =>
+    isStringLikeParameterSchema(compositeSchema, resolver),
+  );
+}
 
 export const isPathExcluded = (path: string, options: { excludePathRegex: string }) => {
   if (!options.excludePathRegex) {

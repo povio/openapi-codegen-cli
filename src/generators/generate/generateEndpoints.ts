@@ -102,7 +102,13 @@ export function generateEndpoints({ resolver, data, tag }: GenerateTypeParams) {
       `export const ${getEndpointName(endpoint)} = (${endpointParams}${hasAxiosRequestConfig ? `${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => {`,
     );
     lines.push(`    return ${APP_REST_CLIENT_NAME}.${endpoint.method}(`);
-    lines.push(`        { resSchema: ${getImportedZodSchemaName(resolver, endpoint.response)} },`);
+    lines.push(
+      `        { resSchema: ${getImportedZodSchemaName(
+        resolver,
+        endpoint.response,
+        resolver.options.modelsInCommon && resolver.options.splitByTags ? tag : undefined,
+      )} },`,
+    );
     lines.push(`        \`${getEndpointPath(endpoint)}\`,`);
 
     if (endpointBody) {
@@ -171,10 +177,24 @@ function renderEndpointParamParse(
         resolver,
         param.parameterSortingEnumSchemaName,
         modelNamespaceTag,
-      )})${addOptional ? ".optional()" : ""}`
+      )})${getSortingPresenceChain(resolver, param)}`
     : `${getImportedZodSchemaName(resolver, param.zodSchema, modelNamespaceTag)}${addOptional ? ".optional()" : ""}`;
   const queryArgs = param.type === "Query" ? `, { type: "query", name: "${paramName}" }` : "";
   return `${ZOD_EXTENDED.namespace}.${ZOD_EXTENDED.exports.parse}(${schemaValue}, ${paramName}${queryArgs})`;
+}
+
+function getSortingPresenceChain(resolver: GenerateTypeParams["resolver"], param: EndpointParameter) {
+  const zodSchemaCode = resolver.getCodeByZodSchemaName(param.zodSchema) ?? param.zodSchema;
+
+  if (zodSchemaCode.includes(".nullish()")) {
+    return ".nullish()";
+  }
+
+  if (zodSchemaCode.includes(".nullable()")) {
+    return ".nullable()";
+  }
+
+  return !(param.parameterObject ?? param.bodyObject)?.required ? ".optional()" : "";
 }
 
 function renderEndpointConfig(

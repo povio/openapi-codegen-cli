@@ -19,7 +19,6 @@ import {
   isUpdateEndpoint,
 } from "@/generators/utils/endpoint.utils";
 import { isReferenceObject } from "@/generators/utils/openapi-schema.utils";
-import { isSortingParameterObject } from "@/generators/utils/openapi.utils";
 import { camelToSpaceSeparated, capitalize, kebabToCamel } from "@/generators/utils/string.utils";
 import { isNamedZodSchema } from "@/generators/utils/zod-schema.utils";
 
@@ -329,7 +328,7 @@ function getColumnsConfig(resolver: SchemaResolver, endpoint: Endpoint) {
   const columns = Object.keys(itemSchemaObj?.properties ?? {}).reduce((acc, key) => ({ ...acc, [key]: true }), {});
 
   const sortableEnumSchemaName = endpoint.parameters.find(
-    (param) => param.parameterObject && isSortingParameterObject(param.parameterObject),
+    (param) => param.parameterSortingEnumSchemaName,
   )?.parameterSortingEnumSchemaName;
 
   return {

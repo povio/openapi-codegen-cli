@@ -28,5 +28,7 @@ interface ParameterObjectAdditions {
 
 export type ParameterObject = OpenAPIV3.ParameterObject & ParameterObjectAdditions;
 
+export type SchemaObjectWithEnumNames = OpenAPIV3.SchemaObject & ParameterObjectAdditions;
+
 export type SortingParameterObject = OpenAPIV3.ParameterObject &
   Required<Pick<ParameterObjectAdditions, "x-enumNames">>;

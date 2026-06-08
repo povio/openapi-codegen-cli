@@ -201,6 +201,181 @@ describe("generateCodeFromOpenAPIDoc", () => {
   });
 });
 
+describe("generateCodeFromOpenAPIDoc - modelsInCommon regressions", () => {
+  const regressionDoc = {
+    openapi: "3.0.3",
+    info: { title: "modelsInCommon regression", version: "1.0.0" },
+    paths: {
+      "/auth/token": {
+        get: {
+          tags: ["auth"],
+          operationId: "getToken",
+          responses: {
+            "200": {
+              description: "OK",
+              content: { "application/json": { schema: { $ref: "#/components/schemas/AuthnTokenDto" } } },
+            },
+          },
+        },
+      },
+      "/employee-roles": {
+        get: {
+          tags: ["employeeRoles"],
+          operationId: "list",
+          parameters: [
+            {
+              name: "sort",
+              in: "query",
+              schema: {
+                allOf: [{ $ref: "#/components/schemas/SortExpression" }],
+                nullable: true,
+                "x-enumNames": ["Name"],
+              },
+            },
+          ],
+          responses: {
+            "200": {
+              description: "OK",
+              content: { "application/json": { schema: { $ref: "#/components/schemas/EmployeeRolesListResponse" } } },
+            },
+          },
+        },
+      },
+      "/employee-permissions/paginate": {
+        post: {
+          tags: ["employeePermissions"],
+          operationId: "paginatePermissions",
+          "x-acl": [
+            {
+              action: "Read",
+              subject: "Permission",
+              conditions: {
+                context: "$body",
+              },
+            },
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": { schema: { $ref: "#/components/schemas/EmployeePermissionContext" } },
+            },
+          },
+          responses: {
+            "200": {
+              description: "OK",
+              content: { "application/json": { schema: { $ref: "#/components/schemas/PermissionPage" } } },
+            },
+          },
+        },
+      },
+      "/folders": {
+        get: {
+          tags: ["folders"],
+          operationId: "listFolders",
+          parameters: [
+            {
+              name: "filter",
+              in: "query",
+              schema: { $ref: "#/components/schemas/FolderContentFilterDto" },
+            },
+          ],
+          responses: {
+            "200": {
+              description: "OK",
+              content: { "application/json": { schema: { $ref: "#/components/schemas/FolderContentPage" } } },
+            },
+          },
+        },
+      },
+    },
+    components: {
+      schemas: {
+        AuthnTokenDto: {
+          type: "object",
+          properties: { token: { type: "string" } },
+          required: ["token"],
+        },
+        SortExpression: {
+          type: "string",
+        },
+        EmployeeRolesListResponse: {
+          type: "object",
+          properties: { data: { type: "array", items: { type: "string" } } },
+        },
+        EmployeePermissionContext: {
+          type: "object",
+          properties: { employeeId: { type: "string" } },
+          required: ["employeeId"],
+        },
+        PermissionPage: {
+          type: "object",
+          properties: { data: { type: "array", items: { type: "string" } } },
+        },
+        FolderContentFilterDto: {
+          type: "object",
+          properties: { search: { type: "string" } },
+        },
+        FolderContentPage: {
+          type: "object",
+          properties: { data: { type: "array", items: { type: "string" } } },
+        },
+      },
+    },
+  } as unknown as OpenAPIV3.Document;
+
+  const regressionOptions = {
+    ...DEFAULT_GENERATE_OPTIONS,
+    output: "output",
+    modelsInCommon: true,
+    builderConfigs: false,
+    prefetchQueries: false,
+    mutationEffects: false,
+  } as GenerateOptions;
+
+  test("uses local model proxies in API files when models are generated in common", () => {
+    const files = generateCodeFromOpenAPIDoc(regressionDoc, regressionOptions);
+    const authApi = files.find(({ fileName }) => fileName === "output/auth/auth.api.ts")?.content;
+
+    expect(authApi).toContain('import { AuthModels } from "./auth.models";');
+    expect(authApi).toContain("{ resSchema: AuthModels.AuthnTokenDtoSchema }");
+    expect(authApi).not.toContain("CommonModels.AuthnTokenDtoSchema");
+  });
+
+  test("turns x-enumNames order parameters into sort expression parsing", () => {
+    const files = generateCodeFromOpenAPIDoc(regressionDoc, regressionOptions);
+    const employeeRolesApi = files.find(
+      ({ fileName }) => fileName === "output/employeeRoles/employeeRoles.api.ts",
+    )?.content;
+
+    expect(employeeRolesApi).toContain(
+      'sort: ZodExtended.parse(ZodExtended.sortExp(EmployeeRolesModels.EmployeeRolesListSortParamEnumSchema).nullish(), sort, { type: "query", name: "sort" })',
+    );
+    expect(employeeRolesApi).not.toContain("sort: ZodExtended.parse(EmployeeRolesModels.ListSortParamSchema");
+  });
+
+  test("keeps ACL conditions typed through local model proxies", () => {
+    const files = generateCodeFromOpenAPIDoc(regressionDoc, regressionOptions);
+    const employeePermissionsAcl = files.find(
+      ({ fileName }) => fileName === "output/employeePermissions/employeePermissions.acl.ts",
+    )?.content;
+
+    expect(employeePermissionsAcl).toContain(
+      'import { EmployeePermissionsModels } from "./employeePermissions.models";',
+    );
+    expect(employeePermissionsAcl).toContain(
+      "object?: { context: EmployeePermissionsModels.EmployeePermissionContext,  }",
+    );
+    expect(employeePermissionsAcl).toContain('subject("Permission", object) : "Permission"');
+  });
+
+  test("keeps used DTO aliases exported from tag model proxies", () => {
+    const files = generateCodeFromOpenAPIDoc(regressionDoc, regressionOptions);
+    const foldersModels = files.find(({ fileName }) => fileName === "output/folders/folders.models.ts")?.content;
+
+    expect(foldersModels).toContain("export type FolderContentFilterDto = CommonModels.FolderContentFilterDto;");
+  });
+});
+
 describe("generateCodeFromOpenAPIDoc - inline enum validation for domain error schemas", () => {
   // Doc with two endpoints:
   //   - rockets launch: 400 response carries x-domain-error-domain with inline status/code enums

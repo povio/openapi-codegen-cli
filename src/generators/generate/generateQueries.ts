@@ -690,10 +690,24 @@ function renderInlineEndpointParamParse(
         resolver,
         param.parameterSortingEnumSchemaName,
         modelNamespaceTag,
-      )})${addOptional ? ".optional()" : ""}`
+      )})${getSortingPresenceChain(resolver, param)}`
     : `${getImportedZodSchemaName(resolver, param.zodSchema, modelNamespaceTag)}${addOptional ? ".optional()" : ""}`;
   const queryArgs = param.type === "Query" ? `, { type: "query", name: "${paramName}" }` : "";
   return `${ZOD_EXTENDED.namespace}.${ZOD_EXTENDED.exports.parse}(${schemaValue}, ${paramName}${queryArgs})`;
+}
+
+function getSortingPresenceChain(resolver: SchemaResolver, param: EndpointParameter) {
+  const zodSchemaCode = resolver.getCodeByZodSchemaName(param.zodSchema) ?? param.zodSchema;
+
+  if (zodSchemaCode.includes(".nullish()")) {
+    return ".nullish()";
+  }
+
+  if (zodSchemaCode.includes(".nullable()")) {
+    return ".nullable()";
+  }
+
+  return !(param.parameterObject ?? param.bodyObject)?.required ? ".optional()" : "";
 }
 
 function renderInlineEndpointConfig(resolver: SchemaResolver, endpoint: Endpoint, modelNamespaceTag?: string) {
