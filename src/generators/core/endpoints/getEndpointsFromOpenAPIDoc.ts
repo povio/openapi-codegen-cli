@@ -178,6 +178,7 @@ export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver) {
           } else if (statusCode !== "default" && !Number.isNaN(status) && isErrorStatus(status)) {
             const rawSchema = schemaObject as Record<string, unknown>;
             const domainStr = rawSchema["x-domain-error-domain"];
+            const domainName = rawSchema["x-domain-error-name"];
             const codeEnum = (rawSchema?.properties as Record<string, unknown> | undefined)?.code;
             const codeEnumArr = (codeEnum as Record<string, unknown> | undefined)?.enum;
             const domainCode =
@@ -190,7 +191,13 @@ export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver) {
               status,
               description: responseObj?.description,
               ...(typeof domainStr === "string" && domainCode !== undefined
-                ? { domainError: { domain: domainStr, code: domainCode } }
+                ? {
+                    domainError: {
+                      domain: domainStr,
+                      code: domainCode,
+                      ...(typeof domainName === "string" ? { name: domainName } : {}),
+                    },
+                  }
                 : {}),
             });
           }
