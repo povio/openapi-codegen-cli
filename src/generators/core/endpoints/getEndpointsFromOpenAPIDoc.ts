@@ -182,8 +182,10 @@ export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver) {
             const codeEnum = (rawSchema?.properties as Record<string, unknown> | undefined)?.code;
             const codeEnumArr = (codeEnum as Record<string, unknown> | undefined)?.enum;
             const domainCode =
-              Array.isArray(codeEnumArr) && codeEnumArr.length === 1 && typeof codeEnumArr[0] === "number"
-                ? (codeEnumArr[0] as number)
+              Array.isArray(codeEnumArr) &&
+              codeEnumArr.length === 1 &&
+              (typeof codeEnumArr[0] === "number" || typeof codeEnumArr[0] === "string")
+                ? (codeEnumArr[0] as number | string)
                 : undefined;
 
             endpoint.errors.push({

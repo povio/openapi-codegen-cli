@@ -14,7 +14,7 @@ export interface EndpointParameter {
 
 export interface DomainErrorInfo {
   domain: string;
-  code: number;
+  code: number | string;
   name?: string;
 }
 
