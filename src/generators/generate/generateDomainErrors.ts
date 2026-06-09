@@ -6,6 +6,8 @@ function domainToPascalCase(domain: string): string {
   return domain.split(/[-_]/).map(capitalize).join("");
 }
 
+const VALID_IDENTIFIER = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/;
+
 interface DomainErrorDef {
   code: number | string;
   name?: string;
@@ -55,7 +57,7 @@ export function generateDomainErrors({
       .map(({ code, name, description }) => {
         const comment = description ? `  /** ${description} */\n  ` : "  ";
         const key = name ?? (typeof code === "string" ? code : `ERROR_${code}`);
-        if (!/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(key)) {
+        if (!VALID_IDENTIFIER.test(key)) {
           throw new Error(
             `Domain error code "${code}" produces an invalid identifier "${key}". ` +
               `Use the 'name' field on @ApiDomainErrorResponse to provide a valid identifier.`,
