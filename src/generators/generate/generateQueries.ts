@@ -713,7 +713,8 @@ function getSortingPresenceChain(resolver: SchemaResolver, param: EndpointParame
 function renderInlineEndpointConfig(resolver: SchemaResolver, endpoint: Endpoint, modelNamespaceTag?: string) {
   const endpointConfig = getEndpointConfig(endpoint);
   const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
-  if (Object.keys(endpointConfig).length === 0) {
+  const needsBlobConfig = endpoint.mediaDownload || endpoint.response === "z.instanceof(Blob)";
+  if (Object.keys(endpointConfig).length === 0 && !needsBlobConfig) {
     return hasAxiosRequestConfig ? AXIOS_REQUEST_CONFIG_NAME : "";
   }
 

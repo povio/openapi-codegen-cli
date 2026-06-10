@@ -33,7 +33,8 @@ export const getEndpointBody = (endpoint: Endpoint) => endpoint.parameters.find(
 export const hasEndpointConfig = (endpoint: Endpoint, resolver: SchemaResolver) => {
   const endpointConfig = getEndpointConfig(endpoint);
   const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
-  return Object.keys(endpointConfig).length > 0 || hasAxiosRequestConfig;
+  const needsBlobConfig = endpoint.mediaDownload || endpoint.response === "z.instanceof(Blob)";
+  return Object.keys(endpointConfig).length > 0 || hasAxiosRequestConfig || needsBlobConfig;
 };
 
 export const getEndpointPath = (endpoint: Endpoint) => endpoint.path.replace(/:([a-zA-Z0-9_]+)/g, "${$1}");
