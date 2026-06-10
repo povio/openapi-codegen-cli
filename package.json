@@ -35,6 +35,10 @@
       "types": "./dist/vite.d.mts",
       "import": "./dist/vite.mjs"
     },
+    "./metro": {
+      "types": "./dist/metro.d.mts",
+      "import": "./dist/metro.mjs"
+    },
     "./generator": {
       "types": "./dist/generator.d.mts",
       "import": "./dist/generator.mjs"

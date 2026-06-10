@@ -277,6 +277,37 @@ export default defineConfig({
 The plugin runs on both `vite serve` and `vite build`, and watches local OpenAPI files in dev mode.
 If you provide `formatGeneratedFile`, the plugin formats each generated file in memory before comparing and writing it, which helps avoid unnecessary HMR when the formatted output is unchanged.
 
+### Metro Plugin
+
+You can run codegen directly from React Native Metro config:
+
+```ts
+import { fileURLToPath } from "url";
+import { getDefaultConfig } from "@react-native/metro-config";
+import { withOpenApiCodegen } from "@povio/openapi-codegen-cli/metro";
+
+const root = fileURLToPath(new URL("./", import.meta.url));
+const config = getDefaultConfig(root);
+
+export default withOpenApiCodegen(
+  config,
+  {
+    input: "./openapi.yaml",
+    output: "./src/data",
+    inlineEndpoints: true,
+    incremental: true,
+    formatGeneratedFile: async ({ fileName, content }) => {
+      void fileName;
+      return content;
+    },
+  },
+  { root },
+);
+```
+
+The Metro wrapper runs generation when the config is loaded, waits for it before Metro transforms or serves the first request, and watches local OpenAPI files while the dev server is running.
+If you provide `formatGeneratedFile`, it behaves the same way as the Vite plugin.
+
 ### Enums
 
 If you're using Enums in your backend DTOs with `@Expose()` and `@IsEnum`, they may still not appear correctly in the OpenAPI schema unless you also provide both `enum` **and** `enumName` to `@ApiProperty`.

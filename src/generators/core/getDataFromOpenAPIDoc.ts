@@ -13,7 +13,7 @@ export function getDataFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, options: G
   const p = profiler ?? new Profiler(false);
   const resolver = p.runSync("data.resolver.init", () => new SchemaResolver(openApiDoc, options, p));
 
-  const endpoints = p.runSync("data.endpoints.extract", () => getEndpointsFromOpenAPIDoc(resolver, p));
+  const endpoints = p.runSync("data.endpoints.extract", () => getEndpointsFromOpenAPIDoc(resolver));
   const zodSchemasFromDocSchemas = p.runSync("data.zod.extract", () => getZodSchemasFromOpenAPIDoc(resolver, p));
 
   let zodSchemas = {
