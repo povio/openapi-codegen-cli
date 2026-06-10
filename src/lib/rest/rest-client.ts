@@ -93,7 +93,10 @@ export class RestClient implements IRestClient {
 
       const res = await this.client(config);
 
-      const resData = requestInfo.resSchema.parse(res.data);
+      // Axios may expose 204 No Content responses as an empty string.
+      // Normalize to undefined before schema validation.
+      const responseData = res.status === 204 && res.data === "" ? undefined : res.data;
+      const resData = requestInfo.resSchema.parse(responseData);
 
       return (rawResponse ? { ...res, data: resData } : resData) as Response<ZOutput, IsRawRes>;
     } catch (error) {
