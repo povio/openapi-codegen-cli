@@ -576,3 +576,169 @@ describe("generateCodeFromOpenAPIDoc - shared response schema namespace", () => 
     expect(rocketsApi).not.toContain("CommonModels.RocketResponseSchema");
   });
 });
+
+describe("generateCodeFromOpenAPIDoc - blob download with domain errors", () => {
+  const domainErrorSchema = {
+    type: "object",
+    "x-domain-error-domain": "cmr",
+    "x-domain-error-name": "CmrNotFound",
+    properties: {
+      code: { type: "number", enum: [4001] },
+      message: { type: "string" },
+    },
+  } as unknown as OpenAPIV3.SchemaObject;
+
+  const blobDoc = {
+    openapi: "3.0.3",
+    info: { title: "Blob Download Test", version: "1.0.0" },
+    paths: {
+      "/offices/{officeId}/cmrs/{cmrId}/preview": {
+        get: {
+          tags: ["Documents"],
+          operationId: "previewCmr",
+          "x-media-download": true,
+          parameters: [
+            { name: "officeId", in: "path", required: true, schema: { type: "string" } },
+            { name: "cmrId", in: "path", required: true, schema: { type: "string" } },
+          ],
+          responses: {
+            "200": {
+              description: "PDF preview",
+              content: { "application/pdf": { schema: { type: "string", format: "binary" } } },
+            },
+            "400": {
+              description: "Domain error",
+              content: { "application/json": { schema: domainErrorSchema } },
+            },
+            "401": { description: "Unauthorized" },
+          },
+        } as unknown as OpenAPIV3.OperationObject,
+      },
+      "/offices/{officeId}/cmrs/{cmrId}/preview-no-error": {
+        get: {
+          tags: ["Documents"],
+          operationId: "previewCmrNoError",
+          "x-media-download": true,
+          parameters: [
+            { name: "officeId", in: "path", required: true, schema: { type: "string" } },
+            { name: "cmrId", in: "path", required: true, schema: { type: "string" } },
+          ],
+          responses: {
+            "200": {
+              description: "PDF preview",
+              content: { "application/pdf": { schema: { type: "string", format: "binary" } } },
+            },
+            "401": { description: "Unauthorized" },
+          },
+        } as unknown as OpenAPIV3.OperationObject,
+      },
+      "/offices/{officeId}/cmrs/{cmrId}/download": {
+        get: {
+          tags: ["Documents"],
+          operationId: "downloadCmr",
+          "x-media-download": true,
+          parameters: [
+            { name: "officeId", in: "path", required: true, schema: { type: "string" } },
+            { name: "cmrId", in: "path", required: true, schema: { type: "string" } },
+            { name: "format", in: "query", required: false, schema: { type: "string" } },
+          ],
+          responses: {
+            "200": {
+              description: "PDF download",
+              content: { "application/pdf": { schema: { type: "string", format: "binary" } } },
+            },
+            "400": {
+              description: "Domain error",
+              content: { "application/json": { schema: domainErrorSchema } },
+            },
+            "401": { description: "Unauthorized" },
+          },
+        } as unknown as OpenAPIV3.OperationObject,
+      },
+      "/files/eml": {
+        post: {
+          tags: ["Documents"],
+          operationId: "getFilesEml",
+          "x-media-download": true,
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: { type: "object", properties: { ids: { type: "array", items: { type: "string" } } } },
+              },
+            },
+          },
+          responses: {
+            "200": {
+              description: "EML file",
+              content: { "application/octet-stream": { schema: { type: "string", format: "binary" } } },
+            },
+            "400": {
+              description: "Domain error",
+              content: { "application/json": { schema: domainErrorSchema } },
+            },
+            "401": { description: "Unauthorized" },
+          },
+        } as unknown as OpenAPIV3.OperationObject,
+      },
+      "/offices/{officeId}/items": {
+        get: {
+          tags: ["Documents"],
+          operationId: "listItems",
+          parameters: [
+            { name: "officeId", in: "path", required: true, schema: { type: "string" } },
+          ],
+          responses: {
+            "200": {
+              description: "OK",
+              content: { "application/json": { schema: { type: "array", items: { type: "string" } } } },
+            },
+            "400": {
+              description: "Domain error",
+              content: { "application/json": { schema: domainErrorSchema } },
+            },
+          },
+        } as unknown as OpenAPIV3.OperationObject,
+      },
+    },
+    components: { schemas: {} },
+  } as unknown as OpenAPIV3.Document;
+
+  const files = generateCodeFromOpenAPIDoc(blobDoc, DEFAULT_GENERATE_OPTIONS as GenerateOptions);
+  const api = files.find(({ fileName }) => fileName === "output/documents/documents.api.ts")?.content;
+
+  test("api file is generated", () => {
+    expect(api).toBeDefined();
+  });
+
+  test("blob + domain error 400, path params only: emits responseType blob, rawResponse, and Accept header", () => {
+    expect(api).toContain('responseType: "blob"');
+    expect(api).toContain("rawResponse: true");
+    expect(api).toContain("'Accept': 'application/pdf'");
+  });
+
+  test("blob + domain error 400, path params only: previewCmr endpoint has full blob config", () => {
+    expect(api).toMatch(/previewCmr[\s\S]*?responseType: "blob"[\s\S]*?rawResponse: true/);
+  });
+
+  test("blob without domain error (regression): previewCmrNoError also emits blob config", () => {
+    expect(api).toMatch(/previewCmrNoError[\s\S]*?responseType: "blob"[\s\S]*?rawResponse: true/);
+  });
+
+  test("blob + domain error + query param: downloadCmr emits blob config with params block", () => {
+    expect(api).toMatch(/downloadCmr[\s\S]*?params[\s\S]*?responseType: "blob"[\s\S]*?rawResponse: true/);
+  });
+
+  test("blob + domain error, POST body only: getFilesEml emits blob config with octet-stream Accept", () => {
+    expect(api).toMatch(/getFilesEml[\s\S]*?responseType: "blob"[\s\S]*?rawResponse: true/);
+    expect(api).toContain("'Accept': 'application/octet-stream'");
+  });
+
+  test("non-blob JSON endpoint with 400 error: no rawResponse or responseType blob", () => {
+    const listItemsSection = api?.slice(api.indexOf("listItems"));
+    const nextFnStart = listItemsSection?.indexOf("export const", 1);
+    const listItemsCode = nextFnStart ? listItemsSection?.slice(0, nextFnStart) : listItemsSection;
+    expect(listItemsCode).not.toContain("rawResponse");
+    expect(listItemsCode).not.toContain('responseType: "blob"');
+  });
+});

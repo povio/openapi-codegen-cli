@@ -133,7 +133,14 @@ export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver) {
 
         let schema: OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject | undefined;
         if (matchingMediaType) {
-          endpoint.responseFormat = matchingMediaType;
+          const statusNum = Number(statusCode);
+          // Only let success responses (2xx) or "default" (when nothing is set yet) determine the
+          // response format used for the Accept header. Error responses (4xx/5xx) must not
+          // overwrite the success content-type — doing so would strip rawResponse/blob config
+          // from blob-download endpoints that also declare domain-error responses.
+          if (isMainResponseStatus(statusNum) || (statusCode === "default" && !endpoint.responseFormat)) {
+            endpoint.responseFormat = matchingMediaType;
+          }
           schema = responseObj.content?.[matchingMediaType]?.schema;
         } else if (statusCode === "200") {
           resolver.validationErrors.push(
