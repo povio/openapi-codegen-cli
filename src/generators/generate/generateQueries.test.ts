@@ -165,6 +165,47 @@ const openApiDoc = {
 } as OpenAPIV3.Document;
 
 describe("generateQueries workspaceContext", () => {
+  it("emits allowInvalidResponseData only for generated GET request info", () => {
+    const files = generateCodeFromOpenAPIDoc(openApiDoc, {
+      ...DEFAULT_GENERATE_OPTIONS,
+      output: "test-output",
+      allowInvalidResponseData: true,
+      acl: false,
+      checkAcl: false,
+      mutationEffects: false,
+      builderConfigs: false,
+      prefetchQueries: false,
+    });
+
+    const apiFile = files.find((file) => file.fileName.endsWith("/workspace/workspace.api.ts"));
+
+    expect(apiFile?.content).toContain("{ resSchema: WorkspaceModels.PositionSchema, allowInvalidResponseData: true }");
+    expect(apiFile?.content).toContain("{ resSchema: WorkspaceModels.ItemSchema, allowInvalidResponseData: true }");
+    expect(apiFile?.content).toContain("{ resSchema: WorkspaceModels.PositionSchema },");
+  });
+
+  it("emits allowInvalidResponseData for inline GET query endpoints", () => {
+    const files = generateCodeFromOpenAPIDoc(openApiDoc, {
+      ...DEFAULT_GENERATE_OPTIONS,
+      output: "test-output",
+      allowInvalidResponseData: true,
+      inlineEndpoints: true,
+      acl: false,
+      checkAcl: false,
+      mutationEffects: false,
+      builderConfigs: false,
+      prefetchQueries: false,
+    });
+
+    const queriesFile = files.find((file) => file.fileName.endsWith("/workspace/workspace.queries.ts"));
+
+    expect(queriesFile?.content).toContain(
+      "{ resSchema: WorkspaceModels.PositionSchema, allowInvalidResponseData: true }",
+    );
+    expect(queriesFile?.content).toContain("{ resSchema: WorkspaceModels.ItemSchema, allowInvalidResponseData: true }");
+    expect(queriesFile?.content).toContain("{ resSchema: WorkspaceModels.PositionSchema },");
+  });
+
   it("maps workspace-resolved values back to the original helper property names", () => {
     const files = generateCodeFromOpenAPIDoc(openApiDoc, {
       ...DEFAULT_GENERATE_OPTIONS,

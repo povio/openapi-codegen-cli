@@ -102,13 +102,7 @@ export function generateEndpoints({ resolver, data, tag }: GenerateTypeParams) {
       `export const ${getEndpointName(endpoint)} = (${endpointParams}${hasAxiosRequestConfig ? `${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => {`,
     );
     lines.push(`    return ${APP_REST_CLIENT_NAME}.${endpoint.method}(`);
-    lines.push(
-      `        { resSchema: ${getImportedZodSchemaName(
-        resolver,
-        endpoint.response,
-        resolver.options.modelsInCommon && resolver.options.splitByTags ? tag : undefined,
-      )} },`,
-    );
+    lines.push(`        ${renderRequestInfo(resolver, endpoint, tag)},`);
     lines.push(`        \`${getEndpointPath(endpoint)}\`,`);
 
     if (endpointBody) {
@@ -129,6 +123,16 @@ export function generateEndpoints({ resolver, data, tag }: GenerateTypeParams) {
   }
 
   return lines.join("\n").trimEnd() + "\n";
+}
+
+function renderRequestInfo(resolver: GenerateTypeParams["resolver"], endpoint: Endpoint, tag: string) {
+  const schemaName = getImportedZodSchemaName(
+    resolver,
+    endpoint.response,
+    resolver.options.modelsInCommon && resolver.options.splitByTags ? tag : undefined,
+  );
+  const allowInvalidResponseData = resolver.options.allowInvalidResponseData && endpoint.method === "get";
+  return `{ resSchema: ${schemaName}${allowInvalidResponseData ? ", allowInvalidResponseData: true" : ""} }`;
 }
 
 function renderImport(importData: Import) {

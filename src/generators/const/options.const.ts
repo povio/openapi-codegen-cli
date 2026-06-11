@@ -61,6 +61,7 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   // Queries options
   queryTypesImportPath: PACKAGE_IMPORT_PATH,
   axiosRequestConfig: false,
+  allowInvalidResponseData: false,
   mutationEffects: true,
   mutationDefaultOnError: false,
   workspaceContext: [],

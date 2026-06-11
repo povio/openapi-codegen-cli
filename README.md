@@ -90,6 +90,7 @@ yarn openapi-codegen generate --config my-config.ts
   --replaceOptionalWithNullish        Replace `.optional()` chains with `.nullish()` in generated Zod schemas (default: false)
 
   --axiosRequestConfig                Include Axios request config parameters in query hooks (default: false)
+  --allowInvalidResponseData          For GET requests, log invalid response data but return it instead of throwing (default: false)
   --infiniteQueries                   Generate infinite queries for paginated API endpoints (default: false)
   --mutationEffects                   Add mutation effects options to mutation hooks (default: true)
   --mutationScope                     Serialize mutations for the same path-param resource via TanStack scope.id (default: false).

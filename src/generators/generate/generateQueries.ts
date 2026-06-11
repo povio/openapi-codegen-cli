@@ -657,7 +657,7 @@ function renderInlineEndpoints({
       `const ${getEndpointName(endpoint)} = (${endpointParams}${resolver.options.axiosRequestConfig ? `${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => {`,
     );
     lines.push(`  return ${APP_REST_CLIENT_NAME}.${endpoint.method}(`);
-    lines.push(`    { resSchema: ${getImportedZodSchemaName(resolver, endpoint.response, tag)} },`);
+    lines.push(`    ${renderInlineRequestInfo(resolver, endpoint, tag)},`);
     lines.push(`    \`${getEndpointPath(endpoint)}\`,`);
 
     if (endpointBody) {
@@ -674,6 +674,11 @@ function renderInlineEndpoints({
     lines.push("");
   }
   return lines;
+}
+
+function renderInlineRequestInfo(resolver: SchemaResolver, endpoint: Endpoint, tag: string) {
+  const allowInvalidResponseData = resolver.options.allowInvalidResponseData && endpoint.method === "get";
+  return `{ resSchema: ${getImportedZodSchemaName(resolver, endpoint.response, tag)}${allowInvalidResponseData ? ", allowInvalidResponseData: true" : ""} }`;
 }
 
 function renderInlineEndpointParamParse(

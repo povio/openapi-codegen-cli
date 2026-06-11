@@ -25,6 +25,7 @@ interface EndpointsGenerateOptions {
 interface QueriesGenerateOptions {
   queryTypesImportPath: string;
   axiosRequestConfig?: boolean;
+  allowInvalidResponseData?: boolean;
   mutationEffects?: boolean;
   mutationDefaultOnError?: boolean;
   workspaceContext?: string[];

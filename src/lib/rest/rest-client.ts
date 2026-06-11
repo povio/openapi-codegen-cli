@@ -96,7 +96,18 @@ export class RestClient implements IRestClient {
       // Axios may expose 204 No Content responses as an empty string.
       // Normalize to undefined before schema validation.
       const responseData = res.status === 204 && res.data === "" ? undefined : res.data;
-      const resData = requestInfo.resSchema.parse(responseData);
+      const parseResult = requestInfo.resSchema.safeParse(responseData);
+      let resData: ZOutput;
+      if (parseResult.success) {
+        resData = parseResult.data;
+      } else if (requestInfo.allowInvalidResponseData && config.method === "get") {
+        parseResult.error.name = "BE Response schema mismatch - ZodError";
+        parseResult.error.stack = [parseResult.error.stack, ...(errorStack?.split("\n").slice(2) ?? [])].join("\n");
+        console.error(parseResult.error);
+        resData = res.data as ZOutput;
+      } else {
+        throw parseResult.error;
+      }
 
       return (rawResponse ? { ...res, data: resData } : resData) as Response<ZOutput, IsRawRes>;
     } catch (error) {
