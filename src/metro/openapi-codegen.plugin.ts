@@ -34,13 +34,6 @@ export type MetroConfig = {
   [key: string]: unknown;
 };
 
-const DEFAULT_TRANSFORM_OPTIONS = {
-  transform: {
-    experimentalImportSupport: false,
-    inlineRequires: false,
-  },
-};
-
 export function withOpenApiCodegen<TMetroConfig extends MetroConfig>(
   metroConfig: Promise<TMetroConfig>,
   codegenConfig: OpenApiCodegenMetroConfig,
@@ -72,32 +65,33 @@ function withResolvedOpenApiCodegen<TMetroConfig extends MetroConfig>(
   const codegen = createOpenApiCodegenRunner(codegenConfig);
   const originalEnhanceMiddleware = metroConfig.server?.enhanceMiddleware;
   const originalGetTransformOptions = metroConfig.transformer?.getTransformOptions;
-  let startupRequested = false;
-  let pendingGenerate: Promise<void> | undefined;
+
+  let startupSucceeded = false;
+  let inflightGenerate: Promise<void> | undefined;
   let inputWatcher: fs.FSWatcher | undefined;
 
-  const enqueueAndTrack = () => {
-    const run = codegen.enqueueGenerate(root);
-    const tracked = run.finally(() => {
-      if (pendingGenerate === tracked) {
-        pendingGenerate = undefined;
-      }
-    });
-
-    pendingGenerate = tracked;
-    return run;
-  };
-
-  const ensureStartupGenerate = () => {
-    if (startupRequested) {
-      return pendingGenerate ?? Promise.resolve();
+  const requestStartupGenerate = (): Promise<void> => {
+    if (startupSucceeded) {
+      return Promise.resolve();
     }
 
-    startupRequested = true;
-    return enqueueAndTrack().catch((error: unknown) => {
-      startupRequested = false;
-      throw error;
-    });
+    if (inflightGenerate) {
+      return inflightGenerate;
+    }
+
+    const attempt = codegen.enqueueGenerate(root).then(
+      () => {
+        startupSucceeded = true;
+        inflightGenerate = undefined;
+      },
+      (error: unknown) => {
+        inflightGenerate = undefined;
+        throw error;
+      },
+    );
+
+    inflightGenerate = attempt;
+    return attempt;
   };
 
   const ensureInputWatcher = () => {
@@ -112,7 +106,8 @@ function withResolvedOpenApiCodegen<TMetroConfig extends MetroConfig>(
 
     try {
       inputWatcher = fs.watch(inputPath, { persistent: false }, () => {
-        enqueueAndTrack().catch(reportGenerateError);
+        startupSucceeded = false;
+        requestStartupGenerate().catch(reportGenerateError);
       });
       inputWatcher.on("error", reportWatcherError);
     } catch (error) {
@@ -120,14 +115,11 @@ function withResolvedOpenApiCodegen<TMetroConfig extends MetroConfig>(
     }
   };
 
-  void ensureStartupGenerate().catch(reportGenerateError);
-
   const wrappedConfig: MetroConfig = {
     ...metroConfig,
     server: {
       ...metroConfig.server,
       enhanceMiddleware(middleware, server) {
-        void ensureStartupGenerate().catch(reportGenerateError);
         ensureInputWatcher();
 
         const enhancedMiddleware = originalEnhanceMiddleware
@@ -136,8 +128,8 @@ function withResolvedOpenApiCodegen<TMetroConfig extends MetroConfig>(
 
         return async (request, response, next) => {
           try {
-            await ensureStartupGenerate();
-            return await Promise.resolve(enhancedMiddleware(request, response, next));
+            await requestStartupGenerate();
+            return await (enhancedMiddleware(request, response, next) as Promise<unknown>);
           } catch (error) {
             next(error);
           }
@@ -147,8 +139,8 @@ function withResolvedOpenApiCodegen<TMetroConfig extends MetroConfig>(
     transformer: {
       ...metroConfig.transformer,
       async getTransformOptions(...args) {
-        await ensureStartupGenerate();
-        return originalGetTransformOptions ? originalGetTransformOptions(...args) : DEFAULT_TRANSFORM_OPTIONS;
+        await requestStartupGenerate();
+        return originalGetTransformOptions ? originalGetTransformOptions(...args) : undefined;
       },
     },
   };
