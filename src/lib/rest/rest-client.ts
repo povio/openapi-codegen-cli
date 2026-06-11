@@ -89,7 +89,7 @@ export class RestClient implements IRestClient {
     const errorStack = new Error().stack;
 
     try {
-      const { rawResponse, ...config } = requestConfig;
+      const { rawResponse, allowInvalidResponseData, ...config } = requestConfig;
 
       const res = await this.client(config);
 
@@ -100,7 +100,7 @@ export class RestClient implements IRestClient {
       let resData: ZOutput;
       if (parseResult.success) {
         resData = parseResult.data;
-      } else if (requestInfo.allowInvalidResponseData && config.method === "get") {
+      } else if (allowInvalidResponseData && config.method === "get") {
         parseResult.error.name = "BE Response schema mismatch - ZodError";
         parseResult.error.stack = [parseResult.error.stack, ...(errorStack?.split("\n").slice(2) ?? [])].join("\n");
         console.error(parseResult.error);

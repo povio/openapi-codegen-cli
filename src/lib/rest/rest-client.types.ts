@@ -10,11 +10,11 @@ export type GeneralErrorCodes = string;
 export interface RequestInfo<ZOutput, ECodes extends string> {
   resSchema: z.ZodType<ZOutput>;
   errorHandler?: ErrorHandler<ECodes>;
-  allowInvalidResponseData?: boolean;
 }
 
 export interface RequestConfig<IsRawRes extends boolean = false> {
   rawResponse?: IsRawRes;
+  allowInvalidResponseData?: boolean;
 }
 
 export type Response<ZOutput, IsRawRes extends boolean = false> = IsRawRes extends true

@@ -37,10 +37,11 @@ export function generateEndpoints({ resolver, data, tag }: GenerateTypeParams) {
   };
 
   const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
-  const hasAxiosImport = hasAxiosRequestConfig;
+  const hasGetEndpoints = endpoints.some((endpoint) => endpoint.method === "get");
+  const hasAxiosImport = hasAxiosRequestConfig || hasGetEndpoints;
   const axiosImport: Import = {
     bindings: [],
-    typeBindings: hasAxiosRequestConfig ? [AXIOS_REQUEST_CONFIG_TYPE] : [],
+    typeBindings: hasAxiosImport ? [AXIOS_REQUEST_CONFIG_TYPE] : [],
     from: AXIOS_IMPORT.from,
   };
 
@@ -97,9 +98,10 @@ export function generateEndpoints({ resolver, data, tag }: GenerateTypeParams) {
     const endpointBody = getEndpointBody(endpoint);
     const hasUndefinedEndpointBody = requiresBody(endpoint) && !endpointBody && hasEndpointConfig(endpoint, resolver);
     const endpointConfig = renderEndpointConfig(resolver, endpoint, tag);
+    const hasRequestConfigParam = hasAxiosRequestConfig || endpoint.method === "get";
 
     lines.push(
-      `export const ${getEndpointName(endpoint)} = (${endpointParams}${hasAxiosRequestConfig ? `${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => {`,
+      `export const ${getEndpointName(endpoint)} = (${endpointParams}${hasRequestConfigParam ? `${AXIOS_REQUEST_CONFIG_NAME}?: ${getRequestConfigType()}` : ""}) => {`,
     );
     lines.push(`    return ${APP_REST_CLIENT_NAME}.${endpoint.method}(`);
     lines.push(`        ${renderRequestInfo(resolver, endpoint, tag)},`);
@@ -131,8 +133,11 @@ function renderRequestInfo(resolver: GenerateTypeParams["resolver"], endpoint: E
     endpoint.response,
     resolver.options.modelsInCommon && resolver.options.splitByTags ? tag : undefined,
   );
-  const allowInvalidResponseData = resolver.options.allowInvalidResponseData && endpoint.method === "get";
-  return `{ resSchema: ${schemaName}${allowInvalidResponseData ? ", allowInvalidResponseData: true" : ""} }`;
+  return `{ resSchema: ${schemaName} }`;
+}
+
+function getRequestConfigType() {
+  return `${AXIOS_REQUEST_CONFIG_TYPE} & { allowInvalidResponseData?: boolean }`;
 }
 
 function renderImport(importData: Import) {
@@ -208,14 +213,15 @@ function renderEndpointConfig(
 ) {
   const endpointConfig = getEndpointConfig(endpoint);
   const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
+  const hasRequestConfigParam = hasAxiosRequestConfig || endpoint.method === "get";
   const needsBlobConfig = endpoint.mediaDownload || endpoint.response === "z.instanceof(Blob)";
   if (Object.keys(endpointConfig).length === 0 && !needsBlobConfig) {
-    return hasAxiosRequestConfig ? AXIOS_REQUEST_CONFIG_NAME : "";
+    return hasRequestConfigParam ? AXIOS_REQUEST_CONFIG_NAME : "";
   }
 
   const lines: string[] = [];
   lines.push("{");
-  if (hasAxiosRequestConfig) {
+  if (hasRequestConfigParam) {
     lines.push(`    ...${AXIOS_REQUEST_CONFIG_NAME},`);
   }
   if (endpointConfig.params) {

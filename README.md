@@ -90,7 +90,6 @@ yarn openapi-codegen generate --config my-config.ts
   --replaceOptionalWithNullish        Replace `.optional()` chains with `.nullish()` in generated Zod schemas (default: false)
 
   --axiosRequestConfig                Include Axios request config parameters in query hooks (default: false)
-  --allowInvalidResponseData          For GET requests, log invalid response data but return it instead of throwing (default: false)
   --infiniteQueries                   Generate infinite queries for paginated API endpoints (default: false)
   --mutationEffects                   Add mutation effects options to mutation hooks (default: true)
   --mutationScope                     Serialize mutations for the same path-param resource via TanStack scope.id (default: false).
@@ -214,6 +213,16 @@ import { ErrorHandler, OpenApiQueryConfig } from "@povio/openapi-codegen-cli";
 >
   <App />
 </OpenApiQueryConfig.Provider>;
+```
+
+### Runtime response validation
+
+Use `OpenApiQueryConfig.Provider` to allow generated GET query hooks to return invalid response data while still logging the response Zod error to the console. Non-GET requests still throw on invalid response data.
+
+```tsx
+<OpenApiQueryConfig.Provider allowInvalidResponseData={import.meta.env.DEV}>
+  <App />
+</OpenApiQueryConfig.Provider>
 ```
 
 ### OpenApiWorkspaceContext (Path + ACL defaults)

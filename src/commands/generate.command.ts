@@ -100,9 +100,6 @@ class GenerateOptions implements GenerateParams {
   @YargOption({ envAlias: "axiosRequestConfig", type: "boolean" })
   axiosRequestConfig?: boolean;
 
-  @YargOption({ envAlias: "allowInvalidResponseData", type: "boolean" })
-  allowInvalidResponseData?: boolean;
-
   @YargOption({ envAlias: "builderConfigs", type: "boolean" })
   builderConfigs?: boolean;
 

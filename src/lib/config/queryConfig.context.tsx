@@ -16,6 +16,7 @@ export namespace OpenApiQueryConfig {
     invalidateCurrentModule?: boolean;
     invalidationMap?: InvalidationMap<TQueryModule>;
     crossTabInvalidation?: boolean;
+    allowInvalidResponseData?: boolean;
     onError?: (error: unknown) => void;
   }
 
@@ -28,13 +29,21 @@ export namespace OpenApiQueryConfig {
     invalidateCurrentModule,
     invalidationMap,
     crossTabInvalidation,
+    allowInvalidResponseData,
     onError,
 
     children,
   }: PropsWithChildren<ProviderProps<TQueryModule>>) {
     const value = useMemo<Type<TQueryModule>>(
-      () => ({ preferUpdate, invalidateCurrentModule, invalidationMap, crossTabInvalidation, onError }),
-      [preferUpdate, invalidateCurrentModule, invalidationMap, crossTabInvalidation, onError],
+      () => ({
+        preferUpdate,
+        invalidateCurrentModule,
+        invalidationMap,
+        crossTabInvalidation,
+        allowInvalidResponseData,
+        onError,
+      }),
+      [preferUpdate, invalidateCurrentModule, invalidationMap, crossTabInvalidation, allowInvalidResponseData, onError],
     );
 
     return <Context.Provider value={value as Type}>{children}</Context.Provider>;

@@ -165,11 +165,10 @@ const openApiDoc = {
 } as OpenAPIV3.Document;
 
 describe("generateQueries workspaceContext", () => {
-  it("emits allowInvalidResponseData only for generated GET request info", () => {
+  it("passes runtime allowInvalidResponseData config through generated GET query hooks", () => {
     const files = generateCodeFromOpenAPIDoc(openApiDoc, {
       ...DEFAULT_GENERATE_OPTIONS,
       output: "test-output",
-      allowInvalidResponseData: true,
       acl: false,
       checkAcl: false,
       mutationEffects: false,
@@ -178,17 +177,26 @@ describe("generateQueries workspaceContext", () => {
     });
 
     const apiFile = files.find((file) => file.fileName.endsWith("/workspace/workspace.api.ts"));
+    const queriesFile = files.find((file) => file.fileName.endsWith("/workspace/workspace.queries.ts"));
 
-    expect(apiFile?.content).toContain("{ resSchema: WorkspaceModels.PositionSchema, allowInvalidResponseData: true }");
-    expect(apiFile?.content).toContain("{ resSchema: WorkspaceModels.ItemSchema, allowInvalidResponseData: true }");
+    expect(apiFile?.content).toContain(
+      "export const getPosition = (officeId: string, positionId: string, config?: AxiosRequestConfig & { allowInvalidResponseData?: boolean })",
+    );
     expect(apiFile?.content).toContain("{ resSchema: WorkspaceModels.PositionSchema },");
+    expect(apiFile?.content).not.toContain("allowInvalidResponseData: true");
+    expect(apiFile?.content).toContain(
+      "export const createPosition = (officeId: string, data: WorkspaceModels.Position, )",
+    );
+    expect(queriesFile?.content).toContain("const queryConfig = OpenApiQueryConfig.useConfig();");
+    expect(queriesFile?.content).toContain(
+      "...getPositionQueryOptions({ officeId, positionId }, { allowInvalidResponseData: queryConfig.allowInvalidResponseData }),",
+    );
   });
 
-  it("emits allowInvalidResponseData for inline GET query endpoints", () => {
+  it("passes runtime allowInvalidResponseData config through inline GET query hooks", () => {
     const files = generateCodeFromOpenAPIDoc(openApiDoc, {
       ...DEFAULT_GENERATE_OPTIONS,
       output: "test-output",
-      allowInvalidResponseData: true,
       inlineEndpoints: true,
       acl: false,
       checkAcl: false,
@@ -200,10 +208,13 @@ describe("generateQueries workspaceContext", () => {
     const queriesFile = files.find((file) => file.fileName.endsWith("/workspace/workspace.queries.ts"));
 
     expect(queriesFile?.content).toContain(
-      "{ resSchema: WorkspaceModels.PositionSchema, allowInvalidResponseData: true }",
+      "const getPosition = (officeId: string, positionId: string, config?: AxiosRequestConfig & { allowInvalidResponseData?: boolean })",
     );
-    expect(queriesFile?.content).toContain("{ resSchema: WorkspaceModels.ItemSchema, allowInvalidResponseData: true }");
     expect(queriesFile?.content).toContain("{ resSchema: WorkspaceModels.PositionSchema },");
+    expect(queriesFile?.content).not.toContain("allowInvalidResponseData: true");
+    expect(queriesFile?.content).toContain(
+      "...getPositionQueryOptions({ officeId, positionId }, { allowInvalidResponseData: queryConfig.allowInvalidResponseData }),",
+    );
   });
 
   it("maps workspace-resolved values back to the original helper property names", () => {
@@ -218,12 +229,14 @@ describe("generateQueries workspaceContext", () => {
     const queriesFile = files.find((file) => file.fileName.endsWith("/workspace/workspace.queries.ts"));
 
     expect(queriesFile?.content).toContain(
-      "getPositionQueryOptions({ officeId: normalizeOfficeId, positionId: normalizePositionId })",
+      "getPositionQueryOptions({ officeId: normalizeOfficeId, positionId: normalizePositionId }, { allowInvalidResponseData: queryConfig.allowInvalidResponseData })",
     );
     expect(queriesFile?.content).toContain(
-      "return getPositionQueryOptions({ officeId: normalizeOfficeId, positionId: normalizePositionId }).queryFn();",
+      "return getPositionQueryOptions({ officeId: normalizeOfficeId, positionId: normalizePositionId }, { allowInvalidResponseData: queryConfig.allowInvalidResponseData }).queryFn();",
     );
-    expect(queriesFile?.content).toContain("findByIdQueryOptions({ id: normalizeId })");
+    expect(queriesFile?.content).toContain(
+      "findByIdQueryOptions({ id: normalizeId }, { allowInvalidResponseData: queryConfig.allowInvalidResponseData })",
+    );
     expect(queriesFile?.content).toContain(
       "const { officeId: officeIdWorkspace, positionId: positionIdWorkspace } = useWorkspaceContext<{ officeId?: string; positionId?: string }>();",
     );
@@ -250,7 +263,9 @@ describe("generateQueries workspaceContext", () => {
     expect(queriesFile?.content).toContain(
       "export const useGetPosition = <TData>({ officeId, positionId }: { officeId?: string, positionId: string }, options?: AppQueryOptions<typeof WorkspaceApi.getPosition, TData>) => {",
     );
-    expect(queriesFile?.content).toContain("...getPositionQueryOptions({ officeId: normalizeOfficeId, positionId }),");
+    expect(queriesFile?.content).toContain(
+      "...getPositionQueryOptions({ officeId: normalizeOfficeId, positionId }, { allowInvalidResponseData: queryConfig.allowInvalidResponseData }),",
+    );
     expect(queriesFile?.content).toContain(
       "const { officeId: officeIdWorkspace } = useWorkspaceContext<{ officeId?: string }>();",
     );
@@ -325,8 +340,8 @@ describe("generateQueries workspaceContext", () => {
 
     const queriesFile = files.find((file) => file.fileName.endsWith("/workspace/workspace.queries.ts"));
 
-    expect(queriesFile?.content).not.toContain("OpenApiQueryConfig");
-    expect(queriesFile?.content).not.toContain("const queryConfig = OpenApiQueryConfig.useConfig();");
+    expect(queriesFile?.content).toContain("OpenApiQueryConfig");
+    expect(queriesFile?.content).toContain("const queryConfig = OpenApiQueryConfig.useConfig();");
     expect(queriesFile?.content).not.toContain("onError: options?.onError ?? queryConfig.onError");
   });
 

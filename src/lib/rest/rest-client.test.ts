@@ -50,10 +50,9 @@ describe("RestClient allowInvalidResponseData", () => {
     clientMock.mockResolvedValue({ data: { id: 123 } });
 
     const client = new RestClient();
-    const result = await client.get(
-      { resSchema: z.object({ id: z.string() }), allowInvalidResponseData: true },
-      "/items/1",
-    );
+    const result = await client.get({ resSchema: z.object({ id: z.string() }) }, "/items/1", {
+      allowInvalidResponseData: true,
+    });
 
     expect(result).toEqual({ id: 123 });
     expect(consoleErrorSpy).toHaveBeenCalledOnce();
@@ -65,7 +64,9 @@ describe("RestClient allowInvalidResponseData", () => {
     const client = new RestClient();
 
     await expect(
-      client.post({ resSchema: z.object({ id: z.string() }), allowInvalidResponseData: true }, "/items"),
+      client.post({ resSchema: z.object({ id: z.string() }) }, "/items", undefined, {
+        allowInvalidResponseData: true,
+      }),
     ).rejects.toThrow();
     expect(consoleErrorSpy).not.toHaveBeenCalled();
   });
