@@ -816,7 +816,7 @@ function renderInfiniteQueryOptions({
   );
   lines.push(`    const pageParam = ${resolver.options.infiniteQueryResponseParamNames.page} ?? 1;`);
   lines.push(
-    `    return pageParam * limitParam < ${resolver.options.infiniteQueryResponseParamNames.totalItems} ? pageParam + 1 : null;`,
+    `    return pageParam * limitParam < (${resolver.options.infiniteQueryResponseParamNames.totalItems} ?? 0) ? pageParam + 1 : null;`,
   );
   lines.push("  },");
   lines.push("});");

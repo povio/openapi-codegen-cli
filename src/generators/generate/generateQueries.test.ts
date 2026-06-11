@@ -361,7 +361,7 @@ const paginatedDoc = {
           totalItems: { type: "integer" },
           limit: { type: "integer" },
         },
-        required: ["items", "totalItems", "limit"],
+        required: ["items", "limit"],
       },
     },
   },
@@ -392,6 +392,7 @@ describe("generateQueries mutationEffects + infiniteQuery", () => {
 
     // Bug 3: getNextPageParam parameter has an explicit type annotation (no implicit any)
     expect(queriesFile?.content).toContain("}: Awaited<ReturnType<typeof ItemsApi.list>>)");
+    expect(queriesFile?.content).toContain("pageParam * limitParam < (totalItems ?? 0)");
     // queryFn retains precise pageParam: number typing
     expect(queriesFile?.content).toContain("queryFn: ({ pageParam }: { pageParam: number })");
     // no unknown casts or pages: 1 in the shared options factory
