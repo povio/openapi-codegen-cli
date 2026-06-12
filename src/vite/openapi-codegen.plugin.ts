@@ -1,42 +1,30 @@
 import path from "path";
 
-import { runGenerate } from "@/generators/run/generate.runner";
-import { OpenAPICodegenConfig } from "@/generators/types/config";
-import { GenerateFileFormatter } from "@/generators/types/generate";
-import { Profiler } from "@/helpers/profile.helper";
+import { createOpenApiCodegenRunner, OpenApiCodegenPluginConfig } from "@/plugins/openapi-codegen.runner";
 
 import type { Plugin, ResolvedConfig, ViteDevServer } from "vite";
 
-export type OpenApiCodegenViteConfig = OpenAPICodegenConfig & {
-  formatGeneratedFile?: GenerateFileFormatter;
-};
+export type OpenApiCodegenViteConfig = OpenApiCodegenPluginConfig;
 
 export function openApiCodegen(config: OpenApiCodegenViteConfig): Plugin {
   let resolvedViteConfig: ResolvedConfig | undefined;
-  let queue: Promise<void> = Promise.resolve();
-  const isLocalInput = typeof config.input === "string" && !/^https?:\/\//i.test(config.input);
-  const { formatGeneratedFile, ...normalizedConfig } = config;
+  const codegen = createOpenApiCodegenRunner(config);
 
   const enqueueGenerate = () => {
-    queue = queue.then(async () => {
-      const currentConfig = resolvedViteConfig;
-      if (!currentConfig) {
-        return;
-      }
+    const currentConfig = resolvedViteConfig;
+    if (!currentConfig) {
+      return Promise.resolve();
+    }
 
-      const fileConfig = normalizePaths(normalizedConfig, currentConfig.root);
-      const profiler = new Profiler(process.env.OPENAPI_CODEGEN_PROFILE === "1");
-      await runGenerate({ fileConfig, formatGeneratedFile, profiler });
-    });
-    return queue;
+    return codegen.enqueueGenerate(currentConfig.root);
   };
 
   const setupWatcher = (server: ViteDevServer) => {
-    if (!isLocalInput || !config.input) {
+    const openApiPath = codegen.getLocalInputPath(server.config.root);
+    if (!openApiPath) {
       return;
     }
 
-    const openApiPath = path.resolve(server.config.root, config.input);
     server.watcher.add(openApiPath);
     server.watcher.on("change", (changedPath) => {
       if (path.resolve(changedPath) === openApiPath) {
@@ -58,22 +46,4 @@ export function openApiCodegen(config: OpenApiCodegenViteConfig): Plugin {
       setupWatcher(server);
     },
   };
-}
-
-function normalizePaths(config: OpenAPICodegenConfig, root: string): OpenAPICodegenConfig {
-  const normalized = { ...config };
-
-  if (typeof normalized.output === "string" && !path.isAbsolute(normalized.output)) {
-    normalized.output = path.resolve(root, normalized.output);
-  }
-
-  if (
-    typeof normalized.input === "string" &&
-    !path.isAbsolute(normalized.input) &&
-    !/^https?:\/\//i.test(normalized.input)
-  ) {
-    normalized.input = path.resolve(root, normalized.input);
-  }
-
-  return normalized;
 }
