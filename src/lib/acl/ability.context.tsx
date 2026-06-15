@@ -12,7 +12,7 @@ export namespace AbilityContext {
 
   const initialAppAbility = createAppAbilityBuilder().build();
 
-  const Context = createContext<AppAbility>(initialAppAbility);
+  const Context = createContext<AppAbility>({} as never);
 
   export const { Consumer } = Context;
 
@@ -26,7 +26,6 @@ export namespace AbilityContext {
     const { user } = AuthContext.useAuth<{ aclRules: PackRule<RawRuleOf<AppAbility>>[] }>();
     useEffect(() => {
       if (!user || !("aclRules" in user)) {
-        setAbility(initialAppAbility);
         return;
       }
 

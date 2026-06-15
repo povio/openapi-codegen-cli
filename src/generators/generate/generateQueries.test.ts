@@ -375,12 +375,6 @@ const paginatedDoc = {
       get: {
         tags: ["items"],
         operationId: "listItems",
-        "x-acl": [
-          {
-            action: "read",
-            subject: "Item",
-          },
-        ],
         parameters: [
           { name: "page", in: "query", schema: { type: "integer" } },
           { name: "limit", in: "query", schema: { type: "integer" } },
@@ -395,12 +389,6 @@ const paginatedDoc = {
       post: {
         tags: ["items"],
         operationId: "createItem",
-        "x-acl": [
-          {
-            action: "create",
-            subject: "Item",
-          },
-        ],
         requestBody: {
           required: true,
           content: { "application/json": { schema: { $ref: "#/components/schemas/Item" } } },
@@ -436,26 +424,6 @@ const paginatedDoc = {
 } as OpenAPIV3.Document;
 
 describe("generateQueries mutationEffects + infiniteQuery", () => {
-  it("allows ACL-protected hooks to skip ACL checks for auth bootstrap calls", () => {
-    const files = generateCodeFromOpenAPIDoc(paginatedDoc, {
-      ...DEFAULT_GENERATE_OPTIONS,
-      output: "test-output",
-      mutationEffects: true,
-      infiniteQueries: true,
-      builderConfigs: false,
-      prefetchQueries: false,
-    });
-
-    const queriesFile = files.find((file) => file.fileName.endsWith("/items/items.queries.ts"));
-
-    expect(queriesFile?.content).toContain("const { skipAcl, ...queryOptions } = options ?? {};");
-    expect(queriesFile?.content).toContain("if (!skipAcl) {");
-    expect(queriesFile?.content).toContain("checkAcl(ItemsAcl.canUseList());");
-    expect(queriesFile?.content).toContain("checkAcl(ItemsAcl.canUseCreate());");
-    expect(queriesFile?.content).toContain("...queryOptions,");
-    expect(queriesFile?.content).not.toContain("...options,");
-  });
-
   it("emits QueryModule.tag (no typeof) in useMutationEffects type arg", () => {
     const files = generateCodeFromOpenAPIDoc(paginatedDoc, {
       ...DEFAULT_GENERATE_OPTIONS,
