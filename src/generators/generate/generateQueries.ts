@@ -919,6 +919,7 @@ function renderQuery({
   lines.push("  const queryConfig = OpenApiQueryConfig.useConfig();");
   if (hasAclCheck) {
     lines.push(`  const { checkAcl } = ${ACL_CHECK_HOOK}();`);
+    lines.push("  const { skipAcl, ...queryOptions } = options ?? {};");
   }
   lines.push(
     ...renderWorkspaceParamResolutions({
@@ -933,12 +934,14 @@ function renderQuery({
   if (hasQueryFnOverride) {
     lines.push("    queryFn: async () => {");
     if (hasAclCheck) {
-      lines.push(renderAclCheckCall(resolver, endpoint, workspaceParamReplacements, "    "));
+      lines.push("      if (!skipAcl) {");
+      lines.push(renderAclCheckCall(resolver, endpoint, workspaceParamReplacements, "        "));
+      lines.push("      }");
     }
     lines.push(`      return ${queryOptionsName}(${queryOptionsArgs}).queryFn();`);
     lines.push("    },");
   }
-  lines.push("    ...options,");
+  lines.push(`    ...${hasAclCheck ? "queryOptions" : "options"},`);
   lines.push("  });");
   lines.push("};");
   return lines.join("\n");
@@ -1036,6 +1039,7 @@ function renderMutation({
   }
   if (hasAclCheck) {
     lines.push(`  const { checkAcl } = ${ACL_CHECK_HOOK}();`);
+    lines.push("  const { skipAcl, ...queryOptions } = options ?? {};");
   }
   lines.push(
     ...renderWorkspaceContextDestructure({
@@ -1066,7 +1070,9 @@ function renderMutation({
   );
   lines.push(...renderWorkspaceParamCoalescing({ replacements: workspaceParamReplacements, indent: "      " }));
   if (hasAclCheck) {
-    lines.push(renderAclCheckCall(resolver, endpoint, workspaceParamReplacements, "      "));
+    lines.push("      if (!skipAcl) {");
+    lines.push(renderAclCheckCall(resolver, endpoint, workspaceParamReplacements, "        "));
+    lines.push("      }");
   }
   if (endpoint.mediaUpload) {
     lines.push(
@@ -1114,9 +1120,9 @@ function renderMutation({
     const scopePathParamInterpolations = scopePathParams.map((p) => `:\${${p.name}}`).join("");
     lines.push(`    scope: { id: \`${getEndpointName(endpoint)}${scopePathParamInterpolations}\` },`);
   }
-  lines.push("    ...options,");
+  lines.push(`    ...${hasAclCheck ? "queryOptions" : "options"},`);
   if (hasMutationDefaultOnError) {
-    lines.push("    onError: options?.onError ?? queryConfig.onError,");
+    lines.push(`    onError: ${hasAclCheck ? "queryOptions" : "options"}?.onError ?? queryConfig.onError,`);
   }
   if (hasMutationEffects) {
     lines.push("    onSuccess: async (resData, variables, onMutateResult, context) => {");
@@ -1142,11 +1148,15 @@ function renderMutation({
           )
           .join(", ")}];`,
       );
-      lines.push(`      await runMutationEffects(resData, variables, options, updateKeys);`);
+      lines.push(
+        `      await runMutationEffects(resData, variables, ${hasAclCheck ? "queryOptions" : "options"}, updateKeys);`,
+      );
     } else {
-      lines.push("      await runMutationEffects(resData, variables, options);");
+      lines.push(`      await runMutationEffects(resData, variables, ${hasAclCheck ? "queryOptions" : "options"});`);
     }
-    lines.push("      options?.onSuccess?.(resData, variables, onMutateResult, context);");
+    lines.push(
+      `      ${hasAclCheck ? "queryOptions" : "options"}?.onSuccess?.(resData, variables, onMutateResult, context);`,
+    );
     lines.push("    },");
   }
 
@@ -1255,6 +1265,7 @@ function renderInfiniteQuery({
   lines.push("  const queryConfig = OpenApiQueryConfig.useConfig();");
   if (hasAclCheck) {
     lines.push(`  const { checkAcl } = ${ACL_CHECK_HOOK}();`);
+    lines.push("  const { skipAcl, ...queryOptions } = options ?? {};");
   }
   lines.push(
     ...renderWorkspaceParamResolutions({
@@ -1268,11 +1279,13 @@ function renderInfiniteQuery({
   lines.push(`    ...${queryOptionsName}(${queryOptionsArgs}),`);
   if (hasQueryFnOverride) {
     lines.push("    queryFn: async ({ pageParam }) => {");
-    lines.push(renderAclCheckCall(resolver, endpoint, workspaceParamReplacements, "      "));
+    lines.push("      if (!skipAcl) {");
+    lines.push(renderAclCheckCall(resolver, endpoint, workspaceParamReplacements, "        "));
+    lines.push("      }");
     lines.push(`      return ${queryOptionsName}(${queryOptionsArgs}).queryFn({ pageParam });`);
     lines.push("    },");
   }
-  lines.push("    ...options,");
+  lines.push(`    ...${hasAclCheck ? "queryOptions" : "options"},`);
   lines.push("  });");
   lines.push("};");
   return lines.join("\n");

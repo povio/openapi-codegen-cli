@@ -1,4 +1,4 @@
-import type { PropsWithChildren } from "react";
+import { type PropsWithChildren, useEffect } from "react";
 
 import { OpenApiRouter } from "../config/router.context";
 import { AbilityContext } from "./ability.context";
@@ -16,8 +16,15 @@ export const createAclGuard =
 
     const { replace } = OpenApiRouter.useRouter();
 
-    if (!ability.can(canUse[0], canUse[1])) {
-      replace(redirectTo);
+    const shouldRedirect = !ability.can(canUse[0], canUse[1]);
+
+    useEffect(() => {
+      if (shouldRedirect) {
+        replace(redirectTo);
+      }
+    }, [redirectTo, replace, shouldRedirect]);
+
+    if (shouldRedirect) {
       return null;
     }
 

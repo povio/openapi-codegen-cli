@@ -18,17 +18,26 @@ export const AuthGuard = ({ type, redirectTo, children }: PropsWithChildren<Auth
     setHasMounted(true);
   }, []);
 
+  const privateRedirectTo = redirectTo || routes?.unauthenticated || "/";
+  const publicRedirectTo = redirectTo || routes?.authenticated || "/";
+  const redirectTarget =
+    type === "private" && !isAuthenticated
+      ? privateRedirectTo
+      : type === "public-only" && isAuthenticated
+        ? publicRedirectTo
+        : null;
+
+  useEffect(() => {
+    if (hasMounted && redirectTarget) {
+      replace(redirectTarget);
+    }
+  }, [hasMounted, redirectTarget, replace]);
+
   if (!hasMounted) {
     return loadingState;
   }
 
-  if (type === "private" && !isAuthenticated) {
-    replace(redirectTo || routes?.unauthenticated || "/");
-    return null;
-  }
-
-  if (type === "public-only" && isAuthenticated) {
-    replace(redirectTo || routes?.authenticated || "/");
+  if (redirectTarget) {
     return null;
   }
 

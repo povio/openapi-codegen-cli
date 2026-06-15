@@ -14,6 +14,10 @@ type IfAny<T, Y, N> = 0 extends 1 & T ? Y : N;
 type IsAny<T> = IfAny<T, true, never>;
 type IsUnknown<T, Y, N = T> = IsAny<T> extends never ? (unknown extends T ? Y : N) : N;
 
+interface OpenApiAclCheckOptions {
+  skipAcl?: boolean;
+}
+
 export type AppQueryOptions<
   TFunction extends Function,
   TData = Awaited<ReturnType<TFunction>>,
@@ -25,14 +29,16 @@ export type AppQueryOptions<
     IsUnknown<TData, Awaited<ReturnType<TFunction>>>
   >,
   "queryKey" | "queryFn"
->;
+> &
+  OpenApiAclCheckOptions;
 
 export type AppMutationOptions<
   TFunction extends Function,
   TVariables = void,
   TData = Awaited<ReturnType<TFunction>>,
   TErrorCodes = GeneralErrorCodes,
-> = Omit<UseMutationOptions<TData, ApplicationException<TErrorCodes>, TVariables>, "mutationKey" | "mutationFn">;
+> = Omit<UseMutationOptions<TData, ApplicationException<TErrorCodes>, TVariables>, "mutationKey" | "mutationFn"> &
+  OpenApiAclCheckOptions;
 
 export type AppInfiniteQueryOptions<
   TFunction extends Function,
@@ -49,4 +55,5 @@ export type AppInfiniteQueryOptions<
     TPageParam
   >,
   "queryKey" | "queryFn" | "initialPageParam" | "getNextPageParam"
->;
+> &
+  OpenApiAclCheckOptions;
