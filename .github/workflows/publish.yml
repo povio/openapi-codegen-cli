@@ -27,6 +27,27 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: Set package version from tag
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          export VERSION
+
+          node <<'NODE'
+          const fs = require("fs");
+
+          const { VERSION: version } = process.env;
+
+          if (!/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(version)) {
+            throw new Error(`Invalid release version: ${version}`);
+          }
+
+          const packageJsonPath = "package.json";
+          const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
+
+          packageJson.version = version;
+          fs.writeFileSync(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`);
+          NODE
+
       - run: pnpm build
 
       - run: npm pack

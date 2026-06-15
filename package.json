@@ -1,6 +1,5 @@
 {
   "name": "@povio/openapi-codegen-cli",
-  "version": "3.0.0-rc.15",
   "keywords": [
     "codegen",
     "openapi",
