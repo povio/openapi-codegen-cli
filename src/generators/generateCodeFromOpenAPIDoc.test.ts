@@ -742,3 +742,117 @@ describe("generateCodeFromOpenAPIDoc - blob download with domain errors", () => 
     expect(listItemsCode).not.toContain('responseType: "blob"');
   });
 });
+
+describe("generateCodeFromOpenAPIDoc - shared parameter schema namespace", () => {
+  // TokenFiltersDto is used as a query parameter by both pushNotificationAdmin and
+  // pushNotification, so the resolver assigns it to the defaultTag ("Common"). The endpoint
+  // parameter renderer (mapEndpointParamsToFunctionParams / renderEndpointParamParse) must not
+  // force the endpoint's own tag as the namespace prefix, or it would emit
+  // PushNotificationAdminModels.TokenFiltersDto instead of CommonModels.TokenFiltersDto.
+  const sharedParamSchemaDoc = {
+    openapi: "3.0.3",
+    info: { title: "Shared Parameter Schema Test", version: "1.0.0" },
+    paths: {
+      "/push-notifications/admin/tokens": {
+        get: {
+          tags: ["pushNotificationAdmin"],
+          operationId: "listAdminTokens",
+          parameters: [
+            { name: "filter", in: "query", schema: { $ref: "#/components/schemas/TokenFiltersDto" } },
+            { name: "page", in: "query", schema: { type: "integer" } },
+            { name: "limit", in: "query", schema: { type: "integer" } },
+          ],
+          responses: {
+            "200": {
+              description: "OK",
+              content: { "application/json": { schema: { $ref: "#/components/schemas/TokensPage" } } },
+            },
+          },
+        },
+        post: {
+          tags: ["pushNotificationAdmin"],
+          operationId: "createAdminToken",
+          requestBody: {
+            required: true,
+            content: { "application/json": { schema: { $ref: "#/components/schemas/TokenFiltersDto" } } },
+          },
+          responses: {
+            "201": {
+              description: "Created",
+              content: { "application/json": { schema: { $ref: "#/components/schemas/Token" } } },
+            },
+          },
+        },
+      },
+      "/push-notifications/tokens": {
+        get: {
+          tags: ["pushNotification"],
+          operationId: "listTokens",
+          parameters: [{ name: "filter", in: "query", schema: { $ref: "#/components/schemas/TokenFiltersDto" } }],
+          responses: {
+            "200": {
+              description: "OK",
+              content: { "application/json": { schema: { $ref: "#/components/schemas/TokensPage" } } },
+            },
+          },
+        },
+      },
+    },
+    components: {
+      schemas: {
+        TokenFiltersDto: {
+          type: "object",
+          properties: { deviceId: { type: "string" } },
+        },
+        Token: {
+          type: "object",
+          properties: { id: { type: "string" } },
+          required: ["id"],
+        },
+        TokensPage: {
+          type: "object",
+          properties: {
+            items: { type: "array", items: { $ref: "#/components/schemas/Token" } },
+            page: { type: "integer" },
+            totalItems: { type: "integer" },
+            limit: { type: "integer" },
+          },
+          required: ["items"],
+        },
+      },
+    },
+  } as unknown as OpenAPIV3.Document;
+
+  const files = generateCodeFromOpenAPIDoc(sharedParamSchemaDoc, {
+    ...(DEFAULT_GENERATE_OPTIONS as GenerateOptions),
+    builderConfigs: true,
+    acl: false,
+    checkAcl: false,
+  });
+  const adminApi = files.find(({ fileName }) => fileName.endsWith("/pushNotificationAdmin/pushNotificationAdmin.api.ts"))
+    ?.content;
+  const adminQueries = files.find(({ fileName }) =>
+    fileName.endsWith("/pushNotificationAdmin/pushNotificationAdmin.queries.ts"),
+  )?.content;
+  const adminConfigs = files.find(({ fileName }) =>
+    fileName.endsWith("/pushNotificationAdmin/pushNotificationAdmin.configs.ts"),
+  )?.content;
+
+  test("api file uses the owning namespace (CommonModels) for the shared parameter schema", () => {
+    expect(adminApi).toBeDefined();
+    expect(adminApi).toContain("CommonModels.TokenFiltersDto");
+    expect(adminApi).not.toContain("PushNotificationAdminModels.TokenFiltersDto");
+  });
+
+  test("queries file uses the owning namespace (CommonModels) for the shared parameter schema", () => {
+    expect(adminQueries).toBeDefined();
+    expect(adminQueries).toContain("CommonModels.TokenFiltersDto");
+    expect(adminQueries).not.toContain("PushNotificationAdminModels.TokenFiltersDto");
+  });
+
+  test("configs file uses the owning namespace (CommonModels) for the shared parameter schema", () => {
+    expect(adminConfigs).toBeDefined();
+    expect(adminConfigs).toContain("CommonModels.TokenFiltersDto");
+    expect(adminConfigs).not.toContain("PushNotificationAdminModels.TokenFiltersDto");
+  });
+});

@@ -3,6 +3,7 @@ import { AclConditionsPropertyType, Endpoint } from "@/generators/types/endpoint
 import { GenerateType, GenerateTypeParams, Import } from "@/generators/types/generate";
 import { GenerateOptions } from "@/generators/types/options";
 import { getUniqueArray } from "@/generators/utils/array.utils";
+import { invalidVariableNameCharactersToCamel } from "@/generators/utils/js.utils";
 import { getNamespaceName } from "@/generators/utils/namespace.utils";
 import { capitalize, snakeToCamel } from "@/generators/utils/string.utils";
 import { getEndpointTag } from "@/generators/utils/tag.utils";
@@ -136,3 +137,28 @@ export const getAppAbilitiesType = ({ resolver, data }: Omit<GenerateTypeParams,
 
   return { appAbilitiesType, modelsImports, hasAdditionalAbilityImports };
 };
+
+/** Renders a `checkAcl(...)` call, passing the ability's conditions object only when the
+ * ability function actually expects one (i.e. the endpoint declares matching conditions). */
+export function renderAclCheckCall(
+  resolver: SchemaResolver,
+  endpoint: Endpoint,
+  replacements?: Record<string, string>,
+  indent = "",
+) {
+  const checkParams = getAbilityConditionsTypes(endpoint)?.map((condition) =>
+    invalidVariableNameCharactersToCamel(condition.name),
+  );
+  const paramNames = new Set(endpoint.parameters.map((param) => invalidVariableNameCharactersToCamel(param.name)));
+  const hasAllCheckParams = checkParams?.every((param) => paramNames.has(param));
+  const args =
+    hasAbilityConditions(endpoint) && hasAllCheckParams
+      ? `{ ${(checkParams ?? [])
+          .map((param) => {
+            const resolvedParam = replacements?.[param] ?? param;
+            return resolvedParam === param ? param : `${param}: ${resolvedParam}`;
+          })
+          .join(", ")} } `
+      : "";
+  return `${indent}checkAcl(${getImportedAbilityFunctionName(endpoint, resolver.options)}(${args}));`;
+}

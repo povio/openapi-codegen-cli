@@ -25,8 +25,7 @@ import { getUniqueArray } from "@/generators/utils/array.utils";
 import {
   getAbilityConditionsTypes,
   getAbilityFunctionName,
-  getImportedAbilityFunctionName,
-  hasAbilityConditions,
+  renderAclCheckCall,
 } from "@/generators/utils/generate/generate.acl.utils";
 import {
   getEndpointBody,
@@ -36,6 +35,7 @@ import {
   hasEndpointConfig,
   getImportedEndpointName,
   mapEndpointParamsToFunctionParams,
+  renderMediaUploadMutationBody,
   requiresBody,
 } from "@/generators/utils/generate/generate.endpoints.utils";
 import { getSchemaDescriptions } from "@/generators/utils/generate/generate.openapi.utils";
@@ -498,29 +498,6 @@ function renderWorkspaceParamResolutions({
     ...renderWorkspaceContextDestructure({ replacements, paramTypes, indent }),
     ...renderWorkspaceParamCoalescing({ replacements, indent }),
   ];
-}
-
-function renderAclCheckCall(
-  resolver: SchemaResolver,
-  endpoint: Endpoint,
-  replacements?: Record<string, string>,
-  indent = "",
-) {
-  const checkParams = getAbilityConditionsTypes(endpoint)?.map((condition) =>
-    invalidVariableNameCharactersToCamel(condition.name),
-  );
-  const paramNames = new Set(endpoint.parameters.map((param) => invalidVariableNameCharactersToCamel(param.name)));
-  const hasAllCheckParams = checkParams?.every((param) => paramNames.has(param));
-  const args =
-    hasAbilityConditions(endpoint) && hasAllCheckParams
-      ? `{ ${(checkParams ?? [])
-          .map((param) => {
-            const resolvedParam = replacements?.[param] ?? param;
-            return resolvedParam === param ? param : `${param}: ${resolvedParam}`;
-          })
-          .join(", ")} } `
-      : "";
-  return `${indent}checkAcl(${getImportedAbilityFunctionName(endpoint, resolver.options)}(${args}));`;
 }
 
 function addAsteriskAfterNewLine(str: string) {
@@ -1070,35 +1047,10 @@ function renderMutation({
   }
   if (endpoint.mediaUpload) {
     lines.push(
-      `      const uploadInstructions = await ${endpointFunction}(${resolvedEndpointArgs}${hasAxiosRequestConfig ? `${resolvedEndpointArgs ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}` : ""});`,
+      ...renderMediaUploadMutationBody({ resolver, endpointFunction, resolvedEndpointArgs }).map(
+        (line) => `      ${line}`,
+      ),
     );
-    lines.push("      ");
-    lines.push("      if (file && uploadInstructions.url) {");
-    lines.push('        const method = (data?.method?.toLowerCase() ?? "put") as "put" | "post";');
-    lines.push("        let dataToSend: File | FormData = file;");
-    lines.push('        if (method === "post") {');
-    lines.push("          dataToSend = new FormData();");
-    lines.push("          if (uploadInstructions.fields) {");
-    lines.push("            for (const [key, value] of uploadInstructions.fields) {");
-    lines.push("              dataToSend.append(key, value);");
-    lines.push("            }");
-    lines.push("          }");
-    lines.push('          dataToSend.append("file", file);');
-    lines.push("        }");
-    lines.push("        await axios[method](uploadInstructions.url, dataToSend, {");
-    lines.push("          headers: {");
-    lines.push('            "Content-Type": file.type,');
-    lines.push("          },");
-    lines.push("          signal: abortController?.signal,");
-    lines.push("          onUploadProgress: onUploadProgress");
-    lines.push(
-      "          ? (progressEvent) => onUploadProgress({ loaded: progressEvent.loaded, total: progressEvent.total ?? 0 })",
-    );
-    lines.push("          : undefined,");
-    lines.push("        });");
-    lines.push("      }");
-    lines.push("      ");
-    lines.push("      return uploadInstructions;");
   } else {
     lines.push(
       `      ${hasMutationFnBody ? "return " : ""}${endpointFunction}(${resolvedEndpointArgs}${hasAxiosRequestConfig ? `${resolvedEndpointArgs ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}` : ""})`,
