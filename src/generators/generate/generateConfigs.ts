@@ -1,4 +1,5 @@
 import { ACL_CHECK_HOOK } from "@/generators/const/acl.const";
+import { AXIOS_DEFAULT_IMPORT_NAME, AXIOS_REQUEST_CONFIG_TYPE } from "@/generators/const/endpoints.const";
 import { PACKAGE_IMPORT_PATH, ACL_PACKAGE_IMPORT_PATH } from "@/generators/const/package.const";
 import {
   MUTATION_EFFECTS,
@@ -13,17 +14,18 @@ import { GenerateType, GenerateTypeParams, Import } from "@/generators/types/gen
 import {
   getImportedEndpointName,
   mapEndpointParamsToFunctionParams,
+  renderMediaUploadMutationBody,
 } from "@/generators/utils/generate/generate.endpoints.utils";
 import { getEndpointsImports } from "@/generators/utils/generate/generate.imports.utils";
 import { getBuilderConfigs } from "@/generators/utils/generate/generate.configs.utils";
+import { renderAclCheckCall } from "@/generators/utils/generate/generate.acl.utils";
 import { getNamespaceName } from "@/generators/utils/namespace.utils";
 import { getQueryModulesImportPath, getQueryTypesImportPath } from "@/generators/utils/generate/generate.utils";
 import { getEndpointTag } from "@/generators/utils/tag.utils";
-import { capitalize, snakeToCamel } from "@/generators/utils/string.utils";
 import { QUERY_HOOKS } from "@/generators/const/queries.const";
 
 export function generateConfigs(generateTypeParams: GenerateTypeParams) {
-  const { configs, hasZodImport, modelsImports, aclImports } = getBuilderConfigs(generateTypeParams);
+  const { configs, hasZodImport, modelsImports, queriesImports, aclImports } = getBuilderConfigs(generateTypeParams);
   if (configs.length === 0) {
     return;
   }
@@ -43,8 +45,15 @@ export function generateConfigs(generateTypeParams: GenerateTypeParams) {
   const hasAclCheck = resolver.options.checkAcl && endpoints.some((e) => e.acl);
   const hasMutationEffects = resolver.options.mutationEffects && hasMutation;
   const hasMutationDefaultOnError = resolver.options.mutationDefaultOnError && hasMutation;
-  const hasWorkspaceContext =
-    resolver.options.workspaceContext && endpoints.some((e) => resolver.options.workspaceContext); // Simplified check
+  const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
+  const hasAxiosDefaultImport = endpoints.some((e) => e.mediaUpload);
+  const hasAxiosImport = hasAxiosRequestConfig || hasAxiosDefaultImport;
+  const axiosImport: Import = {
+    defaultImport: hasAxiosDefaultImport ? AXIOS_DEFAULT_IMPORT_NAME : undefined,
+    bindings: [],
+    typeBindings: hasAxiosImport ? [AXIOS_REQUEST_CONFIG_TYPE] : [],
+    from: "axios",
+  };
 
   const endpointsImports = getEndpointsImports({
     tag,
@@ -79,11 +88,6 @@ export function generateConfigs(generateTypeParams: GenerateTypeParams) {
     from: ACL_PACKAGE_IMPORT_PATH,
   };
 
-  const workspaceContextImport: Import = {
-    bindings: ["OpenApiWorkspaceContext"],
-    from: PACKAGE_IMPORT_PATH,
-  };
-
   const hasDynamicInputsImport = configs.some(
     (config) => config.readAll.filters || config.create?.inputDefs || config.update?.inputDefs, // || config.bulkDelete?.inputDefs,
   );
@@ -99,6 +103,9 @@ export function generateConfigs(generateTypeParams: GenerateTypeParams) {
   };
 
   const lines: string[] = [];
+  if (hasAxiosImport) {
+    lines.push(renderImport(axiosImport));
+  }
   if (hasZodImport) {
     lines.push(renderImport(ZOD_IMPORT));
   }
@@ -110,6 +117,9 @@ export function generateConfigs(generateTypeParams: GenerateTypeParams) {
   }
   for (const modelsImport of modelsImports) {
     lines.push(renderImport(modelsImport));
+  }
+  for (const queriesImport of queriesImports) {
+    lines.push(renderImport(queriesImport));
   }
   // Endpoints are needed for inlined mutations
   for (const endpointsImport of endpointsImports) {
@@ -123,9 +133,8 @@ export function generateConfigs(generateTypeParams: GenerateTypeParams) {
       lines.push(renderImport(queryModulesImport));
       lines.push(renderImport(mutationEffectsImport));
     }
-    lines.push(renderImport(aclCheckImport));
-    if (hasWorkspaceContext) {
-      lines.push(renderImport(workspaceContextImport));
+    if (hasAclCheck) {
+      lines.push(renderImport(aclCheckImport));
     }
   }
 
@@ -212,6 +221,11 @@ function renderMutationContent(resolver: any, endpoint: Endpoint, tag: string) {
   const endpointParamsStr = endpointParams.map((p) => `${p.name}${p.required ? "" : "?"}: ${p.type}`).join("; ");
 
   const destructuredMutationArgs = endpointParams.map((p) => p.name).join(", ");
+  // The file itself isn't part of the endpoint function's call signature - it's uploaded
+  // separately to the URL the endpoint call returns. See renderMediaUploadMutationBody.
+  const resolvedEndpointArgs = mapEndpointParamsToFunctionParams(resolver, endpoint, { modelNamespaceTag: endpointTag })
+    .map((p) => p.name)
+    .join(", ");
   const endpointFunction = getImportedEndpointName(endpoint, resolver.options);
 
   const mutationVariablesType = endpoint.mediaUpload
@@ -220,7 +234,7 @@ function renderMutationContent(resolver: any, endpoint: Endpoint, tag: string) {
 
   const lines: string[] = [];
   lines.push(
-    `(options?: AppMutationOptions<typeof ${endpointFunction}, ${mutationVariablesType}>${hasAxiosRequestConfig ? `, config?: AxiosRequestConfig` : ""}) => {`,
+    `(options?: AppMutationOptions<typeof ${endpointFunction}, ${mutationVariablesType}>${hasMutationEffects ? ` & ${MUTATION_EFFECTS.optionsType}` : ""}${hasAxiosRequestConfig ? `, config?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => {`,
   );
   if (hasMutationDefaultOnError) {
     lines.push("  const queryConfig = OpenApiQueryConfig.useConfig();");
@@ -228,10 +242,12 @@ function renderMutationContent(resolver: any, endpoint: Endpoint, tag: string) {
 
   if (hasMutationEffects) {
     lines.push(
-      `  const { runMutationEffects } = useMutationEffects<typeof ${QUERY_MODULE_ENUM}.${endpointTag}>({ currentModule: ${QUERY_MODULE_ENUM}.${tag} });`,
+      `  const { runMutationEffects } = useMutationEffects<${QUERY_MODULE_ENUM}.${endpointTag}>({ currentModule: ${QUERY_MODULE_ENUM}.${tag} });`,
     );
   }
-  lines.push(`  const { checkAcl } = ${ACL_CHECK_HOOK}();`);
+  if (hasAclCheck) {
+    lines.push(`  const { checkAcl } = ${ACL_CHECK_HOOK}();`);
+  }
   lines.push("");
   lines.push(`  return ${QUERY_HOOKS.mutation}({`);
 
@@ -239,25 +255,31 @@ function renderMutationContent(resolver: any, endpoint: Endpoint, tag: string) {
     ? `{ ${destructuredMutationArgs}${endpoint.mediaUpload ? `${destructuredMutationArgs ? ", " : ""}abortController, onUploadProgress` : ""} }`
     : "";
 
-  lines.push(`    mutationFn: (${mutationFnArg}) => {`);
+  lines.push(`    mutationFn: ${endpoint.mediaUpload ? "async " : ""}(${mutationFnArg}) => {`);
   if (hasAclCheck) {
+    lines.push(renderAclCheckCall(resolver, endpoint, undefined, "      "));
+  }
+  if (endpoint.mediaUpload) {
     lines.push(
-      `      checkAcl(${getNamespaceName({ type: GenerateType.Acl, tag: endpointTag, options: resolver.options })}.canUse${capitalize(snakeToCamel(endpoint.operationName))}({ ${destructuredMutationArgs} }));`,
+      ...renderMediaUploadMutationBody({ resolver, endpointFunction, resolvedEndpointArgs }).map(
+        (line) => `      ${line}`,
+      ),
+    );
+  } else {
+    lines.push(
+      `      return ${endpointFunction}(${destructuredMutationArgs}${hasAxiosRequestConfig ? `${destructuredMutationArgs ? ", " : ""}config` : ""});`,
     );
   }
-  lines.push(
-    `      return ${endpointFunction}(${destructuredMutationArgs}${hasAxiosRequestConfig ? `${destructuredMutationArgs ? ", " : ""}config` : ""});`,
-  );
   lines.push("    },");
-  if (hasMutationEffects) {
-    lines.push("    onSuccess: async (...args) => {");
-    lines.push("      await runMutationEffects();");
-    lines.push("      await options?.onSuccess?.(...args);");
-    lines.push("    },");
-  }
   lines.push("    ...options,");
   if (hasMutationDefaultOnError) {
     lines.push("    onError: options?.onError ?? queryConfig.onError,");
+  }
+  if (hasMutationEffects) {
+    lines.push("    onSuccess: async (resData, variables, onMutateResult, context) => {");
+    lines.push("      await runMutationEffects(resData, variables, options);");
+    lines.push("      options?.onSuccess?.(resData, variables, onMutateResult, context);");
+    lines.push("    },");
   }
   lines.push("  });");
   lines.push("}");
