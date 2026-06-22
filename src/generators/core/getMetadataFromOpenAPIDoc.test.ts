@@ -428,4 +428,23 @@ describe("getMetadataFromOpenAPIDoc", () => {
     expect(metadata.models).toEqual(models(extractEnums));
     expect(metadata.queries).toEqual(queries);
   });
+
+  test("uses common model namespace and import path when modelsInCommon is enabled with includeTags", async () => {
+    const openApiDoc = (await SwaggerParser.bundle("./test/petstore.yaml")) as OpenAPIV3.Document;
+
+    const metadata = await getMetadataFromOpenAPIDoc(openApiDoc, {
+      ...DEFAULT_GENERATE_OPTIONS,
+      includeTags: ["pet"],
+      modelsInCommon: true,
+      excludeRedundantZodSchemas: false,
+    });
+
+    expect(metadata.models.length).toBeGreaterThan(0);
+    expect(metadata.models.every((model) => model.namespace === "CommonModels")).toBe(true);
+    expect(metadata.models.every((model) => model.importPath === "common/common.models")).toBe(true);
+
+    const petQuery = metadata.queries.find((query) => query.name === "useGetById");
+    expect(petQuery?.response.namespace).toBe("CommonModels");
+    expect(petQuery?.response.importPath).toBe("common/common.models");
+  });
 });

@@ -1,0 +1,43 @@
+import { CommonModels } from "@/data/common/common.models";
+
+export namespace TerminalsModels {
+  export const TerminalResponseDTOSchema = CommonModels.TerminalResponseDTOSchema;
+  export const CreateTerminalRequestDTOSchema = CommonModels.CreateTerminalRequestDTOSchema;
+  export const TerminalsPaginateResponseSchema = CommonModels.TerminalsPaginateResponseSchema;
+  export const TerminalsPaginateOrderParamEnumSchema = CommonModels.TerminalsPaginateOrderParamEnumSchema;
+  export const TerminalPaginationFilterDtoSchema = CommonModels.TerminalPaginationFilterDtoSchema;
+  export const TerminalsPaginateLabelsResponseSchema = CommonModels.TerminalsPaginateLabelsResponseSchema;
+  export const TerminalsPaginateLabelsOrderParamEnumSchema = CommonModels.TerminalsPaginateLabelsOrderParamEnumSchema;
+  export const TerminalLabelFilterDtoSchema = CommonModels.TerminalLabelFilterDtoSchema;
+  export const UpdateTerminalRequestDTOSchema = CommonModels.UpdateTerminalRequestDTOSchema;
+  export const TerminalTypeSchema = CommonModels.TerminalTypeSchema;
+  export const AirportReferenceDTOSchema = CommonModels.AirportReferenceDTOSchema;
+  export const PortReferenceDTOSchema = CommonModels.PortReferenceDTOSchema;
+  export const TerminalAddressDTOSchema = CommonModels.TerminalAddressDTOSchema;
+  export const TerminalEmployeeDTOSchema = CommonModels.TerminalEmployeeDTOSchema;
+  export const PaginationDtoSchema = CommonModels.PaginationDtoSchema;
+  export const TerminalCityDtoSchema = CommonModels.TerminalCityDtoSchema;
+  export const TerminalCountryDtoSchema = CommonModels.TerminalCountryDtoSchema;
+  export const LabelResponseDTOSchema = CommonModels.LabelResponseDTOSchema;
+  export type TerminalResponseDTO = CommonModels.TerminalResponseDTO;
+  export type CreateTerminalRequestDTO = CommonModels.CreateTerminalRequestDTO;
+  export type TerminalsPaginateResponse = CommonModels.TerminalsPaginateResponse;
+  export type TerminalsPaginateOrderParamEnum = CommonModels.TerminalsPaginateOrderParamEnum;
+  export type TerminalPaginationFilterDto = CommonModels.TerminalPaginationFilterDto;
+  export type TerminalsPaginateLabelsResponse = CommonModels.TerminalsPaginateLabelsResponse;
+  export type TerminalsPaginateLabelsOrderParamEnum = CommonModels.TerminalsPaginateLabelsOrderParamEnum;
+  export type TerminalLabelFilterDto = CommonModels.TerminalLabelFilterDto;
+  export type UpdateTerminalRequestDTO = CommonModels.UpdateTerminalRequestDTO;
+  export type TerminalType = CommonModels.TerminalType;
+  export type AirportReferenceDTO = CommonModels.AirportReferenceDTO;
+  export type PortReferenceDTO = CommonModels.PortReferenceDTO;
+  export type TerminalAddressDTO = CommonModels.TerminalAddressDTO;
+  export type TerminalEmployeeDTO = CommonModels.TerminalEmployeeDTO;
+  export type PaginationDto = CommonModels.PaginationDto;
+  export type TerminalCityDto = CommonModels.TerminalCityDto;
+  export type TerminalCountryDto = CommonModels.TerminalCountryDto;
+  export type LabelResponseDTO = CommonModels.LabelResponseDTO;
+  export const TerminalsPaginateOrderParamEnum = CommonModels.TerminalsPaginateOrderParamEnum;
+  export const TerminalsPaginateLabelsOrderParamEnum = CommonModels.TerminalsPaginateLabelsOrderParamEnum;
+  export const TerminalType = CommonModels.TerminalType;
+}

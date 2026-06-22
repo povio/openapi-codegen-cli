@@ -4,6 +4,7 @@ import { ACL_PACKAGE_IMPORT_PATH, PACKAGE_IMPORT_PATH } from "./package.const";
 
 export const APP_REST_CLIENT_NAME = "AppRestClient";
 export const APP_REST_CLIENT_FILE: GenerateFile = { fileName: "app-rest-client", extension: "ts" };
+export const DOMAIN_ERRORS_FILE: GenerateFile = { fileName: "domain-errors", extension: "ts" };
 
 export const QUERY_OPTIONS_TYPES = {
   query: "AppQueryOptions",
@@ -44,13 +45,6 @@ export const MUTATION_EFFECTS = {
   hookName: "useMutationEffects",
   runFunctionName: "runMutationEffects",
 };
-export const MUTATION_EFFECTS_FILE: GenerateFile = { fileName: "useMutationEffects", extension: "ts" };
-
-// CrossTabQueryInvalidation
-export const CROSS_TAB_QUERY_INVALIDATION_FILE: GenerateFile = {
-  fileName: "useCrossTabQueryInvalidation",
-  extension: "ts",
-};
 
 // ZodExtended
 export const ZOD_EXTENDED = {
@@ -60,4 +54,3 @@ export const ZOD_EXTENDED = {
     sortExp: "sortExp",
   },
 };
-export const ZOD_EXTENDED_FILE: GenerateFile = { fileName: "zod.extended", extension: "ts" };

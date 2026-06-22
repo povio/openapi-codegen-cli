@@ -8,8 +8,11 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   // Base options
   input: "http://localhost:4000/docs-json/",
   output: "output",
+  clearOutput: false,
+  incremental: true,
   splitByTags: true,
   defaultTag: "Common",
+  includeTags: [],
   excludeTags: [],
   excludePathRegex: "",
   excludeRedundantZodSchemas: true,
@@ -39,20 +42,30 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
     },
   },
   baseUrl: "",
+  modelsOnly: false,
+  standalone: false,
   // Zod options
   schemaSuffix: SCHEMA_SUFFIX,
   enumSuffix: ENUM_SUFFIX,
+  modelsInCommon: false,
   withDefaultValues: true,
   extractEnums: true,
   replaceOptionalWithNullish: false,
   // Endpoints options
   restClientImportPath: "",
+  errorHandlingImportPath: "",
   removeOperationPrefixEndingWith: "Controller_",
   parseRequestParams: true,
+  inlineEndpoints: false,
+  inlineEndpointsExcludeModules: [],
   // Queries options
   queryTypesImportPath: PACKAGE_IMPORT_PATH,
   axiosRequestConfig: false,
   mutationEffects: true,
+  mutationDefaultOnError: false,
+  workspaceContext: [],
+  prefetchQueries: true,
+  mutationScope: false,
   // Infinite queries options
   infiniteQueries: false,
   infiniteQueryParamNames: {
@@ -67,6 +80,7 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   acl: true,
   checkAcl: true,
   abilityContextGenericAppAbilities: false,
+  abilityContextImportPath: "",
   // Builder Configs options
   builderConfigs: false,
   filterParamName: "filter",

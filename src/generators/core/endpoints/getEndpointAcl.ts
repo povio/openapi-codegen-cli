@@ -69,7 +69,11 @@ function getEndpointAclConditionPropertyType({
     const matchingMediaType = mediaTypes.find(isParamMediaTypeAllowed);
     if (matchingMediaType) {
       schema = bodyParameter?.bodyObject?.content?.[matchingMediaType]?.schema;
+      required = bodyParameter?.bodyObject?.required;
       info = `${isQuery(endpoint) ? "query" : "mutation"} data`;
+      if (pathSplits[index]?.startsWith("$")) {
+        index++;
+      }
     }
   }
 

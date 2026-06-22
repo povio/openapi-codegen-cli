@@ -1,0 +1,45 @@
+import { CommonModels } from "@/data/common/common.models";
+
+export namespace ChargeTypesModels {
+  export const ChargeTypesFindAllResponseSchema = CommonModels.ChargeTypesFindAllResponseSchema;
+  export const ChargeTypesFindAllOrderParamEnumSchema = CommonModels.ChargeTypesFindAllOrderParamEnumSchema;
+  export const ChargeTypeLabelFilterDtoSchema = CommonModels.ChargeTypeLabelFilterDtoSchema;
+  export const ChargeTypesPaginateResponseSchema = CommonModels.ChargeTypesPaginateResponseSchema;
+  export const ChargeTypesPaginateOrderParamEnumSchema = CommonModels.ChargeTypesPaginateOrderParamEnumSchema;
+  export const ChargeTypePaginationFilterDtoSchema = CommonModels.ChargeTypePaginationFilterDtoSchema;
+  export const ChargeTypeResponseDTOSchema = CommonModels.ChargeTypeResponseDTOSchema;
+  export const CreateChargeTypeRequestDTOSchema = CommonModels.CreateChargeTypeRequestDTOSchema;
+  export const UpdateChargeTypeRequestDTOSchema = CommonModels.UpdateChargeTypeRequestDTOSchema;
+  export const PaginationDtoSchema = CommonModels.PaginationDtoSchema;
+  export const LabelResponseDTOSchema = CommonModels.LabelResponseDTOSchema;
+  export const DirectionEnumSchema = CommonModels.DirectionEnumSchema;
+  export const TransportModeEnumSchema = CommonModels.TransportModeEnumSchema;
+  export const LanguageEnumSchema = CommonModels.LanguageEnumSchema;
+  export const ChargeTypeTranslationDtoSchema = CommonModels.ChargeTypeTranslationDtoSchema;
+  export const ChargeTypeEmployeeDTOSchema = CommonModels.ChargeTypeEmployeeDTOSchema;
+  export const CreateChargeTypeTranslationDtoSchema = CommonModels.CreateChargeTypeTranslationDtoSchema;
+  export const UpdateChargeTypeTranslationDtoSchema = CommonModels.UpdateChargeTypeTranslationDtoSchema;
+  export type ChargeTypesFindAllResponse = CommonModels.ChargeTypesFindAllResponse;
+  export type ChargeTypesFindAllOrderParamEnum = CommonModels.ChargeTypesFindAllOrderParamEnum;
+  export type ChargeTypeLabelFilterDto = CommonModels.ChargeTypeLabelFilterDto;
+  export type ChargeTypesPaginateResponse = CommonModels.ChargeTypesPaginateResponse;
+  export type ChargeTypesPaginateOrderParamEnum = CommonModels.ChargeTypesPaginateOrderParamEnum;
+  export type ChargeTypePaginationFilterDto = CommonModels.ChargeTypePaginationFilterDto;
+  export type ChargeTypeResponseDTO = CommonModels.ChargeTypeResponseDTO;
+  export type CreateChargeTypeRequestDTO = CommonModels.CreateChargeTypeRequestDTO;
+  export type UpdateChargeTypeRequestDTO = CommonModels.UpdateChargeTypeRequestDTO;
+  export type PaginationDto = CommonModels.PaginationDto;
+  export type LabelResponseDTO = CommonModels.LabelResponseDTO;
+  export type DirectionEnum = CommonModels.DirectionEnum;
+  export type TransportModeEnum = CommonModels.TransportModeEnum;
+  export type LanguageEnum = CommonModels.LanguageEnum;
+  export type ChargeTypeTranslationDto = CommonModels.ChargeTypeTranslationDto;
+  export type ChargeTypeEmployeeDTO = CommonModels.ChargeTypeEmployeeDTO;
+  export type CreateChargeTypeTranslationDto = CommonModels.CreateChargeTypeTranslationDto;
+  export type UpdateChargeTypeTranslationDto = CommonModels.UpdateChargeTypeTranslationDto;
+  export const ChargeTypesFindAllOrderParamEnum = CommonModels.ChargeTypesFindAllOrderParamEnum;
+  export const ChargeTypesPaginateOrderParamEnum = CommonModels.ChargeTypesPaginateOrderParamEnum;
+  export const DirectionEnum = CommonModels.DirectionEnum;
+  export const TransportModeEnum = CommonModels.TransportModeEnum;
+  export const LanguageEnum = CommonModels.LanguageEnum;
+}

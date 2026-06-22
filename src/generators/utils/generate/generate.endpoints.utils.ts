@@ -1,6 +1,6 @@
 import { OpenAPIV3 } from "openapi-types";
 
-import { BODY_PARAMETER_NAME, DEFAULT_HEADERS } from "@/generators/const/endpoints.const";
+import { AXIOS_REQUEST_CONFIG_NAME, BODY_PARAMETER_NAME, DEFAULT_HEADERS } from "@/generators/const/endpoints.const";
 import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
 import { Endpoint } from "@/generators/types/endpoint";
 import { GenerateType } from "@/generators/types/generate";
@@ -33,7 +33,8 @@ export const getEndpointBody = (endpoint: Endpoint) => endpoint.parameters.find(
 export const hasEndpointConfig = (endpoint: Endpoint, resolver: SchemaResolver) => {
   const endpointConfig = getEndpointConfig(endpoint);
   const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
-  return Object.keys(endpointConfig).length > 0 || hasAxiosRequestConfig;
+  const needsBlobConfig = endpoint.mediaDownload || endpoint.response === "z.instanceof(Blob)";
+  return Object.keys(endpointConfig).length > 0 || hasAxiosRequestConfig || needsBlobConfig;
 };
 
 export const getEndpointPath = (endpoint: Endpoint) => endpoint.path.replace(/:([a-zA-Z0-9_]+)/g, "${$1}");
@@ -48,12 +49,17 @@ export function mapEndpointParamsToFunctionParams(
     includeFileParam?: boolean;
     includeOnlyRequiredParams?: boolean;
     pathParamsRequiredOnly?: boolean;
+    optionalPathParams?: string[];
+    modelNamespaceTag?: string;
+    excludePathParams?: boolean;
   },
 ) {
+  const optionalPathParams = options?.optionalPathParams ? new Set(options.optionalPathParams) : undefined;
+
   const params = endpoint.parameters.map((param) => {
     let type = "string";
     if (isNamedZodSchema(param.zodSchema)) {
-      type = getImportedZodSchemaInferedTypeName(resolver, param.zodSchema);
+      type = getImportedZodSchemaInferedTypeName(resolver, param.zodSchema, undefined, options?.modelNamespaceTag);
     } else if (param.parameterObject?.schema && isSchemaObject(param.parameterObject.schema)) {
       const openApiSchemaType = (param.parameterObject?.schema as OpenAPIV3.SchemaObject)?.type;
       if (openApiSchemaType && isPrimitiveType(openApiSchemaType)) {
@@ -94,7 +100,8 @@ export function mapEndpointParamsToFunctionParams(
       (param) =>
         (!options?.excludeBodyParam || param.name !== BODY_PARAMETER_NAME) &&
         (!options?.excludePageParam || param.name !== resolver.options.infiniteQueryParamNames.page) &&
-        (!options?.includeOnlyRequiredParams || param.required),
+        (!options?.includeOnlyRequiredParams || param.required) &&
+        (!options?.excludePathParams || param.paramType !== "Path"),
     )
     .map((param) => ({
       ...param,
@@ -102,7 +109,10 @@ export function mapEndpointParamsToFunctionParams(
         options?.replacePageParam && param.name === resolver.options.infiniteQueryParamNames.page
           ? "pageParam"
           : param.name,
-      required: param.required && (param.paramType === "Path" || !options?.pathParamsRequiredOnly),
+      required:
+        param.paramType === "Path" && optionalPathParams?.has(param.name)
+          ? false
+          : param.required && (param.paramType === "Path" || !options?.pathParamsRequiredOnly),
     }));
 }
 
@@ -150,6 +160,50 @@ export function getEndpointConfig(endpoint: Endpoint) {
     ...(Object.keys(headers).length ? { headers } : {}),
   };
   return endpointConfig;
+}
+
+/** Renders the body of a media-upload mutationFn: call the endpoint (without the file arg) to
+ * get upload instructions, then upload the file itself to the returned URL. Shared between
+ * renderMutation (*.queries.ts) and renderMutationContent (*.configs.ts / builderConfigs) so
+ * both mutation paths stay in sync. Lines are relative to the caller's own indent. */
+export function renderMediaUploadMutationBody({
+  resolver,
+  endpointFunction,
+  resolvedEndpointArgs,
+}: {
+  resolver: SchemaResolver;
+  endpointFunction: string;
+  resolvedEndpointArgs: string;
+}): string[] {
+  const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
+  return [
+    `const uploadInstructions = await ${endpointFunction}(${resolvedEndpointArgs}${hasAxiosRequestConfig ? `${resolvedEndpointArgs ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}` : ""});`,
+    "",
+    "if (file && uploadInstructions.url) {",
+    `  const method = (${BODY_PARAMETER_NAME}?.method?.toLowerCase() ?? "put") as "put" | "post";`,
+    "  let dataToSend: File | FormData = file;",
+    '  if (method === "post") {',
+    "    dataToSend = new FormData();",
+    "    if (uploadInstructions.fields) {",
+    "      for (const [key, value] of uploadInstructions.fields) {",
+    "        dataToSend.append(key, value);",
+    "      }",
+    "    }",
+    '    dataToSend.append("file", file);',
+    "  }",
+    "  await axios[method](uploadInstructions.url, dataToSend, {",
+    "    headers: {",
+    '      "Content-Type": file.type,',
+    "    },",
+    "    signal: abortController?.signal,",
+    "    onUploadProgress: onUploadProgress",
+    "    ? (progressEvent) => onUploadProgress({ loaded: progressEvent.loaded, total: progressEvent.total ?? 0 })",
+    "    : undefined,",
+    "  });",
+    "}",
+    "",
+    "return uploadInstructions;",
+  ];
 }
 
 export function getUpdateQueryEndpoints(endpoint: Endpoint, endpoints: Endpoint[]) {

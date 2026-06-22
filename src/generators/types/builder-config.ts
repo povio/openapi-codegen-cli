@@ -1,3 +1,5 @@
+import { Endpoint } from "./endpoint";
+
 export interface DynamicInputsConfig {
   schema: string;
   options: {
@@ -30,21 +32,24 @@ export interface BuilderConfig {
   };
   create?: {
     acl?: string;
-    mutation: string;
+    schema: string;
+    mutation: string | Endpoint;
     inputDefs?: DynamicInputsConfig;
   };
   update?: {
     acl?: string;
-    mutation: string;
+    schema: string;
+    mutation: string | Endpoint;
     inputDefs?: DynamicInputsConfig;
   };
   delete?: {
     acl?: string;
-    mutation: string;
+    mutation: string | Endpoint;
   };
   bulkDelete?: {
     acl?: string;
-    mutation: string;
+    schema: string;
+    mutation: string | Endpoint;
     inputDefs?: DynamicInputsConfig;
   };
 }

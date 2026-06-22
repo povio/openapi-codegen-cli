@@ -18,6 +18,24 @@ export function getEndpointTag(endpoint: Endpoint, options: GenerateOptions) {
   return formatTag(tag ?? options.defaultTag);
 }
 
-export function isTagExcluded(tag: string, options: GenerateOptions) {
-  return options.excludeTags.some((excludeTag) => excludeTag.toLowerCase() === tag.toLowerCase());
+export function isTagIncluded(tag: string, options: GenerateOptions) {
+  const normalizedTag = formatTag(tag).toLowerCase();
+  if (options.includeTags.some((includeTag) => formatTag(includeTag).toLowerCase() === normalizedTag)) {
+    return true;
+  }
+  if (options.excludeTags.some((excludeTag) => formatTag(excludeTag).toLowerCase() === normalizedTag)) {
+    return false;
+  }
+  return options.includeTags.length === 0;
+}
+
+export function shouldInlineEndpointsForTag(tag: string, options: GenerateOptions) {
+  if (!options.inlineEndpoints) {
+    return false;
+  }
+
+  const isExcludedModule = (options.inlineEndpointsExcludeModules ?? []).some(
+    (moduleName) => formatTag(moduleName).toLowerCase() === tag.toLowerCase(),
+  );
+  return !isExcludedModule;
 }

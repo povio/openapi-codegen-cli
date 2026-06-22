@@ -1,0 +1,21 @@
+import { CommonModels } from "@/data/common/common.models";
+
+export namespace InttraShippingInstructionMessagesModels {
+  export const InttraShippingInstructionMessagesListResponseSchema = CommonModels.InttraShippingInstructionMessagesListResponseSchema;
+  export const ShippingInstructionMessageFilterDtoSchema = CommonModels.ShippingInstructionMessageFilterDtoSchema;
+  export const ShippingInstructionMessageResponseDtoSchema = CommonModels.ShippingInstructionMessageResponseDtoSchema;
+  export const CreateShippingInstructionMessageRequestDtoSchema = CommonModels.CreateShippingInstructionMessageRequestDtoSchema;
+  export const UpdateShippingInstructionMessageRequestDtoSchema = CommonModels.UpdateShippingInstructionMessageRequestDtoSchema;
+  export const PaginationDtoSchema = CommonModels.PaginationDtoSchema;
+  export const ShippingInstructionMessageListItemResponseDtoSchema = CommonModels.ShippingInstructionMessageListItemResponseDtoSchema;
+  export const InttraShippingInstructionStatusEnumSchema = CommonModels.InttraShippingInstructionStatusEnumSchema;
+  export type InttraShippingInstructionMessagesListResponse = CommonModels.InttraShippingInstructionMessagesListResponse;
+  export type ShippingInstructionMessageFilterDto = CommonModels.ShippingInstructionMessageFilterDto;
+  export type ShippingInstructionMessageResponseDto = CommonModels.ShippingInstructionMessageResponseDto;
+  export type CreateShippingInstructionMessageRequestDto = CommonModels.CreateShippingInstructionMessageRequestDto;
+  export type UpdateShippingInstructionMessageRequestDto = CommonModels.UpdateShippingInstructionMessageRequestDto;
+  export type PaginationDto = CommonModels.PaginationDto;
+  export type ShippingInstructionMessageListItemResponseDto = CommonModels.ShippingInstructionMessageListItemResponseDto;
+  export type InttraShippingInstructionStatusEnum = CommonModels.InttraShippingInstructionStatusEnum;
+  export const InttraShippingInstructionStatusEnum = CommonModels.InttraShippingInstructionStatusEnum;
+}

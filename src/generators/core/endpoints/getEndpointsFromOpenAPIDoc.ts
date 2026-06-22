@@ -133,7 +133,14 @@ export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver) {
 
         let schema: OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject | undefined;
         if (matchingMediaType) {
-          endpoint.responseFormat = matchingMediaType;
+          const statusNum = Number(statusCode);
+          // Only let success responses (2xx) or "default" (when nothing is set yet) determine the
+          // response format used for the Accept header. Error responses (4xx/5xx) must not
+          // overwrite the success content-type — doing so would strip rawResponse/blob config
+          // from blob-download endpoints that also declare domain-error responses.
+          if (isMainResponseStatus(statusNum) || (statusCode === "default" && !endpoint.responseFormat)) {
+            endpoint.responseFormat = matchingMediaType;
+          }
           schema = responseObj.content?.[matchingMediaType]?.schema;
         } else if (statusCode === "200") {
           resolver.validationErrors.push(
@@ -176,10 +183,31 @@ export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver) {
             endpoint.responseObject = responseObj;
             endpoint.responseDescription = responseObj?.description;
           } else if (statusCode !== "default" && !Number.isNaN(status) && isErrorStatus(status)) {
+            const rawSchema = schemaObject as Record<string, unknown>;
+            const domainStr = rawSchema["x-domain-error-domain"];
+            const domainName = rawSchema["x-domain-error-name"];
+            const codeEnum = (rawSchema?.properties as Record<string, unknown> | undefined)?.code;
+            const codeEnumArr = (codeEnum as Record<string, unknown> | undefined)?.enum;
+            const domainCode =
+              Array.isArray(codeEnumArr) &&
+              codeEnumArr.length === 1 &&
+              (typeof codeEnumArr[0] === "number" || typeof codeEnumArr[0] === "string")
+                ? (codeEnumArr[0] as number | string)
+                : undefined;
+
             endpoint.errors.push({
               zodSchema: responseZodSchema,
               status,
               description: responseObj?.description,
+              ...(typeof domainStr === "string" && domainCode !== undefined
+                ? {
+                    domainError: {
+                      domain: domainStr,
+                      code: domainCode,
+                      ...(typeof domainName === "string" ? { name: domainName } : {}),
+                    },
+                  }
+                : {}),
             });
           }
         } else {

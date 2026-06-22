@@ -12,10 +12,17 @@ export interface EndpointParameter {
   bodyObject?: OpenAPIV3.RequestBodyObject;
 }
 
-interface EndpointError {
+export interface DomainErrorInfo {
+  domain: string;
+  code: number | string;
+  name?: string;
+}
+
+export interface EndpointError {
   status: number | "default";
   description?: string;
   zodSchema: string;
+  domainError?: DomainErrorInfo;
 }
 
 export interface AclConditionsPropertyType {

@@ -7,6 +7,7 @@ import { Endpoint } from "./endpoint";
 export interface Import {
   defaultImport?: string;
   bindings: string[];
+  typeBindings?: string[];
   from: string;
   typeOnly?: boolean;
 }
@@ -49,3 +50,5 @@ export interface GenerateFileData {
   fileName: string;
   content: string;
 }
+
+export type GenerateFileFormatter = (file: GenerateFileData) => string | Promise<string>;

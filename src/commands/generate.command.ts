@@ -16,6 +16,12 @@ class GenerateOptions implements GenerateParams {
   @YargOption({ envAlias: "output" })
   output?: string;
 
+  @YargOption({ envAlias: "clearOutput", type: "boolean" })
+  clearOutput?: boolean;
+
+  @YargOption({ envAlias: "incremental", type: "boolean" })
+  incremental?: boolean;
+
   @YargOption({ envAlias: "tsNamespaces", type: "boolean" })
   tsNamespaces?: boolean;
 
@@ -27,6 +33,9 @@ class GenerateOptions implements GenerateParams {
 
   @YargOption({ envAlias: "defaultTag" })
   defaultTag?: string;
+
+  @YargOption({ envAlias: "includeTags" })
+  includeTags?: string;
 
   @YargOption({ envAlias: "excludeTags" })
   excludeTags?: string;
@@ -42,6 +51,9 @@ class GenerateOptions implements GenerateParams {
 
   @YargOption({ envAlias: "extractEnums", type: "boolean" })
   extractEnums?: boolean;
+
+  @YargOption({ envAlias: "modelsInCommon", type: "boolean" })
+  modelsInCommon?: boolean;
 
   @YargOption({ envAlias: "removeOperationPrefixEndingWith" })
   removeOperationPrefixEndingWith?: string;
@@ -64,8 +76,26 @@ class GenerateOptions implements GenerateParams {
   @YargOption({ envAlias: "mutationEffects", type: "boolean" })
   mutationEffects?: boolean;
 
+  @YargOption({ envAlias: "mutationDefaultOnError", type: "boolean" })
+  mutationDefaultOnError?: boolean;
+
+  @YargOption({ envAlias: "workspaceContext" })
+  workspaceContext?: string;
+
+  @YargOption({ envAlias: "mutationScope", type: "boolean" })
+  mutationScope?: boolean;
+
   @YargOption({ envAlias: "parseRequestParams", type: "boolean" })
   parseRequestParams?: boolean;
+
+  @YargOption({ envAlias: "inlineEndpoints", type: "boolean" })
+  inlineEndpoints?: boolean;
+
+  @YargOption({ envAlias: "inlineEndpointsExcludeModules" })
+  inlineEndpointsExcludeModules?: string;
+
+  @YargOption({ envAlias: "modelsOnly", type: "boolean" })
+  modelsOnly?: boolean;
 
   @YargOption({ envAlias: "axiosRequestConfig", type: "boolean" })
   axiosRequestConfig?: boolean;

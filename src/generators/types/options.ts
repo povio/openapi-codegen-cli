@@ -3,6 +3,7 @@ import { GenerateType } from "./generate";
 interface ZodGenerateOptions {
   schemaSuffix: string;
   enumSuffix: string;
+  modelsInCommon?: boolean;
   withImplicitRequiredProps?: boolean;
   withDefaultValues?: boolean;
   withDescription?: boolean;
@@ -13,15 +14,22 @@ interface ZodGenerateOptions {
 
 interface EndpointsGenerateOptions {
   restClientImportPath: string;
+  errorHandlingImportPath?: string;
   withDeprecatedEndpoints?: boolean;
   removeOperationPrefixEndingWith?: string;
   parseRequestParams?: boolean;
+  inlineEndpoints?: boolean;
+  inlineEndpointsExcludeModules?: string[];
 }
 
 interface QueriesGenerateOptions {
   queryTypesImportPath: string;
   axiosRequestConfig?: boolean;
   mutationEffects?: boolean;
+  mutationDefaultOnError?: boolean;
+  workspaceContext?: string[];
+  prefetchQueries?: boolean;
+  mutationScope?: boolean | { include: string[] } | { exclude: string[] };
 }
 
 interface InfiniteQueriesGenerateOptions {
@@ -40,6 +48,7 @@ interface ACLGenerateOptions {
   acl: boolean;
   checkAcl?: boolean;
   abilityContextGenericAppAbilities: boolean;
+  abilityContextImportPath?: string;
 }
 
 interface BuilderConfigsGenerateOptions {
@@ -58,8 +67,11 @@ interface GenerateConfig {
 interface BaseGenerateOptions {
   input: string;
   output: string;
+  clearOutput?: boolean;
+  incremental?: boolean;
   splitByTags: boolean;
   defaultTag: string;
+  includeTags: string[];
   excludeTags: string[];
   excludePathRegex: string;
   excludeRedundantZodSchemas: boolean;
@@ -68,6 +80,8 @@ interface BaseGenerateOptions {
   importPath: "ts" | "relative" | "absolute";
   configs: Record<GenerateType, GenerateConfig>;
   baseUrl: string;
+  modelsOnly?: boolean;
+  standalone?: boolean;
 }
 
 export interface GenerateOptions

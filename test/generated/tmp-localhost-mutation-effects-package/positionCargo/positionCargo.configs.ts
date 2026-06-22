@@ -1,0 +1,136 @@
+import { dynamicInputs } from "@povio/ui";
+import { dynamicColumns } from "@povio/ui";
+import { PositionCargoModels } from "./positionCargo.models";
+import { PositionCargoQueries } from "./positionCargo.queries";
+import { PositionCargoAcl } from "./positionCargo.acl";
+
+export namespace PositionCargoConfigs {
+export const cargosConfig = {
+    meta: {
+        title: "Cargos",
+    },
+    readAll: {
+        acl: PositionCargoAcl.canUseListCargosByPositionId,
+        schema: CommonModels.PositionCargoResponseDTOSchema,
+        paginated: PositionCargoQueries.useListCargosByPositionId,
+        infinite: PositionCargoQueries.useListCargosByPositionIdInfinite,
+        columns: dynamicColumns({
+  schema: CommonModels.PositionCargoResponseDTOSchema,
+  options: {
+    columns: {
+      id: true,
+      positionId: true,
+      quoteId: true,
+      rootFolderId: true,
+      cargoType: true,
+      autoCalculateTotals: true,
+      shipperOwnContainer: true,
+      autoCalculateRates: true,
+      autoCalculateVgm: true,
+      transportUnitNumber: true,
+      seal1: true,
+      seal2: true,
+      rateOptions: true,
+      rateClass: true,
+      textForCustoms: true,
+      totalVolume: true,
+      totalGrossWeight: true,
+      totalNetWeight: true,
+      totalVolumetricWeight: true,
+      totalChargeableWeight: true,
+      totalLoadMeter: true,
+      ratePerKg: true,
+      totalRate: true,
+      tare: true,
+      vgm: true,
+      hsCodeLabels: true,
+      note: true,
+      packages: true,
+      createdAt: true,
+      updatedAt: true,
+      completeWeight: true,
+      packageTotals: true,
+    },
+  },
+}),
+    },
+    read: {
+        acl: PositionCargoAcl.canUseGetCargoById,
+        schema: CommonModels.PositionCargoResponseDTOSchema,
+        query: PositionCargoQueries.useGetCargoById,
+    },
+    create: {
+        acl: PositionCargoAcl.canUseCreateCargo,
+        schema: CommonModels.CreatePositionCargoDTOSchema,
+        mutation: PositionCargoQueries.useCreateCargo,
+        inputDefs: dynamicInputs({
+  schema: CommonModels.CreatePositionCargoDTOSchema,
+  options: {
+    inputs: {
+      cargoTypeId: true,
+      note: true,
+      autoCalculateTotals: true,
+      shipperOwnContainer: true,
+      transportUnitNumber: true,
+      seal1: true,
+      seal2: true,
+      totalVolume: true,
+      totalGrossWeight: true,
+      totalNetWeight: true,
+      totalVolumetricWeight: true,
+      totalChargeableWeight: true,
+      totalLoadMeter: true,
+      rateOptions: true,
+      rateClass: true,
+      ratePerKg: true,
+      totalRate: true,
+      textForCustoms: true,
+      tare: true,
+      vgm: true,
+      autoCalculateRates: true,
+      autoCalculateVgm: true,
+    },
+  },
+})
+    },
+    update: {
+        acl: PositionCargoAcl.canUseUpdateCargo,
+        schema: CommonModels.UpdatePositionCargoDTOSchema,
+        mutation: PositionCargoQueries.useUpdateCargo,
+        inputDefs: dynamicInputs({
+  schema: CommonModels.UpdatePositionCargoDTOSchema,
+  options: {
+    inputs: {
+      cargoTypeId: true,
+      note: true,
+      autoCalculateTotals: true,
+      shipperOwnContainer: true,
+      transportUnitNumber: true,
+      seal1: true,
+      seal2: true,
+      totalVolume: true,
+      totalGrossWeight: true,
+      totalNetWeight: true,
+      totalVolumetricWeight: true,
+      totalChargeableWeight: true,
+      totalLoadMeter: true,
+      rateOptions: true,
+      rateClass: true,
+      ratePerKg: true,
+      totalRate: true,
+      textForCustoms: true,
+      tare: true,
+      vgm: true,
+      autoCalculateRates: true,
+      autoCalculateVgm: true,
+    },
+  },
+})
+    },
+    delete: {
+        acl: PositionCargoAcl.canUseDeleteCargo,
+        mutation: PositionCargoQueries.useDeleteCargo,
+    },
+};
+
+}

@@ -1,0 +1,40 @@
+import { CommonModels } from "@/data/common/common.models";
+
+export namespace ControlTowerMeModels {
+  export const GetUserProfileResponseSchema = CommonModels.GetUserProfileResponseSchema;
+  export const UpdateUserDataResponseSchema = CommonModels.UpdateUserDataResponseSchema;
+  export const UserUpdateDtoSchema = CommonModels.UserUpdateDtoSchema;
+  export const UpdateUserProfileResponseSchema = CommonModels.UpdateUserProfileResponseSchema;
+  export const UserBasicUpdateDtoSchema = CommonModels.UserBasicUpdateDtoSchema;
+  export const UserPasswordUpdateDtoSchema = CommonModels.UserPasswordUpdateDtoSchema;
+  export const UserEmailPreferencesUpdateDtoSchema = CommonModels.UserEmailPreferencesUpdateDtoSchema;
+  export const ApiResponseDtoSchema = CommonModels.ApiResponseDtoSchema;
+  export const ApiResponseDataDtoSchema = CommonModels.ApiResponseDataDtoSchema;
+  export const LinksDtoSchema = CommonModels.LinksDtoSchema;
+  export const PaginationLinksDtoSchema = CommonModels.PaginationLinksDtoSchema;
+  export const UserDetailDtoSchema = CommonModels.UserDetailDtoSchema;
+  export const UserEmailPreferencesDtoSchema = CommonModels.UserEmailPreferencesDtoSchema;
+  export const DelayNotificationEnumSchema = CommonModels.DelayNotificationEnumSchema;
+  export const UserProjectAccessDtoSchema = CommonModels.UserProjectAccessDtoSchema;
+  export const UserRoleEnumSchema = CommonModels.UserRoleEnumSchema;
+  export const UserProjectAccessUpdateDtoSchema = CommonModels.UserProjectAccessUpdateDtoSchema;
+  export type GetUserProfileResponse = CommonModels.GetUserProfileResponse;
+  export type UpdateUserDataResponse = CommonModels.UpdateUserDataResponse;
+  export type UserUpdateDto = CommonModels.UserUpdateDto;
+  export type UpdateUserProfileResponse = CommonModels.UpdateUserProfileResponse;
+  export type UserBasicUpdateDto = CommonModels.UserBasicUpdateDto;
+  export type UserPasswordUpdateDto = CommonModels.UserPasswordUpdateDto;
+  export type UserEmailPreferencesUpdateDto = CommonModels.UserEmailPreferencesUpdateDto;
+  export type ApiResponseDto = CommonModels.ApiResponseDto;
+  export type ApiResponseDataDto = CommonModels.ApiResponseDataDto;
+  export type LinksDto = CommonModels.LinksDto;
+  export type PaginationLinksDto = CommonModels.PaginationLinksDto;
+  export type UserDetailDto = CommonModels.UserDetailDto;
+  export type UserEmailPreferencesDto = CommonModels.UserEmailPreferencesDto;
+  export type DelayNotificationEnum = CommonModels.DelayNotificationEnum;
+  export type UserProjectAccessDto = CommonModels.UserProjectAccessDto;
+  export type UserRoleEnum = CommonModels.UserRoleEnum;
+  export type UserProjectAccessUpdateDto = CommonModels.UserProjectAccessUpdateDto;
+  export const DelayNotificationEnum = CommonModels.DelayNotificationEnum;
+  export const UserRoleEnum = CommonModels.UserRoleEnum;
+}

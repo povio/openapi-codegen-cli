@@ -8,16 +8,19 @@ export { RestInterceptor } from "./lib/rest/rest-interceptor";
 export { RestUtils } from "./lib/rest/rest.utils";
 
 // Error handling
-export { ApplicationException, ErrorHandler, SharedErrorHandler } from "./lib/rest/error-handling";
-export type { GeneralErrorCodes, ErrorHandlerOptions, ErrorEntry } from "./lib/rest/error-handling";
+export { ApplicationException, ErrorHandler, SharedErrorHandler, DomainErrorRegistry } from "./lib/rest/error-handling";
+export type { GeneralErrorCodes, ErrorHandlerOptions, ErrorEntry, DomainErrorEntry } from "./lib/rest/error-handling";
 
 // React Query types
 export type { AppQueryOptions, AppMutationOptions, AppInfiniteQueryOptions } from "./lib/react-query.types";
+export { useMutationEffects } from "./lib/react-query/useMutationEffects";
+export type { MutationEffectsOptions } from "./lib/react-query/useMutationEffects";
 
 // Config
 export { OpenApiRouter } from "./lib/config/router.context";
 export { OpenApiQueryConfig } from "./lib/config/queryConfig.context";
-export type { InvalidationMap } from "./lib/config/queryConfig.context";
+export type { InvalidationMap, InvalidationMapFunc, QueryModule } from "./lib/config/queryConfig.context";
+export { OpenApiWorkspaceContext, useWorkspaceContext } from "./lib/config/workspace.context";
 
 // i18n resources (for consumer apps to merge into their i18n config)
 export { ns, resources } from "./lib/config/i18n";

@@ -1,12 +1,15 @@
-import { Endpoint } from "@/generators/types/endpoint";
+import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
+import { AclConditionsPropertyType, Endpoint } from "@/generators/types/endpoint";
 import { GenerateType, GenerateTypeParams, Import } from "@/generators/types/generate";
 import { GenerateOptions } from "@/generators/types/options";
 import { getUniqueArray } from "@/generators/utils/array.utils";
+import { invalidVariableNameCharactersToCamel } from "@/generators/utils/js.utils";
 import { getNamespaceName } from "@/generators/utils/namespace.utils";
 import { capitalize, snakeToCamel } from "@/generators/utils/string.utils";
 import { getEndpointTag } from "@/generators/utils/tag.utils";
 
 import { getModelsImports, mergeImports } from "./generate.imports.utils";
+import { getImportedZodSchemaInferedTypeName } from "./generate.zod.utils";
 
 export const getAbilityFunctionName = (endpoint: Endpoint) =>
   `canUse${capitalize(snakeToCamel(endpoint.operationName))}`;
@@ -29,7 +32,7 @@ export const getAbilityConditionsTypes = (endpoint: Endpoint) =>
 
 export const getAbilityDescription = (endpoint: Endpoint) => endpoint.acl?.[0]?.description;
 
-export const getAbilitySubjectTypes = (endpoint: Endpoint) => {
+export const getAbilitySubjectTypes = (endpoint: Endpoint, resolver?: SchemaResolver, tag?: string) => {
   const abilitySubject = getAbilitySubject(endpoint);
   const types: string[] = [`"${abilitySubject ?? ""}"`];
 
@@ -38,7 +41,7 @@ export const getAbilitySubjectTypes = (endpoint: Endpoint) => {
       `ForcedSubject<"${abilitySubject}"> & { ${getAbilityConditionsTypes(endpoint)
         ?.map(
           (conditionType) =>
-            `${conditionType.name}${conditionType.required ? "" : "?"}: ${conditionType.type ?? ""}${conditionType.zodSchemaName ?? ""},`,
+            `${conditionType.name}${conditionType.required ? "" : "?"}: ${getAbilityConditionType(conditionType, resolver, tag)},`,
         )
         .join(" ")} }`,
     );
@@ -46,6 +49,22 @@ export const getAbilitySubjectTypes = (endpoint: Endpoint) => {
 
   return types;
 };
+
+export function getAbilityConditionType(
+  conditionType: AclConditionsPropertyType,
+  resolver?: SchemaResolver,
+  tag?: string,
+) {
+  if (!conditionType.zodSchemaName) {
+    return conditionType.type ?? "";
+  }
+
+  if (!resolver) {
+    return `${conditionType.type ?? ""}${conditionType.zodSchemaName}`;
+  }
+
+  return getImportedZodSchemaInferedTypeName(resolver, conditionType.zodSchemaName, tag, tag);
+}
 
 export function getAclData({ resolver, data, tag }: GenerateTypeParams) {
   const endpoints = data.get(tag)?.endpoints.filter(({ acl }) => acl && acl.length > 0);
@@ -99,7 +118,10 @@ export const getAppAbilitiesType = ({ resolver, data }: Omit<GenerateTypeParams,
       if (abilityAction) {
         appAbilitiesTypeMap.set(
           abilityAction,
-          new Set([...(appAbilitiesTypeMap.get(abilityAction) ?? []), ...getAbilitySubjectTypes(endpoint)]),
+          new Set([
+            ...(appAbilitiesTypeMap.get(abilityAction) ?? []),
+            ...getAbilitySubjectTypes(endpoint, resolver, tag),
+          ]),
         );
       }
     });
@@ -115,3 +137,28 @@ export const getAppAbilitiesType = ({ resolver, data }: Omit<GenerateTypeParams,
 
   return { appAbilitiesType, modelsImports, hasAdditionalAbilityImports };
 };
+
+/** Renders a `checkAcl(...)` call, passing the ability's conditions object only when the
+ * ability function actually expects one (i.e. the endpoint declares matching conditions). */
+export function renderAclCheckCall(
+  resolver: SchemaResolver,
+  endpoint: Endpoint,
+  replacements?: Record<string, string>,
+  indent = "",
+) {
+  const checkParams = getAbilityConditionsTypes(endpoint)?.map((condition) =>
+    invalidVariableNameCharactersToCamel(condition.name),
+  );
+  const paramNames = new Set(endpoint.parameters.map((param) => invalidVariableNameCharactersToCamel(param.name)));
+  const hasAllCheckParams = checkParams?.every((param) => paramNames.has(param));
+  const args =
+    hasAbilityConditions(endpoint) && hasAllCheckParams
+      ? `{ ${(checkParams ?? [])
+          .map((param) => {
+            const resolvedParam = replacements?.[param] ?? param;
+            return resolvedParam === param ? param : `${param}: ${resolvedParam}`;
+          })
+          .join(", ")} } `
+      : "";
+  return `${indent}checkAcl(${getImportedAbilityFunctionName(endpoint, resolver.options)}(${args}));`;
+}
