@@ -1,3 +1,5 @@
 export { openApiCodegen } from "./vite/openapi-codegen.plugin";
 export type { OpenApiCodegenViteConfig } from "./vite/openapi-codegen.plugin";
+export { tinyOpenApiCodegen } from "./vite/tiny-openapi-codegen.plugin";
+export type { TinyOpenApiCodegenViteOptions } from "./vite/tiny-openapi-codegen.plugin";
 export type { OpenAPICodegenConfig } from "./generators/types/config";

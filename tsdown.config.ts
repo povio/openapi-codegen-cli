@@ -8,6 +8,7 @@ export default defineConfig({
     "./src/index.ts",
     "./src/vite.ts",
     "./src/metro.ts",
+    "./src/tiny.ts",
     "./src/acl.ts",
     "./src/zod.ts",
   ],
@@ -16,7 +17,7 @@ export default defineConfig({
   target: "esnext",
   dts: true,
   define: {
-    "process.env.OPENAPI_CODEGEN_VERSION": JSON.stringify(packageJson.version),
+    "process.env.OPENAPI_CODEGEN_VERSION": JSON.stringify(packageJson.version ?? "0.0.0"),
     "process.env.NODE_ENV": JSON.stringify("production"),
   },
 });
