@@ -103,11 +103,10 @@ async function importRuntimeModule<TModule>(specifier: string): Promise<TModule>
   return dynamicImport(specifier);
 }
 
-const DTO_SUFFIX = "Dto";
-const PAGINATED_OUTPUT_SUFFIX = "PaginateOutputDto";
+const PAGINATED_OUTPUT_SUFFIX = "PaginateOutput";
 const PAGINATED_RESPONSE_SUFFIX = "PaginateResponse";
 const PAGINATION_RESPONSE_OUTPUT_SUFFIX = "PaginationResponseOutput";
-const PAGINATED_ITEM_SUFFIX = "PaginateItemDto";
+const PAGINATED_ITEM_SUFFIX = "PaginateItem";
 const PAGINATED_ITEM_OUTPUT_SUFFIX = "PaginateItemOutput";
 const PAGINATION_DTO_SCHEMA_NAME = "PaginationDto";
 const PAGINATION_PROPERTY_NAMES = ["page", "cursor", "nextCursor", "limit", "totalItems"] as const;
@@ -149,9 +148,7 @@ export function resolveOpenApiOutputPath({
   return path.resolve(cwd, output);
 }
 
-export async function generateOpenApiFile(
-  options: GenerateTinyOpenApiFileOptions,
-): Promise<GenerateOpenApiFileResult> {
+export async function generateOpenApiFile(options: GenerateTinyOpenApiFileOptions): Promise<GenerateOpenApiFileResult> {
   const outputPath = resolveOpenApiOutputPath(options);
   const spec = await options.generateOpenApiSpec();
   const output = `${JSON.stringify(spec, null, 2)}\n`;
@@ -193,7 +190,7 @@ export function namedOpenApiResponseSchema<TSchema extends object>(schema: TSche
 }
 
 export function namedOpenApiOutputSchema<TSchema extends object>(schema: TSchema, name: string): TSchema {
-  return namedOpenApiSchema(schema, `${name}Output`);
+  return namedOpenApiResponseSchema(schema, name);
 }
 
 export function namedControllerActionSchema<TSchema extends object>(
@@ -210,7 +207,7 @@ export function namedControllerActionInputDtoSchema<TSchema extends object>(
   controller: string,
   action: string,
 ): TSchema {
-  return namedControllerActionSchema(schema, controller, action, "InputDto");
+  return namedControllerActionSchema(schema, controller, action, "Request");
 }
 
 export function getOpenApiSchemaName(schema: unknown): string | undefined {
@@ -382,14 +379,6 @@ export function isZodSchema(value: unknown): value is ZodSchema {
   );
 }
 
-export function dtoSchemaName(name: string): string {
-  return name.endsWith(DTO_SUFFIX) ? name : `${name}${DTO_SUFFIX}`;
-}
-
-export function shouldUseDtoSchemaName(moduleName: string, schema: ZodSchema): boolean {
-  return moduleName !== "common" && ["object", "array"].includes(String(schema._zod.def.type));
-}
-
 export function schemaExportName(
   moduleName: string,
   exportName: string,
@@ -401,7 +390,7 @@ export function schemaExportName(
     return explicitName;
   }
 
-  const schemaName = exportName.replace(/Schema$/, "").replace(/DTO$/u, DTO_SUFFIX);
+  const schemaName = exportName.replace(/Schema$/, "").replace(/DTO$/u, "");
   const modulePrefix = toPascalCase(moduleName);
   const singularModulePrefix = modulePrefix.endsWith("s") ? modulePrefix.slice(0, -1) : modulePrefix;
   const prefixedName =
@@ -409,7 +398,7 @@ export function schemaExportName(
       ? schemaName
       : `${modulePrefix}${schemaName}`;
 
-  return shouldUseDtoSchemaName(moduleName, schema) ? dtoSchemaName(prefixedName) : prefixedName;
+  return prefixedName;
 }
 
 export function sharedSchemaExportName(exportName: string): string {
@@ -557,6 +546,43 @@ export function getObjectPropertySchema(schema: AnySchema, property: string): An
   return isZodSchema(propertySchema) ? propertySchema : undefined;
 }
 
+export function routeHasPathParameters(routePath?: string): boolean {
+  return typeof routePath === "string" && /\{[^}]+\}/u.test(routePath);
+}
+
+export function getProcedureInputSchemaRole(route: OrpcContractProcedureData["route"]): "Params" | "Query" | "Request" {
+  if (routeHasPathParameters(route.path)) {
+    return "Params";
+  }
+
+  return route.method?.toUpperCase() === "GET" ? "Query" : "Request";
+}
+
+export function procedureSchemaName(procedureName: string, role: "Params" | "Query" | "Request" | "Response"): string {
+  if (procedureName.endsWith(role)) {
+    return procedureName;
+  }
+
+  return `${procedureName}${role}`;
+}
+
+export function addContractSchema(
+  schemas: OpenApiSchemaRegistry,
+  schema: AnySchema | undefined,
+  name: string,
+  getSchemaName: (schema: unknown) => string | undefined,
+  strategy?: "input" | "output",
+) {
+  if (!schema) {
+    return;
+  }
+
+  schemas[getSchemaName(schema) ?? name] = {
+    schema,
+    ...(strategy ? { strategy } : {}),
+  };
+}
+
 export function collectContractSchemas(
   router: AnyContractRouter,
   routerPath: string[] = [],
@@ -569,18 +595,36 @@ export function collectContractSchemas(
     const { inputSchema, outputSchema, route } = procedure;
 
     if (inputSchema) {
-      const schema =
-        route.inputStructure === "detailed"
-          ? (getObjectPropertySchema(inputSchema, "body") ?? inputSchema)
-          : inputSchema;
-      const inputName = getSchemaName(schema) ?? dtoSchemaName(`${procedureName}Input`);
-      schemas[inputName] = {
-        schema,
-      };
+      if (route.inputStructure === "detailed") {
+        addContractSchema(
+          schemas,
+          getObjectPropertySchema(inputSchema, "params"),
+          procedureSchemaName(procedureName, "Params"),
+          getSchemaName,
+        );
+        addContractSchema(
+          schemas,
+          getObjectPropertySchema(inputSchema, "query"),
+          procedureSchemaName(procedureName, "Query"),
+          getSchemaName,
+        );
+        addContractSchema(
+          schemas,
+          getObjectPropertySchema(inputSchema, "body") ?? inputSchema,
+          procedureSchemaName(procedureName, "Request"),
+          getSchemaName,
+        );
+      } else {
+        addContractSchema(
+          schemas,
+          inputSchema,
+          procedureSchemaName(procedureName, getProcedureInputSchemaRole(route)),
+          getSchemaName,
+        );
+      }
     }
     if (outputSchema && route.successStatus !== 204) {
-      const outputName = getSchemaName(outputSchema) ?? dtoSchemaName(`${procedureName}Output`);
-      schemas[outputName] = { schema: outputSchema, strategy: "output" };
+      addContractSchema(schemas, outputSchema, procedureSchemaName(procedureName, "Response"), getSchemaName, "output");
     }
 
     return schemas;
@@ -718,10 +762,7 @@ export function compactTagName(value: string): string {
   return value.replace(/[^a-zA-Z0-9]/g, "");
 }
 
-export function getModuleOpenApiController(
-  apiModules: Record<string, TinyOpenApiModule>,
-  moduleName: string,
-): string {
+export function getModuleOpenApiController(apiModules: Record<string, TinyOpenApiModule>, moduleName: string): string {
   const module = apiModules[moduleName];
   return module?.openApiController ?? `${compactTagName(module?.openApiTag ?? toPascalCase(moduleName))}Controller`;
 }
