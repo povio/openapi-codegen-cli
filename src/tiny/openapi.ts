@@ -401,6 +401,10 @@ export function schemaExportName(
   return prefixedName;
 }
 
+export function modelSchemaExportName(exportName: string): string {
+  return exportName.replace(/Schema$/, "");
+}
+
 export function sharedSchemaExportName(exportName: string): string {
   return exportName.replace(/Schema$/, "");
 }
@@ -408,24 +412,20 @@ export function sharedSchemaExportName(exportName: string): string {
 export async function collectModelSchemaExports(options: {
   apiRoot?: string;
   dbTablesRoot?: string;
-  getOpenApiSchemaName?: (schema: unknown) => string | undefined;
 }): Promise<ModelSchemaExport[]> {
-  const apiSchemaGroups = options.apiRoot ? await collectApiModelSchemaExports(options.apiRoot, options) : [];
+  const apiSchemaGroups = options.apiRoot ? await collectApiModelSchemaExports(options.apiRoot) : [];
   const dbSchemaExports = options.dbTablesRoot ? await collectDbTableModelSchemaExports(options.dbTablesRoot) : [];
 
   return [...apiSchemaGroups, ...dbSchemaExports];
 }
 
-export async function collectApiModelSchemaExports(
-  apiRoot: string,
-  options: { getOpenApiSchemaName?: (schema: unknown) => string | undefined } = {},
-): Promise<ModelSchemaExport[]> {
+export async function collectApiModelSchemaExports(apiRoot: string): Promise<ModelSchemaExport[]> {
   const entries = await readdir(apiRoot, { withFileTypes: true });
   const apiSchemaGroups = await Promise.all(
     entries
       .filter((item) => item.isDirectory())
       .sort((a, b) => a.name.localeCompare(b.name))
-      .map((entry) => collectModuleModelSchemaExports(apiRoot, entry.name, options)),
+      .map((entry) => collectModuleModelSchemaExports(apiRoot, entry.name)),
   );
 
   return apiSchemaGroups.flat();
@@ -434,7 +434,6 @@ export async function collectApiModelSchemaExports(
 export async function collectModuleModelSchemaExports(
   apiRoot: string,
   moduleName: string,
-  options: { getOpenApiSchemaName?: (schema: unknown) => string | undefined } = {},
 ): Promise<ModelSchemaExport[]> {
   const modelsPath = join(apiRoot, moduleName, `${moduleName}.models.ts`);
   try {
@@ -450,7 +449,7 @@ export async function collectModuleModelSchemaExports(
     if (exportName.endsWith("Schema") && isZodSchema(schema)) {
       schemas.push({
         moduleName,
-        name: schemaExportName(moduleName, exportName, schema, options.getOpenApiSchemaName),
+        name: modelSchemaExportName(exportName),
         schema,
       });
     }
@@ -704,6 +703,29 @@ export function collectSchemaRegistryRoots(registry: OpenApiSchemaRegistry): Set
   }, new Set());
 }
 
+export function modelSchemaNameEntries(modelSchemas: ModelSchemaExport[]): Map<ZodSchema, string> {
+  const schemaNameBySchema = new Map<ZodSchema, string>();
+
+  for (const { name, schema } of modelSchemas) {
+    const existingName = schemaNameBySchema.get(schema);
+
+    if (!existingName || name.length < existingName.length) {
+      schemaNameBySchema.set(schema, name);
+    }
+  }
+
+  return schemaNameBySchema;
+}
+
+export function createModelSchemaNameGetter(
+  modelSchemas: ModelSchemaExport[],
+  getSchemaName = getOpenApiSchemaName,
+): (schema: unknown) => string | undefined {
+  const schemaNameBySchema = modelSchemaNameEntries(modelSchemas);
+
+  return (schema) => (isZodSchema(schema) ? schemaNameBySchema.get(schema) : undefined) ?? getSchemaName(schema);
+}
+
 export async function collectReachableModelSchemas(
   router: AnyContractRouter,
   options: {
@@ -711,11 +733,12 @@ export async function collectReachableModelSchemas(
     dbTablesRoot?: string;
     excludedSchemas?: Set<AnySchema>;
     getOpenApiSchemaName?: (schema: unknown) => string | undefined;
+    modelSchemas?: ModelSchemaExport[];
   } = {},
 ): Promise<OpenApiSchemaRegistry> {
   const excludedSchemas = options.excludedSchemas ?? new Set<AnySchema>();
-  const modelSchemas = await collectModelSchemaExports(options);
-  const schemaNameBySchema = new Map<ZodSchema, string>();
+  const modelSchemas = options.modelSchemas ?? (await collectModelSchemaExports(options));
+  const schemaNameBySchema = modelSchemaNameEntries(modelSchemas);
   const routeRoots = collectContractSchemaRoots(router);
   const reachableSchemas: OpenApiSchemaRegistry = {};
 
@@ -725,16 +748,6 @@ export async function collectReachableModelSchemas(
       !excludedSchemas.has(schema)
     ) {
       reachableSchemas[name] = { schema };
-    }
-  }
-
-  for (const { name, schema } of modelSchemas) {
-    const existingName = schemaNameBySchema.get(schema);
-
-    if (!existingName) {
-      schemaNameBySchema.set(schema, name);
-    } else if (existingName !== name) {
-      schemaNameBySchema.set(schema, existingName.length <= name.length ? existingName : name);
     }
   }
 
@@ -1140,7 +1153,12 @@ export async function generateORPCOpenAPISpec(options: GenerateORPCOpenAPISpecOp
   const generator = new OpenAPIGenerator({
     schemaConverters: [new ZodToJsonSchemaConverter()],
   });
-  const getSchemaName = options.getOpenApiSchemaName ?? getOpenApiSchemaName;
+  const explicitSchemaName = options.getOpenApiSchemaName ?? getOpenApiSchemaName;
+  const modelSchemas = await collectModelSchemaExports({
+    apiRoot: options.apiRoot,
+    dbTablesRoot: options.dbTablesRoot,
+  });
+  const getSchemaName = createModelSchemaNameGetter(modelSchemas, explicitSchemaName);
   const operationMeta = collectOperationMeta(options.contract);
   const extraSchemas = collectExtraSchemas(options.apiModules);
   const reachableModelSchemas = await collectReachableModelSchemas(options.contract, {
@@ -1148,6 +1166,7 @@ export async function generateORPCOpenAPISpec(options: GenerateORPCOpenAPISpecOp
     dbTablesRoot: options.dbTablesRoot,
     excludedSchemas: collectSchemaRegistryRoots(extraSchemas),
     getOpenApiSchemaName: getSchemaName,
+    modelSchemas,
   });
   const commonSchemas = {
     ...collectContractSchemas(options.contract, [], {}, getSchemaName),

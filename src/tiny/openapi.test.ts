@@ -9,7 +9,9 @@ import {
   applyEnumExtensions,
   collectContractSchemas,
   collectExtraSchemas,
+  createModelSchemaNameGetter,
   getOpenApiSchemaName,
+  modelSchemaExportName,
   type ZodSchema,
   namedControllerActionInputDtoSchema,
   namedOpenApiSchema,
@@ -162,6 +164,42 @@ describe("tiny ORPC openapi helpers", () => {
       "PlanetImageRequest",
     );
     expect(schemaExportName("aliens", "GetLabelsQueryDTOSchema", getLabelsQuerySchema)).toBe("AliensGetLabelsQuery");
+  });
+
+  test("uses exact model export names by only stripping Schema suffix", () => {
+    expect(modelSchemaExportName("PlanetImageRequestDTOSchema")).toBe("PlanetImageRequestDTO");
+    expect(modelSchemaExportName("AlienControllerGetLabelsQuerySchema")).toBe("AlienControllerGetLabelsQuery");
+    expect(modelSchemaExportName("AuthnTokenRequestSchema")).toBe("AuthnTokenRequest");
+  });
+
+  test("uses exported model schema names for route root schemas", () => {
+    const authnTokenRequestSchema = z.object({ refreshToken: z.string() }) as unknown as ZodSchema;
+    const router = {
+      userAuth: {
+        jwt: {
+          accessToken: {
+            "~orpc": {
+              inputSchema: authnTokenRequestSchema,
+              outputSchema: z.object({ accessToken: z.string() }),
+              meta: { bl: "Refresh token" },
+              route: { method: "POST", path: "/api/user/auth/refresh" },
+            },
+          },
+        },
+      },
+    };
+    const getSchemaName = createModelSchemaNameGetter([
+      {
+        moduleName: "userAuth",
+        name: "AuthnTokenRequest",
+        schema: authnTokenRequestSchema,
+      },
+    ]);
+
+    expect(Object.keys(collectContractSchemas(router, [], {}, getSchemaName))).toContain("AuthnTokenRequest");
+    expect(Object.keys(collectContractSchemas(router, [], {}, getSchemaName))).not.toContain(
+      "UserAuthJwtAccessTokenRequest",
+    );
   });
 
   test("converts OpenAPI 3.1 JSON schema output to OpenAPI 3.0 compatible schema", () => {
