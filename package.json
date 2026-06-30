@@ -36,7 +36,8 @@
     },
     "./metro": {
       "types": "./dist/metro.d.mts",
-      "import": "./dist/metro.mjs"
+      "import": "./dist/metro.mjs",
+      "require": "./dist/metro.cjs"
     },
     "./tiny": {
       "types": "./dist/tiny.d.mts",
