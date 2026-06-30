@@ -21,12 +21,25 @@ export const getImportedZodSchemaName = (resolver: SchemaResolver, zodSchemaName
     return zodSchemaName;
   }
 
-  const tag = namespaceTag ?? resolver.getTagByZodSchemaName(zodSchemaName);
+  const tag = getOwningOrLocalProxyTag(resolver, zodSchemaName, namespaceTag);
   const namespacePrefix = resolver.options.tsNamespaces
     ? `${getNamespaceName({ type: GenerateType.Models, tag, options: resolver.options })}.`
     : "";
   return `${namespacePrefix}${zodSchemaName}`;
 };
+
+// namespaceTag only has a legitimate use when modelsInCommon forces every schema into the
+// common file: callers can still ask for the calling tag's local proxy namespace (e.g.
+// AuthModels.X, which re-exports CommonModels.X) instead of importing CommonModels directly.
+// Outside that mode, the resolver is the sole source of truth for which tag owns a schema
+// (e.g. a schema shared by 2+ tags is promoted to the common tag) - namespaceTag must not
+// override that, or shared schemas would incorrectly resolve to the endpoint's own tag.
+function getOwningOrLocalProxyTag(resolver: SchemaResolver, zodSchemaName: string, namespaceTag?: string) {
+  if (namespaceTag && resolver.options.modelsInCommon && resolver.options.splitByTags) {
+    return namespaceTag;
+  }
+  return resolver.getTagByZodSchemaName(zodSchemaName) ?? namespaceTag;
+}
 
 export const getImportedZodSchemaInferedTypeName = (
   resolver: SchemaResolver,
@@ -38,7 +51,9 @@ export const getImportedZodSchemaInferedTypeName = (
     return zodSchemaName === VOID_SCHEMA ? "void" : zodSchemaName;
   }
 
-  const tag = namespaceTag ?? resolver.getTagByZodSchemaName(zodSchemaName);
+  // See getOwningOrLocalProxyTag. namespaceTag still forces the prefix to render even when
+  // tag === currentTag.
+  const tag = getOwningOrLocalProxyTag(resolver, zodSchemaName, namespaceTag);
   const namespacePrefix =
     resolver.options.tsNamespaces && (Boolean(namespaceTag) || tag !== currentTag)
       ? `${getNamespaceName({ type: GenerateType.Models, tag, options: resolver.options })}.`

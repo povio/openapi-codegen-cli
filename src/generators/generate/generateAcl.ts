@@ -4,6 +4,7 @@ import { Endpoint } from "@/generators/types/endpoint";
 import { GenerateType, GenerateTypeParams, Import } from "@/generators/types/generate";
 import {
   getAbilityAction,
+  getAbilityConditionType,
   getAbilityConditionsTypes,
   getAbilityDescription,
   getAbilityFunctionName,
@@ -16,6 +17,7 @@ import {
 import { getInfiniteQueryName, getQueryName } from "@/generators/utils/generate/generate.query.utils";
 import { getNamespaceName } from "@/generators/utils/namespace.utils";
 import { capitalize } from "@/generators/utils/string.utils";
+import { getEndpointTag } from "@/generators/utils/tag.utils";
 
 export function generateAcl({ resolver, data, tag }: GenerateTypeParams) {
   const aclData = getAclData({ resolver, data, tag });
@@ -144,12 +146,12 @@ function renderWorkspaceAclHook({
   const objectParams = abilityConditionsTypes
     .map((propertyType) => {
       const isWorkspaceCondition = workspaceConditionNameSet.has(propertyType.name);
-      return `${propertyType.name}${propertyType.required && !isWorkspaceCondition ? "" : "?"}: ${(propertyType.type ?? "") + (propertyType.zodSchemaName ?? "")}, `;
+      return `${propertyType.name}${propertyType.required && !isWorkspaceCondition ? "" : "?"}: ${renderConditionType(resolver, endpoint, propertyType)}, `;
     })
     .join("");
   const contextType = abilityConditionsTypes
     .filter((propertyType) => workspaceConditionNameSet.has(propertyType.name))
-    .map((propertyType) => `${propertyType.name}?: ${(propertyType.type ?? "") + (propertyType.zodSchemaName ?? "")}`)
+    .map((propertyType) => `${propertyType.name}?: ${renderConditionType(resolver, endpoint, propertyType)}`)
     .join("; ");
   const contextBindings = workspaceConditionNames.map((name) => `${name}: ${name}Workspace`).join(", ");
 
@@ -200,7 +202,7 @@ function renderAbilityFunction({
   if (hasConditions) {
     for (const propertyType of abilityConditionsTypes) {
       lines.push(
-        ` * @param { ${(propertyType.type ?? "") + (propertyType.zodSchemaName ?? "")} } object.${propertyType.name} ${propertyType.name} from ${propertyType.info}`,
+        ` * @param { ${renderConditionType(resolver, endpoint, propertyType)} } object.${propertyType.name} ${propertyType.name} from ${propertyType.info}`,
       );
     }
   }
@@ -212,7 +214,7 @@ function renderAbilityFunction({
       `  object?: { ${abilityConditionsTypes
         .map(
           (propertyType) =>
-            `${propertyType.name}${propertyType.required ? "" : "?"}: ${(propertyType.type ?? "") + (propertyType.zodSchemaName ?? "")}, `,
+            `${propertyType.name}${propertyType.required ? "" : "?"}: ${renderConditionType(resolver, endpoint, propertyType)}, `,
         )
         .join("")} } `,
     );
@@ -227,7 +229,7 @@ function renderAbilityFunction({
     }`,
   );
   lines.push(
-    `] as ${CASL_ABILITY_BINDING.abilityTuple}<"${getAbilityAction(endpoint)}", ${getAbilitySubjectTypes(endpoint).join(" | ")}>;`,
+    `] as ${CASL_ABILITY_BINDING.abilityTuple}<"${getAbilityAction(endpoint)}", ${getAbilitySubjectTypes(endpoint, resolver, getEndpointTag(endpoint, resolver.options)).join(" | ")}>;`,
   );
   const workspaceAclHook = renderWorkspaceAclHook({ resolver, endpoint });
   if (workspaceAclHook) {
@@ -235,4 +237,12 @@ function renderAbilityFunction({
     lines.push(workspaceAclHook);
   }
   return lines.join("\n");
+}
+
+function renderConditionType(
+  resolver: GenerateTypeParams["resolver"],
+  endpoint: Endpoint,
+  propertyType: NonNullable<ReturnType<typeof getAbilityConditionsTypes>>[number],
+) {
+  return getAbilityConditionType(propertyType, resolver, getEndpointTag(endpoint, resolver.options));
 }

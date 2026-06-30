@@ -6,7 +6,6 @@
 !.yarn/releases
 !.yarn/sdks
 
-/test/generated/
 /output
 /dist
 
@@ -18,11 +17,8 @@ node_modules
 
 # Test specs
 test/*
-!test/petstore.yaml
 !test/config.ts
-!test/generated/
+!test/petstore.yaml
 !test/generated/.gitkeep
-!test/generated/base/
 !test/generated/base/.gitkeep
-!test/generated/next/
 !test/generated/next/.gitkeep

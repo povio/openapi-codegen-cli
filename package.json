@@ -1,6 +1,5 @@
 {
   "name": "@povio/openapi-codegen-cli",
-  "version": "3.0.0-rc.3",
   "keywords": [
     "codegen",
     "openapi",
@@ -34,6 +33,10 @@
     "./vite": {
       "types": "./dist/vite.d.mts",
       "import": "./dist/vite.mjs"
+    },
+    "./metro": {
+      "types": "./dist/metro.d.mts",
+      "import": "./dist/metro.mjs"
     },
     "./generator": {
       "types": "./dist/generator.d.mts",

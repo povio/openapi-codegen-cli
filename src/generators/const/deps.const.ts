@@ -4,6 +4,7 @@ import { ACL_PACKAGE_IMPORT_PATH, PACKAGE_IMPORT_PATH } from "./package.const";
 
 export const APP_REST_CLIENT_NAME = "AppRestClient";
 export const APP_REST_CLIENT_FILE: GenerateFile = { fileName: "app-rest-client", extension: "ts" };
+export const DOMAIN_ERRORS_FILE: GenerateFile = { fileName: "domain-errors", extension: "ts" };
 
 export const QUERY_OPTIONS_TYPES = {
   query: "AppQueryOptions",

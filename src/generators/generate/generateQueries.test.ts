@@ -165,6 +165,58 @@ const openApiDoc = {
 } as OpenAPIV3.Document;
 
 describe("generateQueries workspaceContext", () => {
+  it("passes runtime allowInvalidResponseData config through generated GET query hooks", () => {
+    const files = generateCodeFromOpenAPIDoc(openApiDoc, {
+      ...DEFAULT_GENERATE_OPTIONS,
+      output: "test-output",
+      acl: false,
+      checkAcl: false,
+      mutationEffects: false,
+      builderConfigs: false,
+      prefetchQueries: false,
+    });
+
+    const apiFile = files.find((file) => file.fileName.endsWith("/workspace/workspace.api.ts"));
+    const queriesFile = files.find((file) => file.fileName.endsWith("/workspace/workspace.queries.ts"));
+
+    expect(apiFile?.content).toContain(
+      "export const getPosition = (officeId: string, positionId: string, config?: AxiosRequestConfig & { allowInvalidResponseData?: boolean })",
+    );
+    expect(apiFile?.content).toContain("{ resSchema: WorkspaceModels.PositionSchema },");
+    expect(apiFile?.content).not.toContain("allowInvalidResponseData: true");
+    expect(apiFile?.content).toContain(
+      "export const createPosition = (officeId: string, data: WorkspaceModels.Position, )",
+    );
+    expect(queriesFile?.content).toContain("const queryConfig = OpenApiQueryConfig.useConfig();");
+    expect(queriesFile?.content).toContain(
+      "...getPositionQueryOptions({ officeId, positionId }, { allowInvalidResponseData: queryConfig.allowInvalidResponseData }),",
+    );
+  });
+
+  it("passes runtime allowInvalidResponseData config through inline GET query hooks", () => {
+    const files = generateCodeFromOpenAPIDoc(openApiDoc, {
+      ...DEFAULT_GENERATE_OPTIONS,
+      output: "test-output",
+      inlineEndpoints: true,
+      acl: false,
+      checkAcl: false,
+      mutationEffects: false,
+      builderConfigs: false,
+      prefetchQueries: false,
+    });
+
+    const queriesFile = files.find((file) => file.fileName.endsWith("/workspace/workspace.queries.ts"));
+
+    expect(queriesFile?.content).toContain(
+      "const getPosition = (officeId: string, positionId: string, config?: AxiosRequestConfig & { allowInvalidResponseData?: boolean })",
+    );
+    expect(queriesFile?.content).toContain("{ resSchema: WorkspaceModels.PositionSchema },");
+    expect(queriesFile?.content).not.toContain("allowInvalidResponseData: true");
+    expect(queriesFile?.content).toContain(
+      "...getPositionQueryOptions({ officeId, positionId }, { allowInvalidResponseData: queryConfig.allowInvalidResponseData }),",
+    );
+  });
+
   it("maps workspace-resolved values back to the original helper property names", () => {
     const files = generateCodeFromOpenAPIDoc(openApiDoc, {
       ...DEFAULT_GENERATE_OPTIONS,
@@ -177,12 +229,14 @@ describe("generateQueries workspaceContext", () => {
     const queriesFile = files.find((file) => file.fileName.endsWith("/workspace/workspace.queries.ts"));
 
     expect(queriesFile?.content).toContain(
-      "getPositionQueryOptions({ officeId: normalizeOfficeId, positionId: normalizePositionId })",
+      "getPositionQueryOptions({ officeId: normalizeOfficeId, positionId: normalizePositionId }, { allowInvalidResponseData: queryConfig.allowInvalidResponseData })",
     );
     expect(queriesFile?.content).toContain(
-      "return getPositionQueryOptions({ officeId: normalizeOfficeId, positionId: normalizePositionId }).queryFn();",
+      "return getPositionQueryOptions({ officeId: normalizeOfficeId, positionId: normalizePositionId }, { allowInvalidResponseData: queryConfig.allowInvalidResponseData }).queryFn();",
     );
-    expect(queriesFile?.content).toContain("findByIdQueryOptions({ id: normalizeId })");
+    expect(queriesFile?.content).toContain(
+      "findByIdQueryOptions({ id: normalizeId }, { allowInvalidResponseData: queryConfig.allowInvalidResponseData })",
+    );
     expect(queriesFile?.content).toContain(
       "const { officeId: officeIdWorkspace, positionId: positionIdWorkspace } = useWorkspaceContext<{ officeId?: string; positionId?: string }>();",
     );
@@ -209,7 +263,9 @@ describe("generateQueries workspaceContext", () => {
     expect(queriesFile?.content).toContain(
       "export const useGetPosition = <TData>({ officeId, positionId }: { officeId?: string, positionId: string }, options?: AppQueryOptions<typeof WorkspaceApi.getPosition, TData>) => {",
     );
-    expect(queriesFile?.content).toContain("...getPositionQueryOptions({ officeId: normalizeOfficeId, positionId }),");
+    expect(queriesFile?.content).toContain(
+      "...getPositionQueryOptions({ officeId: normalizeOfficeId, positionId }, { allowInvalidResponseData: queryConfig.allowInvalidResponseData }),",
+    );
     expect(queriesFile?.content).toContain(
       "const { officeId: officeIdWorkspace } = useWorkspaceContext<{ officeId?: string }>();",
     );
@@ -284,8 +340,8 @@ describe("generateQueries workspaceContext", () => {
 
     const queriesFile = files.find((file) => file.fileName.endsWith("/workspace/workspace.queries.ts"));
 
-    expect(queriesFile?.content).not.toContain("OpenApiQueryConfig");
-    expect(queriesFile?.content).not.toContain("const queryConfig = OpenApiQueryConfig.useConfig();");
+    expect(queriesFile?.content).toContain("OpenApiQueryConfig");
+    expect(queriesFile?.content).toContain("const queryConfig = OpenApiQueryConfig.useConfig();");
     expect(queriesFile?.content).not.toContain("onError: options?.onError ?? queryConfig.onError");
   });
 
@@ -308,5 +364,117 @@ describe("generateQueries workspaceContext", () => {
     );
     expect(queriesFile?.content).toContain("const queryConfig = OpenApiQueryConfig.useConfig();");
     expect(queriesFile?.content).toContain("onError: options?.onError ?? queryConfig.onError");
+  });
+});
+
+const paginatedDoc = {
+  openapi: "3.0.0",
+  info: { title: "Paginated Test", version: "1.0.0" },
+  paths: {
+    "/items": {
+      get: {
+        tags: ["items"],
+        operationId: "listItems",
+        parameters: [
+          { name: "page", in: "query", schema: { type: "integer" } },
+          { name: "limit", in: "query", schema: { type: "integer" } },
+        ],
+        responses: {
+          "200": {
+            description: "OK",
+            content: { "application/json": { schema: { $ref: "#/components/schemas/ItemsPage" } } },
+          },
+        },
+      } as OpenAPIV3.OperationObject,
+      post: {
+        tags: ["items"],
+        operationId: "createItem",
+        requestBody: {
+          required: true,
+          content: { "application/json": { schema: { $ref: "#/components/schemas/Item" } } },
+        },
+        responses: {
+          "201": {
+            description: "Created",
+            content: { "application/json": { schema: { $ref: "#/components/schemas/Item" } } },
+          },
+        },
+      } as OpenAPIV3.OperationObject,
+    },
+  },
+  components: {
+    schemas: {
+      Item: {
+        type: "object",
+        properties: { id: { type: "string" } },
+        required: ["id"],
+      },
+      ItemsPage: {
+        type: "object",
+        properties: {
+          items: { type: "array", items: { $ref: "#/components/schemas/Item" } },
+          page: { type: "integer" },
+          totalItems: { type: "integer" },
+          limit: { type: "integer" },
+        },
+        required: ["items", "limit"],
+      },
+    },
+  },
+} as OpenAPIV3.Document;
+
+describe("generateQueries mutationEffects + infiniteQuery", () => {
+  it("emits QueryModule.tag (no typeof) in useMutationEffects type arg", () => {
+    const files = generateCodeFromOpenAPIDoc(paginatedDoc, {
+      ...DEFAULT_GENERATE_OPTIONS,
+      output: "test-output",
+      mutationEffects: true,
+      infiniteQueries: true,
+      acl: false,
+      checkAcl: false,
+      builderConfigs: false,
+      prefetchQueries: false,
+    });
+
+    const queriesFile = files.find((file) => file.fileName.endsWith("/items/items.queries.ts"));
+
+    // Bug 1: const enum must be referenced directly, not via typeof
+    expect(queriesFile?.content).toContain("useMutationEffects<QueryModule.items>");
+    expect(queriesFile?.content).not.toContain("useMutationEffects<typeof QueryModule.items>");
+
+    // Bug 2: MutationEffectsOptions must have no type arg so invalidateModules stays QueryModule[] (cross-module capable)
+    expect(queriesFile?.content).toContain("& MutationEffectsOptions)");
+    expect(queriesFile?.content).not.toContain("MutationEffectsOptions<QueryModule");
+
+    // Bug 3: getNextPageParam parameter has an explicit type annotation (no implicit any)
+    expect(queriesFile?.content).toContain("}: Awaited<ReturnType<typeof ItemsApi.list>>)");
+    expect(queriesFile?.content).toContain("pageParam * limitParam < (totalItems ?? 0)");
+    // queryFn retains precise pageParam: number typing
+    expect(queriesFile?.content).toContain("queryFn: ({ pageParam }: { pageParam: number })");
+    // no unknown casts or pages: 1 in the shared options factory
+    expect(queriesFile?.content).not.toContain("pageParam: unknown");
+    expect(queriesFile?.content).not.toContain("pages: 1,");
+  });
+
+  it("prefetchInfiniteQuery casts options to {} and emits no pages", () => {
+    const files = generateCodeFromOpenAPIDoc(paginatedDoc, {
+      ...DEFAULT_GENERATE_OPTIONS,
+      output: "test-output",
+      mutationEffects: false,
+      infiniteQueries: true,
+      prefetchQueries: true,
+      acl: false,
+      checkAcl: false,
+      builderConfigs: false,
+    });
+
+    const queriesFile = files.find((file) => file.fileName.endsWith("/items/items.queries.ts"));
+
+    // options is cast to {} so it contributes no typed properties to the spread; without the cast
+    // the options type defaults prefetchInfiniteQuery generics to unknown, which conflicts with the
+    // generated queryFn expecting pageParam: number.
+    expect(queriesFile?.content).toContain("...(options as {})");
+    // no pages emitted anywhere
+    expect(queriesFile?.content).not.toContain("pages:");
   });
 });

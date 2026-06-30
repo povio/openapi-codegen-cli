@@ -25,8 +25,7 @@ import { getUniqueArray } from "@/generators/utils/array.utils";
 import {
   getAbilityConditionsTypes,
   getAbilityFunctionName,
-  getImportedAbilityFunctionName,
-  hasAbilityConditions,
+  renderAclCheckCall,
 } from "@/generators/utils/generate/generate.acl.utils";
 import {
   getEndpointBody,
@@ -36,6 +35,7 @@ import {
   hasEndpointConfig,
   getImportedEndpointName,
   mapEndpointParamsToFunctionParams,
+  renderMediaUploadMutationBody,
   requiresBody,
 } from "@/generators/utils/generate/generate.endpoints.utils";
 import { getSchemaDescriptions } from "@/generators/utils/generate/generate.openapi.utils";
@@ -95,11 +95,12 @@ export function generateQueries(params: GenerateTypeParams) {
 
   const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
   const hasAxiosDefaultImport = endpoints.some(({ mediaUpload }) => mediaUpload);
-  const hasAxiosImport = hasAxiosRequestConfig || hasAxiosDefaultImport;
+  const hasGetEndpoints = endpoints.some((endpoint) => endpoint.method === "get");
+  const hasAxiosImport = hasAxiosRequestConfig || hasAxiosDefaultImport || hasGetEndpoints;
   const axiosImport: Import = {
     defaultImport: hasAxiosDefaultImport ? AXIOS_DEFAULT_IMPORT_NAME : undefined,
     bindings: [],
-    typeBindings: hasAxiosRequestConfig ? [AXIOS_REQUEST_CONFIG_TYPE] : [],
+    typeBindings: hasAxiosImport ? [AXIOS_REQUEST_CONFIG_TYPE] : [],
     from: AXIOS_IMPORT.from,
   };
 
@@ -136,7 +137,11 @@ export function generateQueries(params: GenerateTypeParams) {
   };
 
   const queryTypesImport: Import = {
-    bindings: [...(hasMutationDefaultOnError ? ["OpenApiQueryConfig"] : [])],
+    bindings: [
+      ...(queryEndpoints.length > 0 || infiniteQueryEndpoints.length > 0 || hasMutationDefaultOnError
+        ? ["OpenApiQueryConfig"]
+        : []),
+    ],
     typeBindings: [
       ...(queryEndpoints.length > 0 ? [QUERY_OPTIONS_TYPES.query] : []),
       ...(resolver.options.infiniteQueries && infiniteQueryEndpoints.length > 0
@@ -495,29 +500,6 @@ function renderWorkspaceParamResolutions({
   ];
 }
 
-function renderAclCheckCall(
-  resolver: SchemaResolver,
-  endpoint: Endpoint,
-  replacements?: Record<string, string>,
-  indent = "",
-) {
-  const checkParams = getAbilityConditionsTypes(endpoint)?.map((condition) =>
-    invalidVariableNameCharactersToCamel(condition.name),
-  );
-  const paramNames = new Set(endpoint.parameters.map((param) => invalidVariableNameCharactersToCamel(param.name)));
-  const hasAllCheckParams = checkParams?.every((param) => paramNames.has(param));
-  const args =
-    hasAbilityConditions(endpoint) && hasAllCheckParams
-      ? `{ ${(checkParams ?? [])
-          .map((param) => {
-            const resolvedParam = replacements?.[param] ?? param;
-            return resolvedParam === param ? param : `${param}: ${resolvedParam}`;
-          })
-          .join(", ")} } `
-      : "";
-  return `${indent}checkAcl(${getImportedAbilityFunctionName(endpoint, resolver.options)}(${args}));`;
-}
-
 function addAsteriskAfterNewLine(str: string) {
   return str.replace(/\n/g, "\n *");
 }
@@ -652,12 +634,13 @@ function renderInlineEndpoints({
     const endpointBody = getEndpointBody(endpoint);
     const hasUndefinedEndpointBody = requiresBody(endpoint) && !endpointBody && hasEndpointConfig(endpoint, resolver);
     const endpointConfig = renderInlineEndpointConfig(resolver, endpoint, tag);
+    const hasRequestConfigParam = resolver.options.axiosRequestConfig || endpoint.method === "get";
 
     lines.push(
-      `const ${getEndpointName(endpoint)} = (${endpointParams}${resolver.options.axiosRequestConfig ? `${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => {`,
+      `const ${getEndpointName(endpoint)} = (${endpointParams}${hasRequestConfigParam ? `${endpointParams ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}?: ${getRequestConfigType()}` : ""}) => {`,
     );
     lines.push(`  return ${APP_REST_CLIENT_NAME}.${endpoint.method}(`);
-    lines.push(`    { resSchema: ${getImportedZodSchemaName(resolver, endpoint.response, tag)} },`);
+    lines.push(`    ${renderInlineRequestInfo(resolver, endpoint, tag)},`);
     lines.push(`    \`${getEndpointPath(endpoint)}\`,`);
 
     if (endpointBody) {
@@ -676,6 +659,14 @@ function renderInlineEndpoints({
   return lines;
 }
 
+function renderInlineRequestInfo(resolver: SchemaResolver, endpoint: Endpoint, tag: string) {
+  return `{ resSchema: ${getImportedZodSchemaName(resolver, endpoint.response, tag)} }`;
+}
+
+function getRequestConfigType() {
+  return `${AXIOS_REQUEST_CONFIG_TYPE} & { allowInvalidResponseData?: boolean }`;
+}
+
 function renderInlineEndpointParamParse(
   resolver: SchemaResolver,
   param: EndpointParameter,
@@ -690,22 +681,38 @@ function renderInlineEndpointParamParse(
         resolver,
         param.parameterSortingEnumSchemaName,
         modelNamespaceTag,
-      )})${addOptional ? ".optional()" : ""}`
+      )})${getSortingPresenceChain(resolver, param)}`
     : `${getImportedZodSchemaName(resolver, param.zodSchema, modelNamespaceTag)}${addOptional ? ".optional()" : ""}`;
   const queryArgs = param.type === "Query" ? `, { type: "query", name: "${paramName}" }` : "";
   return `${ZOD_EXTENDED.namespace}.${ZOD_EXTENDED.exports.parse}(${schemaValue}, ${paramName}${queryArgs})`;
 }
 
+function getSortingPresenceChain(resolver: SchemaResolver, param: EndpointParameter) {
+  const zodSchemaCode = resolver.getCodeByZodSchemaName(param.zodSchema) ?? param.zodSchema;
+
+  if (zodSchemaCode.includes(".nullish()")) {
+    return ".nullish()";
+  }
+
+  if (zodSchemaCode.includes(".nullable()")) {
+    return ".nullable()";
+  }
+
+  return !(param.parameterObject ?? param.bodyObject)?.required ? ".optional()" : "";
+}
+
 function renderInlineEndpointConfig(resolver: SchemaResolver, endpoint: Endpoint, modelNamespaceTag?: string) {
   const endpointConfig = getEndpointConfig(endpoint);
   const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
-  if (Object.keys(endpointConfig).length === 0) {
-    return hasAxiosRequestConfig ? AXIOS_REQUEST_CONFIG_NAME : "";
+  const hasRequestConfigParam = hasAxiosRequestConfig || endpoint.method === "get";
+  const needsBlobConfig = endpoint.mediaDownload || endpoint.response === "z.instanceof(Blob)";
+  if (Object.keys(endpointConfig).length === 0 && !needsBlobConfig) {
+    return hasRequestConfigParam ? AXIOS_REQUEST_CONFIG_NAME : "";
   }
 
   const lines: string[] = [];
   lines.push("{");
-  if (hasAxiosRequestConfig) {
+  if (hasRequestConfigParam) {
     lines.push(`      ...${AXIOS_REQUEST_CONFIG_NAME},`);
   }
   if (endpointConfig.params) {
@@ -745,6 +752,7 @@ function renderQueryOptions({
   inlineEndpoints: boolean;
 }) {
   const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
+  const hasRequestConfigParam = hasAxiosRequestConfig || endpoint.method === "get";
   const tag = getEndpointTag(endpoint, resolver.options);
   const endpointParams = renderEndpointParams(resolver, endpoint, {
     modelNamespaceTag: tag,
@@ -756,11 +764,11 @@ function renderQueryOptions({
 
   const lines: string[] = [];
   lines.push(
-    `const ${getQueryOptionsName(endpoint)} = (${endpointParams ? `{ ${endpointArgs} }: { ${endpointParams} }` : ""}${hasAxiosRequestConfig ? `${endpointParams ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => ({`,
+    `const ${getQueryOptionsName(endpoint)} = (${endpointParams ? `{ ${endpointArgs} }: { ${endpointParams} }` : ""}${hasRequestConfigParam ? `${endpointParams ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}?: ${getRequestConfigType()}` : ""}) => ({`,
   );
   lines.push(`  queryKey: keys.${getEndpointName(endpoint)}(${endpointArgs}),`);
   lines.push(
-    `  queryFn: () => ${endpointFunction}(${endpointArgs}${hasAxiosRequestConfig ? `${endpointArgs ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}` : ""}),`,
+    `  queryFn: () => ${endpointFunction}(${endpointArgs}${hasRequestConfigParam ? `${endpointArgs ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}` : ""}),`,
   );
   lines.push("});");
   return lines.join("\n");
@@ -776,6 +784,7 @@ function renderInfiniteQueryOptions({
   inlineEndpoints: boolean;
 }) {
   const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
+  const hasRequestConfigParam = hasAxiosRequestConfig || endpoint.method === "get";
   const tag = getEndpointTag(endpoint, resolver.options);
   const endpointParams = renderEndpointParams(resolver, endpoint, {
     excludePageParam: true,
@@ -789,19 +798,19 @@ function renderInfiniteQueryOptions({
 
   const lines: string[] = [];
   lines.push(
-    `const ${getInfiniteQueryOptionsName(endpoint)} = (${endpointParams ? `{ ${endpointArgsWithoutPage} }: { ${endpointParams} }` : ""}${hasAxiosRequestConfig ? `${endpointParams ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => ({`,
+    `const ${getInfiniteQueryOptionsName(endpoint)} = (${endpointParams ? `{ ${endpointArgsWithoutPage} }: { ${endpointParams} }` : ""}${hasRequestConfigParam ? `${endpointParams ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}?: ${getRequestConfigType()}` : ""}) => ({`,
   );
   lines.push(`  queryKey: keys.${getEndpointName(endpoint)}Infinite(${endpointArgsWithoutPage}),`);
   lines.push(
-    `  queryFn: ({ pageParam }: { pageParam: number }) => ${endpointFunction}(${endpointArgsWithPage}${hasAxiosRequestConfig ? `, ${AXIOS_REQUEST_CONFIG_NAME}` : ""}),`,
+    `  queryFn: ({ pageParam }: { pageParam: number }) => ${endpointFunction}(${endpointArgsWithPage}${hasRequestConfigParam ? `, ${AXIOS_REQUEST_CONFIG_NAME}` : ""}),`,
   );
   lines.push("  initialPageParam: 1,");
   lines.push(
-    `  getNextPageParam: ({ ${resolver.options.infiniteQueryResponseParamNames.page}, ${resolver.options.infiniteQueryResponseParamNames.totalItems}, ${resolver.options.infiniteQueryResponseParamNames.limit}: limitParam }) => {`,
+    `  getNextPageParam: ({ ${resolver.options.infiniteQueryResponseParamNames.page}, ${resolver.options.infiniteQueryResponseParamNames.totalItems}, ${resolver.options.infiniteQueryResponseParamNames.limit}: limitParam }: Awaited<ReturnType<typeof ${endpointFunction}>>) => {`,
   );
   lines.push(`    const pageParam = ${resolver.options.infiniteQueryResponseParamNames.page} ?? 1;`);
   lines.push(
-    `    return pageParam * limitParam < ${resolver.options.infiniteQueryResponseParamNames.totalItems} ? pageParam + 1 : null;`,
+    `    return pageParam * limitParam < (${resolver.options.infiniteQueryResponseParamNames.totalItems} ?? 0) ? pageParam + 1 : null;`,
   );
   lines.push("  },");
   lines.push("});");
@@ -835,13 +844,18 @@ function renderPrefetchInfiniteQuery({ resolver, endpoint }: { resolver: SchemaR
     modelNamespaceTag: tag,
   });
   const endpointArgs = renderEndpointArgs(resolver, endpoint, { excludePageParam: true });
+  const optionsArgs = `${endpointParams ? `{ ${endpointArgs} }` : ""}${hasAxiosRequestConfig ? `${endpointParams ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}` : ""}`;
 
   const lines: string[] = [];
   lines.push(
     `export const ${getPrefetchInfiniteQueryName(endpoint)} = (queryClient: QueryClient, ${endpointParams ? `{ ${endpointArgs} }: { ${endpointParams} }, ` : ""}${hasAxiosRequestConfig ? `${AXIOS_REQUEST_CONFIG_NAME}: ${AXIOS_REQUEST_CONFIG_TYPE}, ` : ""}options?: Omit<Parameters<QueryClient["prefetchInfiniteQuery"]>[0], "queryKey" | "queryFn" | "initialPageParam" | "getNextPageParam">): void => {`,
   );
+  // options is cast to {} so it contributes no typed properties to the spread, letting TypeScript
+  // infer TPageParam and TQueryFnData solely from the options factory (via initialPageParam and
+  // queryFn). Without the cast, the options type defaults prefetchInfiniteQuery generics to unknown,
+  // which conflicts with the generated queryFn expecting pageParam: number.
   lines.push(
-    `  void queryClient.prefetchInfiniteQuery({ ...${getInfiniteQueryOptionsName(endpoint)}(${endpointParams ? `{ ${endpointArgs} }` : ""}${hasAxiosRequestConfig ? `${endpointParams ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}` : ""}), ...options });`,
+    `  void queryClient.prefetchInfiniteQuery({ ...${getInfiniteQueryOptionsName(endpoint)}(${optionsArgs}), ...(options as {}) });`,
   );
   lines.push("};");
   return lines.join("\n");
@@ -871,13 +885,15 @@ function renderQuery({
   });
   const queryOptionsName = getQueryOptionsName(endpoint);
   const hasQueryFnOverride = hasAclCheck;
-  const queryOptionsArgs = `${resolvedEndpointArgs ? `{ ${resolvedEndpointArgs} }` : ""}${hasAxiosRequestConfig ? `${resolvedEndpointArgs ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}` : ""}`;
+  const requestConfig = `{ ${hasAxiosRequestConfig ? `...${AXIOS_REQUEST_CONFIG_NAME}, ` : ""}allowInvalidResponseData: queryConfig.allowInvalidResponseData }`;
+  const queryOptionsArgs = `${resolvedEndpointArgs ? `{ ${resolvedEndpointArgs} }, ` : ""}${requestConfig}`;
 
   const lines: string[] = [];
   lines.push(renderQueryJsDocs({ resolver, endpoint, mode: "query", tag }));
   lines.push(
     `export const ${getQueryName(endpoint)} = <TData>(${endpointParams ? `{ ${endpointArgs} }: { ${endpointParams} }, ` : ""}options?: AppQueryOptions<typeof ${inlineEndpoints ? getEndpointName(endpoint) : getImportedEndpointName(endpoint, resolver.options)}, TData>${hasAxiosRequestConfig ? `, ${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => {`,
   );
+  lines.push("  const queryConfig = OpenApiQueryConfig.useConfig();");
   if (hasAclCheck) {
     lines.push(`  const { checkAcl } = ${ACL_CHECK_HOOK}();`);
   }
@@ -1007,7 +1023,7 @@ function renderMutation({
   );
   if (hasMutationEffects) {
     lines.push(
-      `  const { runMutationEffects } = useMutationEffects<typeof ${QUERY_MODULE_ENUM}.${tag}>({ currentModule: ${QUERIES_MODULE_NAME} });`,
+      `  const { runMutationEffects } = useMutationEffects<${QUERY_MODULE_ENUM}.${tag}>({ currentModule: ${QUERIES_MODULE_NAME} });`,
     );
   }
   lines.push("");
@@ -1031,35 +1047,10 @@ function renderMutation({
   }
   if (endpoint.mediaUpload) {
     lines.push(
-      `      const uploadInstructions = await ${endpointFunction}(${resolvedEndpointArgs}${hasAxiosRequestConfig ? `${resolvedEndpointArgs ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}` : ""});`,
+      ...renderMediaUploadMutationBody({ resolver, endpointFunction, resolvedEndpointArgs }).map(
+        (line) => `      ${line}`,
+      ),
     );
-    lines.push("      ");
-    lines.push("      if (file && uploadInstructions.url) {");
-    lines.push('        const method = (data?.method?.toLowerCase() ?? "put") as "put" | "post";');
-    lines.push("        let dataToSend: File | FormData = file;");
-    lines.push('        if (method === "post") {');
-    lines.push("          dataToSend = new FormData();");
-    lines.push("          if (uploadInstructions.fields) {");
-    lines.push("            for (const [key, value] of uploadInstructions.fields) {");
-    lines.push("              dataToSend.append(key, value);");
-    lines.push("            }");
-    lines.push("          }");
-    lines.push('          dataToSend.append("file", file);');
-    lines.push("        }");
-    lines.push("        await axios[method](uploadInstructions.url, dataToSend, {");
-    lines.push("          headers: {");
-    lines.push('            "Content-Type": file.type,');
-    lines.push("          },");
-    lines.push("          signal: abortController?.signal,");
-    lines.push("          onUploadProgress: onUploadProgress");
-    lines.push(
-      "          ? (progressEvent) => onUploadProgress({ loaded: progressEvent.loaded, total: progressEvent.total ?? 0 })",
-    );
-    lines.push("          : undefined,");
-    lines.push("        });");
-    lines.push("      }");
-    lines.push("      ");
-    lines.push("      return uploadInstructions;");
   } else {
     lines.push(
       `      ${hasMutationFnBody ? "return " : ""}${endpointFunction}(${resolvedEndpointArgs}${hasAxiosRequestConfig ? `${resolvedEndpointArgs ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}` : ""})`,
@@ -1204,7 +1195,8 @@ function renderInfiniteQuery({
     workspaceParamReplacements,
   );
   const queryOptionsName = getInfiniteQueryOptionsName(endpoint);
-  const queryOptionsArgs = `${resolvedEndpointArgsWithoutPage ? `{ ${resolvedEndpointArgsWithoutPage} }` : ""}${hasAxiosRequestConfig ? `${resolvedEndpointArgsWithoutPage ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}` : ""}`;
+  const requestConfig = `{ ${hasAxiosRequestConfig ? `...${AXIOS_REQUEST_CONFIG_NAME}, ` : ""}allowInvalidResponseData: queryConfig.allowInvalidResponseData }`;
+  const queryOptionsArgs = `${resolvedEndpointArgsWithoutPage ? `{ ${resolvedEndpointArgsWithoutPage} }, ` : ""}${requestConfig}`;
   const hasQueryFnOverride = hasAclCheck;
 
   const lines: string[] = [];
@@ -1212,6 +1204,7 @@ function renderInfiniteQuery({
   lines.push(
     `export const ${getInfiniteQueryName(endpoint)} = <TData>(${endpointParams ? `{ ${endpointArgsWithoutPage} }: { ${endpointParams} }, ` : ""}options?: AppInfiniteQueryOptions<typeof ${inlineEndpoints ? getEndpointName(endpoint) : getImportedEndpointName(endpoint, resolver.options)}, TData>${hasAxiosRequestConfig ? `, ${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => {`,
   );
+  lines.push("  const queryConfig = OpenApiQueryConfig.useConfig();");
   if (hasAclCheck) {
     lines.push(`  const { checkAcl } = ${ACL_CHECK_HOOK}();`);
   }

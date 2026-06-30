@@ -11,6 +11,7 @@ import { ParameterObject } from "@/generators/types/openapi";
 import { isReferenceObject, isSchemaObject } from "@/generators/utils/openapi-schema.utils";
 import {
   isParamMediaTypeAllowed,
+  getParameterEnumNames,
   isSortingParameterObject,
   pathParamToVariableName,
 } from "@/generators/utils/openapi.utils";
@@ -80,13 +81,14 @@ export function getEndpointParameter({
     getParamZodSchemaName(zodSchemaOperationName, paramObj.name);
 
   let parameterSortingEnumSchemaName: string | undefined = undefined;
-  if (isSortingParameterObject(paramObj)) {
+  if (isSortingParameterObject(paramObj, schema, resolver)) {
     const enumZodSchemaName = getEnumZodSchemaName(
       fallbackName,
       resolver.options.enumSuffix,
       resolver.options.schemaSuffix,
     );
-    const code = getEnumZodSchemaCodeFromEnumNames(paramObj["x-enumNames"]);
+    const enumNames = getParameterEnumNames(paramObj, schema);
+    const code = getEnumZodSchemaCodeFromEnumNames(enumNames ?? []);
     resolver.setZodSchema(enumZodSchemaName, code, tag);
     parameterSortingEnumSchemaName = enumZodSchemaName;
   }

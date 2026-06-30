@@ -94,6 +94,62 @@ const generateOptions = {
 } as GenerateOptions;
 
 describe("getEndpointsFromOpenAPIDoc", () => {
+  test("optional $ref request body schema resolves base schema name without chain", () => {
+    const ScoringSessionEndRequest = {
+      required: ["score"],
+      type: "object",
+      properties: {
+        score: { type: "integer" },
+        notes: { type: "string" },
+      },
+    } as OpenAPIV3.SchemaObject;
+
+    const openApiDoc: OpenAPIV3.Document = {
+      ...baseDoc,
+      components: { schemas: { ScoringSessionEndRequest } },
+      paths: {
+        "/api/scoring-sessions/{sessionId}/end-session": {
+          post: {
+            tags: ["scoring"],
+            operationId: "endSession",
+            parameters: [
+              {
+                name: "sessionId",
+                in: "path",
+                required: true,
+                schema: { type: "string" },
+              },
+            ],
+            requestBody: {
+              required: false,
+              content: {
+                [JSON_APPLICATION_FORMAT]: {
+                  schema: { $ref: "#/components/schemas/ScoringSessionEndRequest" },
+                },
+              },
+            },
+            responses: {
+              "204": { description: "No content" },
+            },
+          },
+        },
+      },
+    };
+
+    const resolver = new SchemaResolver(openApiDoc, generateOptions);
+    const endpoints = getEndpointsFromOpenAPIDoc(resolver);
+
+    expect(endpoints).toHaveLength(1);
+    const bodyParam = endpoints[0].parameters.find((p) => p.type === "Body");
+    expect(bodyParam).toBeDefined();
+    // The zodSchema must be the bare component name — NOT "ScoringSessionEndRequest.optional()".
+    // Appending the chain before namespace/import resolution causes resolver.getTagByZodSchemaName
+    // to miss the lookup and fall back to defaultTag (CommonModels), producing wrong imports.
+    expect(bodyParam!.zodSchema).toBe("ScoringSessionEndRequest");
+    // The optional-ness is carried by bodyObject.required, not by a chain on zodSchema.
+    expect(bodyParam!.bodyObject?.required).toBe(false);
+  });
+
   test("getEndpointsFromOpenAPIDocPaths /store/order", () => {
     const openApiDoc: OpenAPIV3.Document = {
       ...baseDoc,
@@ -1978,5 +2034,48 @@ describe("getEndpointsFromOpenAPIDoc", () => {
         }),
       ]),
     );
+  });
+
+  test("optional $ref request body schema resolves base schema name without chain", () => {
+    const ScoringSessionEndRequest = {
+      required: ["score"],
+      type: "object",
+      properties: {
+        score: { type: "integer" },
+        notes: { type: "string" },
+      },
+    } as OpenAPIV3.SchemaObject;
+
+    const openApiDoc: OpenAPIV3.Document = {
+      ...baseDoc,
+      components: { schemas: { ScoringSessionEndRequest } },
+      paths: {
+        "/api/scoring-sessions/{sessionId}/end-session": {
+          post: {
+            tags: ["scoring"],
+            operationId: "endSession",
+            parameters: [{ name: "sessionId", in: "path", required: true, schema: { type: "string" } }],
+            requestBody: {
+              required: false,
+              content: {
+                [JSON_APPLICATION_FORMAT]: {
+                  schema: { $ref: "#/components/schemas/ScoringSessionEndRequest" },
+                },
+              },
+            },
+            responses: { "204": { description: "No content" } },
+          },
+        },
+      },
+    };
+
+    const resolver = new SchemaResolver(openApiDoc, generateOptions);
+    const endpoints = getEndpointsFromOpenAPIDoc(resolver);
+
+    expect(endpoints).toHaveLength(1);
+    const bodyParam = endpoints[0].parameters.find((p) => p.type === "Body");
+    expect(bodyParam).toBeDefined();
+    expect(bodyParam!.zodSchema).toBe("ScoringSessionEndRequest");
+    expect(bodyParam!.bodyObject?.required).toBe(false);
   });
 });

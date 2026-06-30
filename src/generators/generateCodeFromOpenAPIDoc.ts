@@ -11,6 +11,7 @@ import { getOutputFileName } from "./utils/file.utils";
 import {
   getAclFiles,
   getAppRestClientFiles,
+  getDomainErrorsFiles,
   getMutationEffectsFiles,
   getZodExtendedFiles,
 } from "./utils/generate-files.utils";
@@ -73,6 +74,7 @@ export function generateCodeFromOpenAPIDoc(
       ...p.runSync("render.MutationEffects", () => getMutationEffectsFiles(data, resolver)),
       ...p.runSync("render.ZodExtended", () => getZodExtendedFiles(data, resolver)),
       ...p.runSync("render.Standalone", () => getAppRestClientFiles(resolver)),
+      ...p.runSync("render.DomainErrors", () => getDomainErrorsFiles(data, resolver)),
     );
   }
 
