@@ -1,8 +1,13 @@
 import path from "path";
 
 import { createOpenApiCodegenRunner } from "@/plugins/openapi-codegen.runner";
-import { createTinyOpenApiSourceRunner, isTinyOpenApiFakeMode, normalizeWatchFolders } from "@/tiny/openapi-source.runner";
-import { GenerateOpenApiFile } from "@/tiny/openapi";
+import {
+  createTinyOpenApiSourceRunner,
+  isTinyOpenApiFakeMode,
+  normalizeWatchFolders,
+} from "@/tiny/openapi-source.runner";
+import { GenerateOpenApiFile, GenerateOpenApiSpec } from "@/tiny/openapi";
+import { TinyOpenApiSpecModuleConfig } from "@/tiny/openapi-source.runner";
 import { openApiCodegen, OpenApiCodegenViteConfig } from "@/vite/openapi-codegen.plugin";
 
 import type { Plugin, PluginOption, ResolvedConfig, ViteDevServer } from "vite";
@@ -12,7 +17,9 @@ export interface TinyOpenApiCodegenViteOptions {
   cwd?: string;
   debounceMs?: number;
   env?: NodeJS.ProcessEnv;
-  generateOpenApiFile: GenerateOpenApiFile;
+  generateOpenApiFile?: GenerateOpenApiFile;
+  generateOpenApiSpec?: GenerateOpenApiSpec;
+  generateOpenApiSpecModule?: string | TinyOpenApiSpecModuleConfig;
   watchFolders: readonly string[];
 }
 
@@ -34,6 +41,8 @@ function tinyOpenApiCodegenPlugin(
       cwd: options.cwd,
       env: options.env,
       generateOpenApiFile: options.generateOpenApiFile,
+      generateOpenApiSpec: options.generateOpenApiSpec,
+      generateOpenApiSpecModule: options.generateOpenApiSpecModule,
       input: codegenConfig.input,
       root,
     });

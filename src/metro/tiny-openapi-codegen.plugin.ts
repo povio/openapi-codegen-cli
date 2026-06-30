@@ -7,7 +7,8 @@ import {
   isTinyOpenApiFakeMode,
   normalizeWatchFolders,
 } from "@/tiny/openapi-source.runner";
-import { GenerateOpenApiFile } from "@/tiny/openapi";
+import { GenerateOpenApiFile, GenerateOpenApiSpec } from "@/tiny/openapi";
+import { TinyOpenApiSpecModuleConfig } from "@/tiny/openapi-source.runner";
 import {
   MetroConfig,
   OpenApiCodegenMetroConfig,
@@ -19,7 +20,9 @@ export interface TinyOpenApiCodegenMetroOptions extends OpenApiCodegenMetroOptio
   apiMode?: string;
   cwd?: string;
   env?: NodeJS.ProcessEnv;
-  generateOpenApiFile: GenerateOpenApiFile;
+  generateOpenApiFile?: GenerateOpenApiFile;
+  generateOpenApiSpec?: GenerateOpenApiSpec;
+  generateOpenApiSpecModule?: string | TinyOpenApiSpecModuleConfig;
   watchFolders: readonly string[];
   watchTinyOpenApiInput?: boolean;
 }
@@ -62,6 +65,8 @@ function withResolvedTinyOpenApiCodegen<TMetroConfig extends MetroConfig>(
     cwd: options.cwd,
     env: options.env,
     generateOpenApiFile: options.generateOpenApiFile,
+    generateOpenApiSpec: options.generateOpenApiSpec,
+    generateOpenApiSpecModule: options.generateOpenApiSpecModule,
     input: codegenConfig.input,
     root,
   });

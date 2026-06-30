@@ -19,6 +19,7 @@ export interface GenerateOpenApiFileResult {
   outputPath: string;
 }
 
+export type GenerateOpenApiSpec = () => Promise<unknown> | unknown;
 export type GenerateOpenApiFile = (options: GenerateOpenApiFileOptions) => Promise<unknown> | unknown;
 
 export type JsonObject = Record<string, unknown>;

@@ -1,3 +1,5 @@
+import fs from "fs";
+import os from "os";
 import path from "path";
 
 import { beforeEach, describe, expect, test, vi } from "vitest";
@@ -52,6 +54,53 @@ describe("Vite tiny openapi-codegen plugin", () => {
         fileConfig: expect.objectContaining({
           input: path.join(root, "openapi.json"),
           output: path.join(root, "src/data"),
+        }),
+      }),
+    );
+  });
+
+  test("accepts generateOpenApiSpec and writes the configured local input file", async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "tiny-openapi-vite-"));
+    const generateOpenApiSpec = vi.fn(() => ({ openapi: "3.0.3", paths: {} }));
+
+    const [plugin] = tinyOpenApiCodegen(
+      { input: "./openapi.json", output: "./src/data" },
+      { generateOpenApiSpec, watchFolders: [] },
+    ) as Plugin[];
+
+    await callHook(plugin.configResolved, { root } as ResolvedConfig);
+    await callHook(plugin.buildStart, {} as never);
+
+    expect(generateOpenApiSpec).toHaveBeenCalledTimes(1);
+    expect(runGenerateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        fileConfig: expect.objectContaining({
+          input: path.join(root, "openapi.json"),
+        }),
+      }),
+    );
+  });
+
+  test("accepts generateOpenApiSpecModule and writes the configured local input file", async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "tiny-openapi-vite-module-"));
+    fs.mkdirSync(path.join(root, "scripts"));
+    fs.writeFileSync(
+      path.join(root, "scripts", "openapi-spec.mjs"),
+      "export function generateTinyOpenApiSpec() { return { openapi: '3.0.3', paths: {} }; }",
+    );
+
+    const [plugin] = tinyOpenApiCodegen(
+      { input: "./openapi.json", output: "./src/data" },
+      { generateOpenApiSpecModule: "./scripts/openapi-spec.mjs", watchFolders: [] },
+    ) as Plugin[];
+
+    await callHook(plugin.configResolved, { root } as ResolvedConfig);
+    await callHook(plugin.buildStart, {} as never);
+
+    expect(runGenerateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        fileConfig: expect.objectContaining({
+          input: path.join(root, "openapi.json"),
         }),
       }),
     );

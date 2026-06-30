@@ -1,3 +1,5 @@
+import fs from "fs";
+import os from "os";
 import path from "path";
 
 import { beforeEach, describe, expect, test, vi } from "vitest";
@@ -42,6 +44,44 @@ describe("tiny openapi source runner", () => {
     );
   });
 
+  test("writes the generated spec when generateOpenApiSpec is provided", async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "tiny-openapi-runner-"));
+    const runner = createTinyOpenApiSourceRunner({
+      generateOpenApiSpec: () => ({ openapi: "3.0.3", paths: {} }),
+      input: "./openapi.json",
+      root,
+    });
+
+    await runner.enqueueGenerate();
+
+    expect(fs.readFileSync(path.join(root, "openapi.json"), "utf8")).toBe(
+      `${JSON.stringify({ openapi: "3.0.3", paths: {} }, null, 2)}\n`,
+    );
+  });
+
+  test("loads generateOpenApiSpec from a module path", async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "tiny-openapi-runner-module-"));
+    fs.mkdirSync(path.join(root, "scripts"));
+    fs.writeFileSync(
+      path.join(root, "scripts", "openapi-spec.mjs"),
+      "export function generateSpec() { return { openapi: '3.0.3', paths: { '/health': {} } }; }",
+    );
+    const runner = createTinyOpenApiSourceRunner({
+      generateOpenApiSpecModule: {
+        path: "./scripts/openapi-spec.mjs",
+        exportName: "generateSpec",
+      },
+      input: "./openapi.json",
+      root,
+    });
+
+    await runner.enqueueGenerate();
+
+    expect(fs.readFileSync(path.join(root, "openapi.json"), "utf8")).toBe(
+      `${JSON.stringify({ openapi: "3.0.3", paths: { "/health": {} } }, null, 2)}\n`,
+    );
+  });
+
   test("skips generation for remote OpenAPI input", async () => {
     const generateOpenApiFile = vi.fn();
     const runner = createTinyOpenApiSourceRunner({
@@ -69,4 +109,3 @@ describe("tiny openapi source runner", () => {
     expect(generateOpenApiFile).toHaveBeenCalledTimes(2);
   });
 });
-

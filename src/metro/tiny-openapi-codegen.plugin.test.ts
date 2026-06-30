@@ -1,3 +1,5 @@
+import fs from "fs";
+import os from "os";
 import path from "path";
 
 import { beforeEach, describe, expect, test, vi } from "vitest";
@@ -46,6 +48,41 @@ describe("Metro tiny openapi-codegen plugin", () => {
         defaultOutput: path.join(root, "openapi.json"),
       }),
     );
+  });
+
+  test("accepts generateOpenApiSpec and writes before running codegen", async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "tiny-openapi-metro-"));
+    const generateOpenApiSpec = vi.fn(() => ({ openapi: "3.0.3", paths: {} }));
+
+    const config: MetroConfig = tinyOpenApiCodegenMetro(
+      { projectRoot: root } as MetroConfig,
+      { input: "./openapi.json", output: "./src/data" },
+      { generateOpenApiSpec, watchFolders: [], watchOpenApiInput: false },
+    );
+
+    await config.transformer?.getTransformOptions?.("entry");
+
+    expect(generateOpenApiSpec).toHaveBeenCalledTimes(1);
+    expect(runGenerateMock).toHaveBeenCalledTimes(1);
+  });
+
+  test("accepts generateOpenApiSpecModule and writes before running codegen", async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "tiny-openapi-metro-module-"));
+    fs.mkdirSync(path.join(root, "scripts"));
+    fs.writeFileSync(
+      path.join(root, "scripts", "openapi-spec.mjs"),
+      "export function generateTinyOpenApiSpec() { return { openapi: '3.0.3', paths: {} }; }",
+    );
+
+    const config: MetroConfig = tinyOpenApiCodegenMetro(
+      { projectRoot: root } as MetroConfig,
+      { input: "./openapi.json", output: "./src/data" },
+      { generateOpenApiSpecModule: "./scripts/openapi-spec.mjs", watchFolders: [], watchOpenApiInput: false },
+    );
+
+    await config.transformer?.getTransformOptions?.("entry");
+
+    expect(runGenerateMock).toHaveBeenCalledTimes(1);
   });
 
   test("uses only the existing codegen wrapper in real API mode", async () => {

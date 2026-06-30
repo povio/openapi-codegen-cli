@@ -1,13 +1,21 @@
 import path from "path";
+import { pathToFileURL } from "url";
 
 import { OpenAPICodegenConfig } from "@/generators/types/config";
 
-import { GenerateOpenApiFile } from "./openapi";
+import { generateOpenApiFile, GenerateOpenApiFile, GenerateOpenApiSpec } from "./openapi";
+
+export interface TinyOpenApiSpecModuleConfig {
+  exportName?: string;
+  path: string;
+}
 
 export interface TinyOpenApiSourceRunnerConfig {
   cwd?: string;
   env?: NodeJS.ProcessEnv;
-  generateOpenApiFile: GenerateOpenApiFile;
+  generateOpenApiFile?: GenerateOpenApiFile;
+  generateOpenApiSpec?: GenerateOpenApiSpec;
+  generateOpenApiSpecModule?: string | TinyOpenApiSpecModuleConfig;
   input: OpenAPICodegenConfig["input"];
   root: string;
 }
@@ -23,11 +31,29 @@ export function createTinyOpenApiSourceRunner(config: TinyOpenApiSourceRunnerCon
       return;
     }
 
-    await config.generateOpenApiFile({
+    const generateOpenApiFileOptions = {
       argv: ["--output", outputPath],
       cwd: config.cwd ?? config.root,
       defaultOutput: outputPath,
       env: config.env ?? process.env,
+    };
+
+    if (config.generateOpenApiFile) {
+      await config.generateOpenApiFile(generateOpenApiFileOptions);
+      return;
+    }
+
+    const generateOpenApiSpec = config.generateOpenApiSpec ?? (await loadOpenApiSpecGenerator(config));
+
+    if (!generateOpenApiSpec) {
+      throw new Error(
+        "Missing Tiny OpenAPI generator. Pass generateOpenApiFile, generateOpenApiSpec, or generateOpenApiSpecModule.",
+      );
+    }
+
+    await generateOpenApiFile({
+      ...generateOpenApiFileOptions,
+      generateOpenApiSpec,
     });
   };
 
@@ -64,3 +90,27 @@ export function normalizeWatchFolders(root: string, watchFolders: readonly strin
   return watchFolders.map((folder) => (path.isAbsolute(folder) ? folder : path.resolve(root, folder)));
 }
 
+async function loadOpenApiSpecGenerator(
+  config: TinyOpenApiSourceRunnerConfig,
+): Promise<GenerateOpenApiSpec | undefined> {
+  if (!config.generateOpenApiSpecModule) {
+    return undefined;
+  }
+
+  const moduleConfig =
+    typeof config.generateOpenApiSpecModule === "string"
+      ? { path: config.generateOpenApiSpecModule }
+      : config.generateOpenApiSpecModule;
+  const modulePath = path.isAbsolute(moduleConfig.path)
+    ? moduleConfig.path
+    : path.resolve(config.root, moduleConfig.path);
+  const exportName = moduleConfig.exportName ?? "generateTinyOpenApiSpec";
+  const moduleExports = (await import(pathToFileURL(modulePath).href)) as Record<string, unknown>;
+  const generateOpenApiSpec = moduleExports[exportName];
+
+  if (typeof generateOpenApiSpec !== "function") {
+    throw new Error(`Tiny OpenAPI spec module "${moduleConfig.path}" does not export function "${exportName}".`);
+  }
+
+  return generateOpenApiSpec as GenerateOpenApiSpec;
+}
