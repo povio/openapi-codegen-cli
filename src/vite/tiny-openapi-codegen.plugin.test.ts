@@ -105,6 +105,57 @@ describe("Vite tiny openapi-codegen plugin", () => {
       }),
     );
   });
+
+  test("regenerates and reloads when a file inside a watched folder changes in fake API mode", async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "tiny-openapi-vite-fake-watch-"));
+    const fakeBePath = path.join(root, "packages", "fake-be", "src", "orpc", "api", "contract.ts");
+    const callbacks: Array<(event: string, changedPath: string) => void> = [];
+    const generateOpenApiFile = vi.fn(async () => undefined);
+    const send = vi.fn();
+
+    fs.mkdirSync(path.dirname(fakeBePath), { recursive: true });
+    fs.writeFileSync(fakeBePath, "export const contract = {};\n");
+
+    const [plugin] = tinyOpenApiCodegen(
+      { input: "./openapi.json", output: "./src/data" },
+      {
+        debounceMs: 0,
+        generateOpenApiFile,
+        watchFolders: ["packages/fake-be/src/orpc"],
+      },
+    ) as Plugin[];
+
+    await callHook(plugin.configResolved, { root } as ResolvedConfig);
+    await callHook(plugin.configureServer, {
+      config: {
+        logger: {
+          error: vi.fn(),
+        },
+        root,
+      },
+      watcher: {
+        add: vi.fn(),
+        on: vi.fn((event: string, callback: (event: string, changedPath: string) => void) => {
+          if (event === "all") {
+            callbacks.push(callback);
+          }
+        }),
+      },
+      ws: {
+        send,
+      },
+    } as never);
+
+    expect(generateOpenApiFile).toHaveBeenCalledTimes(1);
+    expect(runGenerateMock).toHaveBeenCalledTimes(1);
+
+    callbacks[0]?.("change", fakeBePath);
+    await waitForRestart();
+
+    expect(generateOpenApiFile).toHaveBeenCalledTimes(2);
+    expect(runGenerateMock).toHaveBeenCalledTimes(2);
+    expect(send).toHaveBeenCalledWith({ type: "full-reload" });
+  });
 });
 
 async function callHook<THook extends (...args: never[]) => unknown>(
@@ -118,4 +169,8 @@ async function callHook<THook extends (...args: never[]) => unknown>(
   const handler = typeof hook === "function" ? hook : hook.handler;
 
   await handler(...args);
+}
+
+async function waitForRestart() {
+  await new Promise((resolve) => setTimeout(resolve, 0));
 }

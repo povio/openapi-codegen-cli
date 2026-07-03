@@ -11,6 +11,7 @@ import { GenerateOpenApiFile, GenerateOpenApiSpec } from "@/tiny/openapi";
 import { TinyOpenApiSpecModuleConfig } from "@/tiny/openapi-source.runner";
 import {
   MetroConfig,
+  MetroServer,
   OpenApiCodegenMetroConfig,
   OpenApiCodegenMetroOptions,
   withOpenApiCodegen,
@@ -76,6 +77,7 @@ function withResolvedTinyOpenApiCodegen<TMetroConfig extends MetroConfig>(
 
   let startupSucceeded = false;
   let inflightGenerate: Promise<void> | undefined;
+  let metroServer: MetroServer | undefined;
   let watcherReady = false;
   let watchers: fs.FSWatcher[] = [];
 
@@ -108,7 +110,9 @@ function withResolvedTinyOpenApiCodegen<TMetroConfig extends MetroConfig>(
 
   const requestSourceChangeGenerate = () => {
     startupSucceeded = false;
-    return requestGenerateAll();
+    return requestGenerateAll().then(() => {
+      notifyMetroReload(metroServer);
+    });
   };
 
   const ensureWatcher = () => {
@@ -125,6 +129,7 @@ function withResolvedTinyOpenApiCodegen<TMetroConfig extends MetroConfig>(
     server: {
       ...metroConfig.server,
       enhanceMiddleware(middleware, server) {
+        metroServer = server;
         ensureWatcher();
         const enhancedMiddleware = originalEnhanceMiddleware
           ? originalEnhanceMiddleware(middleware, server)
@@ -186,4 +191,36 @@ function reportGenerateError(error: unknown) {
 
 function reportWatcherError(error: unknown) {
   console.error("[tiny-openapi] Failed to watch OpenAPI inputs from Metro config.", error);
+}
+
+function notifyMetroReload(server: MetroServer | undefined) {
+  const serverRecord = isRecord(server) ? server : undefined;
+  const sockets = [
+    serverRecord?.messageSocket,
+    serverRecord?._messageSocket,
+    serverRecord?.websocketServer,
+    serverRecord?._websocketServer,
+    serverRecord?.hmrServer,
+    serverRecord?._hmrServer,
+  ];
+
+  for (const socket of sockets) {
+    if (!isRecord(socket)) {
+      continue;
+    }
+
+    if (typeof socket.broadcast === "function") {
+      socket.broadcast({ type: "reload" });
+      return;
+    }
+
+    if (typeof socket.send === "function") {
+      socket.send({ type: "reload" });
+      return;
+    }
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
 }

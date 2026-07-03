@@ -63,9 +63,13 @@ function tinyOpenApiCodegenPlugin(
     }
 
     debounceTimer = setTimeout(() => {
-      enqueueGenerate().catch((error: unknown) => {
-        server.config.logger.error(`[tiny-openapi] ${error instanceof Error ? error.message : String(error)}`);
-      });
+      enqueueGenerate()
+        .then(() => {
+          server.ws.send({ type: "full-reload" });
+        })
+        .catch((error: unknown) => {
+          server.config.logger.error(`[tiny-openapi] ${error instanceof Error ? error.message : String(error)}`);
+        });
     }, debounceMs);
   };
 

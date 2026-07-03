@@ -105,4 +105,50 @@ describe("Metro tiny openapi-codegen plugin", () => {
     expect(generateOpenApiFile).not.toHaveBeenCalled();
     expect(runGenerateMock).toHaveBeenCalledTimes(1);
   });
+
+  test("regenerates and broadcasts reload when a watched folder changes in fake API mode", async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "tiny-openapi-metro-watch-"));
+    const watchedFolder = path.join(root, "packages", "fake-be", "src", "orpc");
+    const broadcast = vi.fn();
+    const generateOpenApiFile = vi.fn(async () => undefined);
+    let watchCallback: ((event: string, filename: string) => void) | undefined;
+
+    fs.mkdirSync(watchedFolder, { recursive: true });
+
+    const watchSpy = vi.spyOn(fs, "watch").mockImplementation(((
+      _target: fs.PathLike,
+      _options: fs.WatchOptions,
+      listener: (event: string, filename: string) => void,
+    ) => {
+      watchCallback = listener;
+      return { on: vi.fn() } as unknown as fs.FSWatcher;
+    }) as typeof fs.watch);
+
+    try {
+      const config: MetroConfig = tinyOpenApiCodegenMetro(
+        { projectRoot: root } as MetroConfig,
+        { input: "./openapi.json", output: "./src/data" },
+        { generateOpenApiFile, watchFolders: ["packages/fake-be/src/orpc"] },
+      );
+
+      config.server?.enhanceMiddleware?.(vi.fn(), { messageSocket: { broadcast } });
+      await config.transformer?.getTransformOptions?.("entry");
+
+      expect(generateOpenApiFile).toHaveBeenCalledTimes(1);
+      expect(runGenerateMock).toHaveBeenCalledTimes(1);
+
+      watchCallback?.("change", "contract.ts");
+      await waitForWatcher();
+
+      expect(generateOpenApiFile).toHaveBeenCalledTimes(2);
+      expect(runGenerateMock).toHaveBeenCalledTimes(2);
+      expect(broadcast).toHaveBeenCalledWith({ type: "reload" });
+    } finally {
+      watchSpy.mockRestore();
+    }
+  });
 });
+
+async function waitForWatcher() {
+  await new Promise((resolve) => setTimeout(resolve, 0));
+}
