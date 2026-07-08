@@ -191,6 +191,9 @@ describe("generateQueries workspaceContext", () => {
     expect(queriesFile?.content).toContain(
       "...getPositionQueryOptions({ officeId, positionId }, { allowInvalidResponseData: queryConfig.allowInvalidResponseData }),",
     );
+    expect(queriesFile?.content).toContain(
+      "queryFn: ({ signal }: { signal: AbortSignal }) => WorkspaceApi.getPosition(officeId, positionId, { ...config, signal }),",
+    );
   });
 
   it("passes runtime allowInvalidResponseData config through inline GET query hooks", () => {
@@ -215,6 +218,9 @@ describe("generateQueries workspaceContext", () => {
     expect(queriesFile?.content).toContain(
       "...getPositionQueryOptions({ officeId, positionId }, { allowInvalidResponseData: queryConfig.allowInvalidResponseData }),",
     );
+    expect(queriesFile?.content).toContain(
+      "queryFn: ({ signal }: { signal: AbortSignal }) => getPosition(officeId, positionId, { ...config, signal }),",
+    );
   });
 
   it("maps workspace-resolved values back to the original helper property names", () => {
@@ -232,7 +238,7 @@ describe("generateQueries workspaceContext", () => {
       "getPositionQueryOptions({ officeId: normalizeOfficeId, positionId: normalizePositionId }, { allowInvalidResponseData: queryConfig.allowInvalidResponseData })",
     );
     expect(queriesFile?.content).toContain(
-      "return getPositionQueryOptions({ officeId: normalizeOfficeId, positionId: normalizePositionId }, { allowInvalidResponseData: queryConfig.allowInvalidResponseData }).queryFn();",
+      "return getPositionQueryOptions({ officeId: normalizeOfficeId, positionId: normalizePositionId }, { allowInvalidResponseData: queryConfig.allowInvalidResponseData }).queryFn({ signal });",
     );
     expect(queriesFile?.content).toContain(
       "findByIdQueryOptions({ id: normalizeId }, { allowInvalidResponseData: queryConfig.allowInvalidResponseData })",
@@ -449,8 +455,11 @@ describe("generateQueries mutationEffects + infiniteQuery", () => {
     // Bug 3: getNextPageParam parameter has an explicit type annotation (no implicit any)
     expect(queriesFile?.content).toContain("}: Awaited<ReturnType<typeof ItemsApi.list>>)");
     expect(queriesFile?.content).toContain("pageParam * limitParam < (totalItems ?? 0)");
-    // queryFn retains precise pageParam: number typing
-    expect(queriesFile?.content).toContain("queryFn: ({ pageParam }: { pageParam: number })");
+    // queryFn retains precise pageParam: number typing and forwards TanStack's abort signal to Axios
+    expect(queriesFile?.content).toContain(
+      "queryFn: ({ pageParam, signal }: { pageParam: number; signal: AbortSignal })",
+    );
+    expect(queriesFile?.content).toContain("ItemsApi.list(pageParam, limit, { ...config, signal })");
     // no unknown casts or pages: 1 in the shared options factory
     expect(queriesFile?.content).not.toContain("pageParam: unknown");
     expect(queriesFile?.content).not.toContain("pages: 1,");

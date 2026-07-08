@@ -667,6 +667,10 @@ function getRequestConfigType() {
   return `${AXIOS_REQUEST_CONFIG_TYPE} & { allowInvalidResponseData?: boolean }`;
 }
 
+function renderRequestConfigWithSignal(hasRequestConfigParam: boolean) {
+  return `{ ${hasRequestConfigParam ? `...${AXIOS_REQUEST_CONFIG_NAME}, ` : ""}signal }`;
+}
+
 function renderInlineEndpointParamParse(
   resolver: SchemaResolver,
   param: EndpointParameter,
@@ -767,8 +771,9 @@ function renderQueryOptions({
     `const ${getQueryOptionsName(endpoint)} = (${endpointParams ? `{ ${endpointArgs} }: { ${endpointParams} }` : ""}${hasRequestConfigParam ? `${endpointParams ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}?: ${getRequestConfigType()}` : ""}) => ({`,
   );
   lines.push(`  queryKey: keys.${getEndpointName(endpoint)}(${endpointArgs}),`);
+  const requestConfigWithSignal = renderRequestConfigWithSignal(hasRequestConfigParam);
   lines.push(
-    `  queryFn: () => ${endpointFunction}(${endpointArgs}${hasRequestConfigParam ? `${endpointArgs ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}` : ""}),`,
+    `  queryFn: ({ signal }: { signal: AbortSignal }) => ${endpointFunction}(${endpointArgs}${hasRequestConfigParam ? `${endpointArgs ? ", " : ""}${requestConfigWithSignal}` : ""}),`,
   );
   lines.push("});");
   return lines.join("\n");
@@ -801,8 +806,9 @@ function renderInfiniteQueryOptions({
     `const ${getInfiniteQueryOptionsName(endpoint)} = (${endpointParams ? `{ ${endpointArgsWithoutPage} }: { ${endpointParams} }` : ""}${hasRequestConfigParam ? `${endpointParams ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}?: ${getRequestConfigType()}` : ""}) => ({`,
   );
   lines.push(`  queryKey: keys.${getEndpointName(endpoint)}Infinite(${endpointArgsWithoutPage}),`);
+  const requestConfigWithSignal = renderRequestConfigWithSignal(hasRequestConfigParam);
   lines.push(
-    `  queryFn: ({ pageParam }: { pageParam: number }) => ${endpointFunction}(${endpointArgsWithPage}${hasRequestConfigParam ? `, ${AXIOS_REQUEST_CONFIG_NAME}` : ""}),`,
+    `  queryFn: ({ pageParam, signal }: { pageParam: number; signal: AbortSignal }) => ${endpointFunction}(${endpointArgsWithPage}${hasRequestConfigParam ? `, ${requestConfigWithSignal}` : ""}),`,
   );
   lines.push("  initialPageParam: 1,");
   lines.push(
@@ -908,11 +914,11 @@ function renderQuery({
   lines.push(`  return ${QUERY_HOOKS.query}({`);
   lines.push(`    ...${queryOptionsName}(${queryOptionsArgs}),`);
   if (hasQueryFnOverride) {
-    lines.push("    queryFn: async () => {");
+    lines.push("    queryFn: async ({ signal }: { signal: AbortSignal }) => {");
     if (hasAclCheck) {
       lines.push(renderAclCheckCall(resolver, endpoint, workspaceParamReplacements, "    "));
     }
-    lines.push(`      return ${queryOptionsName}(${queryOptionsArgs}).queryFn();`);
+    lines.push(`      return ${queryOptionsName}(${queryOptionsArgs}).queryFn({ signal });`);
     lines.push("    },");
   }
   lines.push("    ...options,");
@@ -1219,9 +1225,9 @@ function renderInfiniteQuery({
   lines.push(`  return ${QUERY_HOOKS.infiniteQuery}({`);
   lines.push(`    ...${queryOptionsName}(${queryOptionsArgs}),`);
   if (hasQueryFnOverride) {
-    lines.push("    queryFn: async ({ pageParam }) => {");
+    lines.push("    queryFn: async ({ pageParam, signal }: { pageParam: number; signal: AbortSignal }) => {");
     lines.push(renderAclCheckCall(resolver, endpoint, workspaceParamReplacements, "      "));
-    lines.push(`      return ${queryOptionsName}(${queryOptionsArgs}).queryFn({ pageParam });`);
+    lines.push(`      return ${queryOptionsName}(${queryOptionsArgs}).queryFn({ pageParam, signal });`);
     lines.push("    },");
   }
   lines.push("    ...options,");
