@@ -16,7 +16,12 @@ function makeData(endpointGroups: Partial<Endpoint>[][]): GenerateData {
   return data;
 }
 
-function makeEndpointWithDomainError(domain: string, code: number, description?: string, name?: string): Partial<Endpoint> {
+function makeEndpointWithDomainError(
+  domain: string,
+  code: number,
+  description?: string,
+  name?: string,
+): Partial<Endpoint> {
   return {
     errors: [
       {
@@ -95,12 +100,7 @@ describe("generateDomainErrors", () => {
   });
 
   it("generates separate const blocks for different domains", () => {
-    const data = makeData([
-      [
-        makeEndpointWithDomainError("rocket", 1001),
-        makeEndpointWithDomainError("user", 2001),
-      ],
-    ]);
+    const data = makeData([[makeEndpointWithDomainError("rocket", 1001), makeEndpointWithDomainError("user", 2001)]]);
     const result = generateDomainErrors({ resolver: stubResolver, data })!;
 
     expect(result).toContain("export const RocketDomainErrors = {");
@@ -125,12 +125,7 @@ describe("generateDomainErrors", () => {
   });
 
   it("sorts domain blocks alphabetically", () => {
-    const data = makeData([
-      [
-        makeEndpointWithDomainError("zebra", 9001),
-        makeEndpointWithDomainError("alpha", 1001),
-      ],
-    ]);
+    const data = makeData([[makeEndpointWithDomainError("zebra", 9001), makeEndpointWithDomainError("alpha", 1001)]]);
     const result = generateDomainErrors({ resolver: stubResolver, data })!;
 
     expect(result.indexOf("AlphaDomainErrors")).toBeLessThan(result.indexOf("ZebraDomainErrors"));

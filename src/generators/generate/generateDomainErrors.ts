@@ -14,12 +14,7 @@ interface DomainErrorDef {
   description?: string;
 }
 
-export function generateDomainErrors({
-  data,
-}: {
-  resolver: SchemaResolver;
-  data: GenerateData;
-}): string | undefined {
+export function generateDomainErrors({ data }: { resolver: SchemaResolver; data: GenerateData }): string | undefined {
   const byDomain = new Map<string, Map<number | string, DomainErrorDef>>();
 
   for (const { endpoints } of data.values()) {
