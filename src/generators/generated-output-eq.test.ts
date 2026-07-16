@@ -39,11 +39,12 @@ async function normalizeContent(filePath: string, content: string) {
     .trim();
 }
 
-describe("Generated output parity", () => {
-  it("matches between base and next output folders", async () => {
-    expect(fs.existsSync(BASE_DIR), `${BASE_DIR} does not exist`).toBe(true);
-    expect(fs.existsSync(NEXT_DIR), `${NEXT_DIR} does not exist`).toBe(true);
+const hasGeneratedFolders = fs.existsSync(BASE_DIR) && fs.existsSync(NEXT_DIR);
 
+// Opt-in via `pnpm gen:verify` (or `pnpm gen:base && pnpm gen:next` first).
+// Skipped in the default suite when the gitignored output folders are absent.
+describe.skipIf(!hasGeneratedFolders)("Generated output parity", () => {
+  it("matches between base and next output folders", async () => {
     const baseFiles = getAllFiles(BASE_DIR);
     const nextFiles = getAllFiles(NEXT_DIR);
 
