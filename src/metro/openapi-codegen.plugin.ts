@@ -62,7 +62,11 @@ function withResolvedOpenApiCodegen<TMetroConfig extends MetroConfig>(
   options: OpenApiCodegenMetroOptions,
 ): TMetroConfig {
   const root = path.resolve(options.root ?? metroConfig.projectRoot ?? process.cwd());
-  const codegen = createOpenApiCodegenRunner(codegenConfig);
+  const codegen = createOpenApiCodegenRunner(codegenConfig, {
+    onGenerated() {
+      console.info("[openapi-codegen] OpenAPI client generated successfully.");
+    },
+  });
   const originalEnhanceMiddleware = metroConfig.server?.enhanceMiddleware;
   const originalGetTransformOptions = metroConfig.transformer?.getTransformOptions;
 

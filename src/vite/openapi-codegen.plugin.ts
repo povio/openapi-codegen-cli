@@ -8,7 +8,11 @@ export type OpenApiCodegenViteConfig = OpenApiCodegenPluginConfig;
 
 export function openApiCodegen(config: OpenApiCodegenViteConfig): Plugin {
   let resolvedViteConfig: ResolvedConfig | undefined;
-  const codegen = createOpenApiCodegenRunner(config);
+  const codegen = createOpenApiCodegenRunner(config, {
+    onGenerated() {
+      resolvedViteConfig?.logger.info("[openapi-codegen] OpenAPI client generated successfully.");
+    },
+  });
 
   const enqueueGenerate = () => {
     const currentConfig = resolvedViteConfig;

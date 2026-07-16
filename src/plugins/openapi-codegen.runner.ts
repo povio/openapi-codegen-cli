@@ -9,7 +9,14 @@ export type OpenApiCodegenPluginConfig = OpenAPICodegenConfig & {
   formatGeneratedFile?: GenerateFileFormatter;
 };
 
-export function createOpenApiCodegenRunner(config: OpenApiCodegenPluginConfig) {
+type OpenApiCodegenRunnerOptions = {
+  onGenerated?: () => void;
+};
+
+export function createOpenApiCodegenRunner(
+  config: OpenApiCodegenPluginConfig,
+  options: OpenApiCodegenRunnerOptions = {},
+) {
   let queue: Promise<void> = Promise.resolve();
   const { formatGeneratedFile, ...fileConfig } = config;
 
@@ -23,6 +30,7 @@ export function createOpenApiCodegenRunner(config: OpenApiCodegenPluginConfig) {
           formatGeneratedFile,
           profiler,
         });
+        options.onGenerated?.();
       });
 
     queue = run.then(

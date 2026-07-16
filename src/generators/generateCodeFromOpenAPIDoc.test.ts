@@ -685,9 +685,7 @@ describe("generateCodeFromOpenAPIDoc - blob download with domain errors", () => 
         get: {
           tags: ["Documents"],
           operationId: "listItems",
-          parameters: [
-            { name: "officeId", in: "path", required: true, schema: { type: "string" } },
-          ],
+          parameters: [{ name: "officeId", in: "path", required: true, schema: { type: "string" } }],
           responses: {
             "200": {
               description: "OK",
@@ -829,8 +827,9 @@ describe("generateCodeFromOpenAPIDoc - shared parameter schema namespace", () =>
     acl: false,
     checkAcl: false,
   });
-  const adminApi = files.find(({ fileName }) => fileName.endsWith("/pushNotificationAdmin/pushNotificationAdmin.api.ts"))
-    ?.content;
+  const adminApi = files.find(({ fileName }) =>
+    fileName.endsWith("/pushNotificationAdmin/pushNotificationAdmin.api.ts"),
+  )?.content;
   const adminQueries = files.find(({ fileName }) =>
     fileName.endsWith("/pushNotificationAdmin/pushNotificationAdmin.queries.ts"),
   )?.content;

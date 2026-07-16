@@ -142,7 +142,13 @@ describe("ErrorHandler priority", () => {
 
   it("string-based per-instance entries still work unchanged", () => {
     const handler = new ErrorHandler({
-      entries: [{ code: "USER_NOT_FOUND", condition: (e) => RestUtils.extractServerResponseCode(e) === "USER_NOT_FOUND", getMessage: () => "user not found" }],
+      entries: [
+        {
+          code: "USER_NOT_FOUND",
+          condition: (e) => RestUtils.extractServerResponseCode(e) === "USER_NOT_FOUND",
+          getMessage: () => "user not found",
+        },
+      ],
     });
     const err = makeAxiosError({ code: "USER_NOT_FOUND" });
     expect(() => handler.rethrowError(err)).toThrow(ApplicationException);
