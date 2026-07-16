@@ -1,5 +1,3 @@
-import i18next from "i18next";
-
 import translationEN from "../assets/locales/en/translation.json";
 import translationSL from "../assets/locales/sl/translation.json";
 
@@ -13,19 +11,17 @@ export const resources = {
   },
 } as const;
 
-const defaultLanguage = "en";
+export type TranslateFunction = (key: string, options?: { ns?: string }) => string;
 
-const i18n = i18next.createInstance();
-i18n.init({
-  compatibilityJSON: "v4",
-  lng: defaultLanguage,
-  fallbackLng: defaultLanguage,
-  resources,
-  ns: Object.keys(resources.en),
-  defaultNS: ns,
-  interpolation: {
-    escapeValue: false,
-  },
-});
+let getT: (() => TranslateFunction) | null = null;
 
-export const defaultT = i18n.t.bind(i18n);
+export function configureTranslations<T>(getter: () => T) {
+  getT = () => getter() as TranslateFunction;
+}
+
+export function resolveT(): TranslateFunction {
+  if (!getT) {
+    throw new Error("Translations not configured. Call configureTranslations() at app startup.");
+  }
+  return getT();
+}

@@ -1,8 +1,7 @@
 import { isAxiosError, isCancel } from "axios";
-import { type TFunction } from "i18next";
 import { z } from "zod";
 
-import { defaultT } from "../config/i18n";
+import { ns, resolveT, type TranslateFunction } from "../config/i18n";
 import { RestUtils } from "./rest.utils";
 
 export type GeneralErrorCodes =
@@ -28,13 +27,13 @@ export class ApplicationException<CodeT> extends Error {
 export interface ErrorEntry<CodeT> {
   code: CodeT;
   condition?: (error: unknown) => boolean;
-  getMessage: (t: TFunction<string, undefined>, error: unknown) => string;
+  getMessage: (t: TranslateFunction, error: unknown) => string;
 }
 
 export interface DomainErrorEntry {
   code: string | number;
   condition?: (error: unknown) => boolean;
-  getMessage: (t: TFunction<string, undefined>, error: unknown) => string;
+  getMessage: (t: TranslateFunction, error: unknown) => string;
 }
 
 export class DomainErrorRegistry {
@@ -64,7 +63,6 @@ export class DomainErrorRegistry {
 
 export interface ErrorHandlerOptions<CodeT extends string | number> {
   entries: ErrorEntry<CodeT>[];
-  t?: TFunction<string, undefined>;
   onRethrowError?: (error: unknown, exception: ApplicationException<CodeT | GeneralErrorCodes>) => void;
 }
 
@@ -72,11 +70,9 @@ export class ErrorHandler<CodeT extends string | number> {
   entries: ErrorEntry<CodeT | GeneralErrorCodes>[] = [];
   private readonly userEntries: ErrorEntry<CodeT | GeneralErrorCodes>[];
   private readonly generalEntries: ErrorEntry<CodeT | GeneralErrorCodes>[];
-  private t: TFunction<string, undefined>;
   private onRethrowError?: (error: unknown, exception: ApplicationException<CodeT | GeneralErrorCodes>) => void;
 
-  constructor({ entries, t = defaultT, onRethrowError }: ErrorHandlerOptions<CodeT>) {
-    this.t = t;
+  constructor({ entries, onRethrowError }: ErrorHandlerOptions<CodeT>) {
     this.onRethrowError = onRethrowError;
     type ICodeT = CodeT | GeneralErrorCodes;
 
@@ -85,7 +81,7 @@ export class ErrorHandler<CodeT extends string | number> {
       condition: (e) => {
         return e instanceof z.ZodError;
       },
-      getMessage: () => this.t("openapi.sharedErrors.dataValidation"),
+      getMessage: () => resolveT()("openapi.sharedErrors.dataValidation", { ns }),
     };
 
     const internalError: ErrorEntry<ICodeT> = {
@@ -97,7 +93,7 @@ export class ErrorHandler<CodeT extends string | number> {
 
         return false;
       },
-      getMessage: () => this.t("openapi.sharedErrors.internalError"),
+      getMessage: () => resolveT()("openapi.sharedErrors.internalError", { ns }),
     };
 
     const networkError: ErrorEntry<ICodeT> = {
@@ -109,7 +105,7 @@ export class ErrorHandler<CodeT extends string | number> {
 
         return false;
       },
-      getMessage: () => this.t("openapi.sharedErrors.networkError"),
+      getMessage: () => resolveT()("openapi.sharedErrors.networkError", { ns }),
     };
 
     const canceledError: ErrorEntry<ICodeT> = {
@@ -125,7 +121,7 @@ export class ErrorHandler<CodeT extends string | number> {
 
         return false;
       },
-      getMessage: () => this.t("openapi.sharedErrors.canceledError"),
+      getMessage: () => resolveT()("openapi.sharedErrors.canceledError", { ns }),
     };
 
     const unknownError: ErrorEntry<ICodeT> = {
@@ -143,7 +139,7 @@ export class ErrorHandler<CodeT extends string | number> {
           return message;
         }
 
-        return this.t("openapi.sharedErrors.unknownError");
+        return resolveT()("openapi.sharedErrors.unknownError", { ns });
       },
     };
 
@@ -153,15 +149,15 @@ export class ErrorHandler<CodeT extends string | number> {
     this.entries = [...this.userEntries, ...this.generalEntries];
   }
 
-  private matchesEntry(error: unknown, entry: ErrorEntry<CodeT | GeneralErrorCodes>, code: string | number | null): boolean {
+  private matchesEntry(
+    error: unknown,
+    entry: ErrorEntry<CodeT | GeneralErrorCodes>,
+    code: string | number | null,
+  ): boolean {
     if (entry.condition) {
       return entry.condition(error);
     }
     return code === entry.code;
-  }
-
-  public setTranslateFunction(t: TFunction<string, undefined>) {
-    this.t = t;
   }
 
   public rethrowError(error: unknown): ApplicationException<CodeT | GeneralErrorCodes> {
@@ -171,7 +167,11 @@ export class ErrorHandler<CodeT extends string | number> {
     // 1. Per-instance custom entries (highest priority)
     const userEntry = this.userEntries.find((entry) => this.matchesEntry(error, entry, code));
     if (userEntry) {
-      const exception = new ApplicationException(userEntry.getMessage(this.t, error), userEntry.code, serverMessage);
+      const exception = new ApplicationException(
+        userEntry.getMessage(resolveT(), error),
+        userEntry.code,
+        serverMessage,
+      );
       this.onRethrowError?.(error, exception);
       throw exception;
     }
@@ -180,7 +180,11 @@ export class ErrorHandler<CodeT extends string | number> {
     if (code !== null) {
       const registryEntry = DomainErrorRegistry.getEntry(code);
       if (registryEntry && (!registryEntry.condition || registryEntry.condition(error))) {
-        const exception = new ApplicationException(registryEntry.getMessage(this.t, error), registryEntry.code, serverMessage);
+        const exception = new ApplicationException(
+          registryEntry.getMessage(resolveT(), error),
+          registryEntry.code,
+          serverMessage,
+        );
         this.onRethrowError?.(error, exception as unknown as ApplicationException<CodeT | GeneralErrorCodes>);
         throw exception;
       }
@@ -188,7 +192,11 @@ export class ErrorHandler<CodeT extends string | number> {
 
     // 3. Built-in general fallbacks (lowest priority)
     const generalEntry = this.generalEntries.find((entry) => this.matchesEntry(error, entry, code))!;
-    const exception = new ApplicationException(generalEntry.getMessage(this.t, error), generalEntry.code, serverMessage);
+    const exception = new ApplicationException(
+      generalEntry.getMessage(resolveT(), error),
+      generalEntry.code,
+      serverMessage,
+    );
     this.onRethrowError?.(error, exception);
     throw exception;
   }
@@ -226,7 +234,7 @@ export class ErrorHandler<CodeT extends string | number> {
     }
 
     if (fallbackToUnknown) {
-      return defaultT("openapi.sharedErrors.unknownError");
+      return resolveT()("openapi.sharedErrors.unknownError", { ns });
     }
 
     return null;

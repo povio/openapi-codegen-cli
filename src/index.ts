@@ -23,7 +23,8 @@ export type { InvalidationMap, InvalidationMapFunc, QueryModule } from "./lib/co
 export { OpenApiWorkspaceContext, useWorkspaceContext } from "./lib/config/workspace.context";
 
 // i18n resources (for consumer apps to merge into their i18n config)
-export { ns, resources } from "./lib/config/i18n";
+export { configureTranslations, ns, resources } from "./lib/config/i18n";
+export type { TranslateFunction } from "./lib/config/i18n";
 
 // Auth
 export { AuthContext } from "./lib/auth/auth.context";
