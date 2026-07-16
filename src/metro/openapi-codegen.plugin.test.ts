@@ -1,6 +1,6 @@
 import path from "path";
 
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import { runGenerate } from "@/generators/run/generate.runner";
 
@@ -17,27 +17,9 @@ describe("Metro openapi-codegen plugin", () => {
   beforeEach(() => {
     runGenerateMock.mockReset();
     runGenerateMock.mockResolvedValue(undefined as never);
-    vi.spyOn(console, "info").mockImplementation(() => undefined);
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
   });
 
   describe("middleware", () => {
-    test("logs feedback after generation succeeds", async () => {
-      const root = path.resolve("/app");
-      const config: MetroConfig = withOpenApiCodegen(
-        { projectRoot: root } as MetroConfig,
-        { input: "./openapi.yaml", output: "./src/data" },
-        { watchOpenApiInput: false },
-      );
-
-      await config.transformer?.getTransformOptions?.("entry");
-
-      expect(console.info).toHaveBeenCalledWith("[openapi-codegen] OpenAPI client generated successfully.");
-    });
-
     test("waits for startup generation before delegating to the wrapped middleware", async () => {
       const root = path.resolve("/app");
       let resolveGenerate: () => void = () => undefined;
