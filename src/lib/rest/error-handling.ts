@@ -160,18 +160,18 @@ export class ErrorHandler<CodeT extends string | number> {
     return code === entry.code;
   }
 
+  /** Lazy so resolveT() only runs when getMessage actually uses `t`. */
+  private static lazyT: TranslateFunction = (key, options) => resolveT()(key, options);
+
   public rethrowError(error: unknown): ApplicationException<CodeT | GeneralErrorCodes> {
     const code = RestUtils.extractServerResponseCode(error);
     const serverMessage = RestUtils.extractServerErrorMessage(error);
+    const t = ErrorHandler.lazyT;
 
     // 1. Per-instance custom entries (highest priority)
     const userEntry = this.userEntries.find((entry) => this.matchesEntry(error, entry, code));
     if (userEntry) {
-      const exception = new ApplicationException(
-        userEntry.getMessage(resolveT(), error),
-        userEntry.code,
-        serverMessage,
-      );
+      const exception = new ApplicationException(userEntry.getMessage(t, error), userEntry.code, serverMessage);
       this.onRethrowError?.(error, exception);
       throw exception;
     }
@@ -181,7 +181,7 @@ export class ErrorHandler<CodeT extends string | number> {
       const registryEntry = DomainErrorRegistry.getEntry(code);
       if (registryEntry && (!registryEntry.condition || registryEntry.condition(error))) {
         const exception = new ApplicationException(
-          registryEntry.getMessage(resolveT(), error),
+          registryEntry.getMessage(t, error),
           registryEntry.code,
           serverMessage,
         );
@@ -192,11 +192,7 @@ export class ErrorHandler<CodeT extends string | number> {
 
     // 3. Built-in general fallbacks (lowest priority)
     const generalEntry = this.generalEntries.find((entry) => this.matchesEntry(error, entry, code))!;
-    const exception = new ApplicationException(
-      generalEntry.getMessage(resolveT(), error),
-      generalEntry.code,
-      serverMessage,
-    );
+    const exception = new ApplicationException(generalEntry.getMessage(t, error), generalEntry.code, serverMessage);
     this.onRethrowError?.(error, exception);
     throw exception;
   }
