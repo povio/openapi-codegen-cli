@@ -287,6 +287,51 @@ export default defineConfig({
 The plugin runs on both `vite serve` and `vite build`, and watches local OpenAPI files in dev mode.
 If you provide `formatGeneratedFile`, the plugin formats each generated file in memory before comparing and writing it, which helps avoid unnecessary HMR when the formatted output is unchanged.
 
+For Tiny projects that generate the OpenAPI JSON from ORPC before client codegen, use the wrapper plugin:
+
+```ts
+import { defineConfig } from "vite";
+import { generateOpenApiFile as writeOpenApiFile, generateORPCOpenAPISpec } from "@povio/openapi-codegen-cli/tiny";
+import { tinyOpenApiCodegen } from "@povio/openapi-codegen-cli/vite";
+import { apiModules } from "../packages/fake-be/src/orpc/api/modules";
+import { contract } from "../packages/fake-be/src/orpc/api/contract";
+import { getOpenApiSchemaName } from "../packages/fake-be/src/orpc/spec";
+import { userRoles } from "../packages/fake-be/src/roles";
+
+const generateOpenApiFile = (options) =>
+  writeOpenApiFile({
+    ...options,
+    generateOpenApiSpec: () =>
+      generateORPCOpenAPISpec({
+        contract,
+        apiModules,
+        userRoles,
+        apiRoot: "../packages/fake-be/src/orpc/api",
+        dbTablesRoot: "../packages/fake-be/src/db/tables",
+        getOpenApiSchemaName,
+      }),
+  });
+
+export default defineConfig({
+  plugins: [
+    tinyOpenApiCodegen(
+      {
+        input: "./openapi.generated.json",
+        output: "./src/data",
+        inlineEndpoints: true,
+        incremental: true,
+      },
+      {
+        generateOpenApiFile,
+        watchFolders: ["../packages/fake-be/src/orpc", "../packages/fake-be/src/db"],
+      },
+    ),
+  ],
+});
+```
+
+When `VITE_PUBLIC_API_MODE` or `EXPO_PUBLIC_API_MODE` is `real`, the Tiny wrapper skips ORPC OpenAPI generation and behaves like `openApiCodegen`.
+
 ### Metro Plugin
 
 You can run codegen directly from React Native Metro config:
@@ -317,6 +362,49 @@ export default withOpenApiCodegen(
 
 The Metro wrapper runs generation when the config is loaded, waits for it before Metro transforms or serves the first request, and watches local OpenAPI files while the dev server is running.
 If you provide `formatGeneratedFile`, it behaves the same way as the Vite plugin.
+
+For Tiny projects, use the Metro wrapper:
+
+```ts
+import { getDefaultConfig } from "@react-native/metro-config";
+import { generateOpenApiFile as writeOpenApiFile, generateORPCOpenAPISpec } from "@povio/openapi-codegen-cli/tiny";
+import { tinyOpenApiCodegenMetro } from "@povio/openapi-codegen-cli/metro";
+import { apiModules } from "../../packages/fake-be/src/orpc/api/modules";
+import { contract } from "../../packages/fake-be/src/orpc/api/contract";
+import { getOpenApiSchemaName } from "../../packages/fake-be/src/orpc/spec";
+import { userRoles } from "../../packages/fake-be/src/roles";
+
+const root = __dirname;
+const config = getDefaultConfig(root);
+const generateOpenApiFile = (options) =>
+  writeOpenApiFile({
+    ...options,
+    generateOpenApiSpec: () =>
+      generateORPCOpenAPISpec({
+        contract,
+        apiModules,
+        userRoles,
+        apiRoot: "../../packages/fake-be/src/orpc/api",
+        dbTablesRoot: "../../packages/fake-be/src/db/tables",
+        getOpenApiSchemaName,
+      }),
+  });
+
+export default tinyOpenApiCodegenMetro(
+  config,
+  {
+    input: "./assets/openapi/main.json",
+    output: "./utils/rest/openapi",
+    inlineEndpoints: true,
+    incremental: true,
+  },
+  {
+    root,
+    generateOpenApiFile,
+    watchFolders: ["../../packages/fake-be/src/orpc", "../../packages/fake-be/src/db"],
+  },
+);
+```
 
 ### Enums
 

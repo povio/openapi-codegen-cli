@@ -36,7 +36,12 @@
     },
     "./metro": {
       "types": "./dist/metro.d.mts",
-      "import": "./dist/metro.mjs"
+      "import": "./dist/metro.mjs",
+      "require": "./dist/metro.cjs"
+    },
+    "./tiny": {
+      "types": "./dist/tiny.d.mts",
+      "import": "./dist/tiny.mjs"
     },
     "./generator": {
       "types": "./dist/generator.d.mts",
@@ -75,6 +80,9 @@
   },
   "dependencies": {
     "@apidevtools/swagger-parser": "^10.1.0",
+    "@orpc/contract": "^1.14.3",
+    "@orpc/openapi": "^1.14.3",
+    "@orpc/zod": "^1.14.3",
     "i18next": "^25.8.13",
     "import-fresh": "^3.3.1",
     "openapi-types": "^12.1.3",
