@@ -50,4 +50,15 @@ describe("openapi-codegen runner", () => {
 
     expect(runGenerateMock).toHaveBeenCalledTimes(2);
   });
+
+  test("reports each successful generation", async () => {
+    const root = path.resolve("/app");
+    const onGenerated = vi.fn();
+    const runner = createOpenApiCodegenRunner({ input: "./openapi.yaml", output: "./src/data" }, { onGenerated });
+
+    await runner.enqueueGenerate(root);
+    await runner.enqueueGenerate(root);
+
+    expect(onGenerated).toHaveBeenCalledTimes(2);
+  });
 });
