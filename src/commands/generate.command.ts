@@ -1,4 +1,4 @@
-import yargs from "yargs";
+import type { CommandModule } from "yargs";
 
 import { logBanner } from "@/helpers/cli.helper";
 import { getVersion } from "@/helpers/version.helper";
@@ -110,7 +110,7 @@ class GenerateOptions implements GenerateParams {
   verbose?: boolean;
 }
 
-export const command: yargs.CommandModule = {
+export const command: CommandModule = {
   command: "generate",
   describe: "Generate code from OpenAPI spec",
   builder: getBuilder(GenerateOptions),

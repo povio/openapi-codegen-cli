@@ -75,9 +75,15 @@ const endpointParamMappingCache = new WeakMap<
   SchemaResolver,
   WeakMap<Endpoint, Map<string, ReturnType<typeof mapEndpointParamsToFunctionParams>>>
 >();
+const workspaceParamNamesCache = new WeakMap<SchemaResolver, WeakMap<Endpoint, string[]>>();
+const endpointParamDescriptionCache = new WeakMap<object, string>();
 
 export function generateQueries(params: GenerateTypeParams) {
   const { resolver, data, tag } = params;
+  const nativeContent = (
+    resolver as GenerateTypeParams["resolver"] & { getNativeRenderedQueries?: (tag: string) => string | undefined }
+  ).getNativeRenderedQueries?.(tag);
+  if (nativeContent) return nativeContent;
 
   const mutationScopeOption = resolver.options.mutationScope;
   if (mutationScopeOption && typeof mutationScopeOption === "object") {
@@ -318,11 +324,17 @@ function getEndpointParamMapping(
     resolverCache.set(endpoint, endpointCache);
   }
 
-  const key = JSON.stringify(
-    Object.entries(options ?? {})
-      .sort(([left], [right]) => left.localeCompare(right))
-      .map(([optionName, optionValue]) => [optionName, optionValue]),
-  );
+  const key = JSON.stringify([
+    options?.excludeBodyParam,
+    options?.excludePageParam,
+    options?.replacePageParam,
+    options?.includeFileParam,
+    options?.includeOnlyRequiredParams,
+    options?.pathParamsRequiredOnly,
+    options?.optionalPathParams,
+    options?.modelNamespaceTag,
+    options?.excludePathParams,
+  ]);
   const cached = endpointCache.get(key);
   if (cached) {
     return cached;
@@ -385,6 +397,10 @@ function renderEndpointObjectArgs(
 }
 
 function renderEndpointParamDescription(endpointParam: ReturnType<typeof mapEndpointParamsToFunctionParams>[0]) {
+  const cached = endpointParamDescriptionCache.get(endpointParam);
+  if (cached !== undefined) {
+    return cached;
+  }
   const strs = [`${endpointParam.paramType} parameter`];
   const description = endpointParam.parameterObject?.description || endpointParam.bodyObject?.description;
   if (description) {
@@ -413,10 +429,22 @@ function renderEndpointParamDescription(endpointParam: ReturnType<typeof mapEndp
   if (mediaTypeObject?.example) {
     strs.push(`Example: \`${mediaTypeObject.example}\``);
   }
-  return strs.join(". ");
+  const renderedDescription = strs.join(". ");
+  endpointParamDescriptionCache.set(endpointParam, renderedDescription);
+  return renderedDescription;
 }
 
 function getWorkspaceParamNames(resolver: SchemaResolver, endpoint: Endpoint) {
+  let resolverCache = workspaceParamNamesCache.get(resolver);
+  if (!resolverCache) {
+    resolverCache = new WeakMap();
+    workspaceParamNamesCache.set(resolver, resolverCache);
+  }
+  const cached = resolverCache.get(endpoint);
+  if (cached) {
+    return cached;
+  }
+
   const allowList = getWorkspaceContextAllowList(resolver.options.workspaceContext);
   const endpointParams = getEndpointParamMapping(resolver, endpoint, {});
   const endpointParamNames = new Set(endpointParams.map((param) => param.name));
@@ -426,7 +454,9 @@ function getWorkspaceParamNames(resolver: SchemaResolver, endpoint: Endpoint) {
     .map((condition) => invalidVariableNameCharactersToCamel(condition.name))
     .filter((name) => endpointParamNames.has(name));
 
-  return getUniqueArray([...workspaceParamNames, ...aclParamNames]).filter((name) => allowList.has(name));
+  const names = getUniqueArray([...workspaceParamNames, ...aclParamNames]).filter((name) => allowList.has(name));
+  resolverCache.set(endpoint, names);
+  return names;
 }
 
 function getWorkspaceParamReplacements(resolver: SchemaResolver, endpoint: Endpoint) {
@@ -982,7 +1012,7 @@ function renderMutation({
     }
   }
   const scopePathParams = scopeEnabled
-    ? mapEndpointParamsToFunctionParams(resolver, endpoint, {}).filter((p) => p.paramType === "Path")
+    ? getEndpointParamMapping(resolver, endpoint, {}).filter((p) => p.paramType === "Path")
     : [];
   const isScoped = scopePathParams.length > 0;
 

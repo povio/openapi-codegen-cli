@@ -1,5 +1,4 @@
 import { OpenAPIV3 } from "openapi-types";
-import { match } from "ts-pattern";
 
 import {
   ANY_SCHEMA,
@@ -197,13 +196,17 @@ function getReferenceZodSchema({ schema, zodSchema, resolver, meta, tag }: GetPa
     return;
   }
 
-  const refsPath = zodSchema.meta.referencedBy
-    .slice(0, -1)
-    .map((prev) => (prev.ref ? (resolver.getZodSchemaNameByRef(prev.ref) ?? prev.ref) : undefined))
-    .filter(Boolean);
   const zodSchemaName = resolver.getZodSchemaNameByRef(schema.$ref);
-  if (refsPath.length > 1 && refsPath.includes(zodSchemaName)) {
-    return zodSchema.assign(resolver.getCodeByZodSchemaName(zodSchema.ref!)!);
+  // A cycle can only exist when there are at least two ancestors. Most endpoint
+  // references are roots, so avoid allocating and resolving an empty ancestry path.
+  if (zodSchema.meta.referencedBy.length > 2) {
+    const refsPath = zodSchema.meta.referencedBy
+      .slice(0, -1)
+      .map((prev) => (prev.ref ? (resolver.getZodSchemaNameByRef(prev.ref) ?? prev.ref) : undefined))
+      .filter(Boolean);
+    if (refsPath.length > 1 && refsPath.includes(zodSchemaName)) {
+      return zodSchema.assign(resolver.getCodeByZodSchemaName(zodSchema.ref!)!);
+    }
   }
 
   let result = resolver.getCodeByZodSchemaName(schema.$ref);
@@ -345,24 +348,32 @@ function getPrimitiveZodSchema({ schema, zodSchema, resolver, meta, tag }: GetPa
       );
     }
 
-    return zodSchema.assign(
-      match(schemaType)
-        .with("integer", () =>
-          match(schema.type)
-            .with("integer", () => INT_SCHEMA)
-            .otherwise(() => NUMBER_SCHEMA),
-        )
-        .with("string", () =>
-          match(schema.format)
-            .with("binary", () => BLOB_SCHEMA)
-            .with("email", () => EMAIL_SCHEMA)
-            .with("hostname", "uri", () => URL_SCHEMA)
-            .with("uuid", () => UUID_SCHEMA)
-            .with("date-time", () => DATETIME_SCHEMA)
-            .otherwise(() => STRING_SCHEMA),
-        )
-        .otherwise((type) => `z.${type}()`),
-    );
+    if (schemaType === "integer") {
+      return zodSchema.assign(schema.type === "integer" ? INT_SCHEMA : NUMBER_SCHEMA);
+    }
+    if (schemaType === "string") {
+      let stringSchema = STRING_SCHEMA;
+      switch (schema.format) {
+        case "binary":
+          stringSchema = BLOB_SCHEMA;
+          break;
+        case "email":
+          stringSchema = EMAIL_SCHEMA;
+          break;
+        case "hostname":
+        case "uri":
+          stringSchema = URL_SCHEMA;
+          break;
+        case "uuid":
+          stringSchema = UUID_SCHEMA;
+          break;
+        case "date-time":
+          stringSchema = DATETIME_SCHEMA;
+          break;
+      }
+      return zodSchema.assign(stringSchema);
+    }
+    return zodSchema.assign(`z.${schemaType}()`);
   }
 }
 

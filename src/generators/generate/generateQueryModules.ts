@@ -2,6 +2,11 @@ import { GenerateType, GenerateTypeParams } from "@/generators/types/generate";
 import { getNamespaceName } from "@/generators/utils/namespace.utils";
 
 export function generateQueryModules({ resolver, data }: Omit<GenerateTypeParams, "tag">) {
+  const nativeContent = (
+    resolver as GenerateTypeParams["resolver"] & { getNativeRenderedShared?: (name: string) => string | undefined }
+  ).getNativeRenderedShared?.("queryModules");
+  if (nativeContent) return nativeContent;
+
   const modules: { tag: string; namespace: string }[] = [];
 
   data.forEach((_, tag) => {

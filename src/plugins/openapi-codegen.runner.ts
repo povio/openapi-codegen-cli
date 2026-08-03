@@ -30,6 +30,9 @@ export function createOpenApiCodegenRunner(
           formatGeneratedFile,
           profiler,
         });
+        for (const line of profiler.formatLines()) {
+          console.info(`[openapi-codegen] ${line}`);
+        }
         options.onGenerated?.();
       });
 

@@ -17,7 +17,19 @@ import { isNamedZodSchema } from "@/generators/utils/zod-schema.utils";
 
 import { getImportedZodSchemaInferedTypeName } from "./generate.zod.utils";
 
-export const getEndpointName = (endpoint: Endpoint) => decapitalize(snakeToCamel(endpoint.operationName));
+const endpointNameCache = new WeakMap<Endpoint, string>();
+const endpointPathCache = new WeakMap<Endpoint, string>();
+const endpointBodyCache = new WeakMap<Endpoint, ReturnType<typeof findEndpointBody>>();
+const endpointConfigCache = new WeakMap<Endpoint, ReturnType<typeof createEndpointConfig>>();
+
+export const getEndpointName = (endpoint: Endpoint) => {
+  let name = endpointNameCache.get(endpoint);
+  if (name === undefined) {
+    name = decapitalize(snakeToCamel(endpoint.operationName));
+    endpointNameCache.set(endpoint, name);
+  }
+  return name;
+};
 
 export function getImportedEndpointName(endpoint: Endpoint, options: GenerateOptions) {
   const namespacePrefix = options.tsNamespaces
@@ -28,7 +40,14 @@ export function getImportedEndpointName(endpoint: Endpoint, options: GenerateOpt
 
 export const requiresBody = (endpoint: Endpoint) => endpoint.method !== OpenAPIV3.HttpMethods.GET;
 
-export const getEndpointBody = (endpoint: Endpoint) => endpoint.parameters.find((param) => param.type === "Body");
+const findEndpointBody = (endpoint: Endpoint) => endpoint.parameters.find((param) => param.type === "Body");
+
+export const getEndpointBody = (endpoint: Endpoint) => {
+  if (!endpointBodyCache.has(endpoint)) {
+    endpointBodyCache.set(endpoint, findEndpointBody(endpoint));
+  }
+  return endpointBodyCache.get(endpoint);
+};
 
 export const hasEndpointConfig = (endpoint: Endpoint, resolver: SchemaResolver) => {
   const endpointConfig = getEndpointConfig(endpoint);
@@ -37,7 +56,14 @@ export const hasEndpointConfig = (endpoint: Endpoint, resolver: SchemaResolver) 
   return Object.keys(endpointConfig).length > 0 || hasAxiosRequestConfig || needsBlobConfig;
 };
 
-export const getEndpointPath = (endpoint: Endpoint) => endpoint.path.replace(/:([a-zA-Z0-9_]+)/g, "${$1}");
+export const getEndpointPath = (endpoint: Endpoint) => {
+  let endpointPath = endpointPathCache.get(endpoint);
+  if (endpointPath === undefined) {
+    endpointPath = endpoint.path.replace(/:([a-zA-Z0-9_]+)/g, "${$1}");
+    endpointPathCache.set(endpoint, endpointPath);
+  }
+  return endpointPath;
+};
 
 export function mapEndpointParamsToFunctionParams(
   resolver: SchemaResolver,
@@ -130,6 +156,15 @@ export function endpointParamsAllOptional(
 }
 
 export function getEndpointConfig(endpoint: Endpoint) {
+  let config = endpointConfigCache.get(endpoint);
+  if (!config) {
+    config = createEndpointConfig(endpoint);
+    endpointConfigCache.set(endpoint, config);
+  }
+  return config;
+}
+
+function createEndpointConfig(endpoint: Endpoint) {
   const params = endpoint.parameters
     .filter((param) => param.type === "Query")
     .map((param) => {
@@ -155,11 +190,10 @@ export function getEndpointConfig(endpoint: Endpoint) {
       headers[param.name] = invalidVariableNameCharactersToCamel(param.name);
     });
 
-  const endpointConfig = {
+  return {
     ...(params.length > 0 ? { params } : {}),
     ...(Object.keys(headers).length ? { headers } : {}),
   };
-  return endpointConfig;
 }
 
 /** Renders the body of a media-upload mutationFn: call the endpoint (without the file arg) to

@@ -23,12 +23,16 @@ export function getZodSchemasFromOpenAPIDoc(resolver: SchemaResolver, profiler?:
       if (zodSchemas[zodSchemaName]) {
         return;
       }
-
       const tag = resolver.getTagByZodSchemaName(zodSchemaName);
       const schemaObject = resolver.resolveObject(schema);
       if (schemaObject.enum) {
         enumZodSchemas[zodSchemaName] = getEnumZodSchemaCode(schemaObject);
       } else {
+        const existingCode = resolver.getCodeByZodSchemaName(zodSchemaName);
+        if (existingCode !== undefined) {
+          zodSchemas[zodSchemaName] = existingCode;
+          return;
+        }
         zodSchemas[zodSchemaName] = p.runSync("zod.extract.schemaToCode", () =>
           getZodSchema({
             schema,
@@ -49,7 +53,7 @@ export function getEnumZodSchemasFromOpenAPIDoc(resolver: SchemaResolver) {
   Object.entries(resolver.openApiDoc.components?.schemas ?? {}).forEach(([name, schema]) => {
     const zodSchemaName = getZodSchemaName(name, resolver.options.schemaSuffix);
     const schemaObject = resolver.resolveObject(schema);
-    if (!enumZodSchemas.find((enumZodSchema) => enumZodSchema.zodSchemaName === zodSchemaName) && schemaObject.enum) {
+    if (schemaObject.enum) {
       enumZodSchemas.push({ zodSchemaName, code: getEnumZodSchemaCode(schemaObject) });
     }
   });

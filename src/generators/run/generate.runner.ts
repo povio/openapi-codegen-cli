@@ -1,5 +1,5 @@
+import fs from "fs";
 import path from "path";
-import SwaggerParser from "@apidevtools/swagger-parser";
 import { OpenAPIV3 } from "openapi-types";
 
 import { resolveConfig } from "@/generators/core/resolveConfig";
@@ -8,6 +8,7 @@ import { GenerateFileFormatter } from "@/generators/types/generate";
 import { GenerateOptions } from "@/generators/types/options";
 import { removeStaleGeneratedFiles, writeGenerateFileData } from "@/generators/utils/file.utils";
 import { Profiler } from "@/helpers/profile.helper";
+import { shouldUseNativeCodegen } from "@/native/native-bindings";
 
 type GenerateStats = {
   generatedFilesCount: number;
@@ -33,69 +34,85 @@ export async function runGenerate({
   profiler?: Profiler;
 }) {
   const config = profiler.runSync("config.resolve", () => resolveConfig({ fileConfig, params: params ?? {} }));
-  const openApiDoc = await getOpenApiDoc(config.input, profiler);
+  const useNative = shouldUseNativeCodegen();
+  const isJson = path.extname(new URL(config.input, "file://").pathname).toLowerCase() === ".json";
+  let nativeInput =
+    useNative && isJson
+      ? await getRawOpenApiSource(config.input, profiler)
+      : await getOpenApiSource(config.input, profiler);
+  if (useNative && !isJson) {
+    const document = "document" in nativeInput ? nativeInput.document : undefined;
+    nativeInput = {
+      ...nativeInput,
+      source: profiler.runSync("openapi.serialize", () => JSON.stringify(document)),
+      yaml: false,
+    };
+  }
+  const openApiDoc =
+    "document" in nativeInput ? (nativeInput.document as OpenAPIV3.Document) : ({} as OpenAPIV3.Document);
+  const outputExists = fs.existsSync(config.output);
 
-  const filesData = profiler.runSync("generate.total", () => generateCodeFromOpenAPIDoc(openApiDoc, config, profiler));
+  const filesData = profiler.runSync("generate.total", () =>
+    generateCodeFromOpenAPIDoc(openApiDoc, config, profiler, {
+      source: nativeInput.source,
+      yaml: nativeInput.yaml,
+    }),
+  );
   if (config.clearOutput) {
     profiler.runSync("files.removeStaleGenerated", () => {
       removeStaleGeneratedFiles({ output: config.output, filesData, options: config });
     });
   }
   await profiler.runAsync("files.write", async () => {
-    await writeGenerateFileData(filesData, { formatGeneratedFile });
+    await writeGenerateFileData(filesData, { formatGeneratedFile, skipExistingCheck: !outputExists });
   });
   const stats = getGenerateStats(filesData, config);
 
   return { skipped: false, config, stats };
 }
 
-async function getOpenApiDoc(input: string, profiler: Profiler): Promise<OpenAPIV3.Document> {
-  const parsedDoc = (await profiler.runAsync(
-    "openapi.parse",
-    async () => await SwaggerParser.parse(input),
-  )) as OpenAPIV3.Document;
-  const hasExternalRefs = profiler.runSync("openapi.detectExternalRefs", () => hasExternalRef(parsedDoc));
-  if (!hasExternalRefs) {
-    return parsedDoc;
-  }
-
-  return (await profiler.runAsync(
-    "openapi.bundle",
-    async () => await SwaggerParser.bundle(input),
-  )) as OpenAPIV3.Document;
+export async function getOpenApiDoc(input: string, profiler = new Profiler(false)): Promise<OpenAPIV3.Document> {
+  return (await getOpenApiSource(input, profiler)).document;
 }
 
-function hasExternalRef(value: unknown): boolean {
-  const stack = [value];
-  const visited = new Set<object>();
+async function getOpenApiSource(input: string, profiler = new Profiler(false)) {
+  const raw = await getRawOpenApiSource(input, profiler);
+  const { source } = raw;
+  const document = await profiler.runAsync("openapi.parse", () => parseOpenApiSource(input, source));
+  return { ...raw, document };
+}
 
-  while (stack.length > 0) {
-    const current = stack.pop();
-    if (!current || typeof current !== "object") {
-      continue;
-    }
+async function getRawOpenApiSource(input: string, profiler = new Profiler(false)) {
+  const source = await profiler.runAsync("openapi.read", () => readOpenApiSource(input));
+  const extension = path.extname(new URL(input, "file://").pathname).toLowerCase();
+  return { source, yaml: extension !== ".json" };
+}
 
-    if (visited.has(current)) {
-      continue;
+async function readOpenApiSource(input: string) {
+  if (/^https?:\/\//i.test(input)) {
+    const response = await fetch(input);
+    if (!response.ok) {
+      throw new Error(`Unable to load OpenAPI document: ${response.status} ${response.statusText}`);
     }
-    visited.add(current);
-
-    if (
-      "$ref" in current &&
-      typeof (current as { $ref?: unknown }).$ref === "string" &&
-      !(current as { $ref: string }).$ref.startsWith("#/")
-    ) {
-      return true;
-    }
-
-    for (const nested of Object.values(current)) {
-      if (nested && typeof nested === "object") {
-        stack.push(nested);
-      }
-    }
+    return response.text();
   }
 
-  return false;
+  return fs.promises.readFile(input, "utf-8");
+}
+
+async function parseOpenApiSource(input: string, source: string): Promise<OpenAPIV3.Document> {
+  try {
+    return JSON.parse(source.charCodeAt(0) === 0xfeff ? source.slice(1) : source) as OpenAPIV3.Document;
+  } catch (error) {
+    if (path.extname(new URL(input, "file://").pathname).toLowerCase() === ".json") {
+      throw error;
+    }
+    if (typeof Bun !== "undefined") {
+      return Bun.YAML.parse(source) as OpenAPIV3.Document;
+    }
+    const { parse } = await import("yaml");
+    return parse(source) as OpenAPIV3.Document;
+  }
 }
 
 function getGenerateStats(filesData: { fileName: string }[], config: GenerateOptions): GenerateStats {

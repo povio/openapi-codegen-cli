@@ -22,6 +22,10 @@ import { getNamespaceName } from "@/generators/utils/namespace.utils";
 import { isNamedZodSchema } from "@/generators/utils/zod-schema.utils";
 
 export function generateEndpoints({ resolver, data, tag }: GenerateTypeParams) {
+  const nativeContent = (
+    resolver as GenerateTypeParams["resolver"] & { getNativeRenderedEndpoints?: (tag: string) => string | undefined }
+  ).getNativeRenderedEndpoints?.(tag);
+  if (nativeContent) return nativeContent;
   if (shouldInlineEndpointsForTag(tag, resolver.options)) {
     return;
   }

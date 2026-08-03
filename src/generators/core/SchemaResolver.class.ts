@@ -1,12 +1,10 @@
 import { OpenAPIV3 } from "openapi-types";
 
-import { ALLOWED_METHODS } from "@/generators/const/openapi.const";
 import { Profiler } from "@/helpers/profile.helper";
 import { OperationObject } from "@/generators/types/openapi";
 import { GenerateOptions } from "@/generators/types/options";
 import { ValidationError } from "@/generators/types/validation";
 import { getUniqueArray } from "@/generators/utils/array.utils";
-import { pick } from "@/generators/utils/object.utils";
 import { isReferenceObject } from "@/generators/utils/openapi-schema.utils";
 import {
   autocorrectRef,
@@ -14,14 +12,8 @@ import {
   getSchemaRef,
   isMediaTypeAllowed,
   isParamMediaTypeAllowed,
-  isPathExcluded,
 } from "@/generators/utils/openapi.utils";
-import {
-  getOperationsByTag,
-  getUniqueOperationName,
-  getUniqueOperationNamesWithoutSplitByTags,
-  isOperationExcluded,
-} from "@/generators/utils/operation.utils";
+import { getOperationIndex, IndexedOperation } from "@/generators/utils/operation.utils";
 import { snakeToCamel } from "@/generators/utils/string.utils";
 import { formatTag, getOperationTag } from "@/generators/utils/tag.utils";
 import {
@@ -119,7 +111,10 @@ export class SchemaResolver {
   readonly operationsByTag: Record<string, OperationObject[]> = {};
   readonly operationNames: string[] = [];
   private readonly operationNameCounts = new Map<string, number>();
+  private readonly operationNameByOperation: WeakMap<OperationObject, string>;
+  private readonly indexedOperations: IndexedOperation[];
   private readonly operationContexts: OperationContext[] = [];
+  private zodSchemaTagCache?: Map<string, string>;
 
   readonly validationErrors: ValidationError[] = [];
 
@@ -132,14 +127,22 @@ export class SchemaResolver {
     public readonly options: GenerateOptions,
     private readonly profiler?: Profiler,
   ) {
-    this.schemaRefs = Object.keys(this.docSchemas).map(getSchemaRef);
-    this.dependencyGraph = getOpenAPISchemaDependencyGraph(this.schemaRefs, this.getSchemaByRef.bind(this));
-    this.enumZodSchemas = getEnumZodSchemasFromOpenAPIDoc(this);
-    this.operationsByTag = getOperationsByTag(openApiDoc, options);
-    this.operationNames = getUniqueOperationNamesWithoutSplitByTags(openApiDoc, this.operationsByTag, options);
-    for (const name of this.operationNames) {
-      this.operationNameCounts.set(name, (this.operationNameCounts.get(name) ?? 0) + 1);
-    }
+    const p = profiler ?? new Profiler(false);
+    this.schemaRefs = p.runSync("resolver.construct.schemaRefs", () => Object.keys(this.docSchemas).map(getSchemaRef));
+    this.dependencyGraph = p.runSync("resolver.construct.dependencyGraph", () =>
+      getOpenAPISchemaDependencyGraph(this.schemaRefs, this.getSchemaByRef.bind(this)),
+    );
+    this.enumZodSchemas = p.runSync("resolver.construct.enums", () => getEnumZodSchemasFromOpenAPIDoc(this));
+    const operationIndex = p.runSync("resolver.construct.operationIndex", () => getOperationIndex(openApiDoc, options));
+    this.operationsByTag = operationIndex.operationsByTag;
+    this.operationNames = operationIndex.operationNames;
+    this.operationNameByOperation = operationIndex.operationNameByOperation;
+    this.indexedOperations = operationIndex.indexedOperations;
+    p.runSync("resolver.construct.operationNameCounts", () => {
+      for (const name of this.operationNames) {
+        this.operationNameCounts.set(name, (this.operationNameCounts.get(name) ?? 0) + 1);
+      }
+    });
 
     this.initialize();
   }
@@ -175,6 +178,21 @@ export class SchemaResolver {
   }
 
   getTagByZodSchemaName(zodSchemaName: string) {
+    const cachedTag = this.zodSchemaTagCache?.get(zodSchemaName);
+    if (cachedTag) {
+      return cachedTag;
+    }
+
+    const tag = this.resolveTagByZodSchemaName(zodSchemaName);
+    this.zodSchemaTagCache?.set(zodSchemaName, tag);
+    return tag;
+  }
+
+  enableZodSchemaTagCache() {
+    this.zodSchemaTagCache = new Map();
+  }
+
+  private resolveTagByZodSchemaName(zodSchemaName: string) {
     if (!this.options.splitByTags) {
       return this.options.defaultTag;
     }
@@ -362,146 +380,134 @@ export class SchemaResolver {
     });
 
     p.runSync("resolver.init.operationsLoop", () => {
-      for (const path in this.openApiDoc.paths) {
-        if (isPathExcluded(path, this.options)) {
-          continue;
+      let currentPath = "";
+      let pathParameters: ReturnType<SchemaResolver["getParameters"]> = {};
+      for (const { path, method, operation, pathParameters: rawPathParameters } of this.indexedOperations) {
+        if (path !== currentPath) {
+          currentPath = path;
+          pathParameters = this.getParameters(rawPathParameters ?? []);
         }
 
-        const pathItemObj = this.openApiDoc.paths[path] as OpenAPIV3.PathItemObject;
-        const pathParameters = this.getParameters(pathItemObj.parameters ?? []);
+        const tag = getOperationTag(operation, this.options);
+        const operationName = this.operationNameByOperation.get(operation)!;
+        const isUniqueOperationName = this.isOperationNameUnique(operationName);
+        const parameters = p.runSync("resolver.init.parameters.mergeResolve", () =>
+          Object.entries({
+            ...pathParameters,
+            ...this.getParameters(operation.parameters ?? []),
+          }).map(([, param]) => this.resolveObject(param as OpenAPIV3.ReferenceObject | OpenAPIV3.ParameterObject)),
+        );
+        const responses = p.runSync("resolver.init.responses.prepare", () =>
+          Object.entries(operation.responses).map(([statusCode, response]) => {
+            const responseObj = this.resolveObject(response) as OpenAPIV3.ResponseObject;
+            const mediaTypes = Object.keys(responseObj?.content ?? {});
+            const matchingMediaType =
+              mediaTypes.find((mediaType) => responseObj.content?.[mediaType]?.schema) ??
+              mediaTypes.find(isMediaTypeAllowed);
+            const schema = matchingMediaType ? responseObj.content?.[matchingMediaType]?.schema : undefined;
+            return { statusCode, responseObj, matchingMediaType, schema };
+          }),
+        );
+        const zodSchemaOperationName = snakeToCamel(
+          getZodSchemaOperationName(operationName, isUniqueOperationName, tag),
+        );
+        const schemaRefObjs = [] as OpenAPIV3.ReferenceObject[];
 
-        const pathItem = pick(pathItemObj, ALLOWED_METHODS);
-        for (const method in pathItem) {
-          const operation = pathItem[method as keyof typeof pathItem] as OperationObject | undefined;
-          if (!operation || isOperationExcluded(operation, this.options)) {
-            continue;
+        p.runSync("resolver.init.parameters.refs", () => {
+          parameters.forEach((parameter) => {
+            const parameterObject = this.resolveObject(
+              parameter as OpenAPIV3.ReferenceObject | OpenAPIV3.ParameterObject,
+            );
+            const parameterSchema = parameterObject.schema;
+            const schemaInfo = `Operation ${operation.operationId ?? path} parameter ${parameterObject.name}`;
+
+            schemaRefObjs.push(...getSchemaRefObjs(this, parameterSchema, schemaInfo));
+
+            if (this.options.extractEnums) {
+              updateExtractedEnumZodSchemaData({
+                resolver: this,
+                schema: parameterSchema,
+                schemaInfo,
+                tags: [tag],
+                nameSegments: [zodSchemaOperationName, parameterObject.name],
+                includeSelf: true,
+              });
+            }
+          });
+        });
+
+        p.runSync("resolver.init.requestBody.refs", () => {
+          if (operation.requestBody) {
+            const requestBodyObj = this.resolveObject(operation.requestBody);
+            const mediaTypes = Object.keys(requestBodyObj.content ?? {});
+            const matchingMediaType = mediaTypes.find(isParamMediaTypeAllowed);
+            if (matchingMediaType) {
+              const matchingMediaSchema = requestBodyObj.content?.[matchingMediaType]?.schema;
+              const schemaInfo = `Operation ${operation.operationId} request body`;
+
+              schemaRefObjs.push(...getSchemaRefObjs(this, matchingMediaSchema, schemaInfo));
+
+              if (this.options.extractEnums) {
+                updateExtractedEnumZodSchemaData({
+                  resolver: this,
+                  schema: matchingMediaSchema,
+                  schemaInfo,
+                  tags: [tag],
+                  nameSegments: [getBodyZodSchemaName(zodSchemaOperationName)],
+                });
+              }
+            }
           }
+        });
 
-          const tag = getOperationTag(operation, this.options);
-          const operationName = getUniqueOperationName({
-            path,
-            method,
-            operation,
-            operationsByTag: this.operationsByTag,
-            options: this.options,
-          });
-          const isUniqueOperationName = this.isOperationNameUnique(operationName);
-          const parameters = p.runSync("resolver.init.parameters.mergeResolve", () =>
-            Object.entries({
-              ...pathParameters,
-              ...this.getParameters(operation.parameters ?? []),
-            }).map(([, param]) => this.resolveObject(param as OpenAPIV3.ReferenceObject | OpenAPIV3.ParameterObject)),
-          );
-          const responses = p.runSync("resolver.init.responses.prepare", () =>
-            Object.entries(operation.responses).map(([statusCode, response]) => {
-              const responseObj = this.resolveObject(response) as OpenAPIV3.ResponseObject;
-              const mediaTypes = Object.keys(responseObj?.content ?? {});
-              const matchingMediaType = mediaTypes.find(isMediaTypeAllowed);
-              const schema = matchingMediaType ? responseObj.content?.[matchingMediaType]?.schema : undefined;
-              return { statusCode, responseObj, matchingMediaType, schema };
-            }),
-          );
-          const zodSchemaOperationName = snakeToCamel(
-            getZodSchemaOperationName(operationName, isUniqueOperationName, tag),
-          );
-          const schemaRefObjs = [] as OpenAPIV3.ReferenceObject[];
-
-          p.runSync("resolver.init.parameters.refs", () => {
-            parameters.forEach((parameter) => {
-              const parameterObject = this.resolveObject(
-                parameter as OpenAPIV3.ReferenceObject | OpenAPIV3.ParameterObject,
-              );
-              const parameterSchema = parameterObject.schema;
-              const schemaInfo = `Operation ${operation.operationId ?? path} parameter ${parameterObject.name}`;
-
-              schemaRefObjs.push(...getSchemaRefObjs(this, parameterSchema, schemaInfo));
-
-              if (this.options.extractEnums) {
-                updateExtractedEnumZodSchemaData({
-                  resolver: this,
-                  schema: parameterSchema,
-                  schemaInfo,
-                  tags: [tag],
-                  nameSegments: [zodSchemaOperationName, parameterObject.name],
-                  includeSelf: true,
-                });
-              }
-            });
-          });
-
-          p.runSync("resolver.init.requestBody.refs", () => {
-            if (operation.requestBody) {
-              const requestBodyObj = this.resolveObject(operation.requestBody);
-              const mediaTypes = Object.keys(requestBodyObj.content ?? {});
-              const matchingMediaType = mediaTypes.find(isParamMediaTypeAllowed);
-              if (matchingMediaType) {
-                const matchingMediaSchema = requestBodyObj.content?.[matchingMediaType]?.schema;
-                const schemaInfo = `Operation ${operation.operationId} request body`;
-
-                schemaRefObjs.push(...getSchemaRefObjs(this, matchingMediaSchema, schemaInfo));
-
-                if (this.options.extractEnums) {
-                  updateExtractedEnumZodSchemaData({
-                    resolver: this,
-                    schema: matchingMediaSchema,
-                    schemaInfo,
-                    tags: [tag],
-                    nameSegments: [getBodyZodSchemaName(zodSchemaOperationName)],
-                  });
-                }
-              }
+        p.runSync("resolver.init.responses.refs", () => {
+          for (const responseData of responses) {
+            if (!responseData.matchingMediaType) {
+              continue;
             }
-          });
 
-          p.runSync("resolver.init.responses.refs", () => {
-            for (const responseData of responses) {
-              if (!responseData.matchingMediaType) {
-                continue;
-              }
+            const schemaInfo = `Operation ${operation.operationId} response body`;
+            schemaRefObjs.push(...getSchemaRefObjs(this, responseData.schema, schemaInfo));
 
-              const schemaInfo = `Operation ${operation.operationId} response body`;
-              schemaRefObjs.push(...getSchemaRefObjs(this, responseData.schema, schemaInfo));
-
-              if (this.options.extractEnums) {
-                updateExtractedEnumZodSchemaData({
-                  resolver: this,
-                  schema: responseData.schema,
-                  schemaInfo,
-                  tags: [tag],
-                  nameSegments: [
-                    getResponseZodSchemaName({
-                      statusCode: responseData.statusCode,
-                      operationName,
-                      isUniqueOperationName,
-                      tag,
-                    }),
-                  ],
-                });
-              }
+            if (this.options.extractEnums) {
+              updateExtractedEnumZodSchemaData({
+                resolver: this,
+                schema: responseData.schema,
+                schemaInfo,
+                tags: [tag],
+                nameSegments: [
+                  getResponseZodSchemaName({
+                    statusCode: responseData.statusCode,
+                    operationName,
+                    isUniqueOperationName,
+                    tag,
+                  }),
+                ],
+              });
             }
-          });
+          }
+        });
 
-          const deepRefs = p.runSync("resolver.init.deepRefs", () => getDeepSchemaRefObjs(this, schemaRefObjs));
-          const operationContext: OperationContext = {
-            path,
-            method: method as OpenAPIV3.HttpMethods,
-            operation,
-            tag,
-            operationName,
-            isUniqueOperationName,
-            parameters,
-            deepRefs,
-            responses,
-          };
-          this.operationContexts.push(operationContext);
-          deepRefs.forEach((schemaRef) => {
-            const schemaData = this.getSchemaDataByRef(schemaRef);
-            if (schemaData) {
-              schemaData.tags.push(tag);
-              schemaData.deepRefOperations.push(operation);
-            }
-          });
-        }
+        const deepRefs = p.runSync("resolver.init.deepRefs", () => getDeepSchemaRefObjs(this, schemaRefObjs));
+        const operationContext: OperationContext = {
+          path,
+          method: method as OpenAPIV3.HttpMethods,
+          operation,
+          tag,
+          operationName,
+          isUniqueOperationName,
+          parameters,
+          deepRefs,
+          responses,
+        };
+        this.operationContexts.push(operationContext);
+        deepRefs.forEach((schemaRef) => {
+          const schemaData = this.getSchemaDataByRef(schemaRef);
+          if (schemaData) {
+            schemaData.tags.push(tag);
+            schemaData.deepRefOperations.push(operation);
+          }
+        });
       }
     });
 

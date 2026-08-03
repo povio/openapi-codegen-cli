@@ -21,7 +21,7 @@ function main() {
 
   // build, just in case
   console.log("Building...");
-  execSync("pnpm build", { stdio: "inherit" });
+  execSync("bun run build", { stdio: "inherit" });
 
   // read version from package.json
   const pkg = JSON.parse(fs.readFileSync(path.resolve(process.cwd(), "package.json"), "utf8"));

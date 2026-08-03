@@ -15,6 +15,11 @@ import { isEnumZodSchema, isNamedZodSchema } from "@/generators/utils/zod-schema
 import { getUniqueArray } from "@/generators/utils/array.utils";
 
 export function generateModels({ resolver, data, tag }: GenerateTypeParams) {
+  const nativeContent = (
+    resolver as GenerateTypeParams["resolver"] & { getNativeRenderedModels?: (tag: string) => string | undefined }
+  ).getNativeRenderedModels?.(tag);
+  if (nativeContent) return nativeContent;
+
   if (resolver.options.modelsInCommon && resolver.options.splitByTags && tag !== resolver.options.defaultTag) {
     return renderModelsProxy({ resolver, data, tag });
   }
@@ -167,8 +172,9 @@ function getUsedSchemaNames({
     }
   }
 
-  while (queue.length > 0) {
-    const schemaName = queue.shift();
+  let queueIndex = 0;
+  while (queueIndex < queue.length) {
+    const schemaName = queue[queueIndex++];
     if (!schemaName) {
       continue;
     }

@@ -1,5 +1,4 @@
 import { OpenAPIV3 } from "openapi-types";
-import { match } from "ts-pattern";
 
 import { COMPOSITE_KEYWORDS } from "@/generators/const/openapi.const";
 import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
@@ -14,12 +13,15 @@ import { isPrimitiveType } from "./openapi.utils";
 import { isNamedZodSchema } from "./zod-schema.utils";
 
 export function primitiveTypeToTsType(type: PrimitiveType): string {
-  return match(type)
-    .with("string", () => "string")
-    .with("number", () => "number")
-    .with("integer", () => "number")
-    .with("boolean", () => "boolean")
-    .exhaustive();
+  switch (type) {
+    case "string":
+      return "string";
+    case "number":
+    case "integer":
+      return "number";
+    case "boolean":
+      return "boolean";
+  }
 }
 
 export function getTsTypeBase({

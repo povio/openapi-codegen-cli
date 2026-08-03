@@ -18,16 +18,22 @@ import {
 import { getTagFileName } from "./utils/generate/generate.utils";
 import { shouldInlineEndpointsForTag } from "./utils/tag.utils";
 import { Profiler } from "../helpers/profile.helper";
+import { getDataFromNativeOpenAPIDoc } from "../native/getDataFromNativeOpenAPIDoc";
+import { shouldUseNativeCodegen } from "../native/native-bindings";
 
 export function generateCodeFromOpenAPIDoc(
   openApiDoc: OpenAPIV3.Document,
   options: GenerateOptions,
   profiler?: Profiler,
+  nativeSource?: { source: string; yaml: boolean },
 ) {
   const p = profiler ?? new Profiler(false);
   const importPath = options.standalone && options.importPath === "ts" ? "relative" : options.importPath;
+  const resolvedOptions = { ...options, importPath };
   const { resolver, data } = p.runSync("data.extract", () =>
-    getDataFromOpenAPIDoc(openApiDoc, { ...options, importPath }, p),
+    nativeSource && shouldUseNativeCodegen()
+      ? getDataFromNativeOpenAPIDoc(openApiDoc, resolvedOptions, nativeSource)
+      : getDataFromOpenAPIDoc(openApiDoc, resolvedOptions, p),
   );
 
   const generateFilesData: GenerateFileData[] = [];

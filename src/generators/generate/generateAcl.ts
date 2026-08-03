@@ -20,6 +20,11 @@ import { capitalize } from "@/generators/utils/string.utils";
 import { getEndpointTag } from "@/generators/utils/tag.utils";
 
 export function generateAcl({ resolver, data, tag }: GenerateTypeParams) {
+  const nativeContent = (
+    resolver as GenerateTypeParams["resolver"] & { getNativeRenderedAcl?: (tag: string) => string | undefined }
+  ).getNativeRenderedAcl?.(tag);
+  if (nativeContent) return nativeContent;
+
   const aclData = getAclData({ resolver, data, tag });
   if (!aclData) {
     return;
@@ -67,6 +72,11 @@ export function generateAcl({ resolver, data, tag }: GenerateTypeParams) {
 }
 
 export function generateAppAcl({ resolver, data }: Omit<GenerateTypeParams, "tag">) {
+  const nativeContent = (
+    resolver as GenerateTypeParams["resolver"] & { getNativeRenderedShared?: (name: string) => string | undefined }
+  ).getNativeRenderedShared?.("appAcl");
+  if (nativeContent) return nativeContent;
+
   const { appAbilitiesType, hasAdditionalAbilityImports, modelsImports } = getAppAbilitiesType({ resolver, data });
 
   const caslAbilityTupleImport: Import = {
