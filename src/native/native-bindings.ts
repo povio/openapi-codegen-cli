@@ -70,7 +70,7 @@ function getNativePath() {
 
 export function hasNativeBindings() {
   try {
-    getNativePath();
+    getNativeBindings();
     return true;
   } catch {
     return false;
@@ -80,7 +80,7 @@ export function hasNativeBindings() {
 export function shouldUseNativeCodegen() {
   if (process.env.OPENAPI_CODEGEN_NATIVE === "0") return false;
   if (process.env.OPENAPI_CODEGEN_NATIVE === "1") return true;
-  return typeof Bun !== "undefined" && hasNativeBindings();
+  return hasNativeBindings();
 }
 
 export function getNativeBindings(): NativeBindings {

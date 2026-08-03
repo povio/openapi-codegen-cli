@@ -238,6 +238,11 @@ export function getDataFromNativeOpenAPIDoc(
 
   if (nativeData.renderedComplete) {
     for (const tag of nativeData.renderedTags) data.set(tag, { endpoints: [], zodSchemas: {} });
+    if (process.env.OPENAPI_NATIVE_PROFILE === "1") {
+      console.error(
+        `native bridge load=${(afterLoad - started).toFixed(1)}ms call=${(afterNative - afterLoad).toFixed(1)}ms parse=${(afterParse - afterNative).toFixed(1)}ms facade=${(performance.now() - afterParse).toFixed(1)}ms compact=true`,
+      );
+    }
     return { resolver, data };
   }
 

@@ -12,7 +12,7 @@ import { generateAcl, generateAppAcl } from "@/generators/generate/generateAcl";
 import { generateDomainErrors } from "@/generators/generate/generateDomainErrors";
 import { generateQueryModules } from "@/generators/generate/generateQueryModules";
 
-import { getNativeBindings } from "./native-bindings";
+import { getNativeBindings, shouldUseNativeCodegen } from "./native-bindings";
 
 describe("native OpenAPI bindings", () => {
   test("loads in Bun/Node and parses JSON", () => {
@@ -22,6 +22,16 @@ describe("native OpenAPI bindings", () => {
     expect(native.nativeVersion()).toBe("0.1.0");
     expect(JSON.parse(result.documentJson)).toEqual({ openapi: "3.0.3", paths: {} });
     expect(result.parseMicros).toBeGreaterThanOrEqual(0);
+  });
+
+  test("auto-selects a loadable native addon and supports an explicit TypeScript fallback", () => {
+    const previous = process.env.OPENAPI_CODEGEN_NATIVE;
+    delete process.env.OPENAPI_CODEGEN_NATIVE;
+    expect(shouldUseNativeCodegen()).toBe(true);
+    process.env.OPENAPI_CODEGEN_NATIVE = "0";
+    expect(shouldUseNativeCodegen()).toBe(false);
+    if (previous === undefined) delete process.env.OPENAPI_CODEGEN_NATIVE;
+    else process.env.OPENAPI_CODEGEN_NATIVE = previous;
   });
 
   test("parses YAML", () => {

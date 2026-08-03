@@ -36,11 +36,11 @@ export async function runGenerate({
   const config = profiler.runSync("config.resolve", () => resolveConfig({ fileConfig, params: params ?? {} }));
   const useNative = shouldUseNativeCodegen();
   const isJson = path.extname(new URL(config.input, "file://").pathname).toLowerCase() === ".json";
-  let nativeInput =
-    useNative && isJson
-      ? await getRawOpenApiSource(config.input, profiler)
-      : await getOpenApiSource(config.input, profiler);
-  if (useNative && !isJson) {
+  const useRawNativeInput = useNative && (isJson || typeof Bun === "undefined");
+  let nativeInput = useRawNativeInput
+    ? await getRawOpenApiSource(config.input, profiler)
+    : await getOpenApiSource(config.input, profiler);
+  if (useNative && !useRawNativeInput) {
     const document = "document" in nativeInput ? nativeInput.document : undefined;
     nativeInput = {
       ...nativeInput,

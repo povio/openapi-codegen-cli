@@ -2,8 +2,10 @@ use std::{
     cell::RefCell,
     collections::{HashMap, HashSet},
     rc::Rc,
+    sync::LazyLock,
 };
 
+use regex::Regex;
 use serde_json::{Map, Number, Value};
 
 use crate::{
@@ -11,6 +13,12 @@ use crate::{
     resolver::{IndexedOperation, Resolver, format_tag},
     zod::ZodCompiler,
 };
+
+static ACL_ROOT: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^\$[^.]*\.").unwrap());
+static OPENAPI_PATH_PARAM: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"\{([A-Za-z0-9_-]+)\}").unwrap());
+static REST_PATH_PARAM: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r":([A-Za-z0-9_]+)").unwrap());
 
 pub struct EndpointExtractor<'a> {
     document: &'a Value,
@@ -432,9 +440,7 @@ impl<'a> EndpointExtractor<'a> {
             .first()?
             .pointer(&format!("/conditions/{name}"))?
             .as_str()?;
-        let stripped = regex::Regex::new(r"^\$[^.]*\.")
-            .ok()?
-            .replace(condition_path, "");
+        let stripped = ACL_ROOT.replace(condition_path, "");
         let segments: Vec<&str> = stripped.split('.').collect();
         let parameters = endpoint.get("parameters")?.as_array()?;
         let mut schema: Option<&Value> = None;
@@ -1084,8 +1090,7 @@ fn copy_optional_string(from: &Map<String, Value>, to: &mut Map<String, Value>, 
     }
 }
 fn replace_path(path: &str) -> String {
-    let regex = regex::Regex::new(r"\{([A-Za-z0-9_-]+)\}").unwrap();
-    regex
+    OPENAPI_PATH_PARAM
         .replace_all(path, |captures: &regex::Captures| {
             format!(":{}", path_param_name(&captures[1]))
         })
@@ -1110,8 +1115,7 @@ fn add_missing_path_parameters(path: &str, parameters: &mut Vec<Value>) {
         .iter()
         .filter_map(|p| p.get("name").and_then(Value::as_str).map(str::to_string))
         .collect();
-    let regex = regex::Regex::new(r":([A-Za-z0-9_]+)").unwrap();
-    for captures in regex.captures_iter(path) {
+    for captures in REST_PATH_PARAM.captures_iter(path) {
         let name = &captures[1];
         if !names.contains(name) {
             parameters.push(serde_json::json!({"name":name,"type":"Path","zodSchema":"z.string()","parameterObject":{"name":name,"required":true,"in":"path","schema":{"type":"string"}}}));

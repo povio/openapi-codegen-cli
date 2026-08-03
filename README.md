@@ -152,7 +152,7 @@ bun run start:dist generate --input ./test/petstore.yaml --verbose
 
 ### Native Bun code generation
 
-The Bun CLI and Vite plugin automatically use the bundled Rust code-generation core when a native binary is available. Generated files remain byte-for-byte compatible with the TypeScript implementation, which is retained as the fallback.
+The Bun and Node.js CLIs and the Vite plugin automatically use the bundled Rust code-generation core when a compatible native binary is available. Generated files remain byte-for-byte compatible with the TypeScript implementation, which is retained as the fallback when the addon cannot be loaded.
 
 Set `OPENAPI_CODEGEN_NATIVE=0` to force the TypeScript path, or `OPENAPI_CODEGEN_NATIVE=1` to require the native path and fail when its binary is unavailable.
 
