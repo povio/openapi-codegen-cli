@@ -15,23 +15,65 @@ pub fn render_model_proxies(
     generated_dependencies: &Map<String, Value>,
     options: &GenerateOptions,
 ) -> Map<String, Value> {
+    let started = std::time::Instant::now();
     let mut rendered = Map::new();
     if !options.models_in_common || !options.split_by_tags {
         return rendered;
     }
     let render_dependencies = augment_render_dependencies(schemas, schema_refs, dependencies);
+    let after_dependencies = started.elapsed();
     let composite_dependencies = compiled_component_dependencies(schemas, schema_refs);
-    let dependencies = &render_dependencies;
-    rendered.insert(
-        options.default_tag.clone(),
-        Value::String(render_common_models(
-            document,
-            schemas,
-            schema_refs,
-            generated_objects,
-            options,
-        )),
-    );
+    let after_composites = started.elapsed();
+    let (common, proxies, common_elapsed, proxies_elapsed) = std::thread::scope(|scope| {
+        let common_started = std::time::Instant::now();
+        let common = scope.spawn(move || {
+            let content =
+                render_common_models(document, schemas, schema_refs, generated_objects, options);
+            (content, common_started.elapsed())
+        });
+        let proxies_started = std::time::Instant::now();
+        let proxies = scope.spawn(move || {
+            let content = render_proxy_modules(
+                endpoints,
+                schemas,
+                schema_refs,
+                &render_dependencies,
+                &composite_dependencies,
+                generated_dependencies,
+                options,
+            );
+            (content, proxies_started.elapsed())
+        });
+        let (common, common_elapsed) = common.join().unwrap();
+        let (proxies, proxies_elapsed) = proxies.join().unwrap();
+        (common, proxies, common_elapsed, proxies_elapsed)
+    });
+    rendered.insert(options.default_tag.clone(), Value::String(common));
+    rendered.extend(proxies);
+    if std::env::var_os("OPENAPI_NATIVE_PROFILE").is_some() {
+        eprintln!(
+            "native models dependencies={:.3}ms composites={:.3}ms common={:.3}ms proxies={:.3}ms total={:.3}ms",
+            after_dependencies.as_secs_f64() * 1000.0,
+            (after_composites - after_dependencies).as_secs_f64() * 1000.0,
+            common_elapsed.as_secs_f64() * 1000.0,
+            proxies_elapsed.as_secs_f64() * 1000.0,
+            started.elapsed().as_secs_f64() * 1000.0,
+        );
+    }
+    rendered
+}
+
+#[allow(clippy::too_many_arguments)]
+fn render_proxy_modules(
+    endpoints: &[Value],
+    schemas: &Map<String, Value>,
+    schema_refs: &Map<String, Value>,
+    dependencies: &IndexMap<String, Vec<String>>,
+    composite_dependencies: &IndexMap<String, Vec<String>>,
+    generated_dependencies: &Map<String, Value>,
+    options: &GenerateOptions,
+) -> Map<String, Value> {
+    let mut rendered = Map::new();
     let name_by_ref: HashMap<&str, &str> = schema_refs
         .iter()
         .filter_map(|(name, reference)| {
@@ -87,7 +129,7 @@ pub fn render_model_proxies(
                         child,
                         &ref_by_name,
                         &name_by_ref,
-                        &composite_dependencies,
+                        composite_dependencies,
                         &mut direct_names,
                         &mut expanded,
                         &mut used,
@@ -139,60 +181,97 @@ fn render_common_models(
     if options.ts_namespaces {
         lines.push(format!("export namespace {namespace} {{"));
     }
-    for (name, code) in schemas {
-        let Some(code) = code.as_str() else {
-            continue;
-        };
-        let schema_object = generated_objects
-            .get(name)
-            .or_else(|| {
-                schema_refs
-                    .get(name)
-                    .and_then(Value::as_str)
-                    .and_then(|reference| resolve_document_ref(document, reference))
+    let schemas = schemas.iter().collect::<Vec<_>>();
+    let chunk_size = schemas.len().div_ceil(4).max(1);
+    let schema_lines = std::thread::scope(|scope| {
+        schemas
+            .chunks(chunk_size)
+            .map(|chunk| {
+                scope.spawn(|| {
+                    chunk
+                        .iter()
+                        .filter_map(|(name, code)| {
+                            render_common_schema_lines(
+                                document,
+                                name,
+                                code,
+                                schema_refs,
+                                generated_objects,
+                                &enum_objects,
+                                suffix,
+                            )
+                        })
+                        .flatten()
+                        .collect::<Vec<_>>()
+                })
             })
-            .or_else(|| enum_objects.get(code));
-        lines.push("/** ".into());
-        lines.push(format!(" * {name} "));
-        let schema_type = if code.starts_with("z.enum(") {
-            "enum"
-        } else {
-            schema_object
-                .and_then(|schema| schema.get("type"))
-                .and_then(Value::as_str)
-                .unwrap_or("object")
-        };
-        lines.push(format!(" * @type {{ {schema_type} }}"));
-        if let Some(schema) = schema_object {
-            let description = schema_description(schema);
-            if !description.is_empty() {
-                lines.push(format!(
-                    " * @description {}",
-                    description.replace('\n', "\n *")
-                ));
-            }
-            let mut properties = IndexMap::new();
-            collect_property_docs(document, schema, "", &mut properties, suffix);
-            for (property, (ty, description)) in properties {
-                lines.push(format!(
-                    " * @property {{ {ty} }} {property} {} ",
-                    description.replace('\n', "\n *")
-                ));
-            }
-        }
-        lines.push(" */".into());
-        lines.push(format!("export const {name} = {code};"));
-        let type_name = remove_suffix(name, suffix);
-        lines.push(format!("export type {type_name} = z.infer<typeof {name}>;"));
-        if code.starts_with("z.enum(") {
-            lines.push(format!("export const {type_name} = {name}.enum;"));
-        }
-        lines.push(String::new());
-    }
+            .collect::<Vec<_>>()
+            .into_iter()
+            .flat_map(|handle| handle.join().unwrap())
+            .collect::<Vec<_>>()
+    });
+    lines.extend(schema_lines);
     if options.ts_namespaces {
         lines.push("}".into());
     }
     format!("{}\n", lines.join("\n").trim_end())
+}
+
+fn render_common_schema_lines(
+    document: &Value,
+    name: &str,
+    code: &Value,
+    schema_refs: &Map<String, Value>,
+    generated_objects: &Map<String, Value>,
+    enum_objects: &HashMap<String, Value>,
+    suffix: &str,
+) -> Option<Vec<String>> {
+    let code = code.as_str()?;
+    let schema_object = generated_objects
+        .get(name)
+        .or_else(|| {
+            schema_refs
+                .get(name)
+                .and_then(Value::as_str)
+                .and_then(|reference| resolve_document_ref(document, reference))
+        })
+        .or_else(|| enum_objects.get(code));
+    let mut lines = vec!["/** ".into(), format!(" * {name} ")];
+    let schema_type = if code.starts_with("z.enum(") {
+        "enum"
+    } else {
+        schema_object
+            .and_then(|schema| schema.get("type"))
+            .and_then(Value::as_str)
+            .unwrap_or("object")
+    };
+    lines.push(format!(" * @type {{ {schema_type} }}"));
+    if let Some(schema) = schema_object {
+        let description = schema_description(schema);
+        if !description.is_empty() {
+            lines.push(format!(
+                " * @description {}",
+                description.replace('\n', "\n *")
+            ));
+        }
+        let mut properties = IndexMap::new();
+        collect_property_docs(document, schema, "", &mut properties, suffix);
+        for (property, (ty, description)) in properties {
+            lines.push(format!(
+                " * @property {{ {ty} }} {property} {} ",
+                description.replace('\n', "\n *")
+            ));
+        }
+    }
+    lines.push(" */".into());
+    lines.push(format!("export const {name} = {code};"));
+    let type_name = remove_suffix(name, suffix);
+    lines.push(format!("export type {type_name} = z.infer<typeof {name}>;"));
+    if code.starts_with("z.enum(") {
+        lines.push(format!("export const {type_name} = {name}.enum;"));
+    }
+    lines.push(String::new());
+    Some(lines)
 }
 
 fn collect_enum_objects(value: &Value, enums: &mut HashMap<String, Value>) {
@@ -472,6 +551,15 @@ fn augment_render_dependencies(
                 .map(|reference| (reference, name.as_str()))
         })
         .collect();
+    let ref_by_name: HashMap<&str, (&str, usize)> = schema_refs
+        .iter()
+        .enumerate()
+        .filter_map(|(index, (name, reference))| {
+            reference
+                .as_str()
+                .map(|reference| (name.as_str(), (reference, index)))
+        })
+        .collect();
     for (name, code) in schemas {
         let Some(reference) = schema_refs.get(name).and_then(Value::as_str) else {
             continue;
@@ -489,16 +577,15 @@ fn augment_render_dependencies(
             .iter()
             .filter_map(|child| name_by_ref.get(child.as_str()).copied())
             .collect();
-        let additions: Vec<String> = schema_refs
-            .iter()
-            .filter_map(|(candidate, candidate_ref)| {
-                let candidate_ref = candidate_ref.as_str()?;
-                (candidate != name
-                    && identifiers.contains(candidate.as_str())
-                    && !plain_names.contains(candidate.as_str()))
-                .then(|| candidate_ref.to_string())
-            })
+        let mut additions: Vec<(&str, usize)> = identifiers
+            .into_iter()
+            .filter(|candidate| *candidate != name && !plain_names.contains(candidate))
+            .filter_map(|candidate| ref_by_name.get(candidate).copied())
             .collect();
+        additions.sort_unstable_by_key(|(_, index)| *index);
+        let additions = additions
+            .into_iter()
+            .map(|(candidate_ref, _)| candidate_ref.to_string());
         values.extend(additions);
     }
     result
@@ -1276,12 +1363,29 @@ pub fn render_queries(endpoints: &[Value], options: &GenerateOptions) -> Map<Str
             .unwrap_or(&options.default_tag);
         by_tag.entry(tag.to_string()).or_default().push(endpoint);
     }
-    for (tag, tag_endpoints) in by_tag {
-        rendered.insert(
-            tag.clone(),
-            Value::String(render_query_module(&tag, &tag_endpoints, options)),
-        );
-    }
+    let tags = by_tag.into_iter().collect::<Vec<_>>();
+    let chunk_size = tags.len().div_ceil(4).max(1);
+    let modules = std::thread::scope(|scope| {
+        tags.chunks(chunk_size)
+            .map(|chunk| {
+                scope.spawn(|| {
+                    chunk
+                        .iter()
+                        .map(|(tag, tag_endpoints)| {
+                            (
+                                tag.clone(),
+                                Value::String(render_query_module(tag, tag_endpoints, options)),
+                            )
+                        })
+                        .collect::<Vec<_>>()
+                })
+            })
+            .collect::<Vec<_>>()
+            .into_iter()
+            .flat_map(|handle| handle.join().unwrap())
+            .collect::<Vec<_>>()
+    });
+    rendered.extend(modules);
     rendered
 }
 

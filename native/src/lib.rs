@@ -259,20 +259,36 @@ pub fn compile_data(source: String, yaml: bool, options_json: String) -> Result<
     schemas.extend(sortable_schemas);
     let mut ordered_schemas = extracted_schemas;
     ordered_schemas.extend(schemas);
-    let rendered_models = render::render_model_proxies(
-        &document,
-        &endpoints,
-        &ordered_schemas,
-        &schema_refs,
-        &resolver.ordered_dependencies,
-        &generated_objects,
-        &generated_dependencies,
-        &options,
-    );
-    let rendered_endpoints = render::render_endpoints(&endpoints, &ordered_schemas, &options);
-    let rendered_queries = render::render_queries(&endpoints, &options);
-    let rendered_acl = render::render_acl(&endpoints, &options);
-    let rendered_shared = render::render_shared(&endpoints, &options);
+    let render_started = std::time::Instant::now();
+    let (rendered_models, rendered_endpoints, rendered_queries, rendered_acl, rendered_shared) =
+        std::thread::scope(|scope| {
+            let models = scope.spawn(|| {
+                render::render_model_proxies(
+                    &document,
+                    &endpoints,
+                    &ordered_schemas,
+                    &schema_refs,
+                    &resolver.ordered_dependencies,
+                    &generated_objects,
+                    &generated_dependencies,
+                    &options,
+                )
+            });
+            let rendered_endpoints =
+                scope.spawn(|| render::render_endpoints(&endpoints, &ordered_schemas, &options));
+            let queries = scope.spawn(|| render::render_queries(&endpoints, &options));
+            let acl = scope.spawn(|| render::render_acl(&endpoints, &options));
+            let shared = scope.spawn(|| render::render_shared(&endpoints, &options));
+            (
+                models.join().unwrap(),
+                rendered_endpoints.join().unwrap(),
+                queries.join().unwrap(),
+                acl.join().unwrap(),
+                shared.join().unwrap(),
+            )
+        });
+    let render_elapsed = render_started.elapsed();
+    let after_render = started.elapsed();
     let acl_tag_count = endpoints
         .iter()
         .filter(|endpoint| {
@@ -341,6 +357,11 @@ pub fn compile_data(source: String, yaml: bool, options_json: String) -> Result<
             (after_components - after_endpoints).as_secs_f64() * 1000.0,
             (finished - after_components).as_secs_f64() * 1000.0,
             finished.as_secs_f64() * 1000.0,
+        );
+        eprintln!(
+            "native render parallel={:.3}ms assemble+json={:.3}ms",
+            render_elapsed.as_secs_f64() * 1000.0,
+            (finished - after_render).as_secs_f64() * 1000.0,
         );
     }
     Ok(NativeDataResult {
