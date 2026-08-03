@@ -88,18 +88,17 @@ impl<'a> EndpointExtractor<'a> {
             .collect()
     }
 
-    pub fn runtime_tags(&self) -> Rc<RefCell<HashMap<String, HashSet<String>>>> {
-        self.runtime_tags.clone()
-    }
-
-    pub fn into_generated_data(self) -> GeneratedEndpointData {
-        GeneratedEndpointData {
-            schemas: self.generated_schemas.into_inner(),
-            tags: self.generated_tags.into_inner(),
-            objects: self.generated_objects.into_inner(),
-            dependencies: self.generated_dependencies.into_inner(),
-            first_tags: self.first_tags.into_inner(),
-        }
+    pub fn into_generated_data(self) -> (GeneratedEndpointData, ZodCompiler<'a>) {
+        (
+            GeneratedEndpointData {
+                schemas: self.generated_schemas.into_inner(),
+                tags: self.generated_tags.into_inner(),
+                objects: self.generated_objects.into_inner(),
+                dependencies: self.generated_dependencies.into_inner(),
+                first_tags: self.first_tags.into_inner(),
+            },
+            self.compiler,
+        )
     }
 
     fn generated_dependency_names_from_references(&self, references: &[String]) -> Vec<String> {
@@ -680,9 +679,7 @@ impl<'a> EndpointExtractor<'a> {
                     .and_then(Value::as_object)
                     .is_some_and(|p| !p.is_empty()));
         let effective_chain = if root_optional_object {
-            self.compiler
-                .compile_endpoint_schema(schema, true, &indexed.tag)?
-                .1
+            self.compiler.endpoint_chain(schema, true)
         } else {
             chain
         };

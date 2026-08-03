@@ -129,6 +129,18 @@ impl<'a> ZodCompiler<'a> {
         Ok((code, chain(actual, meta, self.options)))
     }
 
+    pub fn endpoint_chain(&self, schema: &Value, required: bool) -> String {
+        let actual = self.resolve_schema(schema).unwrap_or(schema);
+        chain(
+            actual,
+            Meta {
+                required,
+                parent_partial: false,
+            },
+            self.options,
+        )
+    }
+
     pub fn extracted_schema_codes(&self) -> Map<String, Value> {
         self.extracted_enums
             .iter()

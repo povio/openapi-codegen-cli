@@ -175,13 +175,7 @@ pub fn compile_data(source: String, yaml: bool, options_json: String) -> Result<
         .extract()
         .map_err(|error| Error::new(Status::GenericFailure, error))?;
     let after_endpoints = started.elapsed();
-    let compiler = zod::ZodCompiler::new_with_runtime_tags(
-        &document,
-        &options,
-        &resolver,
-        extractor.runtime_tags(),
-    );
-    let generated = extractor.into_generated_data();
+    let (generated, compiler) = extractor.into_generated_data();
     let mut schema_owners = serde_json::Map::new();
     let mut schema_refs = serde_json::Map::new();
     if let Some(document_schemas) = document

@@ -3,12 +3,12 @@ import path from "path";
 import { OpenAPIV3 } from "openapi-types";
 
 import { resolveConfig } from "@/generators/core/resolveConfig";
-import { generateCodeFromOpenAPIDoc } from "@/generators/generateCodeFromOpenAPIDoc";
 import { GenerateFileFormatter } from "@/generators/types/generate";
 import { GenerateOptions } from "@/generators/types/options";
 import { removeStaleGeneratedFiles, writeGenerateFileData } from "@/generators/utils/file.utils";
 import { Profiler } from "@/helpers/profile.helper";
 import { shouldUseNativeCodegen } from "@/native/native-bindings";
+import { generateFilesFromNativeOpenAPI } from "@/native/generateFilesFromNativeOpenAPI";
 
 type GenerateStats = {
   generatedFilesCount: number;
@@ -52,12 +52,17 @@ export async function runGenerate({
     "document" in nativeInput ? (nativeInput.document as OpenAPIV3.Document) : ({} as OpenAPIV3.Document);
   const outputExists = fs.existsSync(config.output);
 
-  const filesData = profiler.runSync("generate.total", () =>
-    generateCodeFromOpenAPIDoc(openApiDoc, config, profiler, {
+  const filesData = await profiler.runAsync("generate.total", async () => {
+    if (useNative) {
+      const nativeFiles = generateFilesFromNativeOpenAPI(nativeInput.source, nativeInput.yaml, config);
+      if (nativeFiles) return nativeFiles;
+    }
+    const { generateCodeFromOpenAPIDoc } = await import("@/generators/generateCodeFromOpenAPIDoc");
+    return generateCodeFromOpenAPIDoc(openApiDoc, config, profiler, {
       source: nativeInput.source,
       yaml: nativeInput.yaml,
-    }),
-  );
+    });
+  });
   if (config.clearOutput) {
     profiler.runSync("files.removeStaleGenerated", () => {
       removeStaleGeneratedFiles({ output: config.output, filesData, options: config });
