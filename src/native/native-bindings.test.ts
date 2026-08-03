@@ -78,7 +78,7 @@ describe("native OpenAPI bindings", () => {
     const expectedEndpoints = [...expected.data.values()].flatMap(({ endpoints }) => endpoints);
     const expectedSchemas = Object.assign({}, ...[...expected.data.values()].map(({ zodSchemas }) => zodSchemas));
     const result = getNativeBindings().compileData(source, false, JSON.stringify(options));
-    const actual = JSON.parse(Buffer.from(result.dataJson).toString("utf8")) as {
+    const actual = result.data as {
       endpoints: unknown[];
       schemas: Record<string, string>;
     };
@@ -96,7 +96,7 @@ describe("native OpenAPI bindings", () => {
     });
     const expected = getDataFromOpenAPIDoc(document, options);
     const result = getNativeBindings().compileData(source, false, JSON.stringify(options));
-    const actual = JSON.parse(Buffer.from(result.dataJson).toString("utf8")) as {
+    const actual = result.data as {
       renderedModels: Record<string, string>;
     };
 
@@ -120,7 +120,7 @@ describe("native OpenAPI bindings", () => {
     });
     const expected = getDataFromOpenAPIDoc(document, options);
     const result = getNativeBindings().compileData(source, false, JSON.stringify(options));
-    const actual = JSON.parse(Buffer.from(result.dataJson).toString("utf8")) as {
+    const actual = result.data as {
       renderedEndpoints: Record<string, string>;
     };
 
@@ -149,7 +149,7 @@ describe("native OpenAPI bindings", () => {
       });
       const expected = getDataFromOpenAPIDoc(document, options);
       const result = getNativeBindings().compileData(source, false, JSON.stringify(options));
-      const actual = JSON.parse(Buffer.from(result.dataJson).toString("utf8")) as {
+      const actual = result.data as {
         renderedQueries: Record<string, string>;
       };
 
@@ -169,7 +169,7 @@ describe("native OpenAPI bindings", () => {
     });
     const expected = getDataFromOpenAPIDoc(document, options);
     const result = getNativeBindings().compileData(source, false, JSON.stringify(options));
-    const actual = JSON.parse(Buffer.from(result.dataJson).toString("utf8")) as {
+    const actual = result.data as {
       renderedAcl: Record<string, string>;
     };
     for (const [tag, content] of Object.entries(actual.renderedAcl)) {
@@ -187,7 +187,7 @@ describe("native OpenAPI bindings", () => {
     });
     const expected = getDataFromOpenAPIDoc(document, options);
     const result = getNativeBindings().compileData(source, false, JSON.stringify(options));
-    const actual = JSON.parse(Buffer.from(result.dataJson).toString("utf8")) as {
+    const actual = result.data as {
       renderedShared: Record<string, string>;
     };
 

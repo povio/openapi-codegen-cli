@@ -1,6 +1,5 @@
-use std::{cell::RefCell, rc::Rc, sync::LazyLock};
+use std::{cell::RefCell, rc::Rc};
 
-use regex::Regex;
 use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 use serde_json::{Map, Number, Value};
 
@@ -9,12 +8,6 @@ use crate::{
     resolver::{IndexedOperation, Resolver, format_tag},
     zod::ZodCompiler,
 };
-
-static ACL_ROOT: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^\$[^.]*\.").unwrap());
-static OPENAPI_PATH_PARAM: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"\{([A-Za-z0-9_-]+)\}").unwrap());
-static REST_PATH_PARAM: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r":([A-Za-z0-9_]+)").unwrap());
 
 pub struct EndpointExtractor<'a> {
     document: &'a Value,
@@ -447,7 +440,10 @@ impl<'a> EndpointExtractor<'a> {
             .first()?
             .pointer(&format!("/conditions/{name}"))?
             .as_str()?;
-        let stripped = ACL_ROOT.replace(condition_path, "");
+        let stripped = condition_path
+            .strip_prefix('$')
+            .and_then(|path| path.split_once('.').map(|(_, rest)| rest))
+            .unwrap_or(condition_path);
         let segments: Vec<&str> = stripped.split('.').collect();
         let parameters = endpoint.get("parameters")?.as_array()?;
         let mut schema: Option<&Value> = None;
@@ -1087,11 +1083,32 @@ fn copy_optional_string(from: &Map<String, Value>, to: &mut Map<String, Value>, 
     }
 }
 fn replace_path(path: &str) -> String {
-    OPENAPI_PATH_PARAM
-        .replace_all(path, |captures: &regex::Captures| {
-            format!(":{}", path_param_name(&captures[1]))
-        })
-        .into_owned()
+    let mut output = String::with_capacity(path.len());
+    let mut remaining = path;
+    while let Some(open) = remaining.find('{') {
+        output.push_str(&remaining[..open]);
+        let after_open = &remaining[open + 1..];
+        let Some(close) = after_open.find('}') else {
+            output.push_str(&remaining[open..]);
+            return output;
+        };
+        let name = &after_open[..close];
+        if !name.is_empty()
+            && name
+                .bytes()
+                .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'-'))
+        {
+            output.push(':');
+            output.push_str(&path_param_name(name));
+        } else {
+            output.push('{');
+            output.push_str(name);
+            output.push('}');
+        }
+        remaining = &after_open[close + 1..];
+    }
+    output.push_str(remaining);
+    output
 }
 fn path_param_name(name: &str) -> String {
     name.replace('_', "#")
@@ -1112,10 +1129,26 @@ fn add_missing_path_parameters(path: &str, parameters: &mut Vec<Value>) {
         .iter()
         .filter_map(|p| p.get("name").and_then(Value::as_str).map(str::to_string))
         .collect();
-    for captures in REST_PATH_PARAM.captures_iter(path) {
-        let name = &captures[1];
+    let bytes = path.as_bytes();
+    let mut index = 0;
+    while index < bytes.len() {
+        if bytes[index] != b':' {
+            index += 1;
+            continue;
+        }
+        let start = index + 1;
+        let mut end = start;
+        while end < bytes.len() && (bytes[end].is_ascii_alphanumeric() || bytes[end] == b'_') {
+            end += 1;
+        }
+        if end == start {
+            index += 1;
+            continue;
+        }
+        let name = &path[start..end];
         if !names.contains(name) {
             parameters.push(serde_json::json!({"name":name,"type":"Path","zodSchema":"z.string()","parameterObject":{"name":name,"required":true,"in":"path","schema":{"type":"string"}}}));
         }
+        index = end;
     }
 }

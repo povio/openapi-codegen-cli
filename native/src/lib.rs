@@ -47,7 +47,7 @@ pub struct NativeEndpointsResult {
 
 #[napi(object)]
 pub struct NativeDataResult {
-    pub data_json: Buffer,
+    pub data: Value,
     pub elapsed_micros: i64,
 }
 
@@ -331,7 +331,7 @@ pub fn compile_data(source: String, yaml: bool, options_json: String) -> Result<
     rendered_tags.insert(options.default_tag.clone());
     let rendered_tags = rendered_tags.into_iter().collect::<Vec<_>>();
     let compact = || Value::Object(serde_json::Map::new());
-    let data_json = serde_json::to_vec(&serde_json::json!({
+    let data = serde_json::json!({
         "endpoints": if rendered_complete { Value::Array(Vec::new()) } else { Value::Array(endpoints) },
         "schemas": if rendered_complete { compact() } else { Value::Object(ordered_schemas) },
         "schemaOwners": if rendered_complete { compact() } else { Value::Object(schema_owners) },
@@ -350,8 +350,7 @@ pub fn compile_data(source: String, yaml: bool, options_json: String) -> Result<
         "renderedComplete": rendered_complete,
         "renderedTags": rendered_tags,
         "document": if rendered_complete { Value::Null } else { document.clone() },
-    }))
-    .map_err(|error| Error::new(Status::GenericFailure, error.to_string()))?;
+    });
     if std::env::var_os("OPENAPI_NATIVE_PROFILE").is_some() {
         let finished = started.elapsed();
         eprintln!(
@@ -369,7 +368,7 @@ pub fn compile_data(source: String, yaml: bool, options_json: String) -> Result<
         );
     }
     Ok(NativeDataResult {
-        data_json: data_json.into(),
+        data,
         elapsed_micros: started.elapsed().as_micros() as i64,
     })
 }
@@ -402,7 +401,9 @@ pub unsafe extern "C" fn openapi_codegen_compile_data(
     let Ok(result) = compile_data(source.to_string(), yaml != 0, options.to_string()) else {
         return std::ptr::null_mut();
     };
-    let mut bytes = result.data_json.to_vec();
+    let Ok(mut bytes) = serde_json::to_vec(&result.data) else {
+        return std::ptr::null_mut();
+    };
     let pointer = bytes.as_mut_ptr();
     unsafe { *output_len = bytes.len() };
     std::mem::forget(bytes);

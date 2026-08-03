@@ -43,7 +43,7 @@ type NativeBindings = {
     yaml: boolean,
     optionsJson: string,
   ): {
-    dataJson: Uint8Array;
+    data: unknown;
     elapsedMicros: number;
   };
   parseOpenapi(

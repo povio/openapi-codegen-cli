@@ -229,7 +229,7 @@ export function getDataFromNativeOpenAPIDoc(
     JSON.stringify({ ...options, nativeCompact: true }),
   );
   const afterNative = performance.now();
-  const nativeData = JSON.parse(Buffer.from(nativeResult.dataJson).toString("utf8")) as NativeData;
+  const nativeData = nativeResult.data as NativeData;
   const afterParse = performance.now();
   const resolverDocument = nativeData.document ?? openApiDoc;
   const resolver = new NativeSchemaResolver(resolverDocument, options, nativeData) as unknown as SchemaResolver;
