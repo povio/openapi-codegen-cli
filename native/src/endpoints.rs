@@ -1,11 +1,7 @@
-use std::{
-    cell::RefCell,
-    collections::{HashMap, HashSet},
-    rc::Rc,
-    sync::LazyLock,
-};
+use std::{cell::RefCell, rc::Rc, sync::LazyLock};
 
 use regex::Regex;
+use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 use serde_json::{Map, Number, Value};
 
 use crate::{
@@ -35,6 +31,14 @@ pub struct EndpointExtractor<'a> {
     registering: RefCell<HashSet<String>>,
 }
 
+pub struct GeneratedEndpointData {
+    pub schemas: Map<String, Value>,
+    pub tags: HashMap<String, HashSet<String>>,
+    pub objects: Map<String, Value>,
+    pub dependencies: Map<String, Value>,
+    pub first_tags: HashMap<String, String>,
+}
+
 impl<'a> EndpointExtractor<'a> {
     pub fn new(
         document: &'a Value,
@@ -45,7 +49,7 @@ impl<'a> EndpointExtractor<'a> {
             document,
             options,
             resolver,
-            Rc::new(RefCell::new(HashMap::new())),
+            Rc::new(RefCell::new(HashMap::default())),
         )
     }
 
@@ -67,18 +71,18 @@ impl<'a> EndpointExtractor<'a> {
                 runtime_tags.clone(),
             ),
             generated_schemas: RefCell::new(Map::new()),
-            generated_tags: RefCell::new(HashMap::new()),
+            generated_tags: RefCell::new(HashMap::default()),
             generated_objects: RefCell::new(Map::new()),
             generated_dependencies: RefCell::new(Map::new()),
             canonical_enum_refs,
             runtime_tags,
-            first_tags: RefCell::new(HashMap::new()),
-            registering: RefCell::new(HashSet::new()),
+            first_tags: RefCell::new(HashMap::default()),
+            registering: RefCell::new(HashSet::default()),
         }
     }
 
     pub fn extract(&self) -> Result<Vec<Value>, String> {
-        let mut name_counts = HashMap::new();
+        let mut name_counts = HashMap::default();
         for operation in &self.resolver.operations {
             *name_counts.entry(operation.name.as_str()).or_insert(0usize) += 1;
         }
@@ -91,36 +95,44 @@ impl<'a> EndpointExtractor<'a> {
             .collect()
     }
 
-    pub fn generated_schemas(&self) -> Map<String, Value> {
-        self.generated_schemas.borrow().clone()
-    }
-
     pub fn runtime_tags(&self) -> Rc<RefCell<HashMap<String, HashSet<String>>>> {
         self.runtime_tags.clone()
     }
 
-    pub fn generated_tags(&self) -> HashMap<String, HashSet<String>> {
-        self.generated_tags.borrow().clone()
+    pub fn into_generated_data(self) -> GeneratedEndpointData {
+        GeneratedEndpointData {
+            schemas: self.generated_schemas.into_inner(),
+            tags: self.generated_tags.into_inner(),
+            objects: self.generated_objects.into_inner(),
+            dependencies: self.generated_dependencies.into_inner(),
+            first_tags: self.first_tags.into_inner(),
+        }
     }
 
-    pub fn generated_objects(&self) -> Map<String, Value> {
-        self.generated_objects.borrow().clone()
-    }
-
-    pub fn generated_dependencies(&self) -> Map<String, Value> {
-        self.generated_dependencies.borrow().clone()
-    }
-
-    fn generated_dependency_names(&self, schema: &Value) -> Vec<String> {
+    fn generated_dependency_names_from_references(&self, references: &[String]) -> Vec<String> {
         let registered = self.first_tags.borrow();
-        let mut references = Vec::new();
-        collect_compiled_reference_order(schema, &mut references, &mut HashSet::new());
         let mut names = Vec::new();
-        let mut expanded = HashSet::new();
+        let mut expanded = HashSet::default();
         for reference in references {
-            self.add_generated_dependency(&reference, &registered, &mut expanded, &mut names);
+            self.add_generated_dependency(reference, &registered, &mut expanded, &mut names);
         }
         names
+    }
+
+    fn register_inline_dependencies(
+        &self,
+        schema: &Value,
+        tag: &str,
+    ) -> Result<Vec<String>, String> {
+        let mut references = Vec::new();
+        collect_compiled_reference_order(schema, &mut references, &mut HashSet::default());
+        let dependencies = self.generated_dependency_names_from_references(&references);
+        if schema.get("$ref").is_none() {
+            for reference in references {
+                self.register_reference(&reference, tag)?;
+            }
+        }
+        Ok(dependencies)
     }
 
     fn add_generated_dependency(
@@ -179,10 +191,6 @@ impl<'a> EndpointExtractor<'a> {
             .entry(name)
             .or_default()
             .insert(tag.to_string());
-    }
-
-    pub fn first_tags(&self) -> HashMap<String, String> {
-        self.first_tags.borrow().clone()
     }
 
     fn extract_operation(
@@ -291,8 +299,7 @@ impl<'a> EndpointExtractor<'a> {
                 if let Some(schema) = schema {
                     self.register_reference_schema(schema, &indexed.tag)?;
                     let schema_object = self.resolve(schema).unwrap_or(schema);
-                    let dependencies = self.generated_dependency_names(schema);
-                    self.register_compiled_references(schema, &indexed.tag)?;
+                    let dependencies = self.register_inline_dependencies(schema, &indexed.tag)?;
                     let (code, chain) =
                         self.compiler
                             .compile_endpoint_schema(schema, true, &indexed.tag)?;
@@ -569,8 +576,7 @@ impl<'a> EndpointExtractor<'a> {
             .get("required")
             .and_then(Value::as_bool)
             .unwrap_or(true);
-        let dependencies = self.generated_dependency_names(schema);
-        self.register_compiled_references(schema, &indexed.tag)?;
+        let dependencies = self.register_inline_dependencies(schema, &indexed.tag)?;
         let (code, chain) =
             self.compiler
                 .compile_endpoint_schema(schema, required, &indexed.tag)?;
@@ -659,8 +665,7 @@ impl<'a> EndpointExtractor<'a> {
                 .and_then(Value::as_bool)
                 .unwrap_or(false);
         self.register_reference_schema(schema, &indexed.tag)?;
-        let dependencies = self.generated_dependency_names(schema);
-        self.register_compiled_references(schema, &indexed.tag)?;
+        let dependencies = self.register_inline_dependencies(schema, &indexed.tag)?;
         let (code, chain) =
             self.compiler
                 .compile_endpoint_schema(schema, required, &indexed.tag)?;
@@ -757,6 +762,10 @@ impl<'a> EndpointExtractor<'a> {
         let Some(reference) = schema.get("$ref").and_then(Value::as_str) else {
             return Ok(());
         };
+        self.register_reference(reference, tag)
+    }
+
+    fn register_reference(&self, reference: &str, tag: &str) -> Result<(), String> {
         let reference = if reference.starts_with("#/") {
             reference.to_string()
         } else {
@@ -788,10 +797,10 @@ impl<'a> EndpointExtractor<'a> {
             .pointer(reference.strip_prefix('#').unwrap_or_default())
         {
             let mut refs = Vec::new();
-            let mut seen = HashSet::new();
+            let mut seen = HashSet::default();
             collect_compiled_reference_order(actual, &mut refs, &mut seen);
             for child in refs {
-                self.register_reference_schema(&serde_json::json!({"$ref": child}), effective_tag)?;
+                self.register_reference(&child, effective_tag)?;
             }
             if actual.get("enum").is_some() {
                 let name = schema_name(
@@ -820,18 +829,6 @@ impl<'a> EndpointExtractor<'a> {
             self.set_generated_schema(name, code, effective_tag);
         }
         self.registering.borrow_mut().remove(&reference);
-        Ok(())
-    }
-
-    fn register_compiled_references(&self, schema: &Value, tag: &str) -> Result<(), String> {
-        if schema.get("$ref").is_some() {
-            return Ok(());
-        }
-        let mut refs = Vec::new();
-        collect_compiled_reference_order(schema, &mut refs, &mut HashSet::new());
-        for child in refs {
-            self.register_reference_schema(&serde_json::json!({"$ref": child}), tag)?;
-        }
         Ok(())
     }
 }
@@ -884,8 +881,8 @@ fn collect_compiled_reference_order(
 }
 
 fn canonical_enum_refs(document: &Value) -> HashMap<String, String> {
-    let mut canonical_by_code = HashMap::new();
-    let mut result = HashMap::new();
+    let mut canonical_by_code = HashMap::default();
+    let mut result = HashMap::default();
     let Some(schemas) = document
         .pointer("/components/schemas")
         .and_then(Value::as_object)

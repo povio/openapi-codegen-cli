@@ -10,6 +10,9 @@ use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use serde_json::Value;
 
+#[global_allocator]
+static ALLOCATOR: mimalloc::MiMalloc = mimalloc::MiMalloc;
+
 #[napi(object)]
 pub struct NativeParseResult {
     pub document_json: String,
@@ -178,6 +181,7 @@ pub fn compile_data(source: String, yaml: bool, options_json: String) -> Result<
         &resolver,
         extractor.runtime_tags(),
     );
+    let generated = extractor.into_generated_data();
     let mut schema_owners = serde_json::Map::new();
     let mut schema_refs = serde_json::Map::new();
     if let Some(document_schemas) = document
@@ -197,7 +201,7 @@ pub fn compile_data(source: String, yaml: bool, options_json: String) -> Result<
     for (name, tag) in compiler.extracted_schema_tags() {
         schema_owners.insert(name, Value::String(tag));
     }
-    for (name, tags) in extractor.generated_tags() {
+    for (name, tags) in generated.tags {
         let tag = if tags.len() == 1 {
             tags.into_iter()
                 .next()
@@ -208,8 +212,8 @@ pub fn compile_data(source: String, yaml: bool, options_json: String) -> Result<
         schema_owners.insert(name, Value::String(tag));
     }
     let circular_schemas = compiler.circular_schema_names();
-    let generated_objects = extractor.generated_objects();
-    let generated_dependencies = extractor.generated_dependencies();
+    let generated_objects = generated.objects;
+    let generated_dependencies = generated.dependencies;
     let topology_order: Vec<String> = resolver
         .topology_order
         .iter()
@@ -230,7 +234,7 @@ pub fn compile_data(source: String, yaml: bool, options_json: String) -> Result<
     };
     let extracted_schemas = compiler.extracted_schema_codes();
     let components = compiler
-        .compile_components_with_tags(&extractor.first_tags())
+        .compile_components_with_tags(&generated.first_tags)
         .map_err(|error| Error::new(Status::GenericFailure, error))?;
     let after_components = started.elapsed();
     let root_enums: Vec<(String, Value)> = components
@@ -244,7 +248,7 @@ pub fn compile_data(source: String, yaml: bool, options_json: String) -> Result<
             sortable_schemas.insert(name, code);
         }
     }
-    sortable_schemas.extend(extractor.generated_schemas());
+    sortable_schemas.extend(generated.schemas);
     sortable_schemas.extend(root_enums);
     let mut schemas = serde_json::Map::new();
     for reference in &resolver.topology_order {

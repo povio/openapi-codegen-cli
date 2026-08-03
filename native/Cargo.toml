@@ -25,6 +25,8 @@ serde_json = { version = "1", features = ["preserve_order"] }
 serde_yaml = "0.9"
 regex = "1"
 indexmap = { version = "2", features = ["serde"] }
+mimalloc = { version = "0.1", default-features = false }
+rustc-hash = "2"
 
 [build-dependencies]
 napi-build = "2"

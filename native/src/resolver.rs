@@ -1,11 +1,12 @@
-use std::collections::{HashMap, HashSet};
-
-use indexmap::IndexMap;
+use indexmap::IndexMap as BaseIndexMap;
 use regex::Regex;
+use rustc_hash::{FxBuildHasher, FxHashMap as HashMap, FxHashSet as HashSet};
 use serde::Serialize;
 use serde_json::{Map, Value};
 
 use crate::config::GenerateOptions;
+
+type IndexMap<K, V> = BaseIndexMap<K, V, FxBuildHasher>;
 
 const METHODS: [&str; 8] = [
     "get", "put", "post", "delete", "options", "head", "patch", "trace",
@@ -150,9 +151,9 @@ fn collect_ordered_dependencies(
         .pointer("/components/schemas")
         .and_then(Value::as_object)
     else {
-        return IndexMap::new();
+        return IndexMap::default();
     };
-    let mut enum_ref_by_values: IndexMap<String, String> = IndexMap::new();
+    let mut enum_ref_by_values: IndexMap<String, String> = IndexMap::default();
     for (name, schema) in schemas {
         if let Some(values) = schema.get("enum").and_then(Value::as_array) {
             enum_ref_by_values
@@ -160,18 +161,18 @@ fn collect_ordered_dependencies(
                 .or_insert_with(|| format!("#/components/schemas/{name}"));
         }
     }
-    let mut direct: IndexMap<String, Vec<String>> = IndexMap::new();
-    let mut inline_enum_values_by_parent: IndexMap<String, HashSet<String>> = IndexMap::new();
+    let mut direct: IndexMap<String, Vec<String>> = IndexMap::default();
+    let mut inline_enum_values_by_parent: IndexMap<String, HashSet<String>> = IndexMap::default();
     for (name, schema) in schemas {
         let root = format!("#/components/schemas/{name}");
         let mut dependencies = Vec::new();
-        let mut seen = HashSet::new();
+        let mut seen = HashSet::default();
         collect_ordered_refs(schema, &mut dependencies, &mut seen);
         if !dependencies.is_empty() {
             direct.insert(root.clone(), dependencies);
         }
         if extract_enums {
-            let mut inline_values = HashSet::new();
+            let mut inline_values = HashSet::default();
             if let Some(object) = schema.as_object() {
                 for value in object.values() {
                     collect_inline_enum_values(value, &mut inline_values);
@@ -225,10 +226,10 @@ fn collect_inline_enum_values(value: &Value, values: &mut HashSet<String>) {
 fn ordered_transitive_graph(
     direct: &IndexMap<String, Vec<String>>,
 ) -> IndexMap<String, Vec<String>> {
-    let mut deep: IndexMap<String, Vec<String>> = IndexMap::new();
+    let mut deep: IndexMap<String, Vec<String>> = IndexMap::default();
     for root in direct.keys() {
         let mut dependencies = Vec::new();
-        let mut visited = HashSet::new();
+        let mut visited = HashSet::default();
         visit_ordered_dependencies(root, root, &direct, &mut dependencies, &mut visited);
         deep.insert(root.clone(), dependencies);
     }
@@ -237,9 +238,15 @@ fn ordered_transitive_graph(
 
 fn ordered_topology(deep: &IndexMap<String, Vec<String>>) -> Vec<String> {
     let mut sorted = Vec::new();
-    let mut visited = HashSet::new();
+    let mut visited = HashSet::default();
     for root in deep.keys() {
-        visit_topology(root, &deep, &mut sorted, &mut visited, &mut HashSet::new());
+        visit_topology(
+            root,
+            &deep,
+            &mut sorted,
+            &mut visited,
+            &mut HashSet::default(),
+        );
     }
     sorted
 }
@@ -329,7 +336,7 @@ fn merge_duplicate_enum_tags(document: &Value, schema_tags: &mut HashMap<String,
     else {
         return;
     };
-    let mut enum_ref_by_code = HashMap::new();
+    let mut enum_ref_by_code = HashMap::default();
     for (name, schema) in schemas {
         if let Some(values) = schema.get("enum").and_then(Value::as_array) {
             if let Ok(code) = serde_json::to_string(values) {
@@ -474,12 +481,12 @@ fn index_operations<'a>(
 }
 
 fn assign_unique_names(operations: &mut [IndexedOperation<'_>], options: &GenerateOptions) {
-    let mut counts: HashMap<(String, String), usize> = HashMap::new();
+    let mut counts: HashMap<(String, String), usize> = HashMap::default();
     for operation in operations.iter() {
         let name = operation_name(operation, options, false, false);
         *counts.entry((operation.tag.clone(), name)).or_default() += 1;
     }
-    let mut tag_counts: HashMap<(String, String), usize> = HashMap::new();
+    let mut tag_counts: HashMap<(String, String), usize> = HashMap::default();
     for operation in operations.iter() {
         let name = operation_name(operation, options, true, false);
         *tag_counts.entry((operation.tag.clone(), name)).or_default() += 1;
@@ -558,17 +565,17 @@ fn collect_schema_tags(
     operations: &[IndexedOperation<'_>],
     deep: &HashMap<String, HashSet<String>>,
 ) -> HashMap<String, HashSet<String>> {
-    let mut result: HashMap<String, HashSet<String>> = HashMap::new();
+    let mut result: HashMap<String, HashSet<String>> = HashMap::default();
     for operation in operations {
-        let mut refs = HashSet::new();
+        let mut refs = HashSet::default();
         if let Some(params) = operation.operation.get("parameters") {
-            collect_operation_schema_refs(document, params, &mut refs, &mut HashSet::new());
+            collect_operation_schema_refs(document, params, &mut refs, &mut HashSet::default());
         }
         if let Some(body) = operation.operation.get("requestBody") {
-            collect_operation_schema_refs(document, body, &mut refs, &mut HashSet::new());
+            collect_operation_schema_refs(document, body, &mut refs, &mut HashSet::default());
         }
         if let Some(responses) = operation.operation.get("responses") {
-            collect_operation_schema_refs(document, responses, &mut refs, &mut HashSet::new());
+            collect_operation_schema_refs(document, responses, &mut refs, &mut HashSet::default());
         }
         let roots: Vec<String> = refs.iter().cloned().collect();
         for reference in roots {

@@ -1,13 +1,12 @@
-use std::{
-    cell::RefCell,
-    collections::{HashMap, HashSet},
-    rc::Rc,
-};
+use std::{cell::RefCell, rc::Rc};
 
-use indexmap::IndexMap;
+use indexmap::IndexMap as BaseIndexMap;
+use rustc_hash::{FxBuildHasher, FxHashMap as HashMap, FxHashSet as HashSet};
 use serde_json::{Map, Value};
 
 use crate::{config::GenerateOptions, resolver::Resolver};
+
+type IndexMap<K, V> = BaseIndexMap<K, V, FxBuildHasher>;
 
 #[derive(Clone, Copy, Default)]
 struct Meta {
@@ -35,7 +34,7 @@ impl<'a> ZodCompiler<'a> {
             document,
             options,
             resolver,
-            Rc::new(RefCell::new(HashMap::new())),
+            Rc::new(RefCell::new(HashMap::default())),
         )
     }
 
@@ -45,7 +44,7 @@ impl<'a> ZodCompiler<'a> {
         resolver: &'a Resolver<'a>,
         runtime_tags: Rc<RefCell<HashMap<String, HashSet<String>>>>,
     ) -> Self {
-        let mut root_enums = HashMap::new();
+        let mut root_enums = HashMap::default();
         if let Some(schemas) = document
             .pointer("/components/schemas")
             .and_then(Value::as_object)
@@ -72,7 +71,7 @@ impl<'a> ZodCompiler<'a> {
     }
 
     pub fn compile_components(&self) -> Result<Map<String, Value>, String> {
-        self.compile_components_with_tags(&HashMap::new())
+        self.compile_components_with_tags(&HashMap::default())
     }
 
     pub fn compile_components_with_tags(
@@ -847,9 +846,9 @@ fn collect_extracted_enums(
     root_enums: &HashMap<String, String>,
 ) -> IndexMap<String, (String, String)> {
     if !options.extract_enums {
-        return IndexMap::new();
+        return IndexMap::default();
     }
-    let mut candidates: IndexMap<String, ExtractedEnumCandidate> = IndexMap::new();
+    let mut candidates: IndexMap<String, ExtractedEnumCandidate> = IndexMap::default();
     if let Some(schemas) = document
         .pointer("/components/schemas")
         .and_then(Value::as_object)
@@ -870,7 +869,7 @@ fn collect_extracted_enums(
     // Codes backed by a canonical component enum never become separately extracted schemas.
     candidates.retain(|code, _| !root_enums.contains_key(code));
 
-    let mut preliminary: IndexMap<String, (String, String)> = IndexMap::new();
+    let mut preliminary: IndexMap<String, (String, String)> = IndexMap::default();
     for (code, candidate) in candidates {
         let Some(common) = most_common_adjacent(&candidate.last_segments) else {
             continue;
@@ -955,7 +954,7 @@ fn enum_schema_name(name: &str, enum_suffix: &str, schema_suffix: &str) -> Strin
 
 fn most_common_adjacent(values: &[String]) -> Option<String> {
     const IGNORED: [&str; 8] = ["dto", "by", "for", "of", "in", "to", "and", "with"];
-    let mut counts: HashMap<String, (usize, usize)> = HashMap::new();
+    let mut counts: HashMap<String, (usize, usize)> = HashMap::default();
     let mut order = 0usize;
     for value in values {
         let words = split_by_uppercase(&capitalize(value));
@@ -1013,16 +1012,16 @@ fn collect_precompiled_circular_refs(document: &Value, resolver: &Resolver<'_>) 
         .pointer("/components/schemas")
         .and_then(Value::as_object)
     else {
-        return HashSet::new();
+        return HashSet::default();
     };
     let indexes: HashMap<String, usize> = schemas
         .keys()
         .enumerate()
         .map(|(index, name)| (format!("#/components/schemas/{name}"), index))
         .collect();
-    let mut result = HashSet::new();
+    let mut result = HashSet::default();
     for (source_index, schema) in schemas.values().enumerate() {
-        let mut refs = HashSet::new();
+        let mut refs = HashSet::default();
         collect_schema_refs(schema, &mut refs);
         for reference in refs {
             if indexes
@@ -1060,7 +1059,7 @@ fn collect_schema_refs(value: &Value, refs: &mut HashSet<String>) {
 }
 
 fn schema_reaches(schema: &Value, root: &str, resolver: &Resolver<'_>) -> bool {
-    let mut refs = HashSet::new();
+    let mut refs = HashSet::default();
     collect_schema_refs(schema, &mut refs);
     refs.iter().any(|reference| {
         reference == root

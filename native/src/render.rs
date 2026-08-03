@@ -1,9 +1,13 @@
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::VecDeque;
 
-use indexmap::{IndexMap, IndexSet};
+use indexmap::{IndexMap as BaseIndexMap, IndexSet as BaseIndexSet};
+use rustc_hash::{FxBuildHasher, FxHashMap as HashMap, FxHashSet as HashSet};
 use serde_json::{Map, Value};
 
 use crate::config::GenerateOptions;
+
+type IndexMap<K, V> = BaseIndexMap<K, V, FxBuildHasher>;
+type IndexSet<T> = BaseIndexSet<T, FxBuildHasher>;
 
 pub fn render_model_proxies(
     document: &Value,
@@ -90,7 +94,7 @@ fn render_proxy_modules(
                 .map(|reference| (name.as_str(), reference))
         })
         .collect();
-    let mut by_tag: IndexMap<String, Vec<&Value>> = IndexMap::new();
+    let mut by_tag: IndexMap<String, Vec<&Value>> = IndexMap::default();
     for endpoint in endpoints {
         let tag = endpoint
             .get("tags")
@@ -105,13 +109,13 @@ fn render_proxy_modules(
             continue;
         }
         let mut used = Vec::new();
-        let mut seen = HashSet::new();
+        let mut seen = HashSet::default();
         let mut queue = VecDeque::new();
         for endpoint in tag_endpoints {
             enqueue_endpoint_names(endpoint, &mut used, &mut seen, &mut queue);
         }
         while let Some(name) = queue.pop_front() {
-            let mut direct_names = HashSet::new();
+            let mut direct_names = HashSet::default();
             if let Some(reference) = ref_by_name.get(name.as_str()) {
                 if let Some(children) = dependencies.get(*reference) {
                     for child in children {
@@ -123,7 +127,7 @@ fn render_proxy_modules(
                 }
             }
             if let Some(children) = generated_dependencies.get(&name).and_then(Value::as_array) {
-                let mut expanded = HashSet::new();
+                let mut expanded = HashSet::default();
                 for child in children.iter().filter_map(Value::as_str) {
                     enqueue_deep_dependency(
                         child,
@@ -173,7 +177,7 @@ fn render_common_models(
         .map(|config| config.namespace_suffix.as_str())
         .unwrap_or("Models");
     let namespace = format!("{}{}", capitalize(&options.default_tag), namespace_suffix);
-    let mut enum_objects = HashMap::new();
+    let mut enum_objects = HashMap::default();
     if let Some(component_schemas) = document.pointer("/components/schemas") {
         collect_enum_objects(component_schemas, &mut enum_objects);
     }
@@ -254,7 +258,7 @@ fn render_common_schema_lines(
                 description.replace('\n', "\n *")
             ));
         }
-        let mut properties = IndexMap::new();
+        let mut properties = IndexMap::default();
         collect_property_docs(document, schema, "", &mut properties, suffix);
         for (property, (ty, description)) in properties {
             lines.push(format!(
@@ -511,7 +515,7 @@ fn compiled_component_dependencies(
     schemas: &Map<String, Value>,
     schema_refs: &Map<String, Value>,
 ) -> IndexMap<String, Vec<String>> {
-    let mut result = IndexMap::new();
+    let mut result = IndexMap::default();
     for (name, code) in schemas {
         let Some(reference) = schema_refs.get(name).and_then(Value::as_str) else {
             continue;
@@ -794,7 +798,7 @@ pub fn render_endpoints(
     if !options.models_in_common || !options.split_by_tags {
         return rendered;
     }
-    let mut by_tag: IndexMap<String, Vec<&Value>> = IndexMap::new();
+    let mut by_tag: IndexMap<String, Vec<&Value>> = IndexMap::default();
     for endpoint in endpoints {
         let tag = endpoint
             .get("tags")
@@ -1353,7 +1357,7 @@ pub fn render_queries(endpoints: &[Value], options: &GenerateOptions) -> Map<Str
     {
         return rendered;
     }
-    let mut by_tag: IndexMap<String, Vec<&Value>> = IndexMap::new();
+    let mut by_tag: IndexMap<String, Vec<&Value>> = IndexMap::default();
     for endpoint in endpoints {
         let tag = endpoint
             .get("tags")
@@ -1395,7 +1399,7 @@ pub fn render_acl(endpoints: &[Value], options: &GenerateOptions) -> Map<String,
     {
         return rendered;
     }
-    let mut by_tag: IndexMap<String, Vec<&Value>> = IndexMap::new();
+    let mut by_tag: IndexMap<String, Vec<&Value>> = IndexMap::default();
     for endpoint in endpoints {
         if !endpoint
             .get("acl")
@@ -1446,7 +1450,7 @@ fn render_query_modules(endpoints: &[Value], options: &GenerateOptions) -> Strin
         .get("queries")
         .map(|config| config.namespace_suffix.as_str())
         .unwrap_or("Queries");
-    let mut tags = IndexSet::new();
+    let mut tags = IndexSet::default();
     for endpoint in endpoints {
         let tag = endpoint
             .get("tags")
@@ -1465,7 +1469,7 @@ fn render_query_modules(endpoints: &[Value], options: &GenerateOptions) -> Strin
 }
 
 fn render_app_acl(endpoints: &[Value]) -> Option<String> {
-    let mut by_tag: IndexMap<&str, Vec<&Value>> = IndexMap::new();
+    let mut by_tag: IndexMap<&str, Vec<&Value>> = IndexMap::default();
     for endpoint in endpoints.iter().filter(|endpoint| {
         endpoint
             .get("acl")
@@ -1498,7 +1502,7 @@ fn render_app_acl(endpoints: &[Value]) -> Option<String> {
             .and_then(Value::as_object)
             .is_some_and(|conditions| !conditions.is_empty())
     });
-    let mut actions: IndexMap<&str, IndexSet<String>> = IndexMap::new();
+    let mut actions: IndexMap<&str, IndexSet<String>> = IndexMap::default();
     for endpoint in acl_endpoints {
         let Some(action) = endpoint.pointer("/acl/0/action").and_then(Value::as_str) else {
             continue;
@@ -1562,7 +1566,7 @@ fn render_app_acl(endpoints: &[Value]) -> Option<String> {
 }
 
 fn render_domain_errors(endpoints: &[Value]) -> Option<String> {
-    let mut domains: HashMap<String, Vec<(Value, String, Option<String>)>> = HashMap::new();
+    let mut domains: HashMap<String, Vec<(Value, String, Option<String>)>> = HashMap::default();
     for endpoint in endpoints {
         for error in endpoint
             .get("errors")
