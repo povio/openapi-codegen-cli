@@ -57,6 +57,55 @@ describe("NativeRestClient", () => {
     expect(init.body).toBe(JSON.stringify({ name: "item" }));
   });
 
+  it("supports an injected fetch implementation", async () => {
+    const customFetch = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ ok: true }), { headers: { "content-type": "application/json" } }),
+      );
+    const client = new NativeRestClient({
+      config: { baseURL: "https://api.example.com", fetch: customFetch },
+    });
+
+    await client.get({ resSchema: z.object({ ok: z.boolean() }) }, "/items");
+
+    expect(customFetch).toHaveBeenCalledOnce();
+  });
+
+  it("lets an error interceptor refresh credentials and retry a request", async () => {
+    const customFetch = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ code: "UNAUTHORIZED" }), {
+          status: 401,
+          headers: { "content-type": "application/json" },
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ id: "1" }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        }),
+      );
+    const client = new NativeRestClient({
+      config: { baseURL: "https://api.example.com", fetch: customFetch },
+      interceptors: [
+        {
+          async onError(error, context) {
+            if (error instanceof NativeHttpError && error.response.status === 401) {
+              context.request.headers.set("authorization", "Bearer refreshed");
+              return context.retry();
+            }
+            throw error;
+          },
+        },
+      ],
+    });
+
+    await expect(client.get({ resSchema: z.object({ id: z.string() }) }, "/items")).resolves.toEqual({ id: "1" });
+    expect((customFetch.mock.calls[1]?.[1]?.headers as Headers).get("authorization")).toBe("Bearer refreshed");
+  });
+
   it("uses XHR only when browser upload progress is requested", async () => {
     const fetchMock = vi.fn();
     const progress = vi.fn();

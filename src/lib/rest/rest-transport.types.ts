@@ -8,6 +8,7 @@ export type GeneralTransportErrorCode =
   | "UNKNOWN_ERROR";
 
 export type RestResponseType = "json" | "text" | "blob" | "arrayBuffer";
+export type TransportFetch = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
 
 export interface UploadProgress {
   loaded: number;
@@ -45,12 +46,19 @@ export interface TransportRequest {
   body?: BodyInit | null;
   signal?: AbortSignal;
   credentials?: RequestCredentials;
+  retryCount?: number;
+}
+
+export interface TransportErrorContext {
+  request: TransportRequest;
+  response?: TransportResponse<unknown>;
+  retry(request?: TransportRequest): Promise<TransportResponse<unknown>>;
 }
 
 export interface RestTransportInterceptor {
   onRequest?(request: TransportRequest): TransportRequest | Promise<TransportRequest>;
   onResponse?<T>(response: TransportResponse<T>): TransportResponse<T> | Promise<TransportResponse<T>>;
-  onError?(error: unknown): unknown | Promise<unknown>;
+  onError?(error: unknown, context: TransportErrorContext): unknown | Promise<unknown>;
 }
 
 export type TransportResult<T, IsRawRes extends boolean> = IsRawRes extends true ? TransportResponse<T> : T;

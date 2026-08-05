@@ -8,7 +8,14 @@ import {
   NativeRequestInfo,
   NativeResponse,
 } from "./native-rest-client.types";
-import type { GeneralTransportErrorCode, RestTransport, RestTransportInterceptor } from "./rest-transport.types";
+import type {
+  GeneralTransportErrorCode,
+  RestTransport,
+  RestTransportInterceptor,
+  TransportErrorContext,
+  TransportFetch,
+  TransportResponse,
+} from "./rest-transport.types";
 
 type NativeResult<T, IsRawRes extends boolean> = IsRawRes extends true ? NativeResponse<T> : T;
 
@@ -19,18 +26,25 @@ export class NativeRestClient implements RestTransport {
     config,
     interceptors = [],
   }: {
-    config?: { baseURL?: string; headers?: HeadersInit; credentials?: RequestCredentials };
+    config?: {
+      baseURL?: string;
+      headers?: HeadersInit;
+      credentials?: RequestCredentials;
+      fetch?: TransportFetch;
+    };
     interceptors?: RestTransportInterceptor[];
   } = {}) {
     this.baseURL = config?.baseURL ?? "";
     this.headers = config?.headers;
     this.credentials = config?.credentials;
+    this.fetch = config?.fetch ?? globalThis.fetch.bind(globalThis);
     this.interceptors = [...interceptors];
   }
 
   private readonly baseURL: string;
   private readonly headers?: HeadersInit;
   private readonly credentials?: RequestCredentials;
+  private readonly fetch: TransportFetch;
 
   attachInterceptor(interceptor: RestTransportInterceptor) {
     this.interceptors.push(interceptor);
@@ -164,7 +178,7 @@ export class NativeRestClient implements RestTransport {
     }
     const signal = timeoutController?.signal ?? next.signal;
     try {
-      const res = await fetch(next.url, {
+      const res = await this.fetch(next.url, {
         method: next.method,
         headers: next.headers,
         body: next.body,
@@ -184,6 +198,16 @@ export class NativeRestClient implements RestTransport {
         for (const interceptor of this.interceptors) response = (await interceptor.onResponse?.(response)) ?? response;
       }
       return response;
+    } catch (error) {
+      if (!applyInterceptors) throw error;
+      const context: TransportErrorContext = {
+        request: next,
+        response: error instanceof NativeHttpError ? error.response : undefined,
+        retry: (request = next) => this.execute({ ...request, retryCount: (next.retryCount ?? 0) + 1 }, config, true),
+      };
+      const transformed = await this.runErrorInterceptors(error, context);
+      if (this.isTransportResponse(transformed)) return transformed;
+      throw transformed;
     } finally {
       if (timer) clearTimeout(timer);
     }
@@ -219,18 +243,23 @@ export class NativeRestClient implements RestTransport {
     return url.toString();
   }
 
-  private async runErrorInterceptors(error: unknown) {
+  private async runErrorInterceptors(error: unknown, context?: TransportErrorContext) {
     let next = error;
+    if (!context) return next;
     for (const interceptor of [...this.interceptors].reverse()) {
       if (interceptor.onError) {
         try {
-          next = await interceptor.onError(next);
+          next = await interceptor.onError(next, context);
         } catch (transformed) {
           next = transformed;
         }
       }
     }
     return next;
+  }
+
+  private isTransportResponse(value: unknown): value is TransportResponse<unknown> {
+    return !!value && typeof value === "object" && "status" in value && "headers" in value && "data" in value;
   }
 
   private uploadWithXhr(url: string, data: BodyInit, config: NativeRequestConfig<boolean>, method: "put" | "post") {

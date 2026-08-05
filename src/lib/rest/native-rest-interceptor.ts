@@ -1,4 +1,9 @@
-import type { RestTransportInterceptor, TransportRequest, TransportResponse } from "./rest-transport.types";
+import type {
+  RestTransportInterceptor,
+  TransportErrorContext,
+  TransportRequest,
+  TransportResponse,
+} from "./rest-transport.types";
 
 export type NativeInterceptor = RestTransportInterceptor;
 
@@ -13,8 +18,8 @@ export class NativeRestInterceptor implements RestTransportInterceptor {
     return this.interceptor.onResponse?.(response) ?? response;
   }
 
-  onError(error: unknown) {
+  onError(error: unknown, context: TransportErrorContext) {
     if (!this.interceptor.onError) throw error;
-    return this.interceptor.onError(error);
+    return this.interceptor.onError(error, context);
   }
 }
