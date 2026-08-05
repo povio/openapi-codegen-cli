@@ -2861,19 +2861,40 @@ fn render_prefetch_native(
     } else {
         "\"queryKey\" | \"queryFn\""
     };
-    lines.push(format!("export const {function} = (queryClient: QueryClient, {}options?: Omit<Parameters<QueryClient[\"{method}\"]>[0], {omitted}>) => {{", if params.is_empty() { "".into() } else { format!("{{ {args} }}: {{ {} }}, ", render_param_list(&params)) }));
+    let has_request_config = options.axios_request_config
+        || endpoint.get("method").and_then(Value::as_str) == Some("get");
+    let request_config_param = if has_request_config {
+        "config?: AxiosRequestConfig, "
+    } else {
+        ""
+    };
+    lines.push(format!("export const {function} = (queryClient: QueryClient, {}options?: Omit<Parameters<QueryClient[\"{method}\"]>[0], {omitted}>, {request_config_param}throwOnError = false) => {{", if params.is_empty() { "".into() } else { format!("{{ {args} }}: {{ {} }}, ", render_param_list(&params)) }));
+    let request_config_arg = if has_request_config {
+        if params.is_empty() {
+            "config"
+        } else {
+            ", config"
+        }
+    } else {
+        ""
+    };
     lines.push(format!(
-        "  return queryClient.{method}({{ ...{factory}({}), ...{} }});",
+        "  const queryOptions = {{ ...{factory}({}{}), ...{} }};",
         if params.is_empty() {
             "".into()
         } else {
             format!("{{ {args} }}")
         },
+        request_config_arg,
         if infinite {
             "(options as {})"
         } else {
             "options"
         }
+    ));
+    lines.push(format!(
+        "  return throwOnError ? queryClient.{}(queryOptions) : queryClient.{method}(queryOptions);",
+        if infinite { "fetchInfiniteQuery" } else { "fetchQuery" }
     ));
     lines.push("};".into());
 }

@@ -850,7 +850,7 @@ function renderInfiniteQueryOptions({
 }
 
 function renderPrefetchQuery({ resolver, endpoint }: { resolver: SchemaResolver; endpoint: Endpoint }) {
-  const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
+  const hasRequestConfigParam = resolver.options.axiosRequestConfig || endpoint.method === "get";
   const tag = getEndpointTag(endpoint, resolver.options);
   const endpointParams = renderEndpointParams(resolver, endpoint, {
     modelNamespaceTag: tag,
@@ -859,35 +859,39 @@ function renderPrefetchQuery({ resolver, endpoint }: { resolver: SchemaResolver;
 
   const lines: string[] = [];
   lines.push(
-    `export const ${getPrefetchQueryName(endpoint)} = (queryClient: QueryClient, ${endpointParams ? `{ ${endpointArgs} }: { ${endpointParams} }, ` : ""}${hasAxiosRequestConfig ? `${AXIOS_REQUEST_CONFIG_NAME}: ${AXIOS_REQUEST_CONFIG_TYPE}, ` : ""}options?: Omit<Parameters<QueryClient["prefetchQuery"]>[0], "queryKey" | "queryFn">) => {`,
+    `export const ${getPrefetchQueryName(endpoint)} = (queryClient: QueryClient, ${endpointParams ? `{ ${endpointArgs} }: { ${endpointParams} }, ` : ""}options?: Omit<Parameters<QueryClient["prefetchQuery"]>[0], "queryKey" | "queryFn">, ${hasRequestConfigParam ? `${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}, ` : ""}throwOnError = false) => {`,
   );
   lines.push(
-    `  return queryClient.prefetchQuery({ ...${getQueryOptionsName(endpoint)}(${endpointParams ? `{ ${endpointArgs} }` : ""}${hasAxiosRequestConfig ? `${endpointParams ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}` : ""}), ...options });`,
+    `  const queryOptions = { ...${getQueryOptionsName(endpoint)}(${endpointParams ? `{ ${endpointArgs} }` : ""}${hasRequestConfigParam ? `${endpointParams ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}` : ""}), ...options };`,
   );
+  lines.push(`  return throwOnError ? queryClient.fetchQuery(queryOptions) : queryClient.prefetchQuery(queryOptions);`);
   lines.push("};");
   return lines.join("\n");
 }
 
 function renderPrefetchInfiniteQuery({ resolver, endpoint }: { resolver: SchemaResolver; endpoint: Endpoint }) {
-  const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
+  const hasRequestConfigParam = resolver.options.axiosRequestConfig || endpoint.method === "get";
   const tag = getEndpointTag(endpoint, resolver.options);
   const endpointParams = renderEndpointParams(resolver, endpoint, {
     excludePageParam: true,
     modelNamespaceTag: tag,
   });
   const endpointArgs = renderEndpointArgs(resolver, endpoint, { excludePageParam: true });
-  const optionsArgs = `${endpointParams ? `{ ${endpointArgs} }` : ""}${hasAxiosRequestConfig ? `${endpointParams ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}` : ""}`;
+  const optionsArgs = `${endpointParams ? `{ ${endpointArgs} }` : ""}${hasRequestConfigParam ? `${endpointParams ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}` : ""}`;
 
   const lines: string[] = [];
   lines.push(
-    `export const ${getPrefetchInfiniteQueryName(endpoint)} = (queryClient: QueryClient, ${endpointParams ? `{ ${endpointArgs} }: { ${endpointParams} }, ` : ""}${hasAxiosRequestConfig ? `${AXIOS_REQUEST_CONFIG_NAME}: ${AXIOS_REQUEST_CONFIG_TYPE}, ` : ""}options?: Omit<Parameters<QueryClient["prefetchInfiniteQuery"]>[0], "queryKey" | "queryFn" | "initialPageParam" | "getNextPageParam">) => {`,
+    `export const ${getPrefetchInfiniteQueryName(endpoint)} = (queryClient: QueryClient, ${endpointParams ? `{ ${endpointArgs} }: { ${endpointParams} }, ` : ""}options?: Omit<Parameters<QueryClient["prefetchInfiniteQuery"]>[0], "queryKey" | "queryFn" | "initialPageParam" | "getNextPageParam">, ${hasRequestConfigParam ? `${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}, ` : ""}throwOnError = false) => {`,
   );
   // options is cast to {} so it contributes no typed properties to the spread, letting TypeScript
   // infer TPageParam and TQueryFnData solely from the options factory (via initialPageParam and
   // queryFn). Without the cast, the options type defaults prefetchInfiniteQuery generics to unknown,
   // which conflicts with the generated queryFn expecting pageParam: number.
   lines.push(
-    `  return queryClient.prefetchInfiniteQuery({ ...${getInfiniteQueryOptionsName(endpoint)}(${optionsArgs}), ...(options as {}) });`,
+    `  const queryOptions = { ...${getInfiniteQueryOptionsName(endpoint)}(${optionsArgs}), ...(options as {}) };`,
+  );
+  lines.push(
+    `  return throwOnError ? queryClient.fetchInfiniteQuery(queryOptions) : queryClient.prefetchInfiniteQuery(queryOptions);`,
   );
   lines.push("};");
   return lines.join("\n");

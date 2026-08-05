@@ -483,7 +483,11 @@ describe("generateQueries mutationEffects + infiniteQuery", () => {
     // the options type defaults prefetchInfiniteQuery generics to unknown, which conflicts with the
     // generated queryFn expecting pageParam: number.
     expect(queriesFile?.content).toContain("...(options as {})");
-    expect(queriesFile?.content).toContain("return queryClient.prefetchInfiniteQuery(");
+    expect(queriesFile?.content).toContain(
+      "return throwOnError ? queryClient.fetchInfiniteQuery(queryOptions) : queryClient.prefetchInfiniteQuery(queryOptions)",
+    );
+    expect(queriesFile?.content).toContain("config?: AxiosRequestConfig, throwOnError = false");
+    expect(queriesFile?.content).toContain("listInfiniteQueryOptions({ limit }, config)");
     expect(queriesFile?.content).not.toContain("): void =>");
     // no pages emitted anywhere
     expect(queriesFile?.content).not.toContain("pages:");

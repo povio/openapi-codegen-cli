@@ -165,8 +165,9 @@ describe("native OpenAPI bindings", () => {
       const renderedQueries = Object.values(actual.renderedQueries).join("\n");
       expect(renderedQueries).toContain('from "@test/mutation-effects"');
       expect(renderedQueries).toContain('from "@test/acl-check"');
-      expect(renderedQueries).toContain("return queryClient.prefetchQuery(");
-      expect(renderedQueries).not.toContain("void queryClient.prefetchQuery(");
+      expect(renderedQueries).toContain(
+        "return throwOnError ? queryClient.fetchQuery(queryOptions) : queryClient.prefetchQuery(queryOptions)",
+      );
       expect(renderedQueries).toContain("uploadInstructions.method?.toLowerCase()");
       expect(renderedQueries).not.toContain("data?.method?.toLowerCase()");
     },
