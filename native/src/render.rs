@@ -2326,6 +2326,12 @@ fn render_query_module(
         })
         .collect();
     let mut lines = Vec::new();
+    if uses_native_rest_client(options) && has_media_upload {
+        lines.push(format!(
+            "import {{ AppRestClient }} from \"{}\";",
+            options.rest_client_import_path
+        ));
+    }
     if uses_native_rest_client(options) {
         let mut transport_types = Vec::new();
         if !queries.is_empty() || options.axios_request_config {

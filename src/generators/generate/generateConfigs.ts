@@ -5,6 +5,7 @@ import {
   getRequestConfigTypeName,
 } from "@/generators/const/endpoints.const";
 import { REST_PACKAGE_IMPORT_PATH } from "@/generators/const/package.const";
+import { APP_REST_CLIENT_NAME } from "@/generators/const/deps.const";
 import {
   MUTATION_EFFECTS,
   QUERY_MODULE_ENUM,
@@ -24,7 +25,11 @@ import { getEndpointsImports } from "@/generators/utils/generate/generate.import
 import { getBuilderConfigs } from "@/generators/utils/generate/generate.configs.utils";
 import { renderAclCheckCall } from "@/generators/utils/generate/generate.acl.utils";
 import { getNamespaceName } from "@/generators/utils/namespace.utils";
-import { getQueryModulesImportPath, getQueryTypesImportPath } from "@/generators/utils/generate/generate.utils";
+import {
+  getAppRestClientImportPath,
+  getQueryModulesImportPath,
+  getQueryTypesImportPath,
+} from "@/generators/utils/generate/generate.utils";
 import { getEndpointTag } from "@/generators/utils/tag.utils";
 import { QUERY_HOOKS } from "@/generators/const/queries.const";
 
@@ -63,6 +68,10 @@ export function generateConfigs(generateTypeParams: GenerateTypeParams) {
     bindings: [],
     typeBindings: nativeClient && hasAxiosRequestConfig ? [getRequestConfigTypeName("native")] : [],
     from: REST_PACKAGE_IMPORT_PATH,
+  };
+  const appRestClientImport: Import = {
+    bindings: [APP_REST_CLIENT_NAME],
+    from: getAppRestClientImportPath(resolver.options),
   };
 
   const endpointsImports = getEndpointsImports({
@@ -117,6 +126,9 @@ export function generateConfigs(generateTypeParams: GenerateTypeParams) {
     lines.push(renderImport(axiosImport));
   }
   if (nativeImport.typeBindings?.length) lines.push(renderImport(nativeImport));
+  if (nativeClient && endpoints.some((endpoint) => endpoint.mediaUpload)) {
+    lines.push(renderImport(appRestClientImport));
+  }
   if (hasZodImport) {
     lines.push(renderImport(ZOD_IMPORT));
   }

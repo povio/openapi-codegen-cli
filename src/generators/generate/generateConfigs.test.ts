@@ -332,4 +332,24 @@ describe("generateConfigs builderConfigs media upload", () => {
 
     expect(configsFile?.content).toContain('import axios, { type AxiosRequestConfig } from "axios";');
   });
+
+  it("imports the application client for native upload calls", () => {
+    const files = generateCodeFromOpenAPIDoc(mediaUploadDoc, {
+      ...DEFAULT_GENERATE_OPTIONS,
+      output: "test-output",
+      restClient: "native",
+      builderConfigs: true,
+      acl: false,
+      checkAcl: false,
+    });
+
+    const configsFile = files.find((file) => file.fileName.endsWith("/media/media.configs.ts"));
+    const queriesFile = files.find((file) => file.fileName.endsWith("/media/media.queries.ts"));
+
+    for (const file of [configsFile, queriesFile]) {
+      expect(file?.content).toContain('import { AppRestClient } from "@/data/app-rest-client";');
+      expect(file?.content).toContain("await AppRestClient.upload(");
+      expect(file?.content).not.toContain('from "axios"');
+    }
+  });
 });

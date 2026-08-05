@@ -99,6 +99,7 @@ export function generateQueries(params: GenerateTypeParams) {
 
   const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
   const nativeClient = resolver.options.restClient === "native";
+  const hasNativeMediaUpload = nativeClient && endpoints.some(({ mediaUpload }) => mediaUpload);
   const requestConfigType = getRequestConfigTypeName(resolver.options.restClient);
   const hasAxiosDefaultImport = !nativeClient && endpoints.some(({ mediaUpload }) => mediaUpload);
   const hasGetEndpoints = endpoints.some((endpoint) => endpoint.method === "get");
@@ -225,8 +226,10 @@ export function generateQueries(params: GenerateTypeParams) {
     lines.push(renderImport(axiosImport));
   }
   if (nativeTransportImport.typeBindings?.length) lines.push(renderImport(nativeTransportImport));
-  if (inlineEndpoints) {
+  if (inlineEndpoints || hasNativeMediaUpload) {
     lines.push(renderImport(appRestClientImport));
+  }
+  if (inlineEndpoints) {
     if (hasZodImport) {
       lines.push(renderImport(ZOD_IMPORT));
     }
