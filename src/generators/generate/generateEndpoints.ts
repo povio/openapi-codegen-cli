@@ -134,7 +134,9 @@ function renderRequestInfo(resolver: GenerateTypeParams["resolver"], endpoint: E
   const schemaName = getImportedZodSchemaName(
     resolver,
     endpoint.response,
-    resolver.options.modelsInCommon && resolver.options.splitByTags ? tag : undefined,
+    (resolver.options.modelsInCommon || resolver.options.modelsInModules) && resolver.options.splitByTags
+      ? tag
+      : undefined,
   );
   return `{ resSchema: ${schemaName} }`;
 }

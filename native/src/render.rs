@@ -14,6 +14,7 @@ pub fn render_model_proxies(
     endpoints: &[Value],
     schemas: &Map<String, Value>,
     schema_owners: &Map<String, Value>,
+    schema_usage_tags: &HashMap<String, HashSet<String>>,
     schema_refs: &Map<String, Value>,
     dependencies: &IndexMap<String, Vec<String>>,
     generated_objects: &Map<String, Value>,
@@ -30,6 +31,7 @@ pub fn render_model_proxies(
             document,
             schemas,
             schema_owners,
+            schema_usage_tags,
             schema_refs,
             dependencies,
             generated_objects,
@@ -84,6 +86,7 @@ fn render_local_models(
     document: &Value,
     schemas: &Map<String, Value>,
     schema_owners: &Map<String, Value>,
+    schema_usage_tags: &HashMap<String, HashSet<String>>,
     schema_refs: &Map<String, Value>,
     dependencies: &IndexMap<String, Vec<String>>,
     generated_objects: &Map<String, Value>,
@@ -92,13 +95,13 @@ fn render_local_models(
 ) -> Map<String, Value> {
     let mut by_tag: IndexMap<String, Map<String, Value>> = IndexMap::default();
     for (name, code) in schemas {
-        let Some(tag) = schema_owners.get(name).and_then(Value::as_str) else {
-            continue;
-        };
-        by_tag
-            .entry(tag.to_string())
-            .or_default()
-            .insert(name.clone(), code.clone());
+        if options.models_in_modules && let Some(tags) = schema_usage_tags.get(name) {
+            for tag in tags {
+                by_tag.entry(tag.clone()).or_default().insert(name.clone(), code.clone());
+            }
+        } else if let Some(tag) = schema_owners.get(name).and_then(Value::as_str) {
+            by_tag.entry(tag.to_string()).or_default().insert(name.clone(), code.clone());
+        }
     }
 
     let model_suffix = options
@@ -120,7 +123,7 @@ fn render_local_models(
                 .map(|reference| (reference, name.as_str()))
         })
         .collect();
-    for (tag, tag_schemas) in by_tag {
+    for (tag, mut tag_schemas) in by_tag {
         let mut imports: IndexMap<String, Vec<String>> = IndexMap::default();
         for schema_name in tag_schemas.keys() {
             if let Some(reference) = schema_refs.get(schema_name).and_then(Value::as_str) {
@@ -183,6 +186,16 @@ fn render_local_models(
                     &mut visited,
                 );
             }
+        }
+        if options.models_in_modules {
+            for names in imports.values() {
+                for name in names {
+                    if let Some(code) = schemas.get(name) {
+                        tag_schemas.insert(name.clone(), code.clone());
+                    }
+                }
+            }
+            imports.clear();
         }
         let mut content = render_common_models(
             document,
@@ -1139,10 +1152,11 @@ fn render_endpoint_module(
             let mut imports: IndexMap<String, Vec<String>> = IndexMap::default();
             for schema in &used_schemas {
                 if is_named_schema(schema) {
-                    let owner = schema_owners
-                        .get(*schema)
-                        .and_then(Value::as_str)
-                        .unwrap_or(tag);
+                    let owner = if options.models_in_modules {
+                        tag
+                    } else {
+                        schema_owners.get(*schema).and_then(Value::as_str).unwrap_or(tag)
+                    };
                     let bindings = imports.entry(owner.to_string()).or_default();
                     if !bindings.iter().any(|binding| binding == *schema) {
                         bindings.push((*schema).to_string());
@@ -1159,10 +1173,11 @@ fn render_endpoint_module(
                     .filter(|schema| is_named_schema(schema))
                 {
                     let name = remove_suffix(schema, &options.schema_suffix);
-                    let owner = schema_owners
-                        .get(schema)
-                        .and_then(Value::as_str)
-                        .unwrap_or(tag);
+                    let owner = if options.models_in_modules {
+                        tag
+                    } else {
+                        schema_owners.get(schema).and_then(Value::as_str).unwrap_or(tag)
+                    };
                     let binding = format!("type {name}");
                     let bindings = imports.entry(owner.to_string()).or_default();
                     if !bindings.contains(&binding) {
@@ -1997,10 +2012,11 @@ fn render_acl_module(
             {
                 if let Some(schema) = condition.get("zodSchemaName").and_then(Value::as_str) {
                     let name = remove_suffix(schema, &options.schema_suffix);
-                    let owner = schema_owners
-                        .get(schema)
-                        .and_then(Value::as_str)
-                        .unwrap_or(tag);
+                    let owner = if options.models_in_modules {
+                        tag
+                    } else {
+                        schema_owners.get(schema).and_then(Value::as_str).unwrap_or(tag)
+                    };
                     let names = imports.entry(owner.to_string()).or_default();
                     if !names.contains(&name) {
                         names.push(name);
@@ -2382,10 +2398,11 @@ fn render_query_module(
                     .filter(|schema| is_named_schema(schema))
                 {
                     let name = remove_suffix(&schema, &options.schema_suffix);
-                    let owner = schema_owners
-                        .get(schema)
-                        .and_then(Value::as_str)
-                        .unwrap_or(tag);
+                    let owner = if options.models_in_modules {
+                        tag
+                    } else {
+                        schema_owners.get(schema).and_then(Value::as_str).unwrap_or(tag)
+                    };
                     let names = imports.entry(owner.to_string()).or_default();
                     if !names.contains(&name) {
                         names.push(name);

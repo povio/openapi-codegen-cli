@@ -541,7 +541,7 @@ fn operation_name(
             name = name[index + options.remove_operation_prefix_ending_with.len()..].to_string();
         }
     }
-    if options.ts_namespaces && !keep_tag {
+    if (options.ts_namespaces || options.tree_shakeable_namespaces) && !keep_tag {
         let without_tag = remove_word(&name, &operation.tag);
         if without_tag.is_empty() {
             name = operation.method.to_string();

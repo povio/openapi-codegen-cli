@@ -17,6 +17,7 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   excludePathRegex: "",
   excludeRedundantZodSchemas: true,
   tsNamespaces: true,
+  treeShakeableNamespaces: false,
   tsPath: "@/data",
   importPath: "ts",
   configs: {
@@ -48,6 +49,7 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   schemaSuffix: SCHEMA_SUFFIX,
   enumSuffix: ENUM_SUFFIX,
   modelsInCommon: false,
+  modelsInModules: false,
   withDefaultValues: true,
   extractEnums: true,
   replaceOptionalWithNullish: false,

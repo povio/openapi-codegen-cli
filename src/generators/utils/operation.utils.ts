@@ -73,7 +73,7 @@ function resolveOperationName({
     operationName = operationName.replace(regex, "");
   }
 
-  if (options.tsNamespaces && !keepOperationTag) {
+  if ((options.tsNamespaces || options.treeShakeableNamespaces) && !keepOperationTag) {
     const operationNameWithoutTag = removeWord(operationName, tag);
     if (operationNameWithoutTag === "") {
       operationName = method.toLowerCase();

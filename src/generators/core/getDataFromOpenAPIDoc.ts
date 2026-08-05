@@ -7,6 +7,7 @@ import { getEndpointTag } from "../utils/tag.utils";
 import { getEndpointsFromOpenAPIDoc } from "./endpoints/getEndpointsFromOpenAPIDoc";
 import { SchemaResolver } from "./SchemaResolver.class";
 import { getZodSchemasFromOpenAPIDoc } from "./zod/getZodSchemasFromOpenAPIDoc";
+import { getZodSchemaRefs } from "./zod/getZodSchemaRefs";
 import { sortZodSchemasByTopology } from "./zod/sortZodSchemasByTopology";
 
 export function getDataFromOpenAPIDoc(openApiDoc: OpenAPIV3.Document, options: GenerateOptions, profiler?: Profiler) {
@@ -55,11 +56,30 @@ function splitDataByTags({
   });
 
   Object.entries(zodSchemas).forEach(([zodSchemaName, zodSchemaCode]) => {
+    if (options.modelsInModules) {
+      for (const tag of resolver.getTagsByZodSchemaName(zodSchemaName)) {
+        getTagElement(tag, data).zodSchemas[zodSchemaName] = zodSchemaCode;
+      }
+      return;
+    }
     const tag = options.modelsInCommon ? options.defaultTag : resolver.getTagByZodSchemaName(zodSchemaName);
     if (tag) {
       getTagElement(tag, data).zodSchemas[zodSchemaName] = zodSchemaCode;
     }
   });
+
+  if (options.modelsInModules) {
+    for (const tagData of data.values()) {
+      const pending = Object.keys(tagData.zodSchemas);
+      for (let index = 0; index < pending.length; index++) {
+        for (const dependencyName of getZodSchemaRefs(resolver, pending[index])) {
+          if (tagData.zodSchemas[dependencyName] || !zodSchemas[dependencyName]) continue;
+          tagData.zodSchemas[dependencyName] = zodSchemas[dependencyName];
+          pending.push(dependencyName);
+        }
+      }
+    }
+  }
 
   return data;
 }

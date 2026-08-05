@@ -4,6 +4,7 @@ interface ZodGenerateOptions {
   schemaSuffix: string;
   enumSuffix: string;
   modelsInCommon?: boolean;
+  modelsInModules?: boolean;
   withImplicitRequiredProps?: boolean;
   withDefaultValues?: boolean;
   withDescription?: boolean;
@@ -79,6 +80,7 @@ interface BaseGenerateOptions {
   excludePathRegex: string;
   excludeRedundantZodSchemas: boolean;
   tsNamespaces: boolean;
+  treeShakeableNamespaces?: boolean;
   tsPath: string;
   importPath: "ts" | "relative" | "absolute";
   configs: Record<GenerateType, GenerateConfig>;

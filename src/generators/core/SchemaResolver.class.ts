@@ -188,6 +188,21 @@ export class SchemaResolver {
     return tag;
   }
 
+  getTagsByZodSchemaName(zodSchemaName: string) {
+    if (!this.options.splitByTags) return [formatTag(this.options.defaultTag)];
+    const extractedEnum = this.extractedEnumZodSchemaData.find((data) => data.zodSchemaName === zodSchemaName);
+    if (extractedEnum) {
+      const tags = getUniqueArray(extractedEnum.meta.tags);
+      return (tags.length > 0 ? tags : [extractedEnum.tag ?? this.options.defaultTag]).map(formatTag);
+    }
+    const schemaRef = this.getRefByZodSchemaName(zodSchemaName);
+    const tags = getUniqueArray(
+      schemaRef ? (this.getSchemaDataByRef(schemaRef)?.tags ?? []) : [],
+      this.zodSchemaDataByName.get(zodSchemaName)?.tags ?? [],
+    );
+    return (tags.length > 0 ? tags : [this.options.defaultTag]).map(formatTag);
+  }
+
   enableZodSchemaTagCache() {
     this.zodSchemaTagCache = new Map();
   }

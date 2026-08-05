@@ -25,6 +25,9 @@ class GenerateOptions implements GenerateParams {
   @YargOption({ envAlias: "tsNamespaces", type: "boolean" })
   tsNamespaces?: boolean;
 
+  @YargOption({ envAlias: "treeShakeableNamespaces", type: "boolean" })
+  treeShakeableNamespaces?: boolean;
+
   @YargOption({ envAlias: "tsPath" })
   tsPath?: string;
 
@@ -54,6 +57,9 @@ class GenerateOptions implements GenerateParams {
 
   @YargOption({ envAlias: "modelsInCommon", type: "boolean" })
   modelsInCommon?: boolean;
+
+  @YargOption({ envAlias: "modelsInModules", type: "boolean" })
+  modelsInModules?: boolean;
 
   @YargOption({ envAlias: "zodImportPath" })
   zodImportPath?: string;

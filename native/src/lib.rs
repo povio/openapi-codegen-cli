@@ -257,8 +257,8 @@ pub fn compile_data(source: String, yaml: bool, options_json: String) -> Result<
     schemas.extend(sortable_schemas);
     let mut ordered_schemas = extracted_schemas;
     ordered_schemas.extend(schemas);
-    let mut usage_tags: std::collections::HashMap<String, std::collections::HashSet<String>> =
-        std::collections::HashMap::new();
+    let mut usage_tags: rustc_hash::FxHashMap<String, rustc_hash::FxHashSet<String>> =
+        rustc_hash::FxHashMap::default();
     for endpoint in &endpoints {
         let tag = endpoint
             .get("tags")
@@ -323,15 +323,16 @@ pub fn compile_data(source: String, yaml: bool, options_json: String) -> Result<
             }
         }
     }
-    for (name, tags) in usage_tags {
+    for (name, tags) in &usage_tags {
         let owner = if tags.len() == 1 {
-            tags.into_iter()
+            tags.iter()
                 .next()
+                .cloned()
                 .unwrap_or_else(|| options.default_tag.clone())
         } else {
             options.default_tag.clone()
         };
-        schema_owners.insert(name, Value::String(owner));
+        schema_owners.insert(name.clone(), Value::String(owner));
     }
     let render_started = std::time::Instant::now();
     let (rendered_models, rendered_endpoints, rendered_queries, rendered_acl, rendered_shared) =
@@ -342,6 +343,7 @@ pub fn compile_data(source: String, yaml: bool, options_json: String) -> Result<
                     &endpoints,
                     &ordered_schemas,
                     &schema_owners,
+                    &usage_tags,
                     &schema_refs,
                     &resolver.ordered_dependencies,
                     &generated_objects,

@@ -46,12 +46,16 @@ pub struct GenerateOptions {
     pub with_deprecated_endpoints: bool,
     #[serde(default = "default_true")]
     pub ts_namespaces: bool,
+    #[serde(default)]
+    pub tree_shakeable_namespaces: bool,
     #[serde(default = "default_remove_prefix")]
     pub remove_operation_prefix_ending_with: String,
     #[serde(default = "default_schema_suffix")]
     pub schema_suffix: String,
     #[serde(default)]
     pub models_in_common: bool,
+    #[serde(default)]
+    pub models_in_modules: bool,
     #[serde(default)]
     pub with_implicit_required_props: bool,
     #[serde(default = "default_true")]
