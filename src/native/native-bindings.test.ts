@@ -115,6 +115,7 @@ describe("native OpenAPI bindings", () => {
         output: "output",
         modelsInCommon: true,
         restClientImportPath: "@test/app-rest-client",
+        zodImportPath: "@test/zod-extended",
       },
       params: {},
     });
@@ -129,6 +130,7 @@ describe("native OpenAPI bindings", () => {
         generateEndpoints({ resolver: expected.resolver, data: expected.data, tag }),
       );
     }
+    expect(Object.values(actual.renderedEndpoints).join("\n")).toContain('from "@test/zod-extended"');
   });
 
   test.each([false, true, { exclude: ["Currencies/updateCurrency"] }])(
@@ -142,6 +144,9 @@ describe("native OpenAPI bindings", () => {
           output: "output",
           modelsInCommon: true,
           restClientImportPath: "@test/app-rest-client",
+          zodImportPath: "@test/zod-extended",
+          mutationEffectsImportPath: "@test/mutation-effects",
+          aclCheckImportPath: "@test/acl-check",
           workspaceContext: [],
           mutationScope,
         },
@@ -157,6 +162,13 @@ describe("native OpenAPI bindings", () => {
         expect(content, tag).toBe(generateQueries({ resolver: expected.resolver, data: expected.data, tag }));
       }
       expect(Object.keys(actual.renderedQueries).length).toBeGreaterThan(0);
+      const renderedQueries = Object.values(actual.renderedQueries).join("\n");
+      expect(renderedQueries).toContain('from "@test/mutation-effects"');
+      expect(renderedQueries).toContain('from "@test/acl-check"');
+      expect(renderedQueries).toContain("return queryClient.prefetchQuery(");
+      expect(renderedQueries).not.toContain("void queryClient.prefetchQuery(");
+      expect(renderedQueries).toContain("uploadInstructions.method?.toLowerCase()");
+      expect(renderedQueries).not.toContain("data?.method?.toLowerCase()");
     },
   );
 
@@ -191,6 +203,58 @@ describe("native OpenAPI bindings", () => {
       renderedShared: Record<string, string>;
     };
 
+    expect(actual.renderedShared.queryModules).toBe(
+      generateQueryModules({ resolver: expected.resolver, data: expected.data }),
+    );
+    expect(actual.renderedShared.domainErrors).toBe(
+      generateDomainErrors({ resolver: expected.resolver, data: expected.data }),
+    );
+    expect(actual.renderedShared.appAcl).toBe(generateAppAcl({ resolver: expected.resolver, data: expected.data }));
+  });
+
+  test("fully renders namespace-free module-local output with TypeScript parity", async () => {
+    const source = await fs.readFile("test/benchmarks/openapi.localhost4000.json", "utf8");
+    const document = JSON.parse(source);
+    const options = resolveConfig({
+      fileConfig: {
+        input: "fixture",
+        output: "output",
+        modelsInCommon: false,
+        tsNamespaces: false,
+        restClientImportPath: "@test/app-rest-client",
+        zodImportPath: "@test/zod-extended",
+        mutationEffectsImportPath: "@test/mutation-effects",
+        aclCheckImportPath: "@test/acl-check",
+        workspaceContext: [],
+      },
+      params: {},
+    });
+    const expected = getDataFromOpenAPIDoc(document, options);
+    const actual = getNativeBindings().compileData(source, false, JSON.stringify({ ...options, nativeCompact: true }))
+      .data as {
+      renderedComplete: boolean;
+      renderedModels: Record<string, string>;
+      renderedEndpoints: Record<string, string>;
+      renderedQueries: Record<string, string>;
+      renderedAcl: Record<string, string>;
+      renderedShared: Record<string, string>;
+    };
+
+    expect(actual.renderedComplete).toBe(true);
+    for (const tag of expected.data.keys()) {
+      expect(actual.renderedModels[tag], `${tag} models`).toBe(
+        generateModels({ resolver: expected.resolver, data: expected.data, tag }),
+      );
+      expect(actual.renderedEndpoints[tag], `${tag} endpoints`).toBe(
+        generateEndpoints({ resolver: expected.resolver, data: expected.data, tag }),
+      );
+      expect(actual.renderedQueries[tag], `${tag} queries`).toBe(
+        generateQueries({ resolver: expected.resolver, data: expected.data, tag }),
+      );
+      expect(actual.renderedAcl[tag], `${tag} ACL`).toBe(
+        generateAcl({ resolver: expected.resolver, data: expected.data, tag }),
+      );
+    }
     expect(actual.renderedShared.queryModules).toBe(
       generateQueryModules({ resolver: expected.resolver, data: expected.data }),
     );

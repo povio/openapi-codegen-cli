@@ -80,6 +80,8 @@ pub struct GenerateOptions {
     pub configs: HashMap<String, GenerateConfig>,
     #[serde(default)]
     pub rest_client_import_path: String,
+    #[serde(default = "default_zod_import_path")]
+    pub zod_import_path: String,
     #[serde(default)]
     pub axios_request_config: bool,
     #[serde(default = "default_true")]
@@ -108,8 +110,12 @@ pub struct GenerateOptions {
     pub mutation_default_on_error: bool,
     #[serde(default)]
     pub query_types_import_path: String,
+    #[serde(default = "default_package_import_path")]
+    pub mutation_effects_import_path: String,
     #[serde(default = "default_true")]
     pub check_acl: bool,
+    #[serde(default = "default_acl_import_path")]
+    pub acl_check_import_path: String,
     #[serde(default)]
     pub workspace_context: Vec<String>,
     #[serde(default)]
@@ -139,4 +145,13 @@ fn default_total_items() -> String {
 }
 fn default_limit() -> String {
     "limit".into()
+}
+fn default_package_import_path() -> String {
+    "@povio/openapi-codegen-cli".into()
+}
+fn default_acl_import_path() -> String {
+    "@povio/openapi-codegen-cli/acl".into()
+}
+fn default_zod_import_path() -> String {
+    "@povio/openapi-codegen-cli/zod".into()
 }

@@ -1,6 +1,6 @@
 import { ACL_CHECK_HOOK } from "@/generators/const/acl.const";
 import { AXIOS_DEFAULT_IMPORT_NAME, AXIOS_REQUEST_CONFIG_TYPE } from "@/generators/const/endpoints.const";
-import { PACKAGE_IMPORT_PATH, ACL_PACKAGE_IMPORT_PATH } from "@/generators/const/package.const";
+import { PACKAGE_IMPORT_PATH } from "@/generators/const/package.const";
 import {
   MUTATION_EFFECTS,
   QUERY_MODULE_ENUM,
@@ -75,7 +75,7 @@ export function generateConfigs(generateTypeParams: GenerateTypeParams) {
   const mutationEffectsImport: Import = {
     bindings: [MUTATION_EFFECTS.hookName],
     typeBindings: [MUTATION_EFFECTS.optionsType],
-    from: PACKAGE_IMPORT_PATH,
+    from: resolver.options.mutationEffectsImportPath,
   };
 
   const queryModulesImport: Import = {
@@ -85,7 +85,7 @@ export function generateConfigs(generateTypeParams: GenerateTypeParams) {
 
   const aclCheckImport: Import = {
     bindings: [ACL_CHECK_HOOK],
-    from: ACL_PACKAGE_IMPORT_PATH,
+    from: resolver.options.aclCheckImportPath,
   };
 
   const hasDynamicInputsImport = configs.some(

@@ -257,6 +257,82 @@ pub fn compile_data(source: String, yaml: bool, options_json: String) -> Result<
     schemas.extend(sortable_schemas);
     let mut ordered_schemas = extracted_schemas;
     ordered_schemas.extend(schemas);
+    let mut usage_tags: std::collections::HashMap<String, std::collections::HashSet<String>> =
+        std::collections::HashMap::new();
+    for endpoint in &endpoints {
+        let tag = endpoint
+            .get("tags")
+            .and_then(Value::as_array)
+            .and_then(|tags| tags.first())
+            .and_then(Value::as_str)
+            .unwrap_or(&options.default_tag);
+        let mut direct = Vec::new();
+        if let Some(name) = endpoint.get("response").and_then(Value::as_str) {
+            direct.push(name);
+        }
+        direct.extend(
+            endpoint
+                .get("errors")
+                .and_then(Value::as_array)
+                .into_iter()
+                .flatten()
+                .filter_map(|error| error.get("zodSchema").and_then(Value::as_str)),
+        );
+        direct.extend(
+            endpoint
+                .get("parameters")
+                .and_then(Value::as_array)
+                .into_iter()
+                .flatten()
+                .flat_map(|parameter| {
+                    ["zodSchema", "parameterSortingEnumSchemaName"]
+                        .into_iter()
+                        .filter_map(|key| parameter.get(key).and_then(Value::as_str))
+                }),
+        );
+        for name in direct {
+            if ordered_schemas.contains_key(name) {
+                usage_tags
+                    .entry(name.to_string())
+                    .or_default()
+                    .insert(tag.to_string());
+            }
+        }
+    }
+    let mut changed = true;
+    while changed {
+        changed = false;
+        for (name, code) in &ordered_schemas {
+            let Some(tags) = usage_tags.get(name).cloned() else {
+                continue;
+            };
+            for dependency in code
+                .as_str()
+                .into_iter()
+                .flat_map(|code| {
+                    code.split(|c: char| !c.is_ascii_alphanumeric() && c != '_' && c != '$')
+                })
+                .filter(|dependency| {
+                    *dependency != name && ordered_schemas.contains_key(*dependency)
+                })
+            {
+                let target = usage_tags.entry(dependency.to_string()).or_default();
+                let previous = target.len();
+                target.extend(tags.iter().cloned());
+                changed |= target.len() != previous;
+            }
+        }
+    }
+    for (name, tags) in usage_tags {
+        let owner = if tags.len() == 1 {
+            tags.into_iter()
+                .next()
+                .unwrap_or_else(|| options.default_tag.clone())
+        } else {
+            options.default_tag.clone()
+        };
+        schema_owners.insert(name, Value::String(owner));
+    }
     let render_started = std::time::Instant::now();
     let (rendered_models, rendered_endpoints, rendered_queries, rendered_acl, rendered_shared) =
         std::thread::scope(|scope| {
@@ -265,6 +341,7 @@ pub fn compile_data(source: String, yaml: bool, options_json: String) -> Result<
                     &document,
                     &endpoints,
                     &ordered_schemas,
+                    &schema_owners,
                     &schema_refs,
                     &resolver.ordered_dependencies,
                     &generated_objects,
@@ -272,10 +349,12 @@ pub fn compile_data(source: String, yaml: bool, options_json: String) -> Result<
                     &options,
                 )
             });
-            let rendered_endpoints =
-                scope.spawn(|| render::render_endpoints(&endpoints, &ordered_schemas, &options));
-            let queries = scope.spawn(|| render::render_queries(&endpoints, &options));
-            let acl = scope.spawn(|| render::render_acl(&endpoints, &options));
+            let rendered_endpoints = scope.spawn(|| {
+                render::render_endpoints(&endpoints, &ordered_schemas, &schema_owners, &options)
+            });
+            let queries =
+                scope.spawn(|| render::render_queries(&endpoints, &schema_owners, &options));
+            let acl = scope.spawn(|| render::render_acl(&endpoints, &schema_owners, &options));
             let shared = scope.spawn(|| render::render_shared(&endpoints, &options));
             (
                 models.join().unwrap(),
@@ -305,8 +384,9 @@ pub fn compile_data(source: String, yaml: bool, options_json: String) -> Result<
         .collect::<std::collections::HashSet<_>>()
         .len();
     let rendered_complete = options.native_compact
-        && options.models_in_common
         && options.split_by_tags
+        && ((options.models_in_common && options.ts_namespaces)
+            || (!options.models_in_common && !options.ts_namespaces))
         && !options.inline_endpoints
         && !options.builder_configs
         && options.workspace_context.is_empty()

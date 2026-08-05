@@ -14,6 +14,7 @@ interface ZodGenerateOptions {
 
 interface EndpointsGenerateOptions {
   restClientImportPath: string;
+  zodImportPath: string;
   errorHandlingImportPath?: string;
   withDeprecatedEndpoints?: boolean;
   removeOperationPrefixEndingWith?: string;
@@ -24,6 +25,7 @@ interface EndpointsGenerateOptions {
 
 interface QueriesGenerateOptions {
   queryTypesImportPath: string;
+  mutationEffectsImportPath: string;
   axiosRequestConfig?: boolean;
   mutationEffects?: boolean;
   mutationDefaultOnError?: boolean;
@@ -49,6 +51,7 @@ interface ACLGenerateOptions {
   checkAcl?: boolean;
   abilityContextGenericAppAbilities: boolean;
   abilityContextImportPath?: string;
+  aclCheckImportPath: string;
 }
 
 interface BuilderConfigsGenerateOptions {

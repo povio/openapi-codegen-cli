@@ -12,11 +12,7 @@ import {
   AXIOS_REQUEST_CONFIG_NAME,
   AXIOS_REQUEST_CONFIG_TYPE,
 } from "@/generators/const/endpoints.const";
-import {
-  ACL_PACKAGE_IMPORT_PATH,
-  PACKAGE_IMPORT_PATH,
-  ZOD_PACKAGE_IMPORT_PATH,
-} from "@/generators/const/package.const";
+import { PACKAGE_IMPORT_PATH } from "@/generators/const/package.const";
 import { QUERIES_MODULE_NAME, QUERY_HOOKS, QUERY_IMPORT } from "@/generators/const/queries.const";
 import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
 import { Endpoint, EndpointParameter } from "@/generators/types/endpoint";
@@ -133,13 +129,13 @@ export function generateQueries(params: GenerateTypeParams) {
   const mutationEffectsImport: Import = {
     bindings: [...(mutationEndpoints.length > 0 ? [MUTATION_EFFECTS.hookName] : [])],
     typeBindings: [...(mutationEndpoints.length > 0 ? [MUTATION_EFFECTS.optionsType] : [])],
-    from: PACKAGE_IMPORT_PATH,
+    from: resolver.options.mutationEffectsImportPath,
   };
 
   const hasAclCheck = resolver.options.checkAcl && aclEndpoints.length > 0;
   const aclCheckImport: Import = {
     bindings: [ACL_CHECK_HOOK],
-    from: ACL_PACKAGE_IMPORT_PATH,
+    from: resolver.options.aclCheckImportPath,
   };
 
   const queryTypesImport: Import = {
@@ -184,7 +180,7 @@ export function generateQueries(params: GenerateTypeParams) {
   };
   const zodExtendedImport: Import = {
     bindings: [ZOD_EXTENDED.namespace],
-    from: ZOD_PACKAGE_IMPORT_PATH,
+    from: resolver.options.zodImportPath,
   };
 
   const modelsImports = getModelsImports({
@@ -863,10 +859,10 @@ function renderPrefetchQuery({ resolver, endpoint }: { resolver: SchemaResolver;
 
   const lines: string[] = [];
   lines.push(
-    `export const ${getPrefetchQueryName(endpoint)} = (queryClient: QueryClient, ${endpointParams ? `{ ${endpointArgs} }: { ${endpointParams} }, ` : ""}${hasAxiosRequestConfig ? `${AXIOS_REQUEST_CONFIG_NAME}: ${AXIOS_REQUEST_CONFIG_TYPE}, ` : ""}options?: Omit<Parameters<QueryClient["prefetchQuery"]>[0], "queryKey" | "queryFn">): void => {`,
+    `export const ${getPrefetchQueryName(endpoint)} = (queryClient: QueryClient, ${endpointParams ? `{ ${endpointArgs} }: { ${endpointParams} }, ` : ""}${hasAxiosRequestConfig ? `${AXIOS_REQUEST_CONFIG_NAME}: ${AXIOS_REQUEST_CONFIG_TYPE}, ` : ""}options?: Omit<Parameters<QueryClient["prefetchQuery"]>[0], "queryKey" | "queryFn">) => {`,
   );
   lines.push(
-    `  void queryClient.prefetchQuery({ ...${getQueryOptionsName(endpoint)}(${endpointParams ? `{ ${endpointArgs} }` : ""}${hasAxiosRequestConfig ? `${endpointParams ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}` : ""}), ...options });`,
+    `  return queryClient.prefetchQuery({ ...${getQueryOptionsName(endpoint)}(${endpointParams ? `{ ${endpointArgs} }` : ""}${hasAxiosRequestConfig ? `${endpointParams ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}` : ""}), ...options });`,
   );
   lines.push("};");
   return lines.join("\n");
@@ -884,14 +880,14 @@ function renderPrefetchInfiniteQuery({ resolver, endpoint }: { resolver: SchemaR
 
   const lines: string[] = [];
   lines.push(
-    `export const ${getPrefetchInfiniteQueryName(endpoint)} = (queryClient: QueryClient, ${endpointParams ? `{ ${endpointArgs} }: { ${endpointParams} }, ` : ""}${hasAxiosRequestConfig ? `${AXIOS_REQUEST_CONFIG_NAME}: ${AXIOS_REQUEST_CONFIG_TYPE}, ` : ""}options?: Omit<Parameters<QueryClient["prefetchInfiniteQuery"]>[0], "queryKey" | "queryFn" | "initialPageParam" | "getNextPageParam">): void => {`,
+    `export const ${getPrefetchInfiniteQueryName(endpoint)} = (queryClient: QueryClient, ${endpointParams ? `{ ${endpointArgs} }: { ${endpointParams} }, ` : ""}${hasAxiosRequestConfig ? `${AXIOS_REQUEST_CONFIG_NAME}: ${AXIOS_REQUEST_CONFIG_TYPE}, ` : ""}options?: Omit<Parameters<QueryClient["prefetchInfiniteQuery"]>[0], "queryKey" | "queryFn" | "initialPageParam" | "getNextPageParam">) => {`,
   );
   // options is cast to {} so it contributes no typed properties to the spread, letting TypeScript
   // infer TPageParam and TQueryFnData solely from the options factory (via initialPageParam and
   // queryFn). Without the cast, the options type defaults prefetchInfiniteQuery generics to unknown,
   // which conflicts with the generated queryFn expecting pageParam: number.
   lines.push(
-    `  void queryClient.prefetchInfiniteQuery({ ...${getInfiniteQueryOptionsName(endpoint)}(${optionsArgs}), ...(options as {}) });`,
+    `  return queryClient.prefetchInfiniteQuery({ ...${getInfiniteQueryOptionsName(endpoint)}(${optionsArgs}), ...(options as {}) });`,
   );
   lines.push("};");
   return lines.join("\n");

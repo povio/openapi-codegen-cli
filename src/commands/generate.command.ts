@@ -55,6 +55,15 @@ class GenerateOptions implements GenerateParams {
   @YargOption({ envAlias: "modelsInCommon", type: "boolean" })
   modelsInCommon?: boolean;
 
+  @YargOption({ envAlias: "zodImportPath" })
+  zodImportPath?: string;
+
+  @YargOption({ envAlias: "mutationEffectsImportPath" })
+  mutationEffectsImportPath?: string;
+
+  @YargOption({ envAlias: "aclCheckImportPath" })
+  aclCheckImportPath?: string;
+
   @YargOption({ envAlias: "removeOperationPrefixEndingWith" })
   removeOperationPrefixEndingWith?: string;
 

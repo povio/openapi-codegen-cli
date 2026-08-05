@@ -311,6 +311,10 @@ describe("generateConfigs builderConfigs media upload", () => {
 
     expect(configsFile?.content).toContain("const uploadInstructions = await MediaApi.upload(data);");
     expect(configsFile?.content).not.toContain("MediaApi.upload(data, file)");
+    expect(configsFile?.content).toContain(
+      'const method = (uploadInstructions.method?.toLowerCase() ?? "put") as "put" | "post";',
+    );
+    expect(configsFile?.content).not.toContain("data?.method?.toLowerCase()");
     expect(configsFile?.content).toContain("await axios[method](uploadInstructions.url, dataToSend,");
     expect(configsFile?.content).toContain("return uploadInstructions;");
   });

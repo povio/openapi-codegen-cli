@@ -214,7 +214,7 @@ export function renderMediaUploadMutationBody({
     `const uploadInstructions = await ${endpointFunction}(${resolvedEndpointArgs}${hasAxiosRequestConfig ? `${resolvedEndpointArgs ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}` : ""});`,
     "",
     "if (file && uploadInstructions.url) {",
-    `  const method = (${BODY_PARAMETER_NAME}?.method?.toLowerCase() ?? "put") as "put" | "post";`,
+    `  const method = (uploadInstructions.method?.toLowerCase() ?? "put") as "put" | "post";`,
     "  let dataToSend: File | FormData = file;",
     '  if (method === "post") {',
     "    dataToSend = new FormData();",

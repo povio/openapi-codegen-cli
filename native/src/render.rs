@@ -13,6 +13,7 @@ pub fn render_model_proxies(
     document: &Value,
     endpoints: &[Value],
     schemas: &Map<String, Value>,
+    schema_owners: &Map<String, Value>,
     schema_refs: &Map<String, Value>,
     dependencies: &IndexMap<String, Vec<String>>,
     generated_objects: &Map<String, Value>,
@@ -21,8 +22,20 @@ pub fn render_model_proxies(
 ) -> Map<String, Value> {
     let started = std::time::Instant::now();
     let mut rendered = Map::new();
-    if !options.models_in_common || !options.split_by_tags {
+    if !options.split_by_tags {
         return rendered;
+    }
+    if !options.models_in_common {
+        return render_local_models(
+            document,
+            schemas,
+            schema_owners,
+            schema_refs,
+            dependencies,
+            generated_objects,
+            generated_dependencies,
+            options,
+        );
     }
     let render_dependencies = augment_render_dependencies(schemas, schema_refs, dependencies);
     let after_dependencies = started.elapsed();
@@ -65,6 +78,204 @@ pub fn render_model_proxies(
         );
     }
     rendered
+}
+
+fn render_local_models(
+    document: &Value,
+    schemas: &Map<String, Value>,
+    schema_owners: &Map<String, Value>,
+    schema_refs: &Map<String, Value>,
+    dependencies: &IndexMap<String, Vec<String>>,
+    generated_objects: &Map<String, Value>,
+    generated_dependencies: &Map<String, Value>,
+    options: &GenerateOptions,
+) -> Map<String, Value> {
+    let mut by_tag: IndexMap<String, Map<String, Value>> = IndexMap::default();
+    for (name, code) in schemas {
+        let Some(tag) = schema_owners.get(name).and_then(Value::as_str) else {
+            continue;
+        };
+        by_tag
+            .entry(tag.to_string())
+            .or_default()
+            .insert(name.clone(), code.clone());
+    }
+
+    let model_suffix = options
+        .configs
+        .get("models")
+        .map(|config| config.output_file_name_suffix.as_str())
+        .unwrap_or("models");
+    let import_root = match options.import_path.as_str() {
+        "relative" => "../".to_string(),
+        "absolute" => format!("{}/", options.output.trim_end_matches('/')),
+        _ => format!("{}/", options.ts_path.trim_end_matches('/')),
+    };
+    let mut rendered = Map::new();
+    let name_by_ref: HashMap<&str, &str> = schema_refs
+        .iter()
+        .filter_map(|(name, reference)| {
+            reference
+                .as_str()
+                .map(|reference| (reference, name.as_str()))
+        })
+        .collect();
+    for (tag, tag_schemas) in by_tag {
+        let mut imports: IndexMap<String, Vec<String>> = IndexMap::default();
+        for schema_name in tag_schemas.keys() {
+            if let Some(reference) = schema_refs.get(schema_name).and_then(Value::as_str) {
+                for name in dependencies
+                    .get(reference)
+                    .into_iter()
+                    .flatten()
+                    .filter_map(|dependency| name_by_ref.get(dependency.as_str()).copied())
+                {
+                    let Some(owner) = schema_owners.get(name).and_then(Value::as_str) else {
+                        continue;
+                    };
+                    if owner != tag {
+                        let names = imports.entry(owner.to_string()).or_default();
+                        if !names.iter().any(|existing| existing == name) {
+                            names.push(name.to_string());
+                        }
+                    }
+                }
+                if let Some(schema) = resolve_document_ref(document, reference) {
+                    let mut enum_codes = Vec::new();
+                    collect_inline_enum_codes(schema, &mut enum_codes);
+                    for code in enum_codes {
+                        let Some(name) = schemas.iter().find_map(|(name, value)| {
+                            (value.as_str() == Some(code.as_str())
+                                && !schema_refs.contains_key(name))
+                            .then_some(name.as_str())
+                        }) else {
+                            continue;
+                        };
+                        let Some(owner) = schema_owners.get(name).and_then(Value::as_str) else {
+                            continue;
+                        };
+                        if owner != tag {
+                            let names = imports.entry(owner.to_string()).or_default();
+                            if !names.iter().any(|existing| existing == name) {
+                                names.push(name.to_string());
+                            }
+                        }
+                    }
+                }
+            }
+            let mut visited = HashSet::default();
+            for name in generated_dependencies
+                .get(schema_name)
+                .and_then(Value::as_array)
+                .into_iter()
+                .flatten()
+                .filter_map(Value::as_str)
+            {
+                append_local_model_dependency(
+                    name,
+                    &tag,
+                    schemas,
+                    schema_owners,
+                    schema_refs,
+                    dependencies,
+                    &name_by_ref,
+                    &mut imports,
+                    &mut visited,
+                );
+            }
+        }
+        let mut content = render_common_models(
+            document,
+            &tag_schemas,
+            schema_refs,
+            generated_objects,
+            options,
+        );
+        if !imports.is_empty() {
+            let mut lines = vec!["import { z } from \"zod\";".to_string()];
+            for (owner, names) in imports {
+                let owner_tag = decapitalize(&owner);
+                lines.push(format!(
+                    "import {{ {} }} from \"{import_root}{owner_tag}/{owner_tag}.{model_suffix}\";",
+                    names.join(", ")
+                ));
+            }
+            content = content.replacen("import { z } from \"zod\";", &lines.join("\n"), 1);
+        }
+        rendered.insert(tag, Value::String(content));
+    }
+    rendered
+}
+
+fn collect_inline_enum_codes(value: &Value, codes: &mut Vec<String>) {
+    match value {
+        Value::Array(values) => values
+            .iter()
+            .for_each(|value| collect_inline_enum_codes(value, codes)),
+        Value::Object(object) => {
+            if !object.contains_key("$ref") {
+                if let Some(values) = object.get("enum").and_then(Value::as_array) {
+                    let code = format!(
+                        "z.enum({})",
+                        Value::Array(values.clone()).to_string().replace(',', ", ")
+                    );
+                    if !codes.contains(&code) {
+                        codes.push(code);
+                    }
+                }
+                object
+                    .values()
+                    .for_each(|value| collect_inline_enum_codes(value, codes));
+            }
+        }
+        _ => {}
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
+fn append_local_model_dependency<'a>(
+    name: &'a str,
+    tag: &str,
+    schemas: &Map<String, Value>,
+    schema_owners: &Map<String, Value>,
+    schema_refs: &Map<String, Value>,
+    dependencies: &IndexMap<String, Vec<String>>,
+    name_by_ref: &HashMap<&'a str, &'a str>,
+    imports: &mut IndexMap<String, Vec<String>>,
+    visited: &mut HashSet<String>,
+) {
+    if !visited.insert(name.to_string()) {
+        return;
+    }
+    if let Some(owner) = schema_owners.get(name).and_then(Value::as_str) {
+        if owner != tag && schemas.contains_key(name) {
+            let names = imports.entry(owner.to_string()).or_default();
+            if !names.iter().any(|existing| existing == name) {
+                names.push(name.to_string());
+            }
+        }
+    }
+    let Some(reference) = schema_refs.get(name).and_then(Value::as_str) else {
+        return;
+    };
+    for child in dependencies
+        .get(reference)
+        .into_iter()
+        .flatten()
+        .filter_map(|dependency| name_by_ref.get(dependency.as_str()).copied())
+    {
+        append_local_model_dependency(
+            child,
+            tag,
+            schemas,
+            schema_owners,
+            schema_refs,
+            dependencies,
+            name_by_ref,
+            imports,
+            visited,
+        );
+    }
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -792,10 +1003,11 @@ fn remove_suffix(value: &str, suffix: &str) -> String {
 pub fn render_endpoints(
     endpoints: &[Value],
     schemas: &Map<String, Value>,
+    schema_owners: &Map<String, Value>,
     options: &GenerateOptions,
 ) -> Map<String, Value> {
     let mut rendered = Map::new();
-    if !options.models_in_common || !options.split_by_tags {
+    if !options.split_by_tags {
         return rendered;
     }
     let mut by_tag: IndexMap<String, Vec<&Value>> = IndexMap::default();
@@ -818,6 +1030,7 @@ pub fn render_endpoints(
                 &tag,
                 &tag_endpoints,
                 schemas,
+                schema_owners,
                 options,
             )),
         );
@@ -837,6 +1050,7 @@ fn render_endpoint_module(
     tag: &str,
     endpoints: &[&Value],
     schemas: &Map<String, Value>,
+    schema_owners: &Map<String, Value>,
     options: &GenerateOptions,
 ) -> String {
     let mut lines = vec![format!(
@@ -887,7 +1101,10 @@ fn render_endpoint_module(
         lines.push("import { z } from \"zod\";".into());
     }
     if options.parse_request_params && !parse_schemas.is_empty() {
-        lines.push("import { ZodExtended } from \"@povio/openapi-codegen-cli/zod\";".into());
+        lines.push(format!(
+            "import {{ ZodExtended }} from \"{}\";",
+            options.zod_import_path
+        ));
     }
     let has_named_models = used_schemas.iter().any(|schema| is_named_schema(schema))
         || endpoints
@@ -914,9 +1131,69 @@ fn render_endpoint_module(
             .map(|config| config.output_file_name_suffix.as_str())
             .unwrap_or("models");
         let local_tag = decapitalize(tag);
-        lines.push(format!(
-            "import {{ {model_namespace} }} from \"./{local_tag}.{suffix}\";"
-        ));
+        if options.ts_namespaces {
+            lines.push(format!(
+                "import {{ {model_namespace} }} from \"./{local_tag}.{suffix}\";"
+            ));
+        } else {
+            let mut imports: IndexMap<String, Vec<String>> = IndexMap::default();
+            for schema in &used_schemas {
+                if is_named_schema(schema) {
+                    let owner = schema_owners
+                        .get(*schema)
+                        .and_then(Value::as_str)
+                        .unwrap_or(tag);
+                    let bindings = imports.entry(owner.to_string()).or_default();
+                    if !bindings.iter().any(|binding| binding == *schema) {
+                        bindings.push((*schema).to_string());
+                    }
+                }
+            }
+            for endpoint in endpoints {
+                for schema in endpoint
+                    .get("parameters")
+                    .and_then(Value::as_array)
+                    .into_iter()
+                    .flatten()
+                    .filter_map(|parameter| parameter.get("zodSchema").and_then(Value::as_str))
+                    .filter(|schema| is_named_schema(schema))
+                {
+                    let name = remove_suffix(schema, &options.schema_suffix);
+                    let owner = schema_owners
+                        .get(schema)
+                        .and_then(Value::as_str)
+                        .unwrap_or(tag);
+                    let binding = format!("type {name}");
+                    let bindings = imports.entry(owner.to_string()).or_default();
+                    if !bindings.contains(&binding) {
+                        bindings.push(binding);
+                    }
+                }
+            }
+            for (owner, bindings) in imports {
+                let owner_tag = decapitalize(&owner);
+                let path = if owner == tag {
+                    format!("./{owner_tag}.{suffix}")
+                } else {
+                    format!("{}{owner_tag}/{owner_tag}.{suffix}", import_root(options))
+                };
+                if bindings.iter().all(|binding| binding.starts_with("type ")) {
+                    lines.push(format!(
+                        "import type {{ {} }} from \"{path}\";",
+                        bindings
+                            .iter()
+                            .map(|binding| binding.trim_start_matches("type "))
+                            .collect::<Vec<_>>()
+                            .join(", ")
+                    ));
+                } else {
+                    lines.push(format!(
+                        "import {{ {} }} from \"{path}\";",
+                        bindings.join(", ")
+                    ));
+                }
+            }
+        }
     }
     lines.push(String::new());
     if options.ts_namespaces {
@@ -938,7 +1215,11 @@ fn render_endpoint_module(
             tag,
             schemas,
             options,
-            &model_namespace,
+            if options.ts_namespaces {
+                &model_namespace
+            } else {
+                ""
+            },
         );
     }
     if options.ts_namespaces {
@@ -1059,10 +1340,12 @@ fn function_params<'a>(
                 .and_then(Value::as_bool)
                 .unwrap_or(true);
             let ty = if is_named_schema(schema) {
-                format!(
-                    "{model_namespace}.{}",
-                    remove_suffix(schema, &options.schema_suffix)
-                )
+                let name = remove_suffix(schema, &options.schema_suffix);
+                if model_namespace.is_empty() {
+                    name
+                } else {
+                    format!("{model_namespace}.{name}")
+                }
             } else {
                 primitive_parameter_type(parameter)
             };
@@ -1258,7 +1541,11 @@ fn render_param_parse(
 
 fn imported_schema(schema: &str, model_namespace: &str) -> String {
     if is_named_schema(schema) {
-        format!("{model_namespace}.{schema}")
+        if model_namespace.is_empty() {
+            schema.to_string()
+        } else {
+            format!("{model_namespace}.{schema}")
+        }
     } else {
         schema.to_string()
     }
@@ -1348,13 +1635,13 @@ fn render_path(path: &str) -> String {
     output
 }
 
-pub fn render_queries(endpoints: &[Value], options: &GenerateOptions) -> Map<String, Value> {
+pub fn render_queries(
+    endpoints: &[Value],
+    schema_owners: &Map<String, Value>,
+    options: &GenerateOptions,
+) -> Map<String, Value> {
     let mut rendered = Map::new();
-    if !options.models_in_common
-        || !options.split_by_tags
-        || options.inline_endpoints
-        || !options.workspace_context.is_empty()
-    {
+    if !options.split_by_tags || options.inline_endpoints || !options.workspace_context.is_empty() {
         return rendered;
     }
     let mut by_tag: IndexMap<String, Vec<&Value>> = IndexMap::default();
@@ -1378,7 +1665,12 @@ pub fn render_queries(endpoints: &[Value], options: &GenerateOptions) -> Map<Str
                         .map(|(tag, tag_endpoints)| {
                             (
                                 tag.clone(),
-                                Value::String(render_query_module(tag, tag_endpoints, options)),
+                                Value::String(render_query_module(
+                                    tag,
+                                    tag_endpoints,
+                                    schema_owners,
+                                    options,
+                                )),
                             )
                         })
                         .collect::<Vec<_>>()
@@ -1393,10 +1685,13 @@ pub fn render_queries(endpoints: &[Value], options: &GenerateOptions) -> Map<Str
     rendered
 }
 
-pub fn render_acl(endpoints: &[Value], options: &GenerateOptions) -> Map<String, Value> {
+pub fn render_acl(
+    endpoints: &[Value],
+    schema_owners: &Map<String, Value>,
+    options: &GenerateOptions,
+) -> Map<String, Value> {
     let mut rendered = Map::new();
-    if !options.models_in_common || !options.split_by_tags || !options.workspace_context.is_empty()
-    {
+    if !options.split_by_tags || !options.workspace_context.is_empty() {
         return rendered;
     }
     let mut by_tag: IndexMap<String, Vec<&Value>> = IndexMap::default();
@@ -1419,7 +1714,12 @@ pub fn render_acl(endpoints: &[Value], options: &GenerateOptions) -> Map<String,
     for (tag, tag_endpoints) in by_tag {
         rendered.insert(
             tag.clone(),
-            Value::String(render_acl_module(&tag, &tag_endpoints, options)),
+            Value::String(render_acl_module(
+                &tag,
+                &tag_endpoints,
+                schema_owners,
+                options,
+            )),
         );
     }
     rendered
@@ -1427,8 +1727,7 @@ pub fn render_acl(endpoints: &[Value], options: &GenerateOptions) -> Map<String,
 
 pub fn render_shared(endpoints: &[Value], options: &GenerateOptions) -> Map<String, Value> {
     let mut rendered = Map::new();
-    if !options.models_in_common || !options.split_by_tags || !options.workspace_context.is_empty()
-    {
+    if !options.split_by_tags || !options.workspace_context.is_empty() {
         return rendered;
     }
     rendered.insert(
@@ -1646,7 +1945,12 @@ fn value_text(value: &Value) -> String {
         .unwrap_or_else(|| value.to_string())
 }
 
-fn render_acl_module(tag: &str, endpoints: &[&Value], options: &GenerateOptions) -> String {
+fn render_acl_module(
+    tag: &str,
+    endpoints: &[&Value],
+    schema_owners: &Map<String, Value>,
+    options: &GenerateOptions,
+) -> String {
     let additional = endpoints.iter().any(|endpoint| {
         endpoint
             .pointer("/acl/0/conditions")
@@ -1680,10 +1984,42 @@ fn render_acl_module(tag: &str, endpoints: &[&Value], options: &GenerateOptions)
         "import { type AbilityTuple } from \"@casl/ability\";".into()
     });
     if has_models {
-        lines.push(format!(
-            "import type {{ {models_namespace} }} from \"./{}.models\";",
-            decapitalize(tag)
-        ));
+        if options.ts_namespaces {
+            lines.push(format!(
+                "import type {{ {models_namespace} }} from \"./{}.models\";",
+                decapitalize(tag)
+            ));
+        } else {
+            let mut imports: IndexMap<String, Vec<String>> = IndexMap::default();
+            for condition in endpoints
+                .iter()
+                .flat_map(|endpoint| acl_conditions(endpoint))
+            {
+                if let Some(schema) = condition.get("zodSchemaName").and_then(Value::as_str) {
+                    let name = remove_suffix(schema, &options.schema_suffix);
+                    let owner = schema_owners
+                        .get(schema)
+                        .and_then(Value::as_str)
+                        .unwrap_or(tag);
+                    let names = imports.entry(owner.to_string()).or_default();
+                    if !names.contains(&name) {
+                        names.push(name);
+                    }
+                }
+            }
+            for (owner, names) in imports {
+                let owner_tag = decapitalize(&owner);
+                let path = if owner == tag {
+                    format!("./{owner_tag}.models")
+                } else {
+                    format!("{}{owner_tag}/{owner_tag}.models", import_root(options))
+                };
+                lines.push(format!(
+                    "import type {{ {} }} from \"{path}\";",
+                    names.join(", ")
+                ));
+            }
+        }
     }
     lines.push(String::new());
     if options.ts_namespaces {
@@ -1694,7 +2030,16 @@ fn render_acl_module(tag: &str, endpoints: &[&Value], options: &GenerateOptions)
         ));
     }
     for endpoint in endpoints {
-        render_ability(&mut lines, endpoint, &models_namespace, options);
+        render_ability(
+            &mut lines,
+            endpoint,
+            if options.ts_namespaces {
+                &models_namespace
+            } else {
+                ""
+            },
+            options,
+        );
         lines.push(String::new());
     }
     if options.ts_namespaces {
@@ -1713,10 +2058,12 @@ fn acl_conditions(endpoint: &Value) -> impl Iterator<Item = &Value> {
 
 fn condition_type(condition: &Value, models_namespace: &str, options: &GenerateOptions) -> String {
     if let Some(schema) = condition.get("zodSchemaName").and_then(Value::as_str) {
-        format!(
-            "{models_namespace}.{}",
-            remove_suffix(schema, &options.schema_suffix)
-        )
+        let name = remove_suffix(schema, &options.schema_suffix);
+        if models_namespace.is_empty() {
+            name
+        } else {
+            format!("{models_namespace}.{name}")
+        }
     } else {
         condition
             .get("type")
@@ -1868,7 +2215,12 @@ fn render_ability(
     lines.push(format!("] as AbilityTuple<\"{action}\", {subject_types}>;"));
 }
 
-fn render_query_module(tag: &str, endpoints: &[&Value], options: &GenerateOptions) -> String {
+fn render_query_module(
+    tag: &str,
+    endpoints: &[&Value],
+    schema_owners: &Map<String, Value>,
+    options: &GenerateOptions,
+) -> String {
     let model_suffix = options
         .configs
         .get("models")
@@ -1956,14 +2308,32 @@ fn render_query_module(tag: &str, endpoints: &[&Value], options: &GenerateOption
         ));
     }
     if options.mutation_effects && !mutations.is_empty() {
-        lines.push("import { useMutationEffects, type MutationEffectsOptions } from \"@povio/openapi-codegen-cli\";".into());
+        lines.push(format!(
+            "import {{ useMutationEffects, type MutationEffectsOptions }} from \"{}\";",
+            options.mutation_effects_import_path
+        ));
     }
     if options.check_acl && !acl_endpoints.is_empty() {
-        lines.push("import { useAclCheck } from \"@povio/openapi-codegen-cli/acl\";".into());
         lines.push(format!(
-            "import {{ {acl_namespace} }} from \"./{}.acl\";",
-            decapitalize(tag)
+            "import {{ useAclCheck }} from \"{}\";",
+            options.acl_check_import_path
         ));
+        if options.ts_namespaces {
+            lines.push(format!(
+                "import {{ {acl_namespace} }} from \"./{}.acl\";",
+                decapitalize(tag)
+            ));
+        } else {
+            let abilities = acl_endpoints
+                .iter()
+                .map(|endpoint| format!("canUse{}", query_names(endpoint).1))
+                .collect::<Vec<_>>();
+            lines.push(format!(
+                "import {{ {} }} from \"./{}.acl\";",
+                abilities.join(", "),
+                decapitalize(tag)
+            ));
+        }
     }
     let mut query_types = Vec::new();
     if !queries.is_empty() || (options.mutation_default_on_error && !mutations.is_empty()) {
@@ -1995,15 +2365,70 @@ fn render_query_module(tag: &str, endpoints: &[&Value], options: &GenerateOption
         .filter_map(|param| param.get("zodSchema").and_then(Value::as_str))
         .any(is_named_schema)
     {
+        if options.ts_namespaces {
+            lines.push(format!(
+                "import {{ {models_namespace} }} from \"./{}.models\";",
+                decapitalize(tag)
+            ));
+        } else {
+            let mut imports: IndexMap<String, Vec<String>> = IndexMap::default();
+            for endpoint in endpoints {
+                for schema in endpoint
+                    .get("parameters")
+                    .and_then(Value::as_array)
+                    .into_iter()
+                    .flatten()
+                    .filter_map(|parameter| parameter.get("zodSchema").and_then(Value::as_str))
+                    .filter(|schema| is_named_schema(schema))
+                {
+                    let name = remove_suffix(&schema, &options.schema_suffix);
+                    let owner = schema_owners
+                        .get(schema)
+                        .and_then(Value::as_str)
+                        .unwrap_or(tag);
+                    let names = imports.entry(owner.to_string()).or_default();
+                    if !names.contains(&name) {
+                        names.push(name);
+                    }
+                }
+            }
+            for (owner, names) in imports {
+                let owner_tag = decapitalize(&owner);
+                let path = if owner == tag {
+                    format!("./{owner_tag}.models")
+                } else {
+                    format!("{}{owner_tag}/{owner_tag}.models", import_root(options))
+                };
+                lines.push(format!(
+                    "import type {{ {} }} from \"{path}\";",
+                    names.join(", ")
+                ));
+            }
+        }
+    }
+    if options.ts_namespaces {
         lines.push(format!(
-            "import {{ {models_namespace} }} from \"./{}.models\";",
+            "import {{ {api_namespace} }} from \"./{}.api\";",
+            decapitalize(tag)
+        ));
+    } else {
+        let operations = endpoints
+            .iter()
+            .map(|endpoint| {
+                endpoint_name(
+                    endpoint
+                        .get("operationName")
+                        .and_then(Value::as_str)
+                        .unwrap_or_default(),
+                )
+            })
+            .collect::<Vec<_>>();
+        lines.push(format!(
+            "import {{ {} }} from \"./{}.api\";",
+            operations.join(", "),
             decapitalize(tag)
         ));
     }
-    lines.push(format!(
-        "import {{ {api_namespace} }} from \"./{}.api\";",
-        decapitalize(tag)
-    ));
     lines.push(String::new());
     if options.ts_namespaces {
         lines.push(format!("export namespace {query_namespace} {{"));
@@ -2095,7 +2520,14 @@ fn render_query_module(tag: &str, endpoints: &[&Value], options: &GenerateOption
     if options.ts_namespaces {
         lines.push("}".into());
     }
-    format!("{}\n", lines.join("\n").trim_end())
+    let mut content = format!("{}\n", lines.join("\n").trim_end());
+    if !options.ts_namespaces {
+        content = content.replace(&format!("{models_namespace}."), "");
+        content = content.replace(&format!("{}Models.", capitalize(&options.default_tag)), "");
+        content = content.replace(&format!("{api_namespace}."), "");
+        content = content.replace(&format!("{acl_namespace}."), "");
+    }
+    content
 }
 
 fn import_root(options: &GenerateOptions) -> String {
@@ -2412,9 +2844,9 @@ fn render_prefetch_native(
     } else {
         "\"queryKey\" | \"queryFn\""
     };
-    lines.push(format!("export const {function} = (queryClient: QueryClient, {}options?: Omit<Parameters<QueryClient[\"{method}\"]>[0], {omitted}>): void => {{", if params.is_empty() { "".into() } else { format!("{{ {args} }}: {{ {} }}, ", render_param_list(&params)) }));
+    lines.push(format!("export const {function} = (queryClient: QueryClient, {}options?: Omit<Parameters<QueryClient[\"{method}\"]>[0], {omitted}>) => {{", if params.is_empty() { "".into() } else { format!("{{ {args} }}: {{ {} }}, ", render_param_list(&params)) }));
     lines.push(format!(
-        "  void queryClient.{method}({{ ...{factory}({}), ...{} }});",
+        "  return queryClient.{method}({{ ...{factory}({}), ...{} }});",
         if params.is_empty() {
             "".into()
         } else {
@@ -2895,7 +3327,7 @@ fn render_media_upload_body(
     lines.push("      ".into());
     lines.push("      if (file && uploadInstructions.url) {".into());
     lines.push(
-        "        const method = (data?.method?.toLowerCase() ?? \"put\") as \"put\" | \"post\";"
+        "        const method = (uploadInstructions.method?.toLowerCase() ?? \"put\") as \"put\" | \"post\";"
             .into(),
     );
     lines.push("        let dataToSend: File | FormData = file;".into());

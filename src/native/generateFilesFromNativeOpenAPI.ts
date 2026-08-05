@@ -21,9 +21,21 @@ export function generateFilesFromNativeOpenAPI(
   yaml: boolean,
   options: GenerateOptions,
 ): GenerateFileData[] | undefined {
+  if (!supportsCompleteNativeRender(options)) {
+    if (process.env.OPENAPI_CODEGEN_REQUIRE_FULL_NATIVE === "1") {
+      throw new Error("The selected options are not supported by the full native renderer");
+    }
+    return undefined;
+  }
+
   const nativeData = compileNativeData(source, yaml, JSON.stringify({ ...options, nativeCompact: true }))
     .data as CompleteNativeData;
-  if (!nativeData.renderedComplete) return undefined;
+  if (!nativeData.renderedComplete) {
+    if (process.env.OPENAPI_CODEGEN_REQUIRE_FULL_NATIVE === "1") {
+      throw new Error("The selected options are not supported by the full native renderer");
+    }
+    return undefined;
+  }
 
   const files: GenerateFileData[] = [];
   const taggedRenderers: [GenerateType, Record<string, string>][] = options.modelsOnly
@@ -66,6 +78,16 @@ export function generateFilesFromNativeOpenAPI(
   }
 
   return files;
+}
+
+export function supportsCompleteNativeRender(options: GenerateOptions) {
+  return (
+    options.splitByTags &&
+    ((options.modelsInCommon && options.tsNamespaces) || (!options.modelsInCommon && !options.tsNamespaces)) &&
+    !options.inlineEndpoints &&
+    !options.builderConfigs &&
+    (options.workspaceContext?.length ?? 0) === 0
+  );
 }
 
 function taggedFile(options: GenerateOptions, tag: string, type: GenerateType, content: string) {

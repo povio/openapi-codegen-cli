@@ -58,7 +58,9 @@
   },
   "scripts": {
     "start": "bun ./src/sh.ts",
-    "test": "bun run build:native && vitest run",
+    "test": "bun run build:native && bun run test:ts && bun run test:native",
+    "test:ts": "OPENAPI_CODEGEN_NATIVE=0 vitest run",
+    "test:native": "OPENAPI_CODEGEN_NATIVE=1 OPENAPI_CODEGEN_REQUIRE_FULL_NATIVE=1 vitest run",
     "test:watch": "vitest",
     "build": "tsdown && bun run build:native",
     "build:ts": "tsdown",

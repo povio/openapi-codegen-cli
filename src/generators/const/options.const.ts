@@ -53,6 +53,7 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   replaceOptionalWithNullish: false,
   // Endpoints options
   restClientImportPath: "",
+  zodImportPath: "@povio/openapi-codegen-cli/zod",
   errorHandlingImportPath: "",
   removeOperationPrefixEndingWith: "Controller_",
   parseRequestParams: true,
@@ -60,6 +61,7 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   inlineEndpointsExcludeModules: [],
   // Queries options
   queryTypesImportPath: PACKAGE_IMPORT_PATH,
+  mutationEffectsImportPath: PACKAGE_IMPORT_PATH,
   axiosRequestConfig: false,
   mutationEffects: true,
   mutationDefaultOnError: false,
@@ -81,6 +83,7 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   checkAcl: true,
   abilityContextGenericAppAbilities: false,
   abilityContextImportPath: "",
+  aclCheckImportPath: "@povio/openapi-codegen-cli/acl",
   // Builder Configs options
   builderConfigs: false,
   filterParamName: "filter",
