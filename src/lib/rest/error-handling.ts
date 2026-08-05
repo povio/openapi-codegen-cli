@@ -1,7 +1,8 @@
-import { isAxiosError, isCancel } from "axios";
 import { z } from "zod";
 
 import { ns, resolveT, type TranslateFunction } from "../config/i18n";
+import { isAxiosErrorLike, isCanceledRequest } from "./http-error.utils";
+import { NativeHttpError } from "./native-rest-client.types";
 import { RestUtils } from "./rest.utils";
 
 export type GeneralErrorCodes =
@@ -87,9 +88,11 @@ export class ErrorHandler<CodeT extends string | number> {
     const internalError: ErrorEntry<ICodeT> = {
       code: "INTERNAL_ERROR",
       condition: (e) => {
-        if (isAxiosError(e)) {
+        if (isAxiosErrorLike(e)) {
           return e.response?.status != null && e.response.status >= 500 && e.response.status < 600;
         }
+
+        if (e instanceof NativeHttpError) return e.response.status >= 500 && e.response.status < 600;
 
         return false;
       },
@@ -99,9 +102,11 @@ export class ErrorHandler<CodeT extends string | number> {
     const networkError: ErrorEntry<ICodeT> = {
       code: "NETWORK_ERROR",
       condition: (e) => {
-        if (isAxiosError(e)) {
+        if (isAxiosErrorLike(e)) {
           return e.code === "ERR_NETWORK";
         }
+
+        if (e instanceof TypeError) return true;
 
         return false;
       },
@@ -111,15 +116,7 @@ export class ErrorHandler<CodeT extends string | number> {
     const canceledError: ErrorEntry<ICodeT> = {
       code: "CANCELED_ERROR",
       condition: (e) => {
-        if (isCancel(e)) {
-          return true;
-        }
-
-        if (isAxiosError(e) && e.code === "ECONNABORTED") {
-          return true;
-        }
-
-        return false;
+        return isCanceledRequest(e);
       },
       getMessage: () => resolveT()("openapi.sharedErrors.canceledError", { ns }),
     };

@@ -54,6 +54,14 @@
     "./zod": {
       "types": "./dist/zod.d.mts",
       "import": "./dist/zod.mjs"
+    },
+    "./native": {
+      "types": "./dist/native.d.mts",
+      "import": "./dist/native.mjs"
+    },
+    "./rest": {
+      "types": "./dist/rest.d.mts",
+      "import": "./dist/rest.mjs"
     }
   },
   "scripts": {

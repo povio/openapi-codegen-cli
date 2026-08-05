@@ -28,6 +28,7 @@ export type GenerateParams = {
     | "importPath"
     | "extractEnums"
     | "modelsInCommon"
+    | "restClient"
     | "acl"
     | "checkAcl"
     | "standalone"

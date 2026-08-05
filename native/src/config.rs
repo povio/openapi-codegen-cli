@@ -84,6 +84,8 @@ pub struct GenerateOptions {
     pub configs: HashMap<String, GenerateConfig>,
     #[serde(default)]
     pub rest_client_import_path: String,
+    #[serde(default = "default_rest_client")]
+    pub rest_client: String,
     #[serde(default = "default_zod_import_path")]
     pub zod_import_path: String,
     #[serde(default)]
@@ -124,6 +126,10 @@ pub struct GenerateOptions {
     pub workspace_context: Vec<String>,
     #[serde(default)]
     pub mutation_scope: serde_json::Value,
+}
+
+fn default_rest_client() -> String {
+    "axios".into()
 }
 
 fn default_true() -> bool {

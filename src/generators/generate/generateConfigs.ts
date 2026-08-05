@@ -1,6 +1,10 @@
 import { ACL_CHECK_HOOK } from "@/generators/const/acl.const";
-import { AXIOS_DEFAULT_IMPORT_NAME, AXIOS_REQUEST_CONFIG_TYPE } from "@/generators/const/endpoints.const";
-import { PACKAGE_IMPORT_PATH } from "@/generators/const/package.const";
+import {
+  AXIOS_DEFAULT_IMPORT_NAME,
+  AXIOS_REQUEST_CONFIG_TYPE,
+  getRequestConfigTypeName,
+} from "@/generators/const/endpoints.const";
+import { REST_PACKAGE_IMPORT_PATH } from "@/generators/const/package.const";
 import {
   MUTATION_EFFECTS,
   QUERY_MODULE_ENUM,
@@ -46,13 +50,19 @@ export function generateConfigs(generateTypeParams: GenerateTypeParams) {
   const hasMutationEffects = resolver.options.mutationEffects && hasMutation;
   const hasMutationDefaultOnError = resolver.options.mutationDefaultOnError && hasMutation;
   const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
-  const hasAxiosDefaultImport = endpoints.some((e) => e.mediaUpload);
-  const hasAxiosImport = hasAxiosRequestConfig || hasAxiosDefaultImport;
+  const nativeClient = resolver.options.restClient === "native";
+  const hasAxiosDefaultImport = !nativeClient && endpoints.some((e) => e.mediaUpload);
+  const hasAxiosImport = !nativeClient && (hasAxiosRequestConfig || hasAxiosDefaultImport);
   const axiosImport: Import = {
     defaultImport: hasAxiosDefaultImport ? AXIOS_DEFAULT_IMPORT_NAME : undefined,
     bindings: [],
     typeBindings: hasAxiosImport ? [AXIOS_REQUEST_CONFIG_TYPE] : [],
     from: "axios",
+  };
+  const nativeImport: Import = {
+    bindings: [],
+    typeBindings: nativeClient && hasAxiosRequestConfig ? [getRequestConfigTypeName("native")] : [],
+    from: REST_PACKAGE_IMPORT_PATH,
   };
 
   const endpointsImports = getEndpointsImports({
@@ -106,6 +116,7 @@ export function generateConfigs(generateTypeParams: GenerateTypeParams) {
   if (hasAxiosImport) {
     lines.push(renderImport(axiosImport));
   }
+  if (nativeImport.typeBindings?.length) lines.push(renderImport(nativeImport));
   if (hasZodImport) {
     lines.push(renderImport(ZOD_IMPORT));
   }
@@ -234,7 +245,7 @@ function renderMutationContent(resolver: any, endpoint: Endpoint, tag: string) {
 
   const lines: string[] = [];
   lines.push(
-    `(options?: AppMutationOptions<typeof ${endpointFunction}, ${mutationVariablesType}>${hasMutationEffects ? ` & ${MUTATION_EFFECTS.optionsType}` : ""}${hasAxiosRequestConfig ? `, config?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => {`,
+    `(options?: AppMutationOptions<typeof ${endpointFunction}, ${mutationVariablesType}>${hasMutationEffects ? ` & ${MUTATION_EFFECTS.optionsType}` : ""}${hasAxiosRequestConfig ? `, config?: ${getRequestConfigTypeName(resolver.options.restClient)}` : ""}) => {`,
   );
   if (hasMutationDefaultOnError) {
     lines.push("  const queryConfig = OpenApiQueryConfig.useConfig();");

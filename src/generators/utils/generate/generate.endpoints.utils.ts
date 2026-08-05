@@ -225,15 +225,18 @@ export function renderMediaUploadMutationBody({
     "    }",
     '    dataToSend.append("file", file);',
     "  }",
-    "  await axios[method](uploadInstructions.url, dataToSend, {",
-    "    headers: {",
-    '      "Content-Type": file.type,',
-    "    },",
+    resolver.options.restClient === "native"
+      ? "  await AppRestClient.upload(uploadInstructions.url, dataToSend, {"
+      : "  await axios[method](uploadInstructions.url, dataToSend, {",
+    resolver.options.restClient === "native"
+      ? '    headers: method === "put" ? { "Content-Type": file.type } : undefined,'
+      : "    headers: {",
+    ...(resolver.options.restClient === "native" ? [] : ['      "Content-Type": file.type,', "    },"]),
     "    signal: abortController?.signal,",
     "    onUploadProgress: onUploadProgress",
     "    ? (progressEvent) => onUploadProgress({ loaded: progressEvent.loaded, total: progressEvent.total ?? 0 })",
     "    : undefined,",
-    "  });",
+    resolver.options.restClient === "native" ? "  }, method);" : "  });",
     "}",
     "",
     "return uploadInstructions;",

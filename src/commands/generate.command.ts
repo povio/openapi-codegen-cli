@@ -64,6 +64,9 @@ class GenerateOptions implements GenerateParams {
   @YargOption({ envAlias: "zodImportPath" })
   zodImportPath?: string;
 
+  @YargOption({ envAlias: "restClient", choices: ["axios", "native"] })
+  restClient?: "axios" | "native";
+
   @YargOption({ envAlias: "mutationEffectsImportPath" })
   mutationEffectsImportPath?: string;
 

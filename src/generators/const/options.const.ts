@@ -54,6 +54,7 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   extractEnums: true,
   replaceOptionalWithNullish: false,
   // Endpoints options
+  restClient: "axios",
   restClientImportPath: "",
   zodImportPath: "@povio/openapi-codegen-cli/zod",
   errorHandlingImportPath: "",

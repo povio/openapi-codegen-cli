@@ -68,7 +68,7 @@ export function generateFilesFromNativeOpenAPI(
         outputFile(
           options,
           "app-rest-client.ts",
-          `import { RestClient } from "@povio/openapi-codegen";\n\nexport const AppRestClient = new RestClient({\n  config: {\n    baseURL: "${nativeData.baseUrl}"\n  },\n});\n`,
+          `import { ${options.restClient === "native" ? "NativeRestClient" : "RestClient"} } from "@povio/openapi-codegen-cli${options.restClient === "native" ? "/native" : ""}";\n\nexport const AppRestClient = new ${options.restClient === "native" ? "NativeRestClient" : "RestClient"}({\n  config: {\n    baseURL: "${nativeData.baseUrl}"\n  },\n});\n`,
         ),
       );
     }

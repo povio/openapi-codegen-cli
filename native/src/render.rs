@@ -1059,6 +1059,26 @@ fn should_inline_endpoints(tag: &str, options: &GenerateOptions) -> bool {
             .any(|name| name.eq_ignore_ascii_case(tag))
 }
 
+fn uses_native_rest_client(options: &GenerateOptions) -> bool {
+    options.rest_client == "native"
+}
+
+fn request_config_type(options: &GenerateOptions) -> &'static str {
+    if uses_native_rest_client(options) {
+        "TransportRequestConfig"
+    } else {
+        "AxiosRequestConfig"
+    }
+}
+
+fn response_type(options: &GenerateOptions) -> &'static str {
+    if uses_native_rest_client(options) {
+        "TransportResponse"
+    } else {
+        "AxiosResponse"
+    }
+}
+
 fn render_endpoint_module(
     tag: &str,
     endpoints: &[&Value],
@@ -1074,7 +1094,11 @@ fn render_endpoint_module(
         .iter()
         .any(|endpoint| endpoint.get("method").and_then(Value::as_str) == Some("get"));
     if options.axios_request_config || has_get {
-        lines.push("import { type AxiosRequestConfig } from \"axios\";".into());
+        lines.push(if uses_native_rest_client(options) {
+            "import { type TransportRequestConfig } from \"@povio/openapi-codegen-cli/rest\";".into()
+        } else {
+            "import { type AxiosRequestConfig } from \"axios\";".into()
+        });
     }
     let parse_schemas: Vec<&str> = endpoints
         .iter()
@@ -1278,9 +1302,12 @@ fn render_endpoint(
         .collect::<String>();
     let request_config = options.axios_request_config || method == "get";
     let config_param = if request_config {
-        "config?: AxiosRequestConfig & { allowInvalidResponseData?: boolean }"
+        format!(
+            "config?: {} & {{ allowInvalidResponseData?: boolean }}",
+            request_config_type(options)
+        )
     } else {
-        ""
+        String::new()
     };
     let name = endpoint_name(
         endpoint
@@ -2282,6 +2309,12 @@ fn render_query_module(
             .and_then(Value::as_bool)
             .unwrap_or(false)
     });
+    let has_media_download = endpoints.iter().any(|endpoint| {
+        endpoint
+            .get("mediaDownload")
+            .and_then(Value::as_bool)
+            .unwrap_or(false)
+    });
     let acl_endpoints: Vec<&Value> = endpoints
         .iter()
         .copied()
@@ -2293,7 +2326,21 @@ fn render_query_module(
         })
         .collect();
     let mut lines = Vec::new();
-    if !queries.is_empty() || options.axios_request_config || has_media_upload {
+    if uses_native_rest_client(options) {
+        let mut transport_types = Vec::new();
+        if !queries.is_empty() || options.axios_request_config {
+            transport_types.push("type TransportRequestConfig");
+        }
+        if has_media_download {
+            transport_types.push("type TransportResponse");
+        }
+        if !transport_types.is_empty() {
+            lines.push(format!(
+                "import {{ {} }} from \"@povio/openapi-codegen-cli/rest\";",
+                transport_types.join(", ")
+            ));
+        }
+    } else if !queries.is_empty() || options.axios_request_config || has_media_upload {
         lines.push(if has_media_upload {
             "import axios, { type AxiosRequestConfig } from \"axios\";".to_string()
         } else {
@@ -2689,7 +2736,7 @@ fn render_query_options_native(
         "{operation}{}QueryOptions",
         if infinite { "Infinite" } else { "" }
     );
-    lines.push(format!("const {options_name} = ({object}{}config?: AxiosRequestConfig & {{ allowInvalidResponseData?: boolean }}) => ({{", if params.is_empty() { "" } else { ", " }));
+    lines.push(format!("const {options_name} = ({object}{}config?: {} & {{ allowInvalidResponseData?: boolean }}) => ({{", if params.is_empty() { "" } else { ", " }, request_config_type(options)));
     lines.push(format!(
         "  queryKey: keys.{api_operation}{}({args}),",
         if infinite { "Infinite" } else { "" }
@@ -2864,9 +2911,9 @@ fn render_prefetch_native(
     let has_request_config = options.axios_request_config
         || endpoint.get("method").and_then(Value::as_str) == Some("get");
     let request_config_param = if has_request_config {
-        "config?: AxiosRequestConfig, "
+        format!("config?: {}, ", request_config_type(options))
     } else {
-        ""
+        String::new()
     };
     lines.push(format!("export const {function} = (queryClient: QueryClient, {}options?: Omit<Parameters<QueryClient[\"{method}\"]>[0], {omitted}>, {request_config_param}throwOnError = false) => {{", if params.is_empty() { "".into() } else { format!("{{ {args} }}: {{ {} }}, ", render_param_list(&params)) }));
     let request_config_arg = if has_request_config {
@@ -2977,7 +3024,7 @@ fn render_query_docs(
             .and_then(Value::as_bool)
             .unwrap_or(false)
     {
-        format!("AxiosResponse<{result}>")
+        format!("{}<{result}>", response_type(options))
     } else {
         result
     };
@@ -3263,6 +3310,7 @@ fn render_mutation_native(
             &api_operation,
             &args,
             options.axios_request_config,
+            options,
         );
         lines.push("    },".into());
     } else if has_acl {
@@ -3349,6 +3397,7 @@ fn render_media_upload_body(
     operation: &str,
     args: &str,
     has_config: bool,
+    options: &GenerateOptions,
 ) {
     let config_arg = if has_config {
         if args.is_empty() {
@@ -3378,15 +3427,27 @@ fn render_media_upload_body(
     lines.push("          }".into());
     lines.push("          dataToSend.append(\"file\", file);".into());
     lines.push("        }".into());
-    lines.push("        await axios[method](uploadInstructions.url, dataToSend, {".into());
-    lines.push("          headers: {".into());
-    lines.push("            \"Content-Type\": file.type,".into());
-    lines.push("          },".into());
+    lines.push(if uses_native_rest_client(options) {
+        "        await AppRestClient.upload(uploadInstructions.url, dataToSend, {".into()
+    } else {
+        "        await axios[method](uploadInstructions.url, dataToSend, {".into()
+    });
+    if uses_native_rest_client(options) {
+        lines.push("          headers: method === \"put\" ? { \"Content-Type\": file.type } : undefined,".into());
+    } else {
+        lines.push("          headers: {".into());
+        lines.push("            \"Content-Type\": file.type,".into());
+        lines.push("          },".into());
+    }
     lines.push("          signal: abortController?.signal,".into());
     lines.push("          onUploadProgress: onUploadProgress".into());
     lines.push("          ? (progressEvent) => onUploadProgress({ loaded: progressEvent.loaded, total: progressEvent.total ?? 0 })".into());
     lines.push("          : undefined,".into());
-    lines.push("        });".into());
+    lines.push(if uses_native_rest_client(options) {
+        "        }, method);".into()
+    } else {
+        "        });".into()
+    });
     lines.push("      }".into());
     lines.push("      ".into());
     lines.push("      return uploadInstructions;".into());
@@ -3537,7 +3598,7 @@ fn render_mutation_docs(
             .and_then(Value::as_bool)
             .unwrap_or(false)
         {
-            format!("AxiosResponse<{result}>")
+            format!("{}<{result}>", response_type(options))
         } else {
             result
         },

@@ -14,6 +14,7 @@ interface ZodGenerateOptions {
 }
 
 interface EndpointsGenerateOptions {
+  restClient: "axios" | "native";
   restClientImportPath: string;
   zodImportPath: string;
   errorHandlingImportPath?: string;

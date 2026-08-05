@@ -11,9 +11,15 @@ export const BODY_PARAMETER_NAME = "data";
 export const AXIOS_DEFAULT_IMPORT_NAME = "axios";
 export const AXIOS_REQUEST_CONFIG_NAME = "config";
 export const AXIOS_REQUEST_CONFIG_TYPE = "AxiosRequestConfig";
+export const NATIVE_REQUEST_CONFIG_TYPE = "TransportRequestConfig";
+export const NATIVE_RESPONSE_TYPE = "TransportResponse";
 export const AXIOS_IMPORT: Import = {
   defaultImport: AXIOS_DEFAULT_IMPORT_NAME,
   bindings: [],
   typeBindings: [AXIOS_REQUEST_CONFIG_TYPE],
   from: "axios",
 };
+
+export function getRequestConfigTypeName(restClient: "axios" | "native") {
+  return restClient === "native" ? NATIVE_REQUEST_CONFIG_TYPE : AXIOS_REQUEST_CONFIG_TYPE;
+}

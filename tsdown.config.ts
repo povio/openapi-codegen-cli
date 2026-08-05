@@ -17,6 +17,8 @@ export default defineConfig([
       "./src/tiny.ts",
       "./src/acl.ts",
       "./src/zod.ts",
+      "./src/native.ts",
+      "./src/rest.ts",
     ],
     format: "esm",
     platform: "node",

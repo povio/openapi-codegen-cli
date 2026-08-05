@@ -510,4 +510,23 @@ describe("generateQueries mutationEffects + infiniteQuery", () => {
     expect(queriesFile?.content).toContain('from "@/data/acl/useAclCheck";');
     expect(apiFile?.content).toContain('from "@/data/zod.extended";');
   });
+
+  it("generates an Axios-free native REST client mode", () => {
+    const files = generateCodeFromOpenAPIDoc(openApiDoc, {
+      ...DEFAULT_GENERATE_OPTIONS,
+      output: "test-output",
+      restClient: "native",
+      axiosRequestConfig: true,
+      builderConfigs: false,
+    });
+
+    const appClient = files.find((file) => file.fileName.endsWith("/app-rest-client.ts"));
+    const apiFile = files.find((file) => file.fileName.endsWith("/workspace/workspace.api.ts"));
+    const queriesFile = files.find((file) => file.fileName.endsWith("/workspace/workspace.queries.ts"));
+
+    expect(appClient?.content).toContain('import { NativeRestClient } from "@povio/openapi-codegen-cli/native";');
+    expect(apiFile?.content).toContain("config?: TransportRequestConfig");
+    expect(queriesFile?.content).toContain("config?: TransportRequestConfig");
+    expect([appClient, apiFile, queriesFile].map((file) => file?.content).join("\n")).not.toContain('from "axios"');
+  });
 });

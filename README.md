@@ -89,7 +89,8 @@ bunx openapi-codegen generate --config my-config.ts
   --modelsInCommon                    Keep all schema declarations in defaultTag models and emit per-module proxy exports (default: false)
   --replaceOptionalWithNullish        Replace `.optional()` chains with `.nullish()` in generated Zod schemas (default: false)
 
-  --axiosRequestConfig                Include Axios request config parameters in query hooks (default: false)
+  --restClient                        REST transport to generate: 'axios' or 'native' (default: 'axios')
+  --axiosRequestConfig                Include transport request config parameters in query hooks (default: false)
   --infiniteQueries                   Generate infinite queries for paginated API endpoints (default: false)
   --mutationEffects                   Add mutation effects options to mutation hooks (default: true)
   --mutationScope                     Serialize mutations for the same path-param resource via TanStack scope.id (default: false).
@@ -161,6 +162,46 @@ Release packages include native binaries for Linux x64, macOS arm64, and Windows
 ## Common Issues
 
 ### App REST Client Interceptors
+
+Select the fetch-based client without changing endpoint and query APIs:
+
+```ts
+import type { OpenAPICodegenConfig } from "@povio/openapi-codegen-cli";
+
+export default {
+  restClient: "native",
+} satisfies OpenAPICodegenConfig;
+```
+
+Native mode imports common request/response contracts from `@povio/openapi-codegen-cli/rest` and the concrete
+`NativeRestClient` from `@povio/openapi-codegen-cli/native`. It uses `fetch` for normal requests and uploads, switching
+to `XMLHttpRequest` in browsers only when an upload progress callback is provided.
+
+Native interceptors use the common transport interface:
+
+```ts
+import { NativeRestClient } from "@povio/openapi-codegen-cli/native";
+import type { RestTransportInterceptor } from "@povio/openapi-codegen-cli/rest";
+
+const authorizationInterceptor: RestTransportInterceptor = {
+  onRequest(request) {
+    request.headers.set("Authorization", `Bearer ${localStorage.getItem("accessToken")}`);
+    return request;
+  },
+};
+
+export const AppRestClient = new NativeRestClient({
+  config: { baseURL: "https://api.example.com" },
+  interceptors: [authorizationInterceptor],
+});
+```
+
+Axios remains the default for backward compatibility. The existing Axios interceptor API remains available in Axios
+mode.
+
+Native mode does not run the library `ErrorHandler` or create `ApplicationException` values. It throws `HttpError` for
+non-success HTTP responses and preserves Zod, network, cancellation, and timeout errors so applications can handle them
+directly in query callbacks, error boundaries, or their own normalization layer.
 
 In order to add interceptors to the used REST client, you must create your own instance of a RestClient and pass your implemented interceptors into the constructor. Make sure to set `restClientImportPath` in your openapi generation configuration too.
 
