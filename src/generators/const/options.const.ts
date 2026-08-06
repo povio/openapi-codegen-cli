@@ -1,7 +1,7 @@
 import { GenerateType } from "@/generators/types/generate";
 import { GenerateOptions } from "@/generators/types/options";
 
-import { PACKAGE_IMPORT_PATH } from "./package.const";
+import { QUERY_PACKAGE_IMPORT_PATH } from "./package.const";
 import { ENUM_SUFFIX, SCHEMA_SUFFIX } from "./zod.const";
 
 export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
@@ -63,8 +63,8 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   inlineEndpoints: false,
   inlineEndpointsExcludeModules: [],
   // Queries options
-  queryTypesImportPath: PACKAGE_IMPORT_PATH,
-  mutationEffectsImportPath: PACKAGE_IMPORT_PATH,
+  queryTypesImportPath: QUERY_PACKAGE_IMPORT_PATH,
+  mutationEffectsImportPath: QUERY_PACKAGE_IMPORT_PATH,
   axiosRequestConfig: false,
   mutationEffects: true,
   mutationDefaultOnError: false,

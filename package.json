@@ -23,7 +23,9 @@
     "src/assets/**"
   ],
   "type": "module",
+  "sideEffects": false,
   "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
   "exports": {
     ".": {
@@ -62,6 +64,26 @@
     "./rest": {
       "types": "./dist/rest.d.mts",
       "import": "./dist/rest.mjs"
+    },
+    "./axios": {
+      "types": "./dist/axios.d.mts",
+      "import": "./dist/axios.mjs"
+    },
+    "./errors": {
+      "types": "./dist/errors.d.mts",
+      "import": "./dist/errors.mjs"
+    },
+    "./query": {
+      "types": "./dist/query.d.mts",
+      "import": "./dist/query.mjs"
+    },
+    "./config": {
+      "types": "./dist/config.d.mts",
+      "import": "./dist/config.mjs"
+    },
+    "./auth": {
+      "types": "./dist/auth.d.mts",
+      "import": "./dist/auth.mjs"
     }
   },
   "scripts": {
@@ -88,7 +110,8 @@
     "dev:generate": "rm -rf ./output && bun run start generate --config ./test/config.mjs",
     "dev:check": "bun run start check --config ./test/config.mjs",
     "snapshot:openapi-localhost": "bun ./scripts/snapshot-openapi-localhost.mjs",
-    "bench:vite-codegen": "bun ./scripts/benchmark-vite-codegen.mjs"
+    "bench:vite-codegen": "bun ./scripts/benchmark-vite-codegen.mjs",
+    "verify:tree-shaking": "bun run build:ts && bun ./scripts/verify-tree-shaking.mjs"
   },
   "dependencies": {
     "@orpc/contract": "^1.14.3",
@@ -110,6 +133,8 @@
     "@types/react": "^19.2.14",
     "@types/yargs": "^17.0.35",
     "@vitejs/plugin-react": "^5.1.4",
+    "axios": "^1.13.1",
+    "i18next": "^25.8.11",
     "oxfmt": "^0.34.0",
     "oxlint": "1.50.0",
     "oxlint-tsgolint": "^0.15.0",
@@ -138,6 +163,18 @@
       "optional": true
     },
     "@casl/react": {
+      "optional": true
+    },
+    "@tanstack/react-query": {
+      "optional": true
+    },
+    "axios": {
+      "optional": true
+    },
+    "i18next": {
+      "optional": true
+    },
+    "react": {
       "optional": true
     },
     "vite": {

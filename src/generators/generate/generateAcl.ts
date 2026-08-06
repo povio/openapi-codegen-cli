@@ -1,5 +1,5 @@
 import { ACL_APP_ABILITIES, CASL_ABILITY_BINDING, CASL_ABILITY_IMPORT } from "@/generators/const/acl.const";
-import { PACKAGE_IMPORT_PATH } from "@/generators/const/package.const";
+import { CONFIG_PACKAGE_IMPORT_PATH } from "@/generators/const/package.const";
 import { Endpoint } from "@/generators/types/endpoint";
 import { GenerateType, GenerateTypeParams, Import } from "@/generators/types/generate";
 import {
@@ -42,7 +42,7 @@ export function generateAcl({ resolver, data, tag }: GenerateTypeParams) {
   };
   const workspaceContextImport: Import = {
     bindings: ["useWorkspaceContext"],
-    from: PACKAGE_IMPORT_PATH,
+    from: CONFIG_PACKAGE_IMPORT_PATH,
   };
 
   const lines: string[] = [];

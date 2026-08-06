@@ -14,7 +14,7 @@ import {
   getRequestConfigTypeName,
   NATIVE_RESPONSE_TYPE,
 } from "@/generators/const/endpoints.const";
-import { PACKAGE_IMPORT_PATH, REST_PACKAGE_IMPORT_PATH } from "@/generators/const/package.const";
+import { CONFIG_PACKAGE_IMPORT_PATH, REST_PACKAGE_IMPORT_PATH } from "@/generators/const/package.const";
 import { QUERIES_MODULE_NAME, QUERY_HOOKS, QUERY_IMPORT } from "@/generators/const/queries.const";
 import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
 import { Endpoint, EndpointParameter } from "@/generators/types/endpoint";
@@ -174,7 +174,7 @@ export function generateQueries(params: GenerateTypeParams) {
     endpoints.some((endpoint) => getWorkspaceParamNames(resolver, endpoint).length > 0);
   const workspaceContextImport: Import = {
     bindings: ["useWorkspaceContext"],
-    from: PACKAGE_IMPORT_PATH,
+    from: CONFIG_PACKAGE_IMPORT_PATH,
   };
 
   const endpointParams = endpoints.flatMap((endpoint) => endpoint.parameters) as EndpointParameter[];

@@ -295,7 +295,7 @@ describe("generateQueries workspaceContext", () => {
 
     const aclFile = files.find((file) => file.fileName.endsWith("/workspace/workspace.acl.ts"));
 
-    expect(aclFile?.content).toContain('import { useWorkspaceContext } from "@povio/openapi-codegen-cli";');
+    expect(aclFile?.content).toContain('import { useWorkspaceContext } from "@povio/openapi-codegen-cli/config";');
     expect(aclFile?.content).toContain("object?: { officeId: string, positionId: string,  }");
     expect(aclFile?.content).toContain("export const useCanUseGetPosition = (");
     expect(aclFile?.content).toContain("object: { officeId?: string, positionId: string,  }");
