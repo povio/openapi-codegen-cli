@@ -19,7 +19,7 @@ export interface GenerateFile {
 
 export interface GenerateZodSchemaData {
   code: string;
-  isCiruclar: boolean;
+  isCircular: boolean;
   isEnum: boolean;
   schemaObj?: OpenAPIV3.SchemaObject;
 }
