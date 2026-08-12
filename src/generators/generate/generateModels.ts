@@ -1,3 +1,5 @@
+import { OpenAPIV3 } from "openapi-types";
+
 import { ZOD_IMPORT } from "@/generators/const/zod.const";
 import { getZodSchemaRefs } from "@/generators/core/zod/getZodSchemaRefs";
 import { Endpoint } from "@/generators/types/endpoint";
@@ -13,6 +15,8 @@ import {
 import { getNamespaceName } from "@/generators/utils/namespace.utils";
 import { isEnumZodSchema, isNamedZodSchema } from "@/generators/utils/zod-schema.utils";
 import { getUniqueArray } from "@/generators/utils/array.utils";
+import { isReferenceObject } from "@/generators/utils/openapi-schema.utils";
+import { wrapWithQuotesIfNeeded } from "@/generators/utils/openapi.utils";
 
 export function generateModels({ resolver, data, tag }: GenerateTypeParams) {
   if (resolver.options.modelsInCommon && resolver.options.splitByTags && tag !== resolver.options.defaultTag) {
@@ -45,7 +49,7 @@ export function generateModels({ resolver, data, tag }: GenerateTypeParams) {
     const schemaRef = resolver.getRefByZodSchemaName(key);
     zodSchemasData[key] = {
       code,
-      isCiruclar: schemaRef ? resolver.isSchemaCircular(schemaRef) : false,
+      isCircular: schemaRef ? resolver.isSchemaCircular(schemaRef) : false,
       isEnum: isEnumZodSchema(code),
       schemaObj: resolver.getZodSchemaObj(key),
     };
@@ -64,8 +68,15 @@ export function generateModels({ resolver, data, tag }: GenerateTypeParams) {
 
   for (const [name, zodSchema] of Object.entries(zodSchemasData)) {
     lines.push(renderModelJsDocs({ name, zodSchema, tag, resolver }));
-    lines.push(`export const ${name} = ${zodSchema.code};`);
-    lines.push(`export type ${getZodSchemaInferedTypeName(name, resolver.options)} = z.infer<typeof ${name}>;`);
+    const inferredTypeName = getZodSchemaInferedTypeName(name, resolver.options);
+    if (zodSchema.isCircular && zodSchema.schemaObj) {
+      lines.push(`export type ${inferredTypeName} = ${renderSchemaType(zodSchema.schemaObj, resolver)};`);
+    }
+    const typeAnnotation = zodSchema.isCircular ? `: z.ZodObject<z.ZodRawShape> & z.ZodType<${inferredTypeName}>` : "";
+    lines.push(`export const ${name}${typeAnnotation} = ${zodSchema.code};`);
+    if (!zodSchema.isCircular) {
+      lines.push(`export type ${inferredTypeName} = z.infer<typeof ${name}>;`);
+    }
     if (zodSchema.isEnum) {
       lines.push(`export const ${getZodSchemaInferedTypeName(name, resolver.options)} = ${name}.enum;`);
     }
@@ -77,6 +88,70 @@ export function generateModels({ resolver, data, tag }: GenerateTypeParams) {
   }
 
   return lines.join("\n").trimEnd() + "\n";
+}
+
+function renderSchemaType(
+  schema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject,
+  resolver: GenerateTypeParams["resolver"],
+): string {
+  if (isReferenceObject(schema)) {
+    const schemaName = resolver.getZodSchemaNameByRef(schema.$ref);
+    return schemaName ? getZodSchemaInferedTypeName(schemaName, resolver.options) : "unknown";
+  }
+
+  const composite = schema.allOf ?? schema.oneOf ?? schema.anyOf;
+  if (composite?.length) {
+    const separator = schema.allOf ? " & " : " | ";
+    return addNullable(schema, composite.map((part) => renderSchemaType(part, resolver)).join(separator));
+  }
+
+  if (schema.enum?.length) {
+    return addNullable(schema, schema.enum.map((value) => JSON.stringify(value)).join(" | "));
+  }
+
+  if (schema.type === "array") {
+    const itemType = schema.items ? renderSchemaType(schema.items, resolver) : "unknown";
+    return addNullable(schema, `Array<${itemType}>`);
+  }
+
+  if (schema.type === "object" || schema.properties || schema.additionalProperties) {
+    const properties = Object.entries(schema.properties ?? {}).map(([name, property]) => {
+      const isRequired = resolver.options.withImplicitRequiredProps || schema.required?.includes(name);
+      const hasDefault = !isReferenceObject(property) && property.default !== undefined;
+      const optional = isRequired || hasDefault ? "" : "?";
+      const propertyType = renderSchemaType(property, resolver);
+      const outputType =
+        resolver.options.replaceOptionalWithNullish && optional && (isReferenceObject(property) || !property.nullable)
+          ? `${propertyType} | null`
+          : propertyType;
+      return `${wrapWithQuotesIfNeeded(name)}${optional}: ${outputType}`;
+    });
+    if (schema.additionalProperties) {
+      const valueType =
+        typeof schema.additionalProperties === "object"
+          ? renderSchemaType(schema.additionalProperties, resolver)
+          : "unknown";
+      properties.push(`[key: string]: ${valueType}`);
+    }
+    return addNullable(schema, `{ ${properties.join("; ")} }`);
+  }
+
+  const primitiveType = schema.type;
+  const type =
+    primitiveType === "string"
+      ? "string"
+      : primitiveType === "number" || primitiveType === "integer"
+        ? "number"
+        : primitiveType === "boolean"
+          ? "boolean"
+          : primitiveType === "null"
+            ? "null"
+            : "unknown";
+  return addNullable(schema, type);
+}
+
+function addNullable(schema: OpenAPIV3.SchemaObject, type: string) {
+  return schema.nullable && type !== "null" ? `${type} | null` : type;
 }
 
 function renderModelsProxy({ resolver, data, tag }: GenerateTypeParams) {
