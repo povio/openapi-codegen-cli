@@ -149,7 +149,7 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag }: Get
       properties = `{ ${propsMap
         .map(([prop, propSchema, isCircular]) =>
           isCircular
-            ? `get ${wrapWithQuotesIfNeeded(prop!)}() { return ${propSchema} }`
+            ? `${wrapWithQuotesIfNeeded(prop!)}: z.lazy(() => ${propSchema})`
             : `${wrapWithQuotesIfNeeded(prop!)}: ${propSchema}`,
         )
         .join(", ")} }`;
