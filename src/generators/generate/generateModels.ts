@@ -53,7 +53,7 @@ export function generateModels({ resolver, data, tag }: GenerateTypeParams) {
   for (const [key, code] of Object.entries(zodSchemas)) {
     const schemaRef = resolver.getRefByZodSchemaName(key);
     zodSchemasData[key] = {
-      code,
+      code: resolver.options.modelsInModules ? code.replace(/\b[A-Z][A-Za-z0-9]*Models\./g, "") : code,
       isCircular: schemaRef ? resolver.isSchemaCircular(schemaRef) : false,
       isEnum: isEnumZodSchema(code),
       schemaObj: resolver.getZodSchemaObj(key),

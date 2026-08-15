@@ -214,6 +214,19 @@ fn render_local_models(
                 }
             }
             imports.clear();
+            let namespace_prefixes = schema_owners
+                .values()
+                .filter_map(Value::as_str)
+                .map(|owner| format!("{}Models.", capitalize(owner)))
+                .collect::<HashSet<_>>();
+            for value in tag_schemas.values_mut() {
+                let Value::String(code) = value else {
+                    continue;
+                };
+                for prefix in &namespace_prefixes {
+                    *code = code.replace(prefix, "");
+                }
+            }
         }
         let mut content = render_common_models(
             document,
@@ -544,7 +557,7 @@ fn render_common_schema_lines(
 fn render_schema_type(schema: &Value, suffix: &str, options: &GenerateOptions) -> String {
     if let Some(reference) = schema.get("$ref").and_then(Value::as_str) {
         let name = reference.rsplit('/').next().unwrap_or("unknown");
-        return remove_suffix(&format!("{name}{suffix}"), suffix);
+        return remove_suffix(&crate::zod::schema_name(name, suffix), suffix);
     }
 
     for (key, separator) in [("allOf", " & "), ("oneOf", " | "), ("anyOf", " | ")] {

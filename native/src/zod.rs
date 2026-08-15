@@ -728,26 +728,22 @@ fn chain(schema: &Value, meta: Meta, options: &GenerateOptions) -> String {
 }
 
 fn enum_code(schema: &Value) -> Option<String> {
-    Some(format!(
-        "z.enum([{}])",
-        schema
-            .get("enum")?
-            .as_array()?
-            .iter()
-            .map(|value| if value.is_null() {
-                "null".into()
-            } else {
-                format!(
-                    "\"{}\"",
-                    value
-                        .as_str()
-                        .map(str::to_string)
-                        .unwrap_or_else(|| value.to_string())
-                )
-            })
-            .collect::<Vec<String>>()
-            .join(", ")
-    ))
+    let values = schema.get("enum")?.as_array()?;
+    let values = values
+        .iter()
+        .filter(|value| !value.is_null())
+        .map(|value| {
+            format!(
+                "\"{}\"",
+                value
+                    .as_str()
+                    .map(str::to_string)
+                    .unwrap_or_else(|| value.to_string())
+            )
+        })
+        .collect::<Vec<String>>()
+        .join(", ");
+    Some(format!("z.enum([{values}])"))
 }
 pub(crate) fn schema_name(name: &str, suffix: &str) -> String {
     let normalized = normalize_name(name);
@@ -848,6 +844,7 @@ fn escape_pattern(value: &str) -> String {
 #[derive(Default)]
 struct ExtractedEnumCandidate {
     last_segments: Vec<String>,
+    component_names: Vec<String>,
     tags: HashSet<String>,
 }
 
@@ -881,7 +878,7 @@ fn collect_extracted_enums(
     // Codes backed by a canonical component enum never become separately extracted schemas.
     candidates.retain(|code, _| !root_enums.contains_key(code));
 
-    let mut preliminary: IndexMap<String, (String, String)> = IndexMap::default();
+    let mut preliminary: IndexMap<String, (String, String, Vec<String>)> = IndexMap::default();
     for (code, candidate) in candidates {
         let Some(common) = most_common_adjacent(&candidate.last_segments) else {
             continue;
@@ -897,9 +894,27 @@ fn collect_extracted_enums(
         } else {
             options.default_tag.clone()
         };
-        preliminary.insert(code, (name, tag));
+        preliminary.insert(code, (name, tag, candidate.component_names));
+    }
+    let duplicate_names = preliminary
+        .values()
+        .filter_map(|(name, _, _)| {
+            (preliminary.values().filter(|(other, _, _)| other == name).count() > 1)
+                .then_some(name.clone())
+        })
+        .collect::<HashSet<_>>();
+    for (name, _, component_names) in preliminary.values_mut() {
+        if !duplicate_names.contains(name) {
+            continue;
+        }
+        if let Some(prefix) = most_common_adjacent(component_names) {
+            *name = format!("{}{}", sanitize_enum_name(&capitalize(&prefix)), name);
+        }
     }
     preliminary
+        .into_iter()
+        .map(|(code, (name, tag, _))| (code, (name, tag)))
+        .collect()
 }
 
 fn collect_inline_enum_candidates(
@@ -919,6 +934,7 @@ fn collect_inline_enum_candidates(
             if let Some(code) = enum_code(property) {
                 let candidate = candidates.entry(code).or_default();
                 candidate.last_segments.push(property_name.clone());
+                candidate.component_names.push(component_name.to_string());
                 candidate.tags.extend(tags.iter().cloned());
             }
             collect_inline_enum_candidates(property, component_name, tags, candidates);
@@ -930,6 +946,7 @@ fn collect_inline_enum_candidates(
                 if let Some(code) = enum_code(item) {
                     let candidate = candidates.entry(code).or_default();
                     candidate.last_segments.push(component_name.to_string());
+                    candidate.component_names.push(component_name.to_string());
                     candidate.tags.extend(tags.iter().cloned());
                 }
                 collect_inline_enum_candidates(item, component_name, tags, candidates);
@@ -941,6 +958,7 @@ fn collect_inline_enum_candidates(
             if let Some(code) = enum_code(item) {
                 let candidate = candidates.entry(code).or_default();
                 candidate.last_segments.push(component_name.to_string());
+                candidate.component_names.push(component_name.to_string());
                 candidate.tags.extend(tags.iter().cloned());
             }
             collect_inline_enum_candidates(item, component_name, tags, candidates);
@@ -952,6 +970,12 @@ fn collect_inline_enum_candidates(
     {
         collect_inline_enum_candidates(additional, component_name, tags, candidates);
     }
+}
+
+fn sanitize_enum_name(name: &str) -> String {
+    ["Dto", "DTO", "Response", "Request"]
+        .into_iter()
+        .fold(name.to_string(), |value, fragment| value.replace(fragment, ""))
 }
 
 fn enum_schema_name(name: &str, enum_suffix: &str, schema_suffix: &str) -> String {

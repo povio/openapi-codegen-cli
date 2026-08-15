@@ -420,7 +420,8 @@ function getEnumZodSchema({ resolver, schema, zodSchema, meta, tag }: GetPartial
 }
 
 export function getEnumZodSchemaCode(schema: OpenAPIV3.SchemaObject) {
-  return `${ENUM_SCHEMA}([${schema.enum?.map((value) => (value === null ? "null" : `"${value}"`)).join(", ")}])`;
+  const values = schema.enum?.filter((value) => value !== null) ?? [];
+  return `${ENUM_SCHEMA}([${values.map((value) => `"${value}"`).join(", ")}])`;
 }
 
 export function getEnumZodSchemaCodeFromEnumNames(enumNames: string[]) {
