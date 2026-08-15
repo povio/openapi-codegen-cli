@@ -39,6 +39,44 @@ describe("native OpenAPI bindings", () => {
     expect(JSON.parse(result.documentJson)).toEqual({ openapi: "3.0.3", paths: {} });
   });
 
+  test("renders explicit types for mutually recursive schemas", () => {
+    const source = JSON.stringify({
+      openapi: "3.0.3",
+      info: { title: "Recursive schemas", version: "1.0.0" },
+      paths: {},
+      components: {
+        schemas: {
+          Player: {
+            type: "object",
+            properties: { access_tags: { type: "array", items: { $ref: "#/components/schemas/AccessTag" } } },
+          },
+          AccessTag: {
+            type: "object",
+            properties: { player: { $ref: "#/components/schemas/Player" } },
+          },
+        },
+      },
+    });
+    const options = resolveConfig({
+      fileConfig: {
+        input: "fixture",
+        output: "output",
+        excludeRedundantZodSchemas: false,
+        modelsInCommon: false,
+        tsNamespaces: false,
+      },
+      params: {},
+    });
+    const actual = getNativeBindings().compileData(source, false, JSON.stringify({ ...options, nativeCompact: true }))
+      .data as { renderedModels: Record<string, string> };
+    const models = Object.values(actual.renderedModels).join("\n");
+
+    expect(models).toContain("export type Player = { access_tags?: Array<AccessTag> };");
+    expect(models).toContain("export type AccessTag = { player?: Player };");
+    expect(models).toContain("export const PlayerSchema: z.ZodObject<z.ZodRawShape> & z.ZodType<Player> =");
+    expect(models).toContain("export const AccessTagSchema: z.ZodObject<z.ZodRawShape> & z.ZodType<AccessTag> =");
+  });
+
   test("matches TypeScript operation names and component ownership", async () => {
     const source = await fs.readFile("test/benchmarks/openapi.localhost4000.json", "utf8");
     const document = JSON.parse(source);

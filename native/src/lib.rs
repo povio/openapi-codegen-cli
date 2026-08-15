@@ -348,6 +348,7 @@ pub fn compile_data(source: String, yaml: bool, options_json: String) -> Result<
                     &resolver.ordered_dependencies,
                     &generated_objects,
                     &generated_dependencies,
+                    &circular_schemas,
                     &options,
                 )
             });

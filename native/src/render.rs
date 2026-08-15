@@ -19,6 +19,7 @@ pub fn render_model_proxies(
     dependencies: &IndexMap<String, Vec<String>>,
     generated_objects: &Map<String, Value>,
     generated_dependencies: &Map<String, Value>,
+    circular_schemas: &[String],
     options: &GenerateOptions,
 ) -> Map<String, Value> {
     let started = std::time::Instant::now();
@@ -36,6 +37,7 @@ pub fn render_model_proxies(
             dependencies,
             generated_objects,
             generated_dependencies,
+            circular_schemas,
             options,
         );
     }
@@ -46,8 +48,14 @@ pub fn render_model_proxies(
     let (common, proxies, common_elapsed, proxies_elapsed) = std::thread::scope(|scope| {
         let common_started = std::time::Instant::now();
         let common = scope.spawn(move || {
-            let content =
-                render_common_models(document, schemas, schema_refs, generated_objects, options);
+            let content = render_common_models(
+                document,
+                schemas,
+                schema_refs,
+                generated_objects,
+                circular_schemas,
+                options,
+            );
             (content, common_started.elapsed())
         });
         let proxies_started = std::time::Instant::now();
@@ -91,16 +99,25 @@ fn render_local_models(
     dependencies: &IndexMap<String, Vec<String>>,
     generated_objects: &Map<String, Value>,
     generated_dependencies: &Map<String, Value>,
+    circular_schemas: &[String],
     options: &GenerateOptions,
 ) -> Map<String, Value> {
     let mut by_tag: IndexMap<String, Map<String, Value>> = IndexMap::default();
     for (name, code) in schemas {
-        if options.models_in_modules && let Some(tags) = schema_usage_tags.get(name) {
+        if options.models_in_modules
+            && let Some(tags) = schema_usage_tags.get(name)
+        {
             for tag in tags {
-                by_tag.entry(tag.clone()).or_default().insert(name.clone(), code.clone());
+                by_tag
+                    .entry(tag.clone())
+                    .or_default()
+                    .insert(name.clone(), code.clone());
             }
         } else if let Some(tag) = schema_owners.get(name).and_then(Value::as_str) {
-            by_tag.entry(tag.to_string()).or_default().insert(name.clone(), code.clone());
+            by_tag
+                .entry(tag.to_string())
+                .or_default()
+                .insert(name.clone(), code.clone());
         }
     }
 
@@ -202,6 +219,7 @@ fn render_local_models(
             &tag_schemas,
             schema_refs,
             generated_objects,
+            circular_schemas,
             options,
         );
         if !imports.is_empty() {
@@ -392,6 +410,7 @@ fn render_common_models(
     schemas: &Map<String, Value>,
     schema_refs: &Map<String, Value>,
     generated_objects: &Map<String, Value>,
+    circular_schemas: &[String],
     options: &GenerateOptions,
 ) -> String {
     let suffix = &options.schema_suffix;
@@ -426,7 +445,9 @@ fn render_common_models(
                                 schema_refs,
                                 generated_objects,
                                 &enum_objects,
+                                circular_schemas,
                                 suffix,
+                                options,
                             )
                         })
                         .flatten()
@@ -452,7 +473,9 @@ fn render_common_schema_lines(
     schema_refs: &Map<String, Value>,
     generated_objects: &Map<String, Value>,
     enum_objects: &HashMap<String, Value>,
+    circular_schemas: &[String],
     suffix: &str,
+    options: &GenerateOptions,
 ) -> Option<Vec<String>> {
     let code = code.as_str()?;
     let schema_object = generated_objects
@@ -492,14 +515,137 @@ fn render_common_schema_lines(
         }
     }
     lines.push(" */".into());
-    lines.push(format!("export const {name} = {code};"));
     let type_name = remove_suffix(name, suffix);
-    lines.push(format!("export type {type_name} = z.infer<typeof {name}>;"));
+    let is_circular = circular_schemas.iter().any(|schema| schema == name);
+    if is_circular {
+        if let Some(schema) = schema_object {
+            lines.push(format!(
+                "export type {type_name} = {};",
+                render_schema_type(schema, suffix, options)
+            ));
+        }
+        lines.push(format!(
+            "export const {name}: z.ZodObject<z.ZodRawShape> & z.ZodType<{type_name}> = {code};"
+        ));
+    } else {
+        lines.push(format!("export const {name} = {code};"));
+        lines.push(format!("export type {type_name} = z.infer<typeof {name}>;"));
+    }
     if code.starts_with("z.enum(") {
         lines.push(format!("export const {type_name} = {name}.enum;"));
     }
     lines.push(String::new());
     Some(lines)
+}
+
+fn render_schema_type(schema: &Value, suffix: &str, options: &GenerateOptions) -> String {
+    if let Some(reference) = schema.get("$ref").and_then(Value::as_str) {
+        let name = reference.rsplit('/').next().unwrap_or("unknown");
+        return remove_suffix(&format!("{name}{suffix}"), suffix);
+    }
+
+    for (key, separator) in [("allOf", " & "), ("oneOf", " | "), ("anyOf", " | ")] {
+        if let Some(parts) = schema
+            .get(key)
+            .and_then(Value::as_array)
+            .filter(|parts| !parts.is_empty())
+        {
+            let rendered = parts
+                .iter()
+                .map(|part| render_schema_type(part, suffix, options))
+                .collect::<Vec<_>>()
+                .join(separator);
+            return add_nullable_type(schema, rendered);
+        }
+    }
+
+    if let Some(values) = schema
+        .get("enum")
+        .and_then(Value::as_array)
+        .filter(|values| !values.is_empty())
+    {
+        let rendered = values
+            .iter()
+            .map(Value::to_string)
+            .collect::<Vec<_>>()
+            .join(" | ");
+        return add_nullable_type(schema, rendered);
+    }
+
+    if schema.get("type").and_then(Value::as_str) == Some("array") {
+        let item_type = schema
+            .get("items")
+            .map(|items| render_schema_type(items, suffix, options))
+            .unwrap_or_else(|| "unknown".into());
+        return add_nullable_type(schema, format!("Array<{item_type}>"));
+    }
+
+    if schema.get("type").and_then(Value::as_str) == Some("object")
+        || schema.get("properties").is_some()
+        || schema.get("additionalProperties").is_some()
+    {
+        let required = schema.get("required").and_then(Value::as_array);
+        let mut properties = schema
+            .get("properties")
+            .and_then(Value::as_object)
+            .into_iter()
+            .flatten()
+            .map(|(name, property)| {
+                let is_required = options.with_implicit_required_props
+                    || required.is_some_and(|required| {
+                        required.iter().any(|value| value.as_str() == Some(name))
+                    })
+                    || property.get("default").is_some();
+                let optional = if is_required { "" } else { "?" };
+                let mut property_type = render_schema_type(property, suffix, options);
+                if options.replace_optional_with_nullish
+                    && !is_required
+                    && property.get("nullable").and_then(Value::as_bool) != Some(true)
+                {
+                    property_type.push_str(" | null");
+                }
+                let property_name = if name
+                    .chars()
+                    .next()
+                    .is_some_and(|first| first.is_ascii_alphabetic())
+                    && name
+                        .chars()
+                        .all(|character| character.is_ascii_alphanumeric() || character == '_')
+                {
+                    name.clone()
+                } else {
+                    Value::String(name.clone()).to_string()
+                };
+                format!("{property_name}{optional}: {property_type}")
+            })
+            .collect::<Vec<_>>();
+        if let Some(additional) = schema.get("additionalProperties") {
+            let value_type = if additional.is_object() {
+                render_schema_type(additional, suffix, options)
+            } else {
+                "unknown".into()
+            };
+            properties.push(format!("[key: string]: {value_type}"));
+        }
+        return add_nullable_type(schema, format!("{{ {} }}", properties.join("; ")));
+    }
+
+    let primitive = match schema.get("type").and_then(Value::as_str) {
+        Some("string") => "string",
+        Some("number" | "integer") => "number",
+        Some("boolean") => "boolean",
+        Some("null") => "null",
+        _ => "unknown",
+    };
+    add_nullable_type(schema, primitive.into())
+}
+
+fn add_nullable_type(schema: &Value, rendered: String) -> String {
+    if schema.get("nullable").and_then(Value::as_bool) == Some(true) && rendered != "null" {
+        format!("{rendered} | null")
+    } else {
+        rendered
+    }
 }
 
 fn collect_enum_objects(value: &Value, enums: &mut HashMap<String, Value>) {
@@ -1095,7 +1241,8 @@ fn render_endpoint_module(
         .any(|endpoint| endpoint.get("method").and_then(Value::as_str) == Some("get"));
     if options.axios_request_config || has_get {
         lines.push(if uses_native_rest_client(options) {
-            "import { type TransportRequestConfig } from \"@povio/openapi-codegen-cli/rest\";".into()
+            "import { type TransportRequestConfig } from \"@povio/openapi-codegen-cli/rest\";"
+                .into()
         } else {
             "import { type AxiosRequestConfig } from \"axios\";".into()
         });
@@ -1179,7 +1326,10 @@ fn render_endpoint_module(
                     let owner = if options.models_in_modules {
                         tag
                     } else {
-                        schema_owners.get(*schema).and_then(Value::as_str).unwrap_or(tag)
+                        schema_owners
+                            .get(*schema)
+                            .and_then(Value::as_str)
+                            .unwrap_or(tag)
                     };
                     let bindings = imports.entry(owner.to_string()).or_default();
                     if !bindings.iter().any(|binding| binding == *schema) {
@@ -1200,7 +1350,10 @@ fn render_endpoint_module(
                     let owner = if options.models_in_modules {
                         tag
                     } else {
-                        schema_owners.get(schema).and_then(Value::as_str).unwrap_or(tag)
+                        schema_owners
+                            .get(schema)
+                            .and_then(Value::as_str)
+                            .unwrap_or(tag)
                     };
                     let binding = format!("type {name}");
                     let bindings = imports.entry(owner.to_string()).or_default();
@@ -2042,7 +2195,10 @@ fn render_acl_module(
                     let owner = if options.models_in_modules {
                         tag
                     } else {
-                        schema_owners.get(schema).and_then(Value::as_str).unwrap_or(tag)
+                        schema_owners
+                            .get(schema)
+                            .and_then(Value::as_str)
+                            .unwrap_or(tag)
                     };
                     let names = imports.entry(owner.to_string()).or_default();
                     if !names.contains(&name) {
@@ -2454,7 +2610,10 @@ fn render_query_module(
                     let owner = if options.models_in_modules {
                         tag
                     } else {
-                        schema_owners.get(schema).and_then(Value::as_str).unwrap_or(tag)
+                        schema_owners
+                            .get(schema)
+                            .and_then(Value::as_str)
+                            .unwrap_or(tag)
                     };
                     let names = imports.entry(owner.to_string()).or_default();
                     if !names.contains(&name) {
@@ -3439,7 +3598,10 @@ fn render_media_upload_body(
         "        await axios[method](uploadInstructions.url, dataToSend, {".into()
     });
     if uses_native_rest_client(options) {
-        lines.push("          headers: method === \"put\" ? { \"Content-Type\": file.type } : undefined,".into());
+        lines.push(
+            "          headers: method === \"put\" ? { \"Content-Type\": file.type } : undefined,"
+                .into(),
+        );
     } else {
         lines.push("          headers: {".into());
         lines.push("            \"Content-Type\": file.type,".into());
