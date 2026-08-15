@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { z } from "zod";
+import { ErrorHandler } from "./error-handling";
 
 import {
   NativeHttpError,
@@ -21,10 +22,12 @@ type NativeResult<T, IsRawRes extends boolean> = IsRawRes extends true ? NativeR
 
 export class NativeRestClient implements RestTransport {
   private readonly interceptors: RestTransportInterceptor[];
+  private readonly errorHandler?: ErrorHandler<any>;
 
   constructor({
     config,
     interceptors = [],
+    errorHandler,
   }: {
     config?: {
       baseURL?: string;
@@ -33,12 +36,14 @@ export class NativeRestClient implements RestTransport {
       fetch?: TransportFetch;
     };
     interceptors?: RestTransportInterceptor[];
+    errorHandler?: ErrorHandler<any>;
   } = {}) {
     this.baseURL = config?.baseURL ?? "";
     this.headers = config?.headers;
     this.credentials = config?.credentials;
     this.fetch = config?.fetch ?? globalThis.fetch.bind(globalThis);
     this.interceptors = [...interceptors];
+    this.errorHandler = errorHandler;
   }
 
   private readonly baseURL: string;
@@ -157,7 +162,7 @@ export class NativeRestClient implements RestTransport {
     } catch (error) {
       if (error instanceof z.ZodError) error.name = "BE Response schema mismatch - ZodError";
       const transformed = await this.runErrorInterceptors(error);
-      throw transformed;
+      throw this.errorHandler ? this.errorHandler.rethrowError(transformed) : transformed;
     }
   }
 
