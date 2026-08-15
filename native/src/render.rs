@@ -54,6 +54,7 @@ pub fn render_model_proxies(
                 schema_refs,
                 generated_objects,
                 circular_schemas,
+                &options.default_tag,
                 options,
             );
             (content, common_started.elapsed())
@@ -220,6 +221,7 @@ fn render_local_models(
             schema_refs,
             generated_objects,
             circular_schemas,
+            &tag,
             options,
         );
         if !imports.is_empty() {
@@ -411,6 +413,7 @@ fn render_common_models(
     schema_refs: &Map<String, Value>,
     generated_objects: &Map<String, Value>,
     circular_schemas: &[String],
+    namespace_tag: &str,
     options: &GenerateOptions,
 ) -> String {
     let suffix = &options.schema_suffix;
@@ -419,7 +422,7 @@ fn render_common_models(
         .get("models")
         .map(|config| config.namespace_suffix.as_str())
         .unwrap_or("Models");
-    let namespace = format!("{}{}", capitalize(&options.default_tag), namespace_suffix);
+    let namespace = format!("{}{}", capitalize(namespace_tag), namespace_suffix);
     let mut enum_objects = HashMap::default();
     if let Some(component_schemas) = document.pointer("/components/schemas") {
         collect_enum_objects(component_schemas, &mut enum_objects);

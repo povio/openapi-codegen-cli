@@ -77,6 +77,44 @@ describe("native OpenAPI bindings", () => {
     expect(models).toContain("export const AccessTagSchema: z.ZodObject<z.ZodRawShape> & z.ZodType<AccessTag> =");
   });
 
+  test("uses the module tag for module-local model namespaces", () => {
+    const source = JSON.stringify({
+      openapi: "3.0.3",
+      info: { title: "Module models", version: "1.0.0" },
+      paths: {
+        "/messages": {
+          get: {
+            tags: ["Chat"],
+            operationId: "ChatController_list",
+            responses: {
+              200: {
+                description: "ok",
+                content: { "application/json": { schema: { $ref: "#/components/schemas/Message" } } },
+              },
+            },
+          },
+        },
+      },
+      components: { schemas: { Message: { type: "object", properties: { id: { type: "string" } } } } },
+    });
+    const options = resolveConfig({
+      fileConfig: {
+        input: "fixture",
+        output: "output",
+        modelsInCommon: false,
+        modelsInModules: true,
+        tsNamespaces: true,
+      },
+      params: {},
+    });
+    const actual = getNativeBindings().compileData(source, false, JSON.stringify(options)).data as {
+      renderedModels: Record<string, string>;
+    };
+
+    expect(actual.renderedModels.Chat).toContain("export namespace ChatModels {");
+    expect(actual.renderedModels.Chat).not.toContain("export namespace CommonModels {");
+  });
+
   test("matches TypeScript operation names and component ownership", async () => {
     const source = await fs.readFile("test/benchmarks/openapi.localhost4000.json", "utf8");
     const document = JSON.parse(source);
