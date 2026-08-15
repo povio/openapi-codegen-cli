@@ -453,8 +453,10 @@ describe("generateQueries mutationEffects + infiniteQuery", () => {
     expect(queriesFile?.content).not.toContain("MutationEffectsOptions<QueryModule");
 
     // Bug 3: getNextPageParam parameter has an explicit type annotation (no implicit any)
-    expect(queriesFile?.content).toContain("}: Awaited<ReturnType<typeof ItemsApi.list>>)");
-    expect(queriesFile?.content).toContain("pageParam * limitParam < (totalItems ?? 0)");
+    expect(queriesFile?.content).toContain(
+      '}: Awaited<ReturnType<typeof ItemsApi.list>> & Partial<Record<"page" | "totalItems" | "limit", number | null>>)',
+    );
+    expect(queriesFile?.content).toContain("pageParam * pageSize < (totalItems ?? 0)");
     // queryFn retains precise pageParam: number typing and forwards TanStack's abort signal to Axios
     expect(queriesFile?.content).toContain(
       "queryFn: ({ pageParam, signal }: { pageParam: number; signal: AbortSignal })",

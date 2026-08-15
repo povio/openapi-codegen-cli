@@ -857,11 +857,12 @@ function renderInfiniteQueryOptions({
   );
   lines.push("  initialPageParam: 1,");
   lines.push(
-    `  getNextPageParam: ({ ${resolver.options.infiniteQueryResponseParamNames.page}, ${resolver.options.infiniteQueryResponseParamNames.totalItems}, ${resolver.options.infiniteQueryResponseParamNames.limit}: limitParam }: Awaited<ReturnType<typeof ${endpointFunction}>>) => {`,
+    `  getNextPageParam: ({ ${resolver.options.infiniteQueryResponseParamNames.page}, ${resolver.options.infiniteQueryResponseParamNames.totalItems}, ${resolver.options.infiniteQueryResponseParamNames.limit}: limitParam }: Awaited<ReturnType<typeof ${endpointFunction}>> & Partial<Record<${JSON.stringify(resolver.options.infiniteQueryResponseParamNames.page)} | ${JSON.stringify(resolver.options.infiniteQueryResponseParamNames.totalItems)} | ${JSON.stringify(resolver.options.infiniteQueryResponseParamNames.limit)}, number | null>>) => {`,
   );
   lines.push(`    const pageParam = ${resolver.options.infiniteQueryResponseParamNames.page} ?? 1;`);
+  lines.push("    const pageSize = limitParam ?? 0;");
   lines.push(
-    `    return pageParam * limitParam < (${resolver.options.infiniteQueryResponseParamNames.totalItems} ?? 0) ? pageParam + 1 : null;`,
+    `    return pageParam * pageSize < (${resolver.options.infiniteQueryResponseParamNames.totalItems} ?? 0) ? pageParam + 1 : null;`,
   );
   lines.push("  },");
   lines.push("});");

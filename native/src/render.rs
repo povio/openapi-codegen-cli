@@ -2941,10 +2941,11 @@ fn render_query_options_native(
         lines.push(format!("  queryFn: ({{ pageParam, signal }}: {{ pageParam: number; signal: AbortSignal }}) => {api_namespace}.{api_operation}({endpoint_args}, {{ ...config, signal }}),"));
         lines.push("  initialPageParam: 1,".into());
         let names = &options.infinite_query_response_param_names;
-        lines.push(format!("  getNextPageParam: ({{ {}, {}, {}: limitParam }}: Awaited<ReturnType<typeof {api_namespace}.{api_operation}>>) => {{", names.page, names.total_items, names.limit));
+        lines.push(format!("  getNextPageParam: ({{ {}, {}, {}: limitParam }}: Awaited<ReturnType<typeof {api_namespace}.{api_operation}>> & Partial<Record<\"{}\" | \"{}\" | \"{}\", number | null>>) => {{", names.page, names.total_items, names.limit, names.page, names.total_items, names.limit));
         lines.push(format!("    const pageParam = {} ?? 1;", names.page));
+        lines.push("    const pageSize = limitParam ?? 0;".into());
         lines.push(format!(
-            "    return pageParam * limitParam < ({} ?? 0) ? pageParam + 1 : null;",
+            "    return pageParam * pageSize < ({} ?? 0) ? pageParam + 1 : null;",
             names.total_items
         ));
         lines.push("  },".into());
@@ -3396,15 +3397,19 @@ fn render_mutation_native(
             .map(|param| param.name.as_str())
             .collect::<Vec<_>>()
             .join(", ");
-        let common_namespace = format!(
-            "{}{}",
-            capitalize(&options.default_tag),
-            options
-                .configs
-                .get("models")
-                .map(|config| config.namespace_suffix.as_str())
-                .unwrap_or("Models")
-        );
+        let common_namespace = if options.models_in_modules {
+            models_namespace.to_string()
+        } else {
+            format!(
+                "{}{}",
+                capitalize(&options.default_tag),
+                options
+                    .configs
+                    .get("models")
+                    .map(|config| config.namespace_suffix.as_str())
+                    .unwrap_or("Models")
+            )
+        };
         let types = scope_params
             .iter()
             .map(|param| {
@@ -3601,9 +3606,9 @@ fn render_media_upload_body(
     lines.push("        let dataToSend: File | FormData = file;".into());
     lines.push("        if (method === \"post\") {".into());
     lines.push("          dataToSend = new FormData();".into());
-    lines.push("          if (uploadInstructions.fields) {".into());
-    lines.push("            for (const [key, value] of uploadInstructions.fields) {".into());
-    lines.push("              dataToSend.append(key, value);".into());
+    lines.push("          if (\"fields\" in uploadInstructions && uploadInstructions.fields) {".into());
+    lines.push("            for (const [key, value] of Object.entries(uploadInstructions.fields)) {".into());
+    lines.push("              dataToSend.append(key, String(value));".into());
     lines.push("            }".into());
     lines.push("          }".into());
     lines.push("          dataToSend.append(\"file\", file);".into());
