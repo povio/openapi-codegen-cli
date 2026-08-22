@@ -155,16 +155,44 @@ export function getEntityImports({
   return Array.from(imports.values());
 }
 
-export function getImportPath(options: Pick<GenerateOptions, "output" | "importPath" | "tsPath">, fromRoot = false) {
-  let importPath = options.tsPath;
-  if (options.importPath === "relative") {
-    importPath = fromRoot ? "./" : "../";
-  } else if (options.importPath === "absolute") {
-    importPath = options.output;
-  } else if (new RegExp(`${TEMPLATE_DATA_FILE_PATH}`, "g").test(options.output)) {
-    importPath = options.output.replace(new RegExp(`.*${TEMPLATE_DATA_FILE_PATH}`, "g"), options.tsPath);
+function normalizeOutputPath(output: string) {
+  return output.replace(/\\/g, "/").replace(/\/$/, "");
+}
+
+function outputMatchesTsPath(options: Pick<GenerateOptions, "output" | "tsPath">) {
+  const normalizedOutput = normalizeOutputPath(options.output);
+
+  if (options.tsPath.startsWith("@/")) {
+    const physicalPath = `src/${options.tsPath.slice(2)}`;
+    return normalizedOutput === physicalPath || normalizedOutput.endsWith(`/${physicalPath}`);
   }
-  return `${importPath}/`.replace(/\/\//g, "/");
+
+  return normalizedOutput === options.tsPath;
+}
+
+function shouldUseRelativeImports(options: Pick<GenerateOptions, "output" | "importPath" | "tsPath">) {
+  return options.importPath === "ts" && options.tsPath === "@/data" && !outputMatchesTsPath(options);
+}
+
+export function getImportPath(options: Pick<GenerateOptions, "output" | "importPath" | "tsPath">, fromRoot = false) {
+  if (options.importPath === "relative") {
+    return `${fromRoot ? "./" : "../"}`.replace(/\/\//g, "/");
+  }
+
+  if (options.importPath === "absolute") {
+    return `${options.output}/`.replace(/\/\//g, "/");
+  }
+
+  if (new RegExp(`${TEMPLATE_DATA_FILE_PATH}`, "g").test(options.output)) {
+    const importPath = options.output.replace(new RegExp(`.*${TEMPLATE_DATA_FILE_PATH}`, "g"), options.tsPath);
+    return `${importPath}/`.replace(/\/\//g, "/");
+  }
+
+  if (shouldUseRelativeImports(options)) {
+    return `${fromRoot ? "./" : "../"}`.replace(/\/\//g, "/");
+  }
+
+  return `${options.tsPath}/`.replace(/\/\//g, "/");
 }
 
 function getImports<T>({

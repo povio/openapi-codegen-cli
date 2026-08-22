@@ -8,13 +8,14 @@ import { getEnumZodSchemaCodeFromEnumNames, getZodSchema } from "@/generators/co
 import { resolveZodSchemaName } from "@/generators/core/zod/resolveZodSchemaName";
 import { EndpointParameter } from "@/generators/types/endpoint";
 import { ParameterObject } from "@/generators/types/openapi";
-import { isSchemaObject } from "@/generators/utils/openapi-schema.utils";
+import { isReferenceObject, isSchemaObject } from "@/generators/utils/openapi-schema.utils";
 import {
   isParamMediaTypeAllowed,
   getParameterEnumNames,
   isSortingParameterObject,
   pathParamToVariableName,
 } from "@/generators/utils/openapi.utils";
+import { resolveQueryFilterComponentName } from "@/generators/utils/query-filter-component-names.utils";
 import {
   getEnumZodSchemaName,
   getParamZodSchemaName,
@@ -25,12 +26,14 @@ export function getEndpointParameter({
   resolver,
   param,
   operationName,
+  operationId,
   isUniqueOperationName,
   tag,
 }: {
   resolver: SchemaResolver;
   param: OpenAPIV3.ReferenceObject | ParameterObject;
   operationName: string;
+  operationId?: string;
   isUniqueOperationName: boolean;
   tag: string;
 }): EndpointParameter | undefined {
@@ -65,10 +68,17 @@ export function getEndpointParameter({
     (schema as OpenAPIV3.SchemaObject).description = (paramObj.description ?? "").trim();
   }
 
-  const fallbackName = getParamZodSchemaName(
-    getZodSchemaOperationName(operationName, isUniqueOperationName, tag),
-    paramObj.name,
-  );
+  const zodSchemaOperationName = getZodSchemaOperationName(operationName, isUniqueOperationName, tag);
+  const legacyFilterComponentName =
+    paramObj.name === resolver.options.filterParamName &&
+    !isReferenceObject(schema) &&
+    resolver.options.queryFilterComponentNames
+      ? resolveQueryFilterComponentName(operationId, resolver.options.queryFilterComponentNames)
+      : undefined;
+
+  const fallbackName =
+    legacyFilterComponentName ??
+    getParamZodSchemaName(zodSchemaOperationName, paramObj.name);
 
   let parameterSortingEnumSchemaName: string | undefined = undefined;
   if (isSortingParameterObject(paramObj, schema, resolver)) {

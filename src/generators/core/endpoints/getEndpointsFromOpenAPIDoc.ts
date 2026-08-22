@@ -101,6 +101,7 @@ export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver) {
           resolver,
           param,
           operationName,
+          operationId: operation.operationId,
           isUniqueOperationName,
           tag,
         });
