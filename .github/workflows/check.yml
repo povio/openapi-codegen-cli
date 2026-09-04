@@ -22,6 +22,8 @@ jobs:
         with:
           bun-version: 1.4.0
 
+      - uses: dtolnay/rust-toolchain@stable
+
       - run: bun install --frozen-lockfile
 
       - run: bun run check

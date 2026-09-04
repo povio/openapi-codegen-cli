@@ -1,5 +1,4 @@
 import { OpenAPIV3 } from "openapi-types";
-import { match } from "ts-pattern";
 
 import { CompositeType, PrimitiveType } from "@/generators/types/openapi";
 import { sum } from "@/generators/utils/math.utils";
@@ -107,17 +106,24 @@ export function getOpenAPISchemaComplexity(
 }
 
 function complexityByType(schema: OpenAPIV3.SchemaObject) {
-  return match(schema.type)
-    .with("string", "number", "integer", "boolean", () => 1)
-    .otherwise(() => 0);
+  return schema.type === "string" || schema.type === "number" || schema.type === "integer" || schema.type === "boolean"
+    ? 1
+    : 0;
 }
 
 function complexityByComposite(type?: CompositeType) {
-  return match(type)
-    .with("oneOf", () => 2)
-    .with("anyOf", () => 3)
-    .with("allOf", () => 2)
-    .with("enum", "array", "empty-object", () => 1)
-    .with("object", () => 2)
-    .otherwise(() => 0);
+  switch (type) {
+    case "anyOf":
+      return 3;
+    case "oneOf":
+    case "allOf":
+    case "object":
+      return 2;
+    case "enum":
+    case "array":
+    case "empty-object":
+      return 1;
+    default:
+      return 0;
+  }
 }

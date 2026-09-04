@@ -2,8 +2,8 @@ import { OpenAPIV3 } from "openapi-types";
 import { describe, expect, test } from "vitest";
 
 import { DEFAULT_GENERATE_OPTIONS } from "@/generators/const/options.const";
+import { getOpenApiDoc } from "@/generators/run/generate.runner";
 import { ModelMetadata, QueryMetadata, TsType } from "@/generators/types/metadata";
-import SwaggerParser from "@apidevtools/swagger-parser";
 
 import { getMetadataFromOpenAPIDoc } from "./getMetadataFromOpenAPIDoc";
 
@@ -404,7 +404,7 @@ describe("getMetadataFromOpenAPIDoc", () => {
   ];
 
   test("getMetadataFromOpenAPIDoc", async () => {
-    const openApiDoc = (await SwaggerParser.bundle("./test/petstore.yaml")) as OpenAPIV3.Document;
+    const openApiDoc = await getOpenApiDoc("./test/petstore.yaml");
 
     const metadata = await getMetadataFromOpenAPIDoc(openApiDoc, {
       ...DEFAULT_GENERATE_OPTIONS,
@@ -416,7 +416,7 @@ describe("getMetadataFromOpenAPIDoc", () => {
   });
 
   test("getMetadataFromOpenAPIDoc", async () => {
-    const openApiDoc = (await SwaggerParser.bundle("./test/petstore.yaml")) as OpenAPIV3.Document;
+    const openApiDoc = await getOpenApiDoc("./test/petstore.yaml");
 
     const extractEnums = false;
     const metadata = await getMetadataFromOpenAPIDoc(openApiDoc, {
@@ -430,7 +430,7 @@ describe("getMetadataFromOpenAPIDoc", () => {
   });
 
   test("uses common model namespace and import path when modelsInCommon is enabled with includeTags", async () => {
-    const openApiDoc = (await SwaggerParser.bundle("./test/petstore.yaml")) as OpenAPIV3.Document;
+    const openApiDoc = await getOpenApiDoc("./test/petstore.yaml");
 
     const metadata = await getMetadataFromOpenAPIDoc(openApiDoc, {
       ...DEFAULT_GENERATE_OPTIONS,

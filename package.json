@@ -23,7 +23,9 @@
     "src/assets/**"
   ],
   "type": "module",
+  "sideEffects": false,
   "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
   "exports": {
     ".": {
@@ -54,14 +56,46 @@
     "./zod": {
       "types": "./dist/zod.d.mts",
       "import": "./dist/zod.mjs"
+    },
+    "./native": {
+      "types": "./dist/native.d.mts",
+      "import": "./dist/native.mjs"
+    },
+    "./rest": {
+      "types": "./dist/rest.d.mts",
+      "import": "./dist/rest.mjs"
+    },
+    "./axios": {
+      "types": "./dist/axios.d.mts",
+      "import": "./dist/axios.mjs"
+    },
+    "./errors": {
+      "types": "./dist/errors.d.mts",
+      "import": "./dist/errors.mjs"
+    },
+    "./query": {
+      "types": "./dist/query.d.mts",
+      "import": "./dist/query.mjs"
+    },
+    "./config": {
+      "types": "./dist/config.d.mts",
+      "import": "./dist/config.mjs"
+    },
+    "./auth": {
+      "types": "./dist/auth.d.mts",
+      "import": "./dist/auth.mjs"
     }
   },
   "scripts": {
-    "start": "node --import tsx ./src/sh.ts",
-    "test": "vitest run",
+    "start": "bun ./src/sh.ts",
+    "test": "bun run build:native && bun run test:ts && bun run test:native",
+    "test:ts": "OPENAPI_CODEGEN_NATIVE=0 vitest run",
+    "test:native": "OPENAPI_CODEGEN_NATIVE=1 OPENAPI_CODEGEN_REQUIRE_FULL_NATIVE=1 vitest run",
     "test:watch": "vitest",
-    "build": "tsdown",
-    "start:dist": "node ./dist/sh.mjs",
+    "build": "tsdown && bun run build:native",
+    "build:ts": "tsdown",
+    "build:native": "bun ./scripts/build-native.mjs",
+    "start:dist": "bun ./dist/sh.mjs",
     "gen:base": "rm -rf ./test/generated/base && mkdir -p ./test/generated/base && bun run start generate --config ./test/config.mjs --output ./test/generated/base --no-prettier",
     "gen:next": "rm -rf ./test/generated/next && mkdir -p ./test/generated/next && bun run start generate --config ./test/config.mjs --output ./test/generated/next --no-prettier",
     "test:generated-eq": "vitest run ./src/generators/generated-output-eq.test.ts",
@@ -72,45 +106,46 @@
     "format": "oxfmt",
     "format:check": "oxfmt --check",
     "check": "bun run typecheck && bun run lint && bun run test",
-    "push": "node ./scripts/publish.mjs",
+    "push": "bun ./scripts/publish.mjs",
     "dev:generate": "rm -rf ./output && bun run start generate --config ./test/config.mjs",
     "dev:check": "bun run start check --config ./test/config.mjs",
-    "snapshot:openapi-localhost": "node ./scripts/snapshot-openapi-localhost.mjs",
-    "bench:vite-codegen": "node ./scripts/benchmark-vite-codegen.mjs"
+    "snapshot:openapi-localhost": "bun ./scripts/snapshot-openapi-localhost.mjs",
+    "bench:vite-codegen": "bun ./scripts/benchmark-vite-codegen.mjs",
+    "verify:tree-shaking": "bun run build:ts && bun ./scripts/verify-tree-shaking.mjs"
   },
   "dependencies": {
-    "@apidevtools/swagger-parser": "^10.1.0",
     "@orpc/contract": "^1.14.3",
     "@orpc/openapi": "^1.14.3",
     "@orpc/zod": "^1.14.3",
-    "import-fresh": "^3.3.1",
     "openapi-types": "^12.1.3",
     "prompt-sync": "^4.2.0",
     "reflect-metadata": "^0.2.2",
-    "ts-pattern": "^5.9.0",
-    "typescript": "^5.9.3",
+    "yaml": "^2.9.0",
     "yargs": "^18.0.0"
   },
   "devDependencies": {
-    "@casl/ability": "^6.8.0",
-    "@casl/react": "^5.0.1",
+    "@casl/ability": "6.8.0",
+    "@casl/react": "5.0.1",
     "@tanstack/react-query": "~5.90.21",
+    "@types/bun": "1.4.0",
     "@types/node": "^25.3.0",
     "@types/prompt-sync": "^4.2.3",
     "@types/react": "^19.2.14",
     "@types/yargs": "^17.0.35",
     "@vitejs/plugin-react": "^5.1.4",
+    "axios": "^1.13.1",
+    "i18next": "^25.8.11",
     "oxfmt": "^0.34.0",
-    "oxlint": "^1.50.0",
+    "oxlint": "1.50.0",
     "oxlint-tsgolint": "^0.15.0",
     "react": "^19.2.4",
-    "tsdown": "^0.21.0-beta.1",
+    "tsdown": "^0.22.14",
     "tsx": "^4.21.0",
     "type-fest": "^5.4.4",
+    "typescript": "^7.0.2",
     "vite": "npm:rolldown-vite@^7.3.1",
     "vite-plugin-dts": "^4.5.4",
     "vitest": "4.0.18",
-    "yargs": "^17.7.2",
     "zod": "^4.5.0"
   },
   "peerDependencies": {
@@ -130,13 +165,25 @@
     "@casl/react": {
       "optional": true
     },
+    "@tanstack/react-query": {
+      "optional": true
+    },
+    "axios": {
+      "optional": true
+    },
+    "i18next": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    },
     "vite": {
       "optional": true
     }
   },
   "engines": {
     "bun": ">= 1.4",
-    "node": ">= 14"
+    "node": ">= 18"
   },
   "packageManager": "bun@1.4.0"
 }

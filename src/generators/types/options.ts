@@ -4,6 +4,7 @@ interface ZodGenerateOptions {
   schemaSuffix: string;
   enumSuffix: string;
   modelsInCommon?: boolean;
+  modelsInModules?: boolean;
   withImplicitRequiredProps?: boolean;
   withDefaultValues?: boolean;
   withDescription?: boolean;
@@ -13,7 +14,9 @@ interface ZodGenerateOptions {
 }
 
 interface EndpointsGenerateOptions {
+  restClient: "axios" | "native";
   restClientImportPath: string;
+  zodImportPath: string;
   errorHandlingImportPath?: string;
   withDeprecatedEndpoints?: boolean;
   removeOperationPrefixEndingWith?: string;
@@ -24,6 +27,7 @@ interface EndpointsGenerateOptions {
 
 interface QueriesGenerateOptions {
   queryTypesImportPath: string;
+  mutationEffectsImportPath: string;
   axiosRequestConfig?: boolean;
   mutationEffects?: boolean;
   mutationDefaultOnError?: boolean;
@@ -49,6 +53,7 @@ interface ACLGenerateOptions {
   checkAcl?: boolean;
   abilityContextGenericAppAbilities: boolean;
   abilityContextImportPath?: string;
+  aclCheckImportPath: string;
 }
 
 interface BuilderConfigsGenerateOptions {
@@ -76,6 +81,7 @@ interface BaseGenerateOptions {
   excludePathRegex: string;
   excludeRedundantZodSchemas: boolean;
   tsNamespaces: boolean;
+  treeShakeableNamespaces?: boolean;
   tsPath: string;
   importPath: "ts" | "relative" | "absolute";
   configs: Record<GenerateType, GenerateConfig>;

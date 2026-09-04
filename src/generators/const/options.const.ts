@@ -1,7 +1,7 @@
 import { GenerateType } from "@/generators/types/generate";
 import { GenerateOptions } from "@/generators/types/options";
 
-import { PACKAGE_IMPORT_PATH } from "./package.const";
+import { QUERY_PACKAGE_IMPORT_PATH } from "./package.const";
 import { ENUM_SUFFIX, SCHEMA_SUFFIX } from "./zod.const";
 
 export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
@@ -17,6 +17,7 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   excludePathRegex: "",
   excludeRedundantZodSchemas: true,
   tsNamespaces: true,
+  treeShakeableNamespaces: false,
   tsPath: "@/data",
   importPath: "ts",
   configs: {
@@ -48,18 +49,22 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   schemaSuffix: SCHEMA_SUFFIX,
   enumSuffix: ENUM_SUFFIX,
   modelsInCommon: false,
+  modelsInModules: false,
   withDefaultValues: true,
   extractEnums: true,
   replaceOptionalWithNullish: false,
   // Endpoints options
+  restClient: "axios",
   restClientImportPath: "",
+  zodImportPath: "@povio/openapi-codegen-cli/zod",
   errorHandlingImportPath: "",
   removeOperationPrefixEndingWith: "Controller_",
   parseRequestParams: true,
   inlineEndpoints: false,
   inlineEndpointsExcludeModules: [],
   // Queries options
-  queryTypesImportPath: PACKAGE_IMPORT_PATH,
+  queryTypesImportPath: QUERY_PACKAGE_IMPORT_PATH,
+  mutationEffectsImportPath: QUERY_PACKAGE_IMPORT_PATH,
   axiosRequestConfig: false,
   mutationEffects: true,
   mutationDefaultOnError: false,
@@ -81,6 +86,7 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   checkAcl: true,
   abilityContextGenericAppAbilities: false,
   abilityContextImportPath: "",
+  aclCheckImportPath: "@povio/openapi-codegen-cli/acl",
   // Builder Configs options
   builderConfigs: false,
   filterParamName: "filter",

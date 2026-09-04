@@ -1,6 +1,6 @@
 import { GenerateFile, Import } from "@/generators/types/generate";
 
-import { ACL_PACKAGE_IMPORT_PATH, PACKAGE_IMPORT_PATH } from "./package.const";
+import { ACL_PACKAGE_IMPORT_PATH, ERRORS_PACKAGE_IMPORT_PATH } from "./package.const";
 
 export const APP_REST_CLIENT_NAME = "AppRestClient";
 export const APP_REST_CLIENT_FILE: GenerateFile = { fileName: "app-rest-client", extension: "ts" };
@@ -20,7 +20,7 @@ export const ERROR_HANDLERS = {
 };
 export const ERROR_HANDLING_IMPORT: Import = {
   bindings: [ERROR_HANDLERS.ErrorHandler, ERROR_HANDLERS.SharedErrorHandler],
-  from: PACKAGE_IMPORT_PATH,
+  from: ERRORS_PACKAGE_IMPORT_PATH,
 };
 export const ABILITY_CONTEXT = "AbilityContext";
 export const ABILITY_CONTEXT_IMPORT: Import = {

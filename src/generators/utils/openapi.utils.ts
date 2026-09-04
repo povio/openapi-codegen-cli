@@ -1,6 +1,5 @@
 /* eslint-disable no-control-regex, no-useless-escape */
 import { OpenAPIV3 } from "openapi-types";
-import { match, P } from "ts-pattern";
 
 import { ALLOWED_PARAM_MEDIA_TYPES, PRIMITIVE_TYPE_LIST } from "@/generators/const/openapi.const";
 import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
@@ -81,11 +80,15 @@ export function escapeControlCharacters(str: string): string {
     .replace(/\//g, "\\/");
 }
 
-export const toBoolean = (value: undefined | string | boolean, defaultValue: boolean) =>
-  match(value)
-    .with(P.string.regex(/^false$/i), false, () => false)
-    .with(P.string.regex(/^true$/i), true, () => true)
-    .otherwise(() => defaultValue);
+export const toBoolean = (value: undefined | string | boolean, defaultValue: boolean) => {
+  if (value === false || (typeof value === "string" && /^false$/i.test(value))) {
+    return false;
+  }
+  if (value === true || (typeof value === "string" && /^true$/i.test(value))) {
+    return true;
+  }
+  return defaultValue;
+};
 
 export function isParamMediaTypeAllowed(
   mediaType: string,

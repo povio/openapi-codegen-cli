@@ -1,5 +1,5 @@
 import { ACL_APP_ABILITIES, CASL_ABILITY_BINDING, CASL_ABILITY_IMPORT } from "@/generators/const/acl.const";
-import { PACKAGE_IMPORT_PATH } from "@/generators/const/package.const";
+import { CONFIG_PACKAGE_IMPORT_PATH } from "@/generators/const/package.const";
 import { Endpoint } from "@/generators/types/endpoint";
 import { GenerateType, GenerateTypeParams, Import } from "@/generators/types/generate";
 import {
@@ -20,6 +20,11 @@ import { capitalize } from "@/generators/utils/string.utils";
 import { getEndpointTag } from "@/generators/utils/tag.utils";
 
 export function generateAcl({ resolver, data, tag }: GenerateTypeParams) {
+  const nativeContent = (
+    resolver as GenerateTypeParams["resolver"] & { getNativeRenderedAcl?: (tag: string) => string | undefined }
+  ).getNativeRenderedAcl?.(tag);
+  if (nativeContent) return nativeContent;
+
   const aclData = getAclData({ resolver, data, tag });
   if (!aclData) {
     return;
@@ -37,7 +42,7 @@ export function generateAcl({ resolver, data, tag }: GenerateTypeParams) {
   };
   const workspaceContextImport: Import = {
     bindings: ["useWorkspaceContext"],
-    from: PACKAGE_IMPORT_PATH,
+    from: CONFIG_PACKAGE_IMPORT_PATH,
   };
 
   const lines: string[] = [];
@@ -67,6 +72,11 @@ export function generateAcl({ resolver, data, tag }: GenerateTypeParams) {
 }
 
 export function generateAppAcl({ resolver, data }: Omit<GenerateTypeParams, "tag">) {
+  const nativeContent = (
+    resolver as GenerateTypeParams["resolver"] & { getNativeRenderedShared?: (name: string) => string | undefined }
+  ).getNativeRenderedShared?.("appAcl");
+  if (nativeContent) return nativeContent;
+
   const { appAbilitiesType, hasAdditionalAbilityImports, modelsImports } = getAppAbilitiesType({ resolver, data });
 
   const caslAbilityTupleImport: Import = {

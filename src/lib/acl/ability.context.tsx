@@ -1,4 +1,4 @@
-import { type PropsWithChildren, createContext, useEffect, useState } from "react";
+import { type PropsWithChildren, createContext, useMemo } from "react";
 
 import { AbilityBuilder, type PureAbility, type RawRuleOf, createMongoAbility } from "@casl/ability";
 import { type PackRule, unpackRules } from "@casl/ability/extra";
@@ -21,12 +21,10 @@ export namespace AbilityContext {
   }
 
   export const Provider = ({ children }: PropsWithChildren<ProviderProps>) => {
-    const [ability, setAbility] = useState<AppAbility>(initialAppAbility);
-
     const { user } = AuthContext.useAuth<{ aclRules: PackRule<RawRuleOf<AppAbility>>[] }>();
-    useEffect(() => {
+    const ability = useMemo(() => {
       if (!user || !("aclRules" in user)) {
-        return;
+        return initialAppAbility;
       }
 
       const { can, build } = createAppAbilityBuilder();
@@ -35,7 +33,7 @@ export namespace AbilityContext {
       rules.forEach(({ action, subject, conditions }) => {
         can(action, subject, conditions);
       });
-      setAbility(build());
+      return build();
     }, [user]);
 
     return <Context.Provider value={ability}>{children}</Context.Provider>;

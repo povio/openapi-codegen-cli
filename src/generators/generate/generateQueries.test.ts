@@ -295,7 +295,7 @@ describe("generateQueries workspaceContext", () => {
 
     const aclFile = files.find((file) => file.fileName.endsWith("/workspace/workspace.acl.ts"));
 
-    expect(aclFile?.content).toContain('import { useWorkspaceContext } from "@povio/openapi-codegen-cli";');
+    expect(aclFile?.content).toContain('import { useWorkspaceContext } from "@povio/openapi-codegen-cli/config";');
     expect(aclFile?.content).toContain("object?: { officeId: string, positionId: string,  }");
     expect(aclFile?.content).toContain("export const useCanUseGetPosition = (");
     expect(aclFile?.content).toContain("object: { officeId?: string, positionId: string,  }");
@@ -453,8 +453,10 @@ describe("generateQueries mutationEffects + infiniteQuery", () => {
     expect(queriesFile?.content).not.toContain("MutationEffectsOptions<QueryModule");
 
     // Bug 3: getNextPageParam parameter has an explicit type annotation (no implicit any)
-    expect(queriesFile?.content).toContain("}: Awaited<ReturnType<typeof ItemsApi.list>>)");
-    expect(queriesFile?.content).toContain("pageParam * limitParam < (totalItems ?? 0)");
+    expect(queriesFile?.content).toContain(
+      '}: Awaited<ReturnType<typeof ItemsApi.list>> & Partial<Record<"page" | "totalItems" | "limit", number | null>>)',
+    );
+    expect(queriesFile?.content).toContain("pageParam * pageSize < (totalItems ?? 0)");
     // queryFn retains precise pageParam: number typing and forwards TanStack's abort signal to Axios
     expect(queriesFile?.content).toContain(
       "queryFn: ({ pageParam, signal }: { pageParam: number; signal: AbortSignal })",
@@ -483,7 +485,50 @@ describe("generateQueries mutationEffects + infiniteQuery", () => {
     // the options type defaults prefetchInfiniteQuery generics to unknown, which conflicts with the
     // generated queryFn expecting pageParam: number.
     expect(queriesFile?.content).toContain("...(options as {})");
+    expect(queriesFile?.content).toContain(
+      "return throwOnError ? queryClient.fetchInfiniteQuery(queryOptions) : queryClient.prefetchInfiniteQuery(queryOptions)",
+    );
+    expect(queriesFile?.content).toContain("config?: AxiosRequestConfig, throwOnError = false");
+    expect(queriesFile?.content).toContain("listInfiniteQueryOptions({ limit }, config)");
+    expect(queriesFile?.content).not.toContain("): void =>");
     // no pages emitted anywhere
     expect(queriesFile?.content).not.toContain("pages:");
+  });
+
+  it("uses configurable application hook import paths", () => {
+    const files = generateCodeFromOpenAPIDoc(openApiDoc, {
+      ...DEFAULT_GENERATE_OPTIONS,
+      output: "test-output",
+      mutationEffectsImportPath: "@/data/useMutationEffects",
+      aclCheckImportPath: "@/data/acl/useAclCheck",
+      zodImportPath: "@/data/zod.extended",
+      builderConfigs: false,
+    });
+
+    const queriesFile = files.find((file) => file.fileName.endsWith("/workspace/workspace.queries.ts"));
+    const apiFile = files.find((file) => file.fileName.endsWith("/workspace/workspace.api.ts"));
+
+    expect(queriesFile?.content).toContain('from "@/data/useMutationEffects";');
+    expect(queriesFile?.content).toContain('from "@/data/acl/useAclCheck";');
+    expect(apiFile?.content).toContain('from "@/data/zod.extended";');
+  });
+
+  it("generates an Axios-free native REST client mode", () => {
+    const files = generateCodeFromOpenAPIDoc(openApiDoc, {
+      ...DEFAULT_GENERATE_OPTIONS,
+      output: "test-output",
+      restClient: "native",
+      axiosRequestConfig: true,
+      builderConfigs: false,
+    });
+
+    const appClient = files.find((file) => file.fileName.endsWith("/app-rest-client.ts"));
+    const apiFile = files.find((file) => file.fileName.endsWith("/workspace/workspace.api.ts"));
+    const queriesFile = files.find((file) => file.fileName.endsWith("/workspace/workspace.queries.ts"));
+
+    expect(appClient?.content).toContain('import { NativeRestClient } from "@povio/openapi-codegen-cli/native";');
+    expect(apiFile?.content).toContain("config?: TransportRequestConfig");
+    expect(queriesFile?.content).toContain("config?: TransportRequestConfig");
+    expect([appClient, apiFile, queriesFile].map((file) => file?.content).join("\n")).not.toContain('from "axios"');
   });
 });

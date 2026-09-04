@@ -1,6 +1,13 @@
-import { AxiosError, AxiosResponseHeaders } from "axios";
-import { isAxiosError } from "axios";
+import type { AxiosError, AxiosResponseHeaders } from "axios";
 import { z } from "zod";
+
+import { isAxiosErrorLike } from "./http-error.utils";
+import { NativeHttpError } from "./native-rest-client.types";
+
+function getResponseData(error: unknown) {
+  if (error instanceof NativeHttpError) return error.response.data;
+  return isAxiosErrorLike(error) ? error.response?.data : undefined;
+}
 
 export namespace RestUtils {
   export const extractServerResponseCode = (e: unknown): string | number | null => {
@@ -8,15 +15,7 @@ export namespace RestUtils {
       return "validation-exception";
     }
 
-    if (!isAxiosError(e)) {
-      return null;
-    }
-
-    if (!e.response) {
-      return null;
-    }
-
-    const data = e.response.data as { code: unknown } | undefined;
+    const data = getResponseData(e) as { code: unknown } | undefined;
 
     if (typeof data?.code === "string") {
       return data.code;
@@ -43,15 +42,7 @@ export namespace RestUtils {
       return e.message;
     }
 
-    if (!isAxiosError(e)) {
-      return null;
-    }
-
-    if (!e.response) {
-      return null;
-    }
-
-    const data = e.response.data as { message: unknown } | undefined;
+    const data = getResponseData(e) as { message: unknown } | undefined;
 
     if (typeof data?.message === "string") {
       return data.message;

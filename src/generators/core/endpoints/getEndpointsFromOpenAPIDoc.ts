@@ -1,7 +1,6 @@
 import { OpenAPIV3 } from "openapi-types";
 
 import { JSON_APPLICATION_FORMAT } from "@/generators/const/endpoints.const";
-import { ALLOWED_METHODS } from "@/generators/const/openapi.const";
 import { HttpStatusCode } from "@/generators/const/validation.const";
 import { STRING_SCHEMA, VOID_SCHEMA } from "@/generators/const/zod.const";
 import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
@@ -9,19 +8,10 @@ import { getZodChain } from "@/generators/core/zod/getZodChain";
 import { getZodSchema } from "@/generators/core/zod/getZodSchema";
 import { resolveZodSchemaName } from "@/generators/core/zod/resolveZodSchemaName";
 import { Endpoint, EndpointParameter } from "@/generators/types/endpoint";
-import { OperationObject } from "@/generators/types/openapi";
 import { invalidVariableNameCharactersToCamel } from "@/generators/utils/js.utils";
-import { pick } from "@/generators/utils/object.utils";
 import { isReferenceObject } from "@/generators/utils/openapi-schema.utils";
-import {
-  isErrorStatus,
-  isMainResponseStatus,
-  isMediaTypeAllowed,
-  isPathExcluded,
-  replaceHyphenatedPath,
-} from "@/generators/utils/openapi.utils";
-import { getUniqueOperationName, isOperationExcluded } from "@/generators/utils/operation.utils";
-import { formatTag, getOperationTag } from "@/generators/utils/tag.utils";
+import { isErrorStatus, isMainResponseStatus, replaceHyphenatedPath } from "@/generators/utils/openapi.utils";
+import { formatTag } from "@/generators/utils/tag.utils";
 import {
   getInvalidOperationIdError,
   getInvalidStatusCodeError,
@@ -30,134 +20,106 @@ import {
   getMultipleSuccessStatusCodesError,
 } from "@/generators/utils/validation.utils";
 import { getResponseZodSchemaName } from "@/generators/utils/zod-schema.utils";
+import { Profiler } from "@/helpers/profile.helper";
 
 import { getEndpointAcl } from "./getEndpointAcl";
 import { getEndpointBody } from "./getEndpointBody";
 import { getEndpointParameter } from "./getEndpointParameter";
 
-export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver) {
+export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver, profiler = new Profiler(false)) {
   const endpoints = [];
+  const responseSchemaByRefAndTag = new Map<
+    string,
+    { schemaObject: OpenAPIV3.SchemaObject; responseZodSchema: string }
+  >();
 
-  for (const path in resolver.openApiDoc.paths) {
-    if (isPathExcluded(path, resolver.options)) {
-      continue;
+  for (const context of resolver.getOperationContexts()) {
+    const { path, method, operation, operationName, isUniqueOperationName, tag, parameters, responses } = context;
+
+    const invalidOperationId =
+      operation.operationId && operation.operationId !== invalidVariableNameCharactersToCamel(operation.operationId);
+    if (operation.operationId && invalidOperationId) {
+      resolver.validationErrors.push(getInvalidOperationIdError(operation.operationId));
     }
 
-    const pathItemObj = resolver.openApiDoc.paths[path] as OpenAPIV3.PathItemObject;
-    const pathItem = pick(pathItemObj, ALLOWED_METHODS);
-    const pathParameters = getParameters(pathItemObj.parameters ?? []);
+    const endpoint: Endpoint = {
+      method,
+      path: replaceHyphenatedPath(path),
+      operationName,
+      description: operation.description,
+      summary: operation.summary,
+      tags: operation.tags?.map(formatTag),
+      requestFormat: JSON_APPLICATION_FORMAT,
+      parameters: [],
+      response: "",
+      errors: [],
+      responseStatusCodes: [],
+      mediaUpload: !!operation["x-media-upload"],
+      mediaDownload: !!operation["x-media-download"],
+    };
 
-    for (const method in pathItem) {
-      const operation = pathItem[method as keyof typeof pathItem] as OperationObject | undefined;
-      if (!operation || isOperationExcluded(operation, resolver.options)) {
-        continue;
+    if (operation.requestBody) {
+      const body = profiler.runSync("endpoints.body", () =>
+        getEndpointBody({ resolver, operation, operationName, isUniqueOperationName, tag }),
+      );
+      if (body) {
+        endpoint.parameters.push(body.endpointParameter);
+        endpoint.requestFormat = body.requestFormat;
       }
+    }
 
-      const invalidOperationId =
-        operation.operationId && operation.operationId !== invalidVariableNameCharactersToCamel(operation.operationId);
-      if (operation.operationId && invalidOperationId) {
-        resolver.validationErrors.push(getInvalidOperationIdError(operation.operationId));
-      }
-
-      const parameters = Object.entries({
-        ...pathParameters,
-        ...getParameters(operation.parameters ?? []),
-      }).map(([, param]) => param);
-      const operationName = getUniqueOperationName({
-        path,
-        method,
-        operation,
-        operationsByTag: resolver.operationsByTag,
-        options: resolver.options,
-      });
-      const isUniqueOperationName = resolver.operationNames.filter((name) => name === operationName).length <= 1;
-      const tag = getOperationTag(operation, resolver.options);
-      const endpoint: Endpoint = {
-        method: method as OpenAPIV3.HttpMethods,
-        path: replaceHyphenatedPath(path),
-        operationName,
-        description: operation.description,
-        summary: operation.summary,
-        tags: operation.tags?.map(formatTag),
-        requestFormat: JSON_APPLICATION_FORMAT,
-        parameters: [],
-        response: "",
-        errors: [],
-        responseStatusCodes: [],
-        mediaUpload: !!operation["x-media-upload"],
-        mediaDownload: !!operation["x-media-download"],
-      };
-
-      if (operation.requestBody) {
-        const body = getEndpointBody({ resolver, operation, operationName, isUniqueOperationName, tag });
-        if (body) {
-          endpoint.parameters.push(body.endpointParameter);
-          endpoint.requestFormat = body.requestFormat;
-        }
-      }
-
-      for (const param of parameters) {
-        const endpointParameter = getEndpointParameter({
+    for (const param of parameters) {
+      const endpointParameter = profiler.runSync("endpoints.parameter", () =>
+        getEndpointParameter({
           resolver,
           param,
           operationName,
           isUniqueOperationName,
           tag,
-        });
-        if (endpointParameter) {
-          endpoint.parameters.push(endpointParameter);
+        }),
+      );
+      if (endpointParameter) {
+        endpoint.parameters.push(endpointParameter);
+      }
+    }
+
+    const missingPathParameters = getMissingPathParameters(endpoint.path, endpoint.parameters);
+    endpoint.parameters.push(...missingPathParameters);
+    if (missingPathParameters.length > 0) {
+      resolver.validationErrors.push(getMissingPathParameterError(missingPathParameters, path));
+    }
+
+    for (const { statusCode, responseObj, matchingMediaType, schema } of responses) {
+      endpoint.responseStatusCodes.push(statusCode);
+      if (matchingMediaType) {
+        const statusNum = Number(statusCode);
+        // Only let success responses (2xx) or "default" (when nothing is set yet) determine the
+        // response format used for the Accept header. Error responses (4xx/5xx) must not
+        // overwrite the success content-type — doing so would strip rawResponse/blob config
+        // from blob-download endpoints that also declare domain-error responses.
+        if (isMainResponseStatus(statusNum) || (statusCode === "default" && !endpoint.responseFormat)) {
+          endpoint.responseFormat = matchingMediaType;
         }
+      } else if (statusCode === "200") {
+        resolver.validationErrors.push(
+          getInvalidStatusCodeError({ received: "200", expected: "204" }, operation, endpoint),
+        );
       }
 
-      const missingPathParameters = getMissingPathParameters(endpoint);
-      missingPathParameters.forEach((pathParam) => {
-        endpoint.parameters.push(pathParam);
-      });
-      if (missingPathParameters.length > 0) {
-        resolver.validationErrors.push(getMissingPathParameterError(missingPathParameters, path));
-      }
-
-      for (const statusCode in operation.responses) {
-        endpoint.responseStatusCodes.push(statusCode);
-
-        const responseObj = <OpenAPIV3.ResponseObject>resolver.resolveObject(operation.responses[statusCode]);
-        const mediaTypes = Object.keys(responseObj?.content ?? {});
-        // Prefer any content entry that declares a body schema. Some specs use
-        // non-application media types (e.g. text/json) which would otherwise skip
-        // schema resolution and fall back to z.void() for the whole operation.
-        const matchingMediaType =
-          mediaTypes.find((mt) => {
-            const entry = responseObj.content?.[mt];
-            return !!entry?.schema;
-          }) ?? mediaTypes.find(isMediaTypeAllowed);
-
-        let schema: OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject | undefined;
-        if (matchingMediaType) {
-          const statusNum = Number(statusCode);
-          // Only let success responses (2xx) or "default" (when nothing is set yet) determine the
-          // response format used for the Accept header. Error responses (4xx/5xx) must not
-          // overwrite the success content-type — doing so would strip rawResponse/blob config
-          // from blob-download endpoints that also declare domain-error responses.
-          if (isMainResponseStatus(statusNum) || (statusCode === "default" && !endpoint.responseFormat)) {
-            endpoint.responseFormat = matchingMediaType;
-          }
-          schema = responseObj.content?.[matchingMediaType]?.schema;
-        } else if (statusCode === "200") {
-          resolver.validationErrors.push(
-            getInvalidStatusCodeError({ received: "200", expected: "204" }, operation, endpoint),
+      if (schema) {
+        const responseCacheKey = isReferenceObject(schema) ? `${schema.$ref}|${tag}` : undefined;
+        let resolvedResponse = responseCacheKey ? responseSchemaByRefAndTag.get(responseCacheKey) : undefined;
+        if (!resolvedResponse) {
+          const zodSchema = profiler.runSync("endpoints.response.zod", () =>
+            getZodSchema({
+              schema,
+              resolver,
+              meta: { isRequired: true },
+              tag,
+            }),
           );
-        }
-
-        if (schema) {
-          const zodSchema = getZodSchema({
-            schema,
-            resolver,
-            meta: { isRequired: true },
-            tag,
-          });
 
           const schemaObject = resolver.resolveObject(schema);
-
           const zodSchemaName = resolveZodSchemaName({
             schema: schemaObject,
             zodSchema,
@@ -167,105 +129,120 @@ export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver) {
             resolver,
             tag,
           });
-
-          const responseZodSchema =
-            zodSchemaName + getZodChain({ schema: schemaObject, meta: zodSchema.meta, options: resolver.options });
-
-          const status = Number(statusCode);
-
-          if (isMainResponseStatus(status) && !endpoint.response) {
-            endpoint.response = responseZodSchema;
-            endpoint.responseObject = responseObj;
-            endpoint.responseDescription = responseObj?.description;
-          } else if (statusCode === "default" && !endpoint.response) {
-            // Nest/Swagger often puts the JSON body only under `default` while `200` has no content.
-            endpoint.response = responseZodSchema;
-            endpoint.responseObject = responseObj;
-            endpoint.responseDescription = responseObj?.description;
-          } else if (statusCode !== "default" && !Number.isNaN(status) && isErrorStatus(status)) {
-            const rawSchema = schemaObject as Record<string, unknown>;
-            const domainStr = rawSchema["x-domain-error-domain"];
-            const domainName = rawSchema["x-domain-error-name"];
-            const codeEnum = (rawSchema?.properties as Record<string, unknown> | undefined)?.code;
-            const codeEnumArr = (codeEnum as Record<string, unknown> | undefined)?.enum;
-            const domainCode =
-              Array.isArray(codeEnumArr) &&
-              codeEnumArr.length === 1 &&
-              (typeof codeEnumArr[0] === "number" || typeof codeEnumArr[0] === "string")
-                ? (codeEnumArr[0] as number | string)
-                : undefined;
-
-            endpoint.errors.push({
-              zodSchema: responseZodSchema,
-              status,
-              description: responseObj?.description,
-              ...(typeof domainStr === "string" && domainCode !== undefined
-                ? {
-                    domainError: {
-                      domain: domainStr,
-                      code: domainCode,
-                      ...(typeof domainName === "string" ? { name: domainName } : {}),
-                    },
-                  }
-                : {}),
-            });
-          }
-        } else {
-          const status = Number(statusCode);
-          const responseZodSchema = VOID_SCHEMA;
-
-          if (statusCode !== "default" && !Number.isNaN(status) && isErrorStatus(status)) {
-            endpoint.errors.push({
-              zodSchema: responseZodSchema,
-              status,
-              description: responseObj?.description,
-            });
+          resolvedResponse = {
+            schemaObject,
+            responseZodSchema:
+              zodSchemaName + getZodChain({ schema: schemaObject, meta: zodSchema.meta, options: resolver.options }),
+          };
+          if (responseCacheKey) {
+            responseSchemaByRefAndTag.set(responseCacheKey, resolvedResponse);
           }
         }
-      }
+        const { schemaObject, responseZodSchema } = resolvedResponse;
 
-      if (!endpoint.response) {
-        endpoint.response = VOID_SCHEMA;
-      }
+        const status = Number(statusCode);
 
-      const mainStatusCodes = Object.keys(operation.responses).map(Number).filter(isMainResponseStatus);
-      if (mainStatusCodes.length > 1) {
-        resolver.validationErrors.push(
-          getMultipleSuccessStatusCodesError(mainStatusCodes.map(String) as HttpStatusCode[], operation, endpoint),
-        );
-      }
+        if (isMainResponseStatus(status) && !endpoint.response) {
+          endpoint.response = responseZodSchema;
+          endpoint.responseObject = responseObj;
+          endpoint.responseDescription = responseObj?.description;
+        } else if (statusCode === "default" && !endpoint.response) {
+          // Nest/Swagger often puts the JSON body only under `default` while `200` has no content.
+          endpoint.response = responseZodSchema;
+          endpoint.responseObject = responseObj;
+          endpoint.responseDescription = responseObj?.description;
+        } else if (statusCode !== "default" && !Number.isNaN(status) && isErrorStatus(status)) {
+          const rawSchema = schemaObject as Record<string, unknown>;
+          const domainStr = rawSchema["x-domain-error-domain"];
+          const domainName = rawSchema["x-domain-error-name"];
+          const codeEnum = (rawSchema?.properties as Record<string, unknown> | undefined)?.code;
+          const codeEnumArr = (codeEnum as Record<string, unknown> | undefined)?.enum;
+          const domainCode =
+            Array.isArray(codeEnumArr) &&
+            codeEnumArr.length === 1 &&
+            (typeof codeEnumArr[0] === "number" || typeof codeEnumArr[0] === "string")
+              ? (codeEnumArr[0] as number | string)
+              : undefined;
 
-      const resolvedAcl = getEndpointAcl({ resolver, endpoint, operation });
-      if (resolvedAcl?.length) {
-        endpoint.acl = resolvedAcl;
-      }
+          endpoint.errors.push({
+            zodSchema: responseZodSchema,
+            status,
+            description: responseObj?.description,
+            ...(typeof domainStr === "string" && domainCode !== undefined
+              ? {
+                  domainError: {
+                    domain: domainStr,
+                    code: domainCode,
+                    ...(typeof domainName === "string" ? { name: domainName } : {}),
+                  },
+                }
+              : {}),
+          });
+        }
+      } else {
+        const status = Number(statusCode);
+        const responseZodSchema = VOID_SCHEMA;
 
-      if (operation.security?.[0].Authorization && !endpoint.responseStatusCodes.includes("401")) {
-        resolver.validationErrors.push(getMissingStatusCodeError("401", operation, endpoint));
+        if (statusCode !== "default" && !Number.isNaN(status) && isErrorStatus(status)) {
+          endpoint.errors.push({
+            zodSchema: responseZodSchema,
+            status,
+            description: responseObj?.description,
+          });
+        }
       }
-
-      if (endpoint.acl?.[0] && !endpoint.responseStatusCodes.includes("403")) {
-        resolver.validationErrors.push(getMissingStatusCodeError("403", operation, endpoint));
-      }
-
-      endpoints.push(endpoint);
     }
+
+    if (!endpoint.response) {
+      endpoint.response = VOID_SCHEMA;
+    }
+
+    const mainStatusCodes: number[] = [];
+    for (const { statusCode } of responses) {
+      const status = Number(statusCode);
+      if (isMainResponseStatus(status)) {
+        mainStatusCodes.push(status);
+      }
+    }
+    if (mainStatusCodes.length > 1) {
+      resolver.validationErrors.push(
+        getMultipleSuccessStatusCodesError(mainStatusCodes.map(String) as HttpStatusCode[], operation, endpoint),
+      );
+    }
+
+    const resolvedAcl = getEndpointAcl({ resolver, endpoint, operation });
+    if (resolvedAcl?.length) {
+      endpoint.acl = resolvedAcl;
+    }
+
+    if (operation.security?.[0].Authorization && !endpoint.responseStatusCodes.includes("401")) {
+      resolver.validationErrors.push(getMissingStatusCodeError("401", operation, endpoint));
+    }
+
+    if (endpoint.acl?.[0] && !endpoint.responseStatusCodes.includes("403")) {
+      resolver.validationErrors.push(getMissingStatusCodeError("403", operation, endpoint));
+    }
+
+    endpoints.push(endpoint);
   }
 
   return endpoints;
 }
 
-function getParameters(parameters: NonNullable<OpenAPIV3.PathItemObject["parameters"]>) {
-  return Object.fromEntries(
-    (parameters ?? []).map((param) => [isReferenceObject(param) ? param.$ref : param.name, param] as const),
-  );
-}
+function getMissingPathParameters(path: string, parameters: EndpointParameter[]): EndpointParameter[] {
+  if (!path.includes(":")) {
+    return [];
+  }
 
-function getMissingPathParameters(endpoint: Endpoint): EndpointParameter[] {
-  const pathParams = [...endpoint.path.matchAll(/:([a-zA-Z0-9_]+)/g)].map((param) => param[1]);
-  return pathParams
-    .filter((pathParam) => endpoint.parameters.findIndex(({ name }) => name === pathParam) === -1)
-    .map((name) => getPathParameterFromName(name));
+  const parameterNames = new Set(parameters.map(({ name }) => name));
+  const missingParameters: EndpointParameter[] = [];
+  for (const match of path.matchAll(/:([a-zA-Z0-9_]+)/g)) {
+    const name = match[1];
+    if (name && !parameterNames.has(name)) {
+      missingParameters.push(getPathParameterFromName(name));
+    }
+  }
+  return missingParameters;
 }
 
 function getPathParameterFromName(name: string): EndpointParameter {

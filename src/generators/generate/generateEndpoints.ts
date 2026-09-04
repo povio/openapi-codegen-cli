@@ -1,6 +1,11 @@
 import { APP_REST_CLIENT_NAME, ZOD_EXTENDED } from "@/generators/const/deps.const";
-import { AXIOS_IMPORT, AXIOS_REQUEST_CONFIG_NAME, AXIOS_REQUEST_CONFIG_TYPE } from "@/generators/const/endpoints.const";
-import { ZOD_PACKAGE_IMPORT_PATH } from "@/generators/const/package.const";
+import {
+  AXIOS_IMPORT,
+  AXIOS_REQUEST_CONFIG_NAME,
+  AXIOS_REQUEST_CONFIG_TYPE,
+  getRequestConfigTypeName,
+} from "@/generators/const/endpoints.const";
+import { REST_PACKAGE_IMPORT_PATH } from "@/generators/const/package.const";
 import { ZOD_IMPORT } from "@/generators/const/zod.const";
 import { Endpoint, EndpointParameter } from "@/generators/types/endpoint";
 import { GenerateType, GenerateTypeParams, Import } from "@/generators/types/generate";
@@ -22,6 +27,10 @@ import { getNamespaceName } from "@/generators/utils/namespace.utils";
 import { isNamedZodSchema } from "@/generators/utils/zod-schema.utils";
 
 export function generateEndpoints({ resolver, data, tag }: GenerateTypeParams) {
+  const nativeContent = (
+    resolver as GenerateTypeParams["resolver"] & { getNativeRenderedEndpoints?: (tag: string) => string | undefined }
+  ).getNativeRenderedEndpoints?.(tag);
+  if (nativeContent) return nativeContent;
   if (shouldInlineEndpointsForTag(tag, resolver.options)) {
     return;
   }
@@ -38,11 +47,18 @@ export function generateEndpoints({ resolver, data, tag }: GenerateTypeParams) {
 
   const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
   const hasGetEndpoints = endpoints.some((endpoint) => endpoint.method === "get");
-  const hasAxiosImport = hasAxiosRequestConfig || hasGetEndpoints;
+  const nativeClient = resolver.options.restClient === "native";
+  const hasAxiosImport = !nativeClient && (hasAxiosRequestConfig || hasGetEndpoints);
   const axiosImport: Import = {
     bindings: [],
     typeBindings: hasAxiosImport ? [AXIOS_REQUEST_CONFIG_TYPE] : [],
     from: AXIOS_IMPORT.from,
+  };
+  const nativeImport: Import = {
+    bindings: [],
+    typeBindings:
+      nativeClient && (hasAxiosRequestConfig || hasGetEndpoints) ? [getRequestConfigTypeName("native")] : [],
+    from: REST_PACKAGE_IMPORT_PATH,
   };
 
   const generateParse = resolver.options.parseRequestParams;
@@ -59,7 +75,7 @@ export function generateEndpoints({ resolver, data, tag }: GenerateTypeParams) {
   const hasZodExtendedImport = resolver.options.parseRequestParams && endpointParamsParseSchemas.length > 0;
   const zodExtendedImport: Import = {
     bindings: [ZOD_EXTENDED.namespace],
-    from: ZOD_PACKAGE_IMPORT_PATH,
+    from: resolver.options.zodImportPath,
   };
 
   const modelsImports = getModelsImports({
@@ -74,6 +90,7 @@ export function generateEndpoints({ resolver, data, tag }: GenerateTypeParams) {
   if (hasAxiosImport) {
     lines.push(renderImport(axiosImport));
   }
+  if (nativeImport.typeBindings?.length) lines.push(renderImport(nativeImport));
   if (hasZodImport) {
     lines.push(renderImport(ZOD_IMPORT));
   }
@@ -101,7 +118,7 @@ export function generateEndpoints({ resolver, data, tag }: GenerateTypeParams) {
     const hasRequestConfigParam = hasAxiosRequestConfig || endpoint.method === "get";
 
     lines.push(
-      `export const ${getEndpointName(endpoint)} = (${endpointParams}${hasRequestConfigParam ? `${AXIOS_REQUEST_CONFIG_NAME}?: ${getRequestConfigType()}` : ""}) => {`,
+      `export const ${getEndpointName(endpoint)} = (${endpointParams}${hasRequestConfigParam ? `${AXIOS_REQUEST_CONFIG_NAME}?: ${getRequestConfigType(resolver)}` : ""}) => {`,
     );
     lines.push(`    return ${APP_REST_CLIENT_NAME}.${endpoint.method}(`);
     lines.push(`        ${renderRequestInfo(resolver, endpoint, tag)},`);
@@ -131,13 +148,15 @@ function renderRequestInfo(resolver: GenerateTypeParams["resolver"], endpoint: E
   const schemaName = getImportedZodSchemaName(
     resolver,
     endpoint.response,
-    resolver.options.modelsInCommon && resolver.options.splitByTags ? tag : undefined,
+    (resolver.options.modelsInCommon || resolver.options.modelsInModules) && resolver.options.splitByTags
+      ? tag
+      : undefined,
   );
   return `{ resSchema: ${schemaName} }`;
 }
 
-function getRequestConfigType() {
-  return `${AXIOS_REQUEST_CONFIG_TYPE} & { allowInvalidResponseData?: boolean }`;
+function getRequestConfigType(resolver: GenerateTypeParams["resolver"]) {
+  return `${getRequestConfigTypeName(resolver.options.restClient)} & { allowInvalidResponseData?: boolean }`;
 }
 
 function renderImport(importData: Import) {

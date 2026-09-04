@@ -3,7 +3,6 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 
 import { OpenAPIV3 } from "openapi-types";
-import ts from "typescript";
 import { describe, expect, test } from "vitest";
 
 import { DEFAULT_GENERATE_OPTIONS } from "@/generators/const/options.const";
@@ -128,11 +127,10 @@ describe("generateModels", () => {
       throw new Error("Expected generated models");
     }
     const tempDir = await fs.mkdtemp(path.join(process.cwd(), ".generated-models-"));
-    const modulePath = path.join(tempDir, "models.mjs");
+    const modulePath = path.join(tempDir, "models.ts");
 
     try {
-      const javascript = ts.transpile(models, { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ESNext });
-      await fs.writeFile(modulePath, javascript);
+      await fs.writeFile(modulePath, models);
       const generated = await import(`${pathToFileURL(modulePath).href}?cacheBust=${Date.now()}`);
 
       expect(generated.Status).toEqual({ active: "active", inactive: "inactive" });
