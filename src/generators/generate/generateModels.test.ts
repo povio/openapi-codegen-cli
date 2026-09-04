@@ -50,11 +50,17 @@ describe("generateModels", () => {
     expect(models).toContain("export type AccessTag = { player?: Player };");
     expect(models).toContain("export const PlayerSchema: z.ZodObject<z.ZodRawShape> & z.ZodType<Player> =");
     expect(models).toContain("export const AccessTagSchema: z.ZodObject<z.ZodRawShape> & z.ZodType<AccessTag> =");
+    expect(models).not.toContain(
+      "export const PlayerSchema: z.ZodObject<z.ZodRawShape> & z.ZodType<Player> = z.compile(",
+    );
+    expect(models).not.toContain(
+      "export const AccessTagSchema: z.ZodObject<z.ZodRawShape> & z.ZodType<AccessTag> = z.compile(",
+    );
     expect(models).not.toContain("ZodObject<any>");
     expect(models).toContain("export const UnrelatedSchema = z.compile(z.object(");
   });
 
-  test("compiles every generated schema", () => {
+  test("compiles every non-circular generated schema", () => {
     const doc = {
       openapi: "3.0.3",
       info: { title: "Compiled schemas", version: "1.0.0" },

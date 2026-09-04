@@ -73,7 +73,8 @@ export function generateModels({ resolver, data, tag }: GenerateTypeParams) {
       lines.push(`export type ${inferredTypeName} = ${renderSchemaType(zodSchema.schemaObj, resolver)};`);
     }
     const typeAnnotation = zodSchema.isCircular ? `: z.ZodObject<z.ZodRawShape> & z.ZodType<${inferredTypeName}>` : "";
-    lines.push(`export const ${name}${typeAnnotation} = z.compile(${zodSchema.code});`);
+    const schemaCode = zodSchema.isCircular ? zodSchema.code : `z.compile(${zodSchema.code})`;
+    lines.push(`export const ${name}${typeAnnotation} = ${schemaCode};`);
     if (!zodSchema.isCircular) {
       lines.push(`export type ${inferredTypeName} = z.infer<typeof ${name}>;`);
     }
