@@ -32,13 +32,14 @@ function run(command, args, env = {}) {
 function ensureBuiltPackage() {
   if (!fs.existsSync(DIST_INDEX) || !fs.existsSync(DIST_VITE)) {
     console.log("Building package (dist)...");
-    run("yarn", ["build"]);
+    run("bun", ["run", "build"]);
   }
 }
 
 function ensureBaselineGeneratedData() {
   fs.rmSync(DATA_DIR, { recursive: true, force: true });
-  run("yarn", [
+  run("bun", [
+    "run",
     "start",
     "generate",
     "--input",
@@ -52,7 +53,7 @@ function ensureBaselineGeneratedData() {
 }
 
 function buildBaseline() {
-  return run("yarn", ["vite", "build", "--config", "test/vite-example/vite.base.config.ts"]);
+  return run("bun", ["run", "vite", "build", "--config", "test/vite-example/vite.base.config.ts"]);
 }
 
 function buildWithCodegen(incremental) {
@@ -60,7 +61,7 @@ function buildWithCodegen(incremental) {
     fs.rmSync(DATA_DIR, { recursive: true, force: true });
   }
   const openApiInput = fs.existsSync(SNAPSHOT_OPENAPI) ? SNAPSHOT_OPENAPI : path.join(ROOT, "test/petstore.yaml");
-  return run("yarn", ["vite", "build", "--config", "test/vite-example/vite.codegen.config.ts"], {
+  return run("bun", ["run", "vite", "build", "--config", "test/vite-example/vite.codegen.config.ts"], {
     OPENAPI_CODEGEN_INCREMENTAL: incremental ? "true" : "false",
     OPENAPI_CODEGEN_INPUT: openApiInput,
   });

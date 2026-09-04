@@ -62,19 +62,19 @@
     "test:watch": "vitest",
     "build": "tsdown",
     "start:dist": "node ./dist/sh.mjs",
-    "gen:base": "rm -rf ./test/generated/base && mkdir -p ./test/generated/base && pnpm start generate --config ./test/config.mjs --output ./test/generated/base --no-prettier",
-    "gen:next": "rm -rf ./test/generated/next && mkdir -p ./test/generated/next && pnpm start generate --config ./test/config.mjs --output ./test/generated/next --no-prettier",
+    "gen:base": "rm -rf ./test/generated/base && mkdir -p ./test/generated/base && bun run start generate --config ./test/config.mjs --output ./test/generated/base --no-prettier",
+    "gen:next": "rm -rf ./test/generated/next && mkdir -p ./test/generated/next && bun run start generate --config ./test/config.mjs --output ./test/generated/next --no-prettier",
     "test:generated-eq": "vitest run ./src/generators/generated-output-eq.test.ts",
-    "gen:verify": "pnpm gen:base && pnpm gen:next && pnpm test:generated-eq",
+    "gen:verify": "bun run gen:base && bun run gen:next && bun run test:generated-eq",
     "typecheck": "tsc --noEmit",
     "lint": "oxlint --type-aware --fix",
     "lint:check": "oxlint --type-aware",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
-    "check": "pnpm typecheck && pnpm lint && pnpm test",
+    "check": "bun run typecheck && bun run lint && bun run test",
     "push": "node ./scripts/publish.mjs",
-    "dev:generate": "rm -rf ./output && pnpm start generate --config ./test/config.mjs",
-    "dev:check": "pnpm start check --config ./test/config.mjs",
+    "dev:generate": "rm -rf ./output && bun run start generate --config ./test/config.mjs",
+    "dev:check": "bun run start check --config ./test/config.mjs",
     "snapshot:openapi-localhost": "node ./scripts/snapshot-openapi-localhost.mjs",
     "bench:vite-codegen": "node ./scripts/benchmark-vite-codegen.mjs"
   },
@@ -111,7 +111,7 @@
     "vite-plugin-dts": "^4.5.4",
     "vitest": "4.0.18",
     "yargs": "^17.7.2",
-    "zod": "^4.3.6"
+    "zod": "^4.5.0"
   },
   "peerDependencies": {
     "@casl/ability": "^6.7.3",
@@ -121,7 +121,7 @@
     "i18next": "^25.8.11",
     "react": "^19.1.0",
     "vite": "^6.0.0 || ^7.0.0 || ^8.0.0",
-    "zod": "^4.1.12"
+    "zod": "^4.5.0"
   },
   "peerDependenciesMeta": {
     "@casl/ability": {
@@ -135,8 +135,8 @@
     }
   },
   "engines": {
-    "node": ">= 14",
-    "pnpm": ">= 9"
+    "bun": ">= 1.4",
+    "node": ">= 14"
   },
-  "packageManager": "pnpm@10.4.0"
+  "packageManager": "bun@1.4.0"
 }

@@ -13,13 +13,13 @@ The tool partially leverages code from [openapi-zod-client](https://github.com/a
 ## Setup
 
 ```bash
-yarn add @povio/openapi-codegen-cli
+bun add @povio/openapi-codegen-cli
 ```
 
 ## Example
 
 ```bash
-yarn openapi-codegen generate --input http://localhost:3001/docs-json
+bunx openapi-codegen generate --input http://localhost:3001/docs-json
 ```
 
 ## Configuration Files
@@ -46,7 +46,7 @@ export default config;
 Then run without arguments:
 
 ```bash
-yarn openapi-codegen generate
+bunx openapi-codegen generate
 ```
 
 ### Configuration File Discovery
@@ -58,7 +58,7 @@ The CLI automatically searches for the TypeScript configuration file:
 You can also specify a custom configuration file:
 
 ```bash
-yarn openapi-codegen generate --config my-config.ts
+bunx openapi-codegen generate --config my-config.ts
 ```
 
 ## Options
@@ -132,23 +132,22 @@ yarn openapi-codegen generate --config my-config.ts
 #### Test locally
 
 ```bash
-# prerequisites
-corepack install
-yarn
+# install dependencies
+bun install
 
 # run tests
-yarn test
+bun run test
 
 # run sources with tsx
-yarn start --help
-yarn start generate --input ./test/petstore.yaml --verbose
+bun run start --help
+bun run start generate --input ./test/petstore.yaml --verbose
 
 # build new version
-yarn build
+bun run build
 
 # test build
-yarn start --help
-yarn start:dist generate --input ./test/petstore.yaml --verbose
+bun run start --help
+bun run start:dist generate --input ./test/petstore.yaml --verbose
 ```
 
 ## Common Issues

@@ -41,7 +41,7 @@ async function normalizeContent(filePath: string, content: string) {
 
 const hasGeneratedFolders = fs.existsSync(BASE_DIR) && fs.existsSync(NEXT_DIR);
 
-// Opt-in via `pnpm gen:verify` (or `pnpm gen:base && pnpm gen:next` first).
+// Opt-in via `bun run gen:verify` (or `bun run gen:base && bun run gen:next` first).
 // Skipped in the default suite when the gitignored output folders are absent.
 describe.skipIf(!hasGeneratedFolders)("Generated output parity", () => {
   it("matches between base and next output folders", async () => {
