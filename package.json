@@ -127,7 +127,7 @@
     "@casl/ability": "6.8.0",
     "@casl/react": "5.0.1",
     "@tanstack/react-query": "~5.90.21",
-    "@types/bun": "1.4.0",
+    "@types/bun": "1.4.1",
     "@types/node": "^25.3.0",
     "@types/prompt-sync": "^4.2.3",
     "@types/react": "^19.2.14",
@@ -185,5 +185,5 @@
     "bun": ">= 1.4",
     "node": ">= 18"
   },
-  "packageManager": "bun@1.4.0"
+  "packageManager": "bun@1.4.1"
 }
