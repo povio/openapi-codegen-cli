@@ -1,5 +1,4 @@
 import { OpenAPIV3 } from "openapi-types";
-import { match } from "ts-pattern";
 
 import { ALLOWED_PATH_IN } from "@/generators/const/openapi.const";
 import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
@@ -121,14 +120,8 @@ export function getEndpointParameter({
   });
 
   return {
-    name: match(paramObj.in)
-      .with("path", () => pathParamToVariableName(paramObj.name))
-      .otherwise(() => paramObj.name),
-    type: match(paramObj.in)
-      .with("header", () => "Header")
-      .with("query", () => "Query")
-      .with("path", () => "Path")
-      .run() as "Header" | "Query" | "Path",
+    name: paramObj.in === "path" ? pathParamToVariableName(paramObj.name) : paramObj.name,
+    type: paramObj.in === "header" ? "Header" : paramObj.in === "query" ? "Query" : "Path",
     zodSchema: zodSchemaName,
     parameterObject: paramObj,
     ...(parameterSortingEnumSchemaName !== undefined ? { parameterSortingEnumSchemaName } : {}),

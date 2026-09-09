@@ -1,6 +1,11 @@
 import { ACL_CHECK_HOOK } from "@/generators/const/acl.const";
-import { AXIOS_DEFAULT_IMPORT_NAME, AXIOS_REQUEST_CONFIG_TYPE } from "@/generators/const/endpoints.const";
-import { PACKAGE_IMPORT_PATH, ACL_PACKAGE_IMPORT_PATH } from "@/generators/const/package.const";
+import {
+  AXIOS_DEFAULT_IMPORT_NAME,
+  AXIOS_REQUEST_CONFIG_TYPE,
+  getRequestConfigTypeName,
+} from "@/generators/const/endpoints.const";
+import { REST_PACKAGE_IMPORT_PATH } from "@/generators/const/package.const";
+import { APP_REST_CLIENT_NAME } from "@/generators/const/deps.const";
 import {
   MUTATION_EFFECTS,
   QUERY_MODULE_ENUM,
@@ -20,7 +25,11 @@ import { getEndpointsImports } from "@/generators/utils/generate/generate.import
 import { getBuilderConfigs } from "@/generators/utils/generate/generate.configs.utils";
 import { renderAclCheckCall } from "@/generators/utils/generate/generate.acl.utils";
 import { getNamespaceName } from "@/generators/utils/namespace.utils";
-import { getQueryModulesImportPath, getQueryTypesImportPath } from "@/generators/utils/generate/generate.utils";
+import {
+  getAppRestClientImportPath,
+  getQueryModulesImportPath,
+  getQueryTypesImportPath,
+} from "@/generators/utils/generate/generate.utils";
 import { getEndpointTag } from "@/generators/utils/tag.utils";
 import { QUERY_HOOKS } from "@/generators/const/queries.const";
 
@@ -46,13 +55,23 @@ export function generateConfigs(generateTypeParams: GenerateTypeParams) {
   const hasMutationEffects = resolver.options.mutationEffects && hasMutation;
   const hasMutationDefaultOnError = resolver.options.mutationDefaultOnError && hasMutation;
   const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
-  const hasAxiosDefaultImport = endpoints.some((e) => e.mediaUpload);
-  const hasAxiosImport = hasAxiosRequestConfig || hasAxiosDefaultImport;
+  const nativeClient = resolver.options.restClient === "native";
+  const hasAxiosDefaultImport = !nativeClient && endpoints.some((e) => e.mediaUpload);
+  const hasAxiosImport = !nativeClient && (hasAxiosRequestConfig || hasAxiosDefaultImport);
   const axiosImport: Import = {
     defaultImport: hasAxiosDefaultImport ? AXIOS_DEFAULT_IMPORT_NAME : undefined,
     bindings: [],
     typeBindings: hasAxiosImport ? [AXIOS_REQUEST_CONFIG_TYPE] : [],
     from: "axios",
+  };
+  const nativeImport: Import = {
+    bindings: [],
+    typeBindings: nativeClient && hasAxiosRequestConfig ? [getRequestConfigTypeName("native")] : [],
+    from: REST_PACKAGE_IMPORT_PATH,
+  };
+  const appRestClientImport: Import = {
+    bindings: [APP_REST_CLIENT_NAME],
+    from: getAppRestClientImportPath(resolver.options),
   };
 
   const endpointsImports = getEndpointsImports({
@@ -75,7 +94,7 @@ export function generateConfigs(generateTypeParams: GenerateTypeParams) {
   const mutationEffectsImport: Import = {
     bindings: [MUTATION_EFFECTS.hookName],
     typeBindings: [MUTATION_EFFECTS.optionsType],
-    from: PACKAGE_IMPORT_PATH,
+    from: resolver.options.mutationEffectsImportPath,
   };
 
   const queryModulesImport: Import = {
@@ -85,7 +104,7 @@ export function generateConfigs(generateTypeParams: GenerateTypeParams) {
 
   const aclCheckImport: Import = {
     bindings: [ACL_CHECK_HOOK],
-    from: ACL_PACKAGE_IMPORT_PATH,
+    from: resolver.options.aclCheckImportPath,
   };
 
   const hasDynamicInputsImport = configs.some(
@@ -105,6 +124,10 @@ export function generateConfigs(generateTypeParams: GenerateTypeParams) {
   const lines: string[] = [];
   if (hasAxiosImport) {
     lines.push(renderImport(axiosImport));
+  }
+  if (nativeImport.typeBindings?.length) lines.push(renderImport(nativeImport));
+  if (nativeClient && endpoints.some((endpoint) => endpoint.mediaUpload)) {
+    lines.push(renderImport(appRestClientImport));
   }
   if (hasZodImport) {
     lines.push(renderImport(ZOD_IMPORT));
@@ -234,7 +257,7 @@ function renderMutationContent(resolver: any, endpoint: Endpoint, tag: string) {
 
   const lines: string[] = [];
   lines.push(
-    `(options?: AppMutationOptions<typeof ${endpointFunction}, ${mutationVariablesType}>${hasMutationEffects ? ` & ${MUTATION_EFFECTS.optionsType}` : ""}${hasAxiosRequestConfig ? `, config?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => {`,
+    `(options?: AppMutationOptions<typeof ${endpointFunction}, ${mutationVariablesType}>${hasMutationEffects ? ` & ${MUTATION_EFFECTS.optionsType}` : ""}${hasAxiosRequestConfig ? `, config?: ${getRequestConfigTypeName(resolver.options.restClient)}` : ""}) => {`,
   );
   if (hasMutationDefaultOnError) {
     lines.push("  const queryConfig = OpenApiQueryConfig.useConfig();");

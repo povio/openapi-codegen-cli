@@ -1,10 +1,11 @@
 import { OpenAPIV3 } from "openapi-types";
-import { match } from "ts-pattern";
 
 import { GenerateOptions } from "@/generators/types/options";
 import { escapeControlCharacters, unwrapQuotesIfNeeded } from "@/generators/utils/openapi.utils";
 
 import { ZodSchemaMetaData } from "./ZodSchema.class";
+
+const zodChainCache = new WeakMap<GenerateOptions, WeakMap<OpenAPIV3.SchemaObject, Map<string, string>>>();
 
 export function getZodChain({
   schema,
@@ -15,13 +16,31 @@ export function getZodChain({
   meta?: ZodSchemaMetaData;
   options: GenerateOptions;
 }) {
+  let optionsCache = zodChainCache.get(options);
+  if (!optionsCache) {
+    optionsCache = new WeakMap();
+    zodChainCache.set(options, optionsCache);
+  }
+  let schemaCache = optionsCache.get(schema);
+  if (!schemaCache) {
+    schemaCache = new Map();
+    optionsCache.set(schema, schemaCache);
+  }
+  const cacheKey = `${Boolean(meta?.isRequired)}|${Boolean(meta?.isParentPartial)}`;
+  const cached = schemaCache.get(cacheKey);
+  if (cached !== undefined) {
+    return cached;
+  }
+
   const chains: string[] = [];
 
-  match(schema.type)
-    .with("string", () => chains.push(getZodChainableStringValidations(schema)))
-    .with("number", "integer", () => chains.push(getZodChainableNumberValidations(schema)))
-    .with("array", () => chains.push(getZodChainableArrayValidations(schema)))
-    .otherwise(() => void 0);
+  if (schema.type === "string") {
+    chains.push(getZodChainableStringValidations(schema));
+  } else if (schema.type === "number" || schema.type === "integer") {
+    chains.push(getZodChainableNumberValidations(schema));
+  } else if (schema.type === "array") {
+    chains.push(getZodChainableArrayValidations(schema));
+  }
 
   if (typeof schema.description === "string" && schema.description !== "" && options.withDescription) {
     chains.push(`describe(${JSON.stringify(schema.description)})`);
@@ -35,7 +54,9 @@ export function getZodChain({
     .filter(Boolean)
     .join(".");
 
-  return output ? `.${output}` : "";
+  const chain = output ? `.${output}` : "";
+  schemaCache.set(cacheKey, chain);
+  return chain;
 }
 
 function getZodChainablePresence({
@@ -64,9 +85,10 @@ function getZodChainablePresence({
 
 function getZodChainableDefault(schema: OpenAPIV3.SchemaObject) {
   if (schema.default !== undefined) {
-    const value = match(schema.type)
-      .with("number", "integer", () => unwrapQuotesIfNeeded(schema.default))
-      .otherwise(() => JSON.stringify(schema.default));
+    const value =
+      schema.type === "number" || schema.type === "integer"
+        ? unwrapQuotesIfNeeded(schema.default)
+        : JSON.stringify(schema.default);
     return `default(${value})`;
   }
 

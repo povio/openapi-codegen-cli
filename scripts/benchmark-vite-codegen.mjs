@@ -8,6 +8,8 @@ const DATA_DIR = path.join(EXAMPLE_ROOT, "src/data");
 const DIST_INDEX = path.join(ROOT, "dist/index.mjs");
 const DIST_VITE = path.join(ROOT, "dist/vite.mjs");
 const SNAPSHOT_OPENAPI = path.join(ROOT, "test/benchmarks/openapi.localhost4000.json");
+const OPENAPI_INPUT = fs.existsSync(SNAPSHOT_OPENAPI) ? SNAPSHOT_OPENAPI : path.join(ROOT, "test/petstore.yaml");
+const ITERATIONS = Number.parseInt(process.env.OPENAPI_CODEGEN_BENCH_ITERATIONS ?? "5", 10);
 
 function run(command, args, env = {}) {
   const start = process.hrtime.bigint();
@@ -32,17 +34,18 @@ function run(command, args, env = {}) {
 function ensureBuiltPackage() {
   if (!fs.existsSync(DIST_INDEX) || !fs.existsSync(DIST_VITE)) {
     console.log("Building package (dist)...");
-    run("yarn", ["build"]);
+    run("bun", ["run", "build"]);
   }
 }
 
 function ensureBaselineGeneratedData() {
   fs.rmSync(DATA_DIR, { recursive: true, force: true });
-  run("yarn", [
+  run("bun", [
+    "run",
     "start",
     "generate",
     "--input",
-    "./test/petstore.yaml",
+    OPENAPI_INPUT,
     "--output",
     "./test/vite-example/src/data",
     "--importPath",
@@ -52,17 +55,14 @@ function ensureBaselineGeneratedData() {
 }
 
 function buildBaseline() {
-  return run("yarn", ["vite", "build", "--config", "test/vite-example/vite.base.config.ts"]);
+  return run("bun", ["x", "vite", "build", "--config", "test/vite-example/vite.base.config.ts"]);
 }
 
-function buildWithCodegen(incremental) {
-  if (!incremental) {
-    fs.rmSync(DATA_DIR, { recursive: true, force: true });
-  }
-  const openApiInput = fs.existsSync(SNAPSHOT_OPENAPI) ? SNAPSHOT_OPENAPI : path.join(ROOT, "test/petstore.yaml");
-  return run("yarn", ["vite", "build", "--config", "test/vite-example/vite.codegen.config.ts"], {
-    OPENAPI_CODEGEN_INCREMENTAL: incremental ? "true" : "false",
-    OPENAPI_CODEGEN_INPUT: openApiInput,
+function buildWithCodegen() {
+  fs.rmSync(DATA_DIR, { recursive: true, force: true });
+  return run("bun", ["x", "vite", "build", "--config", "test/vite-example/vite.codegen.config.ts"], {
+    OPENAPI_CODEGEN_INCREMENTAL: "false",
+    OPENAPI_CODEGEN_INPUT: OPENAPI_INPUT,
   });
 }
 
@@ -70,32 +70,40 @@ function pctDiff(value, baseline) {
   return ((value - baseline) / baseline) * 100;
 }
 
-function printMs(label, ms) {
-  console.log(`${label}: ${ms.toFixed(1)}ms`);
+function median(values) {
+  const sorted = [...values].sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0 ? (sorted[middle - 1] + sorted[middle]) / 2 : sorted[middle];
+}
+
+function printMeasurements(label, values) {
+  console.log(
+    `${label}: ${median(values).toFixed(1)}ms median (${values.map((value) => value.toFixed(1)).join(", ")})`,
+  );
 }
 
 function main() {
   ensureBuiltPackage();
   ensureBaselineGeneratedData();
 
-  const baselineMs = buildBaseline();
-  const codegenColdMs = buildWithCodegen(false);
+  const baselineMeasurements = [];
+  const codegenColdMeasurements = [];
+  for (let iteration = 0; iteration < ITERATIONS; iteration += 1) {
+    ensureBaselineGeneratedData();
+    baselineMeasurements.push(buildBaseline());
+    codegenColdMeasurements.push(buildWithCodegen());
+  }
 
-  // Prime cache once; measure second incremental run.
-  buildWithCodegen(true);
-  const codegenWarmMs = buildWithCodegen(true);
+  const baselineMs = median(baselineMeasurements);
+  const codegenColdMs = median(codegenColdMeasurements);
 
   console.log("\nVite build benchmark (test/vite-example):");
+  console.log(`OpenAPI input: ${path.relative(ROOT, OPENAPI_INPUT)}`);
+  console.log(`Iterations: ${ITERATIONS}`);
+  printMeasurements("baseline (same generated sources, no plugin)", baselineMeasurements);
+  printMeasurements("with openApiCodegen (cold output)", codegenColdMeasurements);
   console.log(
-    `OpenAPI input: ${fs.existsSync(SNAPSHOT_OPENAPI) ? "test/benchmarks/openapi.localhost4000.json" : "test/petstore.yaml (fallback)"}`,
-  );
-  printMs("baseline (no plugin)", baselineMs);
-  printMs("with openApiCodegen (incremental=false)", codegenColdMs);
-  printMs("with openApiCodegen (incremental=true, warm)", codegenWarmMs);
-  console.log(
-    `\nOverhead vs baseline:\n` +
-      `cold: ${pctDiff(codegenColdMs, baselineMs).toFixed(1)}%\n` +
-      `warm: ${pctDiff(codegenWarmMs, baselineMs).toFixed(1)}%`,
+    `\nCold codegen overhead: ${(codegenColdMs - baselineMs).toFixed(1)}ms (${pctDiff(codegenColdMs, baselineMs).toFixed(1)}%)`,
   );
 }
 

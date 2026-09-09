@@ -13,13 +13,13 @@ The tool partially leverages code from [openapi-zod-client](https://github.com/a
 ## Setup
 
 ```bash
-yarn add @povio/openapi-codegen-cli
+bun add @povio/openapi-codegen-cli
 ```
 
 ## Example
 
 ```bash
-yarn openapi-codegen generate --input http://localhost:3001/docs-json
+bunx openapi-codegen generate --input http://localhost:3001/docs-json
 ```
 
 ## Configuration Files
@@ -46,7 +46,7 @@ export default config;
 Then run without arguments:
 
 ```bash
-yarn openapi-codegen generate
+bunx openapi-codegen generate
 ```
 
 ### Configuration File Discovery
@@ -58,7 +58,7 @@ The CLI automatically searches for the TypeScript configuration file:
 You can also specify a custom configuration file:
 
 ```bash
-yarn openapi-codegen generate --config my-config.ts
+bunx openapi-codegen generate --config my-config.ts
 ```
 
 ## Options
@@ -89,7 +89,8 @@ yarn openapi-codegen generate --config my-config.ts
   --modelsInCommon                    Keep all schema declarations in defaultTag models and emit per-module proxy exports (default: false)
   --replaceOptionalWithNullish        Replace `.optional()` chains with `.nullish()` in generated Zod schemas (default: false)
 
-  --axiosRequestConfig                Include Axios request config parameters in query hooks (default: false)
+  --restClient                        REST transport to generate: 'axios' or 'native' (default: 'axios')
+  --axiosRequestConfig                Include transport request config parameters in query hooks (default: false)
   --infiniteQueries                   Generate infinite queries for paginated API endpoints (default: false)
   --mutationEffects                   Add mutation effects options to mutation hooks (default: true)
   --mutationScope                     Serialize mutations for the same path-param resource via TanStack scope.id (default: false).
@@ -132,28 +133,75 @@ yarn openapi-codegen generate --config my-config.ts
 #### Test locally
 
 ```bash
-# prerequisites
-corepack install
-yarn
+# install dependencies
+bun install
 
 # run tests
-yarn test
+bun run test
 
-# run sources with tsx
-yarn start --help
-yarn start generate --input ./test/petstore.yaml --verbose
+# run TypeScript sources directly with Bun
+bun run start --help
+bun run start generate --input ./test/petstore.yaml --verbose
 
 # build new version
-yarn build
+bun run build
 
 # test build
-yarn start --help
-yarn start:dist generate --input ./test/petstore.yaml --verbose
+bun run start --help
+bun run start:dist generate --input ./test/petstore.yaml --verbose
 ```
+
+### Native Bun code generation
+
+The Bun and Node.js CLIs and the Vite plugin automatically use the bundled Rust code-generation core when a compatible native binary is available. Generated files remain byte-for-byte compatible with the TypeScript implementation, which is retained as the fallback when the addon cannot be loaded.
+
+Set `OPENAPI_CODEGEN_NATIVE=0` to force the TypeScript path, or `OPENAPI_CODEGEN_NATIVE=1` to require the native path and fail when its binary is unavailable.
+
+Release packages include native binaries for Linux x64, macOS arm64, and Windows x64. Build a binary for the current platform with `bun run build:native`.
 
 ## Common Issues
 
 ### App REST Client Interceptors
+
+Select the fetch-based client without changing endpoint and query APIs:
+
+```ts
+import type { OpenAPICodegenConfig } from "@povio/openapi-codegen-cli";
+
+export default {
+  restClient: "native",
+} satisfies OpenAPICodegenConfig;
+```
+
+Native mode imports common request/response contracts from `@povio/openapi-codegen-cli/rest` and the concrete
+`NativeRestClient` from `@povio/openapi-codegen-cli/native`. It uses `fetch` for normal requests and uploads, switching
+to `XMLHttpRequest` in browsers only when an upload progress callback is provided.
+
+Native interceptors use the common transport interface:
+
+```ts
+import { NativeRestClient } from "@povio/openapi-codegen-cli/native";
+import type { RestTransportInterceptor } from "@povio/openapi-codegen-cli/rest";
+
+const authorizationInterceptor: RestTransportInterceptor = {
+  onRequest(request) {
+    request.headers.set("Authorization", `Bearer ${localStorage.getItem("accessToken")}`);
+    return request;
+  },
+};
+
+export const AppRestClient = new NativeRestClient({
+  config: { baseURL: "https://api.example.com" },
+  interceptors: [authorizationInterceptor],
+});
+```
+
+Axios remains the default for backward compatibility. The existing Axios interceptor API remains available in Axios
+mode.
+
+Native mode does not run the library `ErrorHandler` or create `ApplicationException` values. It throws `HttpError` for
+non-success HTTP responses and preserves Zod, network, cancellation, and timeout errors so applications can handle them
+directly in query callbacks, error boundaries, or their own normalization layer.
 
 In order to add interceptors to the used REST client, you must create your own instance of a RestClient and pass your implemented interceptors into the constructor. Make sure to set `restClientImportPath` in your openapi generation configuration too.
 

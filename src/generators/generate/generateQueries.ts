@@ -11,12 +11,10 @@ import {
   AXIOS_IMPORT,
   AXIOS_REQUEST_CONFIG_NAME,
   AXIOS_REQUEST_CONFIG_TYPE,
+  getRequestConfigTypeName,
+  NATIVE_RESPONSE_TYPE,
 } from "@/generators/const/endpoints.const";
-import {
-  ACL_PACKAGE_IMPORT_PATH,
-  PACKAGE_IMPORT_PATH,
-  ZOD_PACKAGE_IMPORT_PATH,
-} from "@/generators/const/package.const";
+import { CONFIG_PACKAGE_IMPORT_PATH, REST_PACKAGE_IMPORT_PATH } from "@/generators/const/package.const";
 import { QUERIES_MODULE_NAME, QUERY_HOOKS, QUERY_IMPORT } from "@/generators/const/queries.const";
 import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
 import { Endpoint, EndpointParameter } from "@/generators/types/endpoint";
@@ -75,9 +73,15 @@ const endpointParamMappingCache = new WeakMap<
   SchemaResolver,
   WeakMap<Endpoint, Map<string, ReturnType<typeof mapEndpointParamsToFunctionParams>>>
 >();
+const workspaceParamNamesCache = new WeakMap<SchemaResolver, WeakMap<Endpoint, string[]>>();
+const endpointParamDescriptionCache = new WeakMap<object, string>();
 
 export function generateQueries(params: GenerateTypeParams) {
   const { resolver, data, tag } = params;
+  const nativeContent = (
+    resolver as GenerateTypeParams["resolver"] & { getNativeRenderedQueries?: (tag: string) => string | undefined }
+  ).getNativeRenderedQueries?.(tag);
+  if (nativeContent) return nativeContent;
 
   const mutationScopeOption = resolver.options.mutationScope;
   if (mutationScopeOption && typeof mutationScopeOption === "object") {
@@ -94,14 +98,27 @@ export function generateQueries(params: GenerateTypeParams) {
   const endpointGroups = groupEndpoints(endpoints, resolver);
 
   const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
-  const hasAxiosDefaultImport = endpoints.some(({ mediaUpload }) => mediaUpload);
+  const nativeClient = resolver.options.restClient === "native";
+  const hasNativeMediaUpload = nativeClient && endpoints.some(({ mediaUpload }) => mediaUpload);
+  const requestConfigType = getRequestConfigTypeName(resolver.options.restClient);
+  const hasAxiosDefaultImport = !nativeClient && endpoints.some(({ mediaUpload }) => mediaUpload);
   const hasGetEndpoints = endpoints.some((endpoint) => endpoint.method === "get");
-  const hasAxiosImport = hasAxiosRequestConfig || hasAxiosDefaultImport || hasGetEndpoints;
+  const hasAxiosImport = !nativeClient && (hasAxiosRequestConfig || hasAxiosDefaultImport || hasGetEndpoints);
   const axiosImport: Import = {
     defaultImport: hasAxiosDefaultImport ? AXIOS_DEFAULT_IMPORT_NAME : undefined,
     bindings: [],
     typeBindings: hasAxiosImport ? [AXIOS_REQUEST_CONFIG_TYPE] : [],
     from: AXIOS_IMPORT.from,
+  };
+  const nativeTransportImport: Import = {
+    bindings: [],
+    typeBindings: nativeClient
+      ? [
+          ...(hasAxiosRequestConfig || hasGetEndpoints ? [requestConfigType] : []),
+          ...(endpoints.some(({ mediaDownload }) => mediaDownload) ? [NATIVE_RESPONSE_TYPE] : []),
+        ]
+      : [],
+    from: REST_PACKAGE_IMPORT_PATH,
   };
 
   const { queryEndpoints, infiniteQueryEndpoints, mutationEndpoints, aclEndpoints } = endpointGroups;
@@ -127,13 +144,13 @@ export function generateQueries(params: GenerateTypeParams) {
   const mutationEffectsImport: Import = {
     bindings: [...(mutationEndpoints.length > 0 ? [MUTATION_EFFECTS.hookName] : [])],
     typeBindings: [...(mutationEndpoints.length > 0 ? [MUTATION_EFFECTS.optionsType] : [])],
-    from: PACKAGE_IMPORT_PATH,
+    from: resolver.options.mutationEffectsImportPath,
   };
 
   const hasAclCheck = resolver.options.checkAcl && aclEndpoints.length > 0;
   const aclCheckImport: Import = {
     bindings: [ACL_CHECK_HOOK],
-    from: ACL_PACKAGE_IMPORT_PATH,
+    from: resolver.options.aclCheckImportPath,
   };
 
   const queryTypesImport: Import = {
@@ -157,7 +174,7 @@ export function generateQueries(params: GenerateTypeParams) {
     endpoints.some((endpoint) => getWorkspaceParamNames(resolver, endpoint).length > 0);
   const workspaceContextImport: Import = {
     bindings: ["useWorkspaceContext"],
-    from: PACKAGE_IMPORT_PATH,
+    from: CONFIG_PACKAGE_IMPORT_PATH,
   };
 
   const endpointParams = endpoints.flatMap((endpoint) => endpoint.parameters) as EndpointParameter[];
@@ -178,7 +195,7 @@ export function generateQueries(params: GenerateTypeParams) {
   };
   const zodExtendedImport: Import = {
     bindings: [ZOD_EXTENDED.namespace],
-    from: ZOD_PACKAGE_IMPORT_PATH,
+    from: resolver.options.zodImportPath,
   };
 
   const modelsImports = getModelsImports({
@@ -208,8 +225,11 @@ export function generateQueries(params: GenerateTypeParams) {
   if (hasAxiosImport) {
     lines.push(renderImport(axiosImport));
   }
-  if (inlineEndpoints) {
+  if (nativeTransportImport.typeBindings?.length) lines.push(renderImport(nativeTransportImport));
+  if (inlineEndpoints || hasNativeMediaUpload) {
     lines.push(renderImport(appRestClientImport));
+  }
+  if (inlineEndpoints) {
     if (hasZodImport) {
       lines.push(renderImport(ZOD_IMPORT));
     }
@@ -318,11 +338,17 @@ function getEndpointParamMapping(
     resolverCache.set(endpoint, endpointCache);
   }
 
-  const key = JSON.stringify(
-    Object.entries(options ?? {})
-      .sort(([left], [right]) => left.localeCompare(right))
-      .map(([optionName, optionValue]) => [optionName, optionValue]),
-  );
+  const key = JSON.stringify([
+    options?.excludeBodyParam,
+    options?.excludePageParam,
+    options?.replacePageParam,
+    options?.includeFileParam,
+    options?.includeOnlyRequiredParams,
+    options?.pathParamsRequiredOnly,
+    options?.optionalPathParams,
+    options?.modelNamespaceTag,
+    options?.excludePathParams,
+  ]);
   const cached = endpointCache.get(key);
   if (cached) {
     return cached;
@@ -385,6 +411,10 @@ function renderEndpointObjectArgs(
 }
 
 function renderEndpointParamDescription(endpointParam: ReturnType<typeof mapEndpointParamsToFunctionParams>[0]) {
+  const cached = endpointParamDescriptionCache.get(endpointParam);
+  if (cached !== undefined) {
+    return cached;
+  }
   const strs = [`${endpointParam.paramType} parameter`];
   const description = endpointParam.parameterObject?.description || endpointParam.bodyObject?.description;
   if (description) {
@@ -413,10 +443,22 @@ function renderEndpointParamDescription(endpointParam: ReturnType<typeof mapEndp
   if (mediaTypeObject?.example) {
     strs.push(`Example: \`${mediaTypeObject.example}\``);
   }
-  return strs.join(". ");
+  const renderedDescription = strs.join(". ");
+  endpointParamDescriptionCache.set(endpointParam, renderedDescription);
+  return renderedDescription;
 }
 
 function getWorkspaceParamNames(resolver: SchemaResolver, endpoint: Endpoint) {
+  let resolverCache = workspaceParamNamesCache.get(resolver);
+  if (!resolverCache) {
+    resolverCache = new WeakMap();
+    workspaceParamNamesCache.set(resolver, resolverCache);
+  }
+  const cached = resolverCache.get(endpoint);
+  if (cached) {
+    return cached;
+  }
+
   const allowList = getWorkspaceContextAllowList(resolver.options.workspaceContext);
   const endpointParams = getEndpointParamMapping(resolver, endpoint, {});
   const endpointParamNames = new Set(endpointParams.map((param) => param.name));
@@ -426,7 +468,9 @@ function getWorkspaceParamNames(resolver: SchemaResolver, endpoint: Endpoint) {
     .map((condition) => invalidVariableNameCharactersToCamel(condition.name))
     .filter((name) => endpointParamNames.has(name));
 
-  return getUniqueArray([...workspaceParamNames, ...aclParamNames]).filter((name) => allowList.has(name));
+  const names = getUniqueArray([...workspaceParamNames, ...aclParamNames]).filter((name) => allowList.has(name));
+  resolverCache.set(endpoint, names);
+  return names;
 }
 
 function getWorkspaceParamReplacements(resolver: SchemaResolver, endpoint: Endpoint) {
@@ -559,13 +603,14 @@ function renderQueryJsDocs({
     lines.push(" * @param { AppInfiniteQueryOptions } options Infinite query options");
   }
 
-  const withAxiosResponse = endpoint.mediaDownload && mode !== "infiniteQuery";
-  const resultType = `${withAxiosResponse ? "AxiosResponse<" : ""}${getImportedZodSchemaInferedTypeName(
+  const withRawResponse = endpoint.mediaDownload && mode !== "infiniteQuery";
+  const responseType = resolver.options.restClient === "native" ? NATIVE_RESPONSE_TYPE : "AxiosResponse";
+  const resultType = `${withRawResponse ? `${responseType}<` : ""}${getImportedZodSchemaInferedTypeName(
     resolver,
     endpoint.response,
     undefined,
     tag,
-  )}${withAxiosResponse ? ">" : ""}`;
+  )}${withRawResponse ? ">" : ""}`;
 
   if (mode === "query") {
     lines.push(` * @returns { UseQueryResult<${resultType}> } ${endpoint.responseDescription ?? ""}`);
@@ -637,7 +682,7 @@ function renderInlineEndpoints({
     const hasRequestConfigParam = resolver.options.axiosRequestConfig || endpoint.method === "get";
 
     lines.push(
-      `const ${getEndpointName(endpoint)} = (${endpointParams}${hasRequestConfigParam ? `${endpointParams ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}?: ${getRequestConfigType()}` : ""}) => {`,
+      `const ${getEndpointName(endpoint)} = (${endpointParams}${hasRequestConfigParam ? `${endpointParams ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}?: ${getRequestConfigType(resolver)}` : ""}) => {`,
     );
     lines.push(`  return ${APP_REST_CLIENT_NAME}.${endpoint.method}(`);
     lines.push(`    ${renderInlineRequestInfo(resolver, endpoint, tag)},`);
@@ -663,8 +708,8 @@ function renderInlineRequestInfo(resolver: SchemaResolver, endpoint: Endpoint, t
   return `{ resSchema: ${getImportedZodSchemaName(resolver, endpoint.response, tag)} }`;
 }
 
-function getRequestConfigType() {
-  return `${AXIOS_REQUEST_CONFIG_TYPE} & { allowInvalidResponseData?: boolean }`;
+function getRequestConfigType(resolver: SchemaResolver) {
+  return `${getRequestConfigTypeName(resolver.options.restClient)} & { allowInvalidResponseData?: boolean }`;
 }
 
 function renderRequestConfigWithSignal(hasRequestConfigParam: boolean) {
@@ -768,7 +813,7 @@ function renderQueryOptions({
 
   const lines: string[] = [];
   lines.push(
-    `const ${getQueryOptionsName(endpoint)} = (${endpointParams ? `{ ${endpointArgs} }: { ${endpointParams} }` : ""}${hasRequestConfigParam ? `${endpointParams ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}?: ${getRequestConfigType()}` : ""}) => ({`,
+    `const ${getQueryOptionsName(endpoint)} = (${endpointParams ? `{ ${endpointArgs} }: { ${endpointParams} }` : ""}${hasRequestConfigParam ? `${endpointParams ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}?: ${getRequestConfigType(resolver)}` : ""}) => ({`,
   );
   lines.push(`  queryKey: keys.${getEndpointName(endpoint)}(${endpointArgs}),`);
   const requestConfigWithSignal = renderRequestConfigWithSignal(hasRequestConfigParam);
@@ -803,7 +848,7 @@ function renderInfiniteQueryOptions({
 
   const lines: string[] = [];
   lines.push(
-    `const ${getInfiniteQueryOptionsName(endpoint)} = (${endpointParams ? `{ ${endpointArgsWithoutPage} }: { ${endpointParams} }` : ""}${hasRequestConfigParam ? `${endpointParams ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}?: ${getRequestConfigType()}` : ""}) => ({`,
+    `const ${getInfiniteQueryOptionsName(endpoint)} = (${endpointParams ? `{ ${endpointArgsWithoutPage} }: { ${endpointParams} }` : ""}${hasRequestConfigParam ? `${endpointParams ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}?: ${getRequestConfigType(resolver)}` : ""}) => ({`,
   );
   lines.push(`  queryKey: keys.${getEndpointName(endpoint)}Infinite(${endpointArgsWithoutPage}),`);
   const requestConfigWithSignal = renderRequestConfigWithSignal(hasRequestConfigParam);
@@ -812,11 +857,12 @@ function renderInfiniteQueryOptions({
   );
   lines.push("  initialPageParam: 1,");
   lines.push(
-    `  getNextPageParam: ({ ${resolver.options.infiniteQueryResponseParamNames.page}, ${resolver.options.infiniteQueryResponseParamNames.totalItems}, ${resolver.options.infiniteQueryResponseParamNames.limit}: limitParam }: Awaited<ReturnType<typeof ${endpointFunction}>>) => {`,
+    `  getNextPageParam: ({ ${resolver.options.infiniteQueryResponseParamNames.page}, ${resolver.options.infiniteQueryResponseParamNames.totalItems}, ${resolver.options.infiniteQueryResponseParamNames.limit}: limitParam }: Awaited<ReturnType<typeof ${endpointFunction}>> & Partial<Record<${JSON.stringify(resolver.options.infiniteQueryResponseParamNames.page)} | ${JSON.stringify(resolver.options.infiniteQueryResponseParamNames.totalItems)} | ${JSON.stringify(resolver.options.infiniteQueryResponseParamNames.limit)}, number | null>>) => {`,
   );
   lines.push(`    const pageParam = ${resolver.options.infiniteQueryResponseParamNames.page} ?? 1;`);
+  lines.push("    const pageSize = limitParam ?? 0;");
   lines.push(
-    `    return pageParam * limitParam < (${resolver.options.infiniteQueryResponseParamNames.totalItems} ?? 0) ? pageParam + 1 : null;`,
+    `    return pageParam * pageSize < (${resolver.options.infiniteQueryResponseParamNames.totalItems} ?? 0) ? pageParam + 1 : null;`,
   );
   lines.push("  },");
   lines.push("});");
@@ -824,7 +870,7 @@ function renderInfiniteQueryOptions({
 }
 
 function renderPrefetchQuery({ resolver, endpoint }: { resolver: SchemaResolver; endpoint: Endpoint }) {
-  const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
+  const hasRequestConfigParam = resolver.options.axiosRequestConfig || endpoint.method === "get";
   const tag = getEndpointTag(endpoint, resolver.options);
   const endpointParams = renderEndpointParams(resolver, endpoint, {
     modelNamespaceTag: tag,
@@ -833,35 +879,39 @@ function renderPrefetchQuery({ resolver, endpoint }: { resolver: SchemaResolver;
 
   const lines: string[] = [];
   lines.push(
-    `export const ${getPrefetchQueryName(endpoint)} = (queryClient: QueryClient, ${endpointParams ? `{ ${endpointArgs} }: { ${endpointParams} }, ` : ""}${hasAxiosRequestConfig ? `${AXIOS_REQUEST_CONFIG_NAME}: ${AXIOS_REQUEST_CONFIG_TYPE}, ` : ""}options?: Omit<Parameters<QueryClient["prefetchQuery"]>[0], "queryKey" | "queryFn">): void => {`,
+    `export const ${getPrefetchQueryName(endpoint)} = (queryClient: QueryClient, ${endpointParams ? `{ ${endpointArgs} }: { ${endpointParams} }, ` : ""}options?: Omit<Parameters<QueryClient["prefetchQuery"]>[0], "queryKey" | "queryFn">, ${hasRequestConfigParam ? `${AXIOS_REQUEST_CONFIG_NAME}?: ${getRequestConfigTypeName(resolver.options.restClient)}, ` : ""}throwOnError = false) => {`,
   );
   lines.push(
-    `  void queryClient.prefetchQuery({ ...${getQueryOptionsName(endpoint)}(${endpointParams ? `{ ${endpointArgs} }` : ""}${hasAxiosRequestConfig ? `${endpointParams ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}` : ""}), ...options });`,
+    `  const queryOptions = { ...${getQueryOptionsName(endpoint)}(${endpointParams ? `{ ${endpointArgs} }` : ""}${hasRequestConfigParam ? `${endpointParams ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}` : ""}), ...options };`,
   );
+  lines.push(`  return throwOnError ? queryClient.fetchQuery(queryOptions) : queryClient.prefetchQuery(queryOptions);`);
   lines.push("};");
   return lines.join("\n");
 }
 
 function renderPrefetchInfiniteQuery({ resolver, endpoint }: { resolver: SchemaResolver; endpoint: Endpoint }) {
-  const hasAxiosRequestConfig = resolver.options.axiosRequestConfig;
+  const hasRequestConfigParam = resolver.options.axiosRequestConfig || endpoint.method === "get";
   const tag = getEndpointTag(endpoint, resolver.options);
   const endpointParams = renderEndpointParams(resolver, endpoint, {
     excludePageParam: true,
     modelNamespaceTag: tag,
   });
   const endpointArgs = renderEndpointArgs(resolver, endpoint, { excludePageParam: true });
-  const optionsArgs = `${endpointParams ? `{ ${endpointArgs} }` : ""}${hasAxiosRequestConfig ? `${endpointParams ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}` : ""}`;
+  const optionsArgs = `${endpointParams ? `{ ${endpointArgs} }` : ""}${hasRequestConfigParam ? `${endpointParams ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}` : ""}`;
 
   const lines: string[] = [];
   lines.push(
-    `export const ${getPrefetchInfiniteQueryName(endpoint)} = (queryClient: QueryClient, ${endpointParams ? `{ ${endpointArgs} }: { ${endpointParams} }, ` : ""}${hasAxiosRequestConfig ? `${AXIOS_REQUEST_CONFIG_NAME}: ${AXIOS_REQUEST_CONFIG_TYPE}, ` : ""}options?: Omit<Parameters<QueryClient["prefetchInfiniteQuery"]>[0], "queryKey" | "queryFn" | "initialPageParam" | "getNextPageParam">): void => {`,
+    `export const ${getPrefetchInfiniteQueryName(endpoint)} = (queryClient: QueryClient, ${endpointParams ? `{ ${endpointArgs} }: { ${endpointParams} }, ` : ""}options?: Omit<Parameters<QueryClient["prefetchInfiniteQuery"]>[0], "queryKey" | "queryFn" | "initialPageParam" | "getNextPageParam">, ${hasRequestConfigParam ? `${AXIOS_REQUEST_CONFIG_NAME}?: ${getRequestConfigTypeName(resolver.options.restClient)}, ` : ""}throwOnError = false) => {`,
   );
   // options is cast to {} so it contributes no typed properties to the spread, letting TypeScript
   // infer TPageParam and TQueryFnData solely from the options factory (via initialPageParam and
   // queryFn). Without the cast, the options type defaults prefetchInfiniteQuery generics to unknown,
   // which conflicts with the generated queryFn expecting pageParam: number.
   lines.push(
-    `  void queryClient.prefetchInfiniteQuery({ ...${getInfiniteQueryOptionsName(endpoint)}(${optionsArgs}), ...(options as {}) });`,
+    `  const queryOptions = { ...${getInfiniteQueryOptionsName(endpoint)}(${optionsArgs}), ...(options as {}) };`,
+  );
+  lines.push(
+    `  return throwOnError ? queryClient.fetchInfiniteQuery(queryOptions) : queryClient.prefetchInfiniteQuery(queryOptions);`,
   );
   lines.push("};");
   return lines.join("\n");
@@ -897,7 +947,7 @@ function renderQuery({
   const lines: string[] = [];
   lines.push(renderQueryJsDocs({ resolver, endpoint, mode: "query", tag }));
   lines.push(
-    `export const ${getQueryName(endpoint)} = <TData>(${endpointParams ? `{ ${endpointArgs} }: { ${endpointParams} }, ` : ""}options?: AppQueryOptions<typeof ${inlineEndpoints ? getEndpointName(endpoint) : getImportedEndpointName(endpoint, resolver.options)}, TData>${hasAxiosRequestConfig ? `, ${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => {`,
+    `export const ${getQueryName(endpoint)} = <TData>(${endpointParams ? `{ ${endpointArgs} }: { ${endpointParams} }, ` : ""}options?: AppQueryOptions<typeof ${inlineEndpoints ? getEndpointName(endpoint) : getImportedEndpointName(endpoint, resolver.options)}, TData>${hasAxiosRequestConfig ? `, ${AXIOS_REQUEST_CONFIG_NAME}?: ${getRequestConfigTypeName(resolver.options.restClient)}` : ""}) => {`,
   );
   lines.push("  const queryConfig = OpenApiQueryConfig.useConfig();");
   if (hasAclCheck) {
@@ -982,7 +1032,7 @@ function renderMutation({
     }
   }
   const scopePathParams = scopeEnabled
-    ? mapEndpointParamsToFunctionParams(resolver, endpoint, {}).filter((p) => p.paramType === "Path")
+    ? getEndpointParamMapping(resolver, endpoint, {}).filter((p) => p.paramType === "Path")
     : [];
   const isScoped = scopePathParams.length > 0;
 
@@ -1012,7 +1062,7 @@ function renderMutation({
   const lines: string[] = [];
   lines.push(renderQueryJsDocs({ resolver, endpoint, mode: "mutation", tag }));
   lines.push(
-    `export const ${getQueryName(endpoint, true)} = (${pathParamFirstArg}options?: AppMutationOptions<typeof ${endpointFunction}${mutationOptionsTypeArg}>${hasMutationEffects ? ` & ${MUTATION_EFFECTS.optionsType}` : ""}${hasAxiosRequestConfig ? `, ${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => {`,
+    `export const ${getQueryName(endpoint, true)} = (${pathParamFirstArg}options?: AppMutationOptions<typeof ${endpointFunction}${mutationOptionsTypeArg}>${hasMutationEffects ? ` & ${MUTATION_EFFECTS.optionsType}` : ""}${hasAxiosRequestConfig ? `, ${AXIOS_REQUEST_CONFIG_NAME}?: ${getRequestConfigTypeName(resolver.options.restClient)}` : ""}) => {`,
   );
   if (hasMutationDefaultOnError) {
     lines.push("  const queryConfig = OpenApiQueryConfig.useConfig();");
@@ -1208,7 +1258,7 @@ function renderInfiniteQuery({
   const lines: string[] = [];
   lines.push(renderQueryJsDocs({ resolver, endpoint, mode: "infiniteQuery", tag }));
   lines.push(
-    `export const ${getInfiniteQueryName(endpoint)} = <TData>(${endpointParams ? `{ ${endpointArgsWithoutPage} }: { ${endpointParams} }, ` : ""}options?: AppInfiniteQueryOptions<typeof ${inlineEndpoints ? getEndpointName(endpoint) : getImportedEndpointName(endpoint, resolver.options)}, TData>${hasAxiosRequestConfig ? `, ${AXIOS_REQUEST_CONFIG_NAME}?: ${AXIOS_REQUEST_CONFIG_TYPE}` : ""}) => {`,
+    `export const ${getInfiniteQueryName(endpoint)} = <TData>(${endpointParams ? `{ ${endpointArgsWithoutPage} }: { ${endpointParams} }, ` : ""}options?: AppInfiniteQueryOptions<typeof ${inlineEndpoints ? getEndpointName(endpoint) : getImportedEndpointName(endpoint, resolver.options)}, TData>${hasAxiosRequestConfig ? `, ${AXIOS_REQUEST_CONFIG_NAME}?: ${getRequestConfigTypeName(resolver.options.restClient)}` : ""}) => {`,
   );
   lines.push("  const queryConfig = OpenApiQueryConfig.useConfig();");
   if (hasAclCheck) {

@@ -311,6 +311,10 @@ describe("generateConfigs builderConfigs media upload", () => {
 
     expect(configsFile?.content).toContain("const uploadInstructions = await MediaApi.upload(data);");
     expect(configsFile?.content).not.toContain("MediaApi.upload(data, file)");
+    expect(configsFile?.content).toContain(
+      'const method = (uploadInstructions.method?.toLowerCase() ?? "put") as "put" | "post";',
+    );
+    expect(configsFile?.content).not.toContain("data?.method?.toLowerCase()");
     expect(configsFile?.content).toContain("await axios[method](uploadInstructions.url, dataToSend,");
     expect(configsFile?.content).toContain("return uploadInstructions;");
   });
@@ -327,5 +331,25 @@ describe("generateConfigs builderConfigs media upload", () => {
     const configsFile = files.find((file) => file.fileName.endsWith("/media/media.configs.ts"));
 
     expect(configsFile?.content).toContain('import axios, { type AxiosRequestConfig } from "axios";');
+  });
+
+  it("imports the application client for native upload calls", () => {
+    const files = generateCodeFromOpenAPIDoc(mediaUploadDoc, {
+      ...DEFAULT_GENERATE_OPTIONS,
+      output: "test-output",
+      restClient: "native",
+      builderConfigs: true,
+      acl: false,
+      checkAcl: false,
+    });
+
+    const configsFile = files.find((file) => file.fileName.endsWith("/media/media.configs.ts"));
+    const queriesFile = files.find((file) => file.fileName.endsWith("/media/media.queries.ts"));
+
+    for (const file of [configsFile, queriesFile]) {
+      expect(file?.content).toContain('import { AppRestClient } from "@/data/app-rest-client";');
+      expect(file?.content).toContain("await AppRestClient.upload(");
+      expect(file?.content).not.toContain('from "axios"');
+    }
   });
 });

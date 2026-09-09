@@ -19,6 +19,11 @@ import { isReferenceObject } from "@/generators/utils/openapi-schema.utils";
 import { wrapWithQuotesIfNeeded } from "@/generators/utils/openapi.utils";
 
 export function generateModels({ resolver, data, tag }: GenerateTypeParams) {
+  const nativeContent = (
+    resolver as GenerateTypeParams["resolver"] & { getNativeRenderedModels?: (tag: string) => string | undefined }
+  ).getNativeRenderedModels?.(tag);
+  if (nativeContent) return nativeContent;
+
   if (resolver.options.modelsInCommon && resolver.options.splitByTags && tag !== resolver.options.defaultTag) {
     return renderModelsProxy({ resolver, data, tag });
   }
@@ -48,7 +53,7 @@ export function generateModels({ resolver, data, tag }: GenerateTypeParams) {
   for (const [key, code] of Object.entries(zodSchemas)) {
     const schemaRef = resolver.getRefByZodSchemaName(key);
     zodSchemasData[key] = {
-      code,
+      code: resolver.options.modelsInModules ? code.replace(/\b[A-Z][A-Za-z0-9]*Models\./g, "") : code,
       isCircular: schemaRef ? resolver.isSchemaCircular(schemaRef) : false,
       isEnum: isEnumZodSchema(code),
       schemaObj: resolver.getZodSchemaObj(key),
@@ -73,7 +78,8 @@ export function generateModels({ resolver, data, tag }: GenerateTypeParams) {
       lines.push(`export type ${inferredTypeName} = ${renderSchemaType(zodSchema.schemaObj, resolver)};`);
     }
     const typeAnnotation = zodSchema.isCircular ? `: z.ZodObject<z.ZodRawShape> & z.ZodType<${inferredTypeName}>` : "";
-    lines.push(`export const ${name}${typeAnnotation} = ${zodSchema.code};`);
+    const schemaCode = zodSchema.isCircular ? zodSchema.code : `z.compile(${zodSchema.code})`;
+    lines.push(`export const ${name}${typeAnnotation} = ${schemaCode};`);
     if (!zodSchema.isCircular) {
       lines.push(`export type ${inferredTypeName} = z.infer<typeof ${name}>;`);
     }
@@ -242,8 +248,9 @@ function getUsedSchemaNames({
     }
   }
 
-  while (queue.length > 0) {
-    const schemaName = queue.shift();
+  let queueIndex = 0;
+  while (queueIndex < queue.length) {
+    const schemaName = queue[queueIndex++];
     if (!schemaName) {
       continue;
     }

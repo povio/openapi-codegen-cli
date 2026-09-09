@@ -4,8 +4,16 @@ import { GenerateOptions } from "@/generators/types/options";
 
 import { nonWordCharactersToCamel } from "./string.utils";
 
+const formattedTagCache = new Map<string, string>();
+const tagFilterCache = new WeakMap<GenerateOptions, { include: Set<string>; exclude: Set<string> }>();
+
 export function formatTag(tag: string) {
-  return nonWordCharactersToCamel(tag);
+  let formattedTag = formattedTagCache.get(tag);
+  if (formattedTag === undefined) {
+    formattedTag = nonWordCharactersToCamel(tag);
+    formattedTagCache.set(tag, formattedTag);
+  }
+  return formattedTag;
 }
 
 export function getOperationTag(operation: OperationObject, options: GenerateOptions) {
@@ -20,10 +28,18 @@ export function getEndpointTag(endpoint: Endpoint, options: GenerateOptions) {
 
 export function isTagIncluded(tag: string, options: GenerateOptions) {
   const normalizedTag = formatTag(tag).toLowerCase();
-  if (options.includeTags.some((includeTag) => formatTag(includeTag).toLowerCase() === normalizedTag)) {
+  let filters = tagFilterCache.get(options);
+  if (!filters) {
+    filters = {
+      include: new Set(options.includeTags.map((includeTag) => formatTag(includeTag).toLowerCase())),
+      exclude: new Set(options.excludeTags.map((excludeTag) => formatTag(excludeTag).toLowerCase())),
+    };
+    tagFilterCache.set(options, filters);
+  }
+  if (filters.include.has(normalizedTag)) {
     return true;
   }
-  if (options.excludeTags.some((excludeTag) => formatTag(excludeTag).toLowerCase() === normalizedTag)) {
+  if (filters.exclude.has(normalizedTag)) {
     return false;
   }
   return options.includeTags.length === 0;

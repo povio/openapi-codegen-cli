@@ -1,4 +1,4 @@
-import yargs from "yargs";
+import type { CommandModule } from "yargs";
 
 import { logBanner } from "@/helpers/cli.helper";
 import { getVersion } from "@/helpers/version.helper";
@@ -35,7 +35,7 @@ class CheckOptions implements CheckParams {
   verbose?: boolean;
 }
 
-export const command: yargs.CommandModule = {
+export const command: CommandModule = {
   command: "check",
   describe: "Check OpenAPI spec",
   builder: getBuilder(CheckOptions),

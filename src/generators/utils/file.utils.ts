@@ -33,34 +33,27 @@ export function getOutputFileName({ output, fileName }: { output: string; fileNa
 
 type WriteGenerateFileDataOptions = {
   formatGeneratedFile?: GenerateFileFormatter;
+  skipExistingCheck?: boolean;
 };
 
-function hashString(input: string) {
-  let hash = 2166136261;
-  for (let i = 0; i < input.length; i += 1) {
-    hash ^= input.charCodeAt(i);
-    hash = Math.imul(hash, 16777619);
-  }
-  return (hash >>> 0).toString(16);
-}
-
-function writeFileWithDirSync(file: string, data: string) {
-  const dir = path.dirname(file);
-
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
+async function writeFileIfChanged(file: string, data: string, skipExistingCheck = false) {
+  if (skipExistingCheck) {
+    await fs.promises.writeFile(file, data, "utf-8");
+    return;
   }
 
-  if (fs.existsSync(file)) {
-    const existingData = fs.readFileSync(file, "utf-8");
-    const existingHash = hashString(existingData);
-    const nextHash = hashString(data);
-    if (existingHash === nextHash && existingData === data) {
+  try {
+    const existingData = await fs.promises.readFile(file, "utf-8");
+    if (existingData === data) {
       return;
+    }
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+      throw error;
     }
   }
 
-  fs.writeFileSync(file, data, "utf-8");
+  await fs.promises.writeFile(file, data, "utf-8");
 }
 
 async function writeFile({ fileName, content }: GenerateFileData, options?: WriteGenerateFileDataOptions) {
@@ -68,10 +61,22 @@ async function writeFile({ fileName, content }: GenerateFileData, options?: Writ
     ? await options.formatGeneratedFile({ fileName, content })
     : content;
 
-  writeFileWithDirSync(fileName, formattedContent);
+  await fs.promises.mkdir(path.dirname(fileName), { recursive: true });
+  await writeFileIfChanged(fileName, formattedContent, options?.skipExistingCheck);
 }
 
 export async function writeGenerateFileData(filesData: GenerateFileData[], options?: WriteGenerateFileDataOptions) {
+  if (!options?.formatGeneratedFile) {
+    const directories = new Set(filesData.map(({ fileName }) => path.dirname(fileName)));
+    for (const directory of directories) {
+      fs.mkdirSync(directory, { recursive: true });
+    }
+    await Promise.all(
+      filesData.map(({ fileName, content }) => writeFileIfChanged(fileName, content, options?.skipExistingCheck)),
+    );
+    return;
+  }
+
   for (const file of filesData) {
     await writeFile(file, options);
   }

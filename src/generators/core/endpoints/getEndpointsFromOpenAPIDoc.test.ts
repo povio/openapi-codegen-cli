@@ -4,8 +4,8 @@ import { describe, expect, test } from "vitest";
 import { JSON_APPLICATION_FORMAT } from "@/generators/const/endpoints.const";
 import { DEFAULT_GENERATE_OPTIONS } from "@/generators/const/options.const";
 import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
+import { getOpenApiDoc } from "@/generators/run/generate.runner";
 import { GenerateOptions } from "@/generators/types/options";
-import SwaggerParser from "@apidevtools/swagger-parser";
 
 import { getEndpointsFromOpenAPIDoc } from "./getEndpointsFromOpenAPIDoc";
 
@@ -894,7 +894,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
   });
 
   test("petstore.yaml", async () => {
-    const openApiDoc = (await SwaggerParser.parse("./test/petstore.yaml")) as OpenAPIV3.Document;
+    const openApiDoc = await getOpenApiDoc("./test/petstore.yaml");
     const resolver = new SchemaResolver(openApiDoc, generateOptions);
     const endpoints = getEndpointsFromOpenAPIDoc(resolver);
     expect(endpoints).toEqual([

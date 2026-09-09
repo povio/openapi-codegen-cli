@@ -35,7 +35,11 @@ export const getImportedZodSchemaName = (resolver: SchemaResolver, zodSchemaName
 // (e.g. a schema shared by 2+ tags is promoted to the common tag) - namespaceTag must not
 // override that, or shared schemas would incorrectly resolve to the endpoint's own tag.
 function getOwningOrLocalProxyTag(resolver: SchemaResolver, zodSchemaName: string, namespaceTag?: string) {
-  if (namespaceTag && resolver.options.modelsInCommon && resolver.options.splitByTags) {
+  if (
+    namespaceTag &&
+    (resolver.options.modelsInCommon || resolver.options.modelsInModules) &&
+    resolver.options.splitByTags
+  ) {
     return namespaceTag;
   }
   return resolver.getTagByZodSchemaName(zodSchemaName) ?? namespaceTag;

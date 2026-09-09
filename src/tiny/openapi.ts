@@ -1147,18 +1147,26 @@ export function toOpenAPI30Document(spec: JsonObject): JsonObject {
 }
 
 export async function generateORPCOpenAPISpec(options: GenerateORPCOpenAPISpecOptions): Promise<JsonObject> {
-  const [{ OpenAPIGenerator }, { ZodToJsonSchemaConverter }] = await Promise.all([
+  const profile = process.env.TINY_OPENAPI_PROFILE === "1";
+  const started = performance.now();
+  const runtimePromise = Promise.all([
     importRuntimeModule<OpenAPIGeneratorRuntime>("@orpc/openapi"),
     importRuntimeModule<OrpcZodRuntime>("@orpc/zod/zod4"),
+  ]);
+  const modelSchemasPromise = collectModelSchemaExports({
+    apiRoot: options.apiRoot,
+    dbTablesRoot: options.dbTablesRoot,
+  });
+  const [[{ OpenAPIGenerator }, { ZodToJsonSchemaConverter }], modelSchemas] = await Promise.all([
+    runtimePromise,
+    modelSchemasPromise,
   ]);
   const generator = new OpenAPIGenerator({
     schemaConverters: [new ZodToJsonSchemaConverter()],
   });
+  const afterRuntime = performance.now();
   const explicitSchemaName = options.getOpenApiSchemaName ?? getOpenApiSchemaName;
-  const modelSchemas = await collectModelSchemaExports({
-    apiRoot: options.apiRoot,
-    dbTablesRoot: options.dbTablesRoot,
-  });
+  const afterModels = performance.now();
   const getSchemaName = createModelSchemaNameGetter(modelSchemas, explicitSchemaName);
   const operationMeta = collectOperationMeta(options.contract);
   const extraSchemas = collectExtraSchemas(options.apiModules);
@@ -1174,6 +1182,7 @@ export async function generateORPCOpenAPISpec(options: GenerateORPCOpenAPISpecOp
     ...extraSchemas,
     ...reachableModelSchemas,
   };
+  const afterCollection = performance.now();
 
   const spec = await generator.generate(options.contract, {
     info: options.info ?? {
@@ -1185,6 +1194,7 @@ export async function generateORPCOpenAPISpec(options: GenerateORPCOpenAPISpecOp
     ...(Object.keys(commonSchemas).length > 0 ? { commonSchemas } : {}),
   });
   const jsonSpec = spec as JsonObject;
+  const afterGeneration = performance.now();
   const sortableSchemaNames =
     options.realBackendSortableSchemaNames instanceof Map
       ? options.realBackendSortableSchemaNames
@@ -1218,5 +1228,12 @@ export async function generateORPCOpenAPISpec(options: GenerateORPCOpenAPISpecOp
   applyRobodevModuleExtensions(jsonSpec, robodevModuleExtensions, options.apiModules);
   applyRobodevUserRolesExtension(jsonSpec, userRoles);
 
-  return toOpenAPI30Document(jsonSpec);
+  const output = toOpenAPI30Document(jsonSpec);
+  if (profile) {
+    const finished = performance.now();
+    console.error(
+      `tiny openapi profile runtime=${(afterRuntime - started).toFixed(1)}ms models=${(afterModels - afterRuntime).toFixed(1)}ms collection=${(afterCollection - afterModels).toFixed(1)}ms orpc=${(afterGeneration - afterCollection).toFixed(1)}ms post=${(finished - afterGeneration).toFixed(1)}ms total=${(finished - started).toFixed(1)}ms`,
+    );
+  }
+  return output;
 }

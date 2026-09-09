@@ -3,6 +3,16 @@ export * from "./generators/types/config";
 
 // REST client
 export { RestClient } from "./lib/rest/rest-client";
+export { NativeRestClient } from "./lib/rest/native-rest-client";
+export { NativeRestInterceptor } from "./lib/rest/native-rest-interceptor";
+export type { NativeInterceptor } from "./lib/rest/native-rest-interceptor";
+export type {
+  NativeRequest,
+  NativeRequestConfig,
+  NativeResponse,
+  NativeUploadProgress,
+} from "./lib/rest/native-rest-client.types";
+export { NativeHttpError } from "./lib/rest/native-rest-client.types";
 export type { RequestInfo, RequestConfig, Response, RestClient as IRestClient } from "./lib/rest/rest-client.types";
 export { RestInterceptor } from "./lib/rest/rest-interceptor";
 export { RestUtils } from "./lib/rest/rest.utils";
