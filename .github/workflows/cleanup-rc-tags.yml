@@ -1,0 +1,66 @@
+name: Clean up RC tags
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to clean up (e.g. 3.2.0 or v3.2.0)'
+        required: true
+        type: string
+      dry_run:
+        description: 'Preview matching tags without deleting them'
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cleanup-rc-tags
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clean up RC tags for the selected version
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          INPUT_VERSION: ${{ inputs.version }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          version="${INPUT_VERSION#v}"
+          if [[ ! "$version" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+            echo '::error::Enter a version such as 3.2.0 or v3.2.0, without an RC suffix.'
+            exit 1
+          fi
+
+          # Fetch every page before deleting, so deletion cannot shift pagination.
+          gh api --paginate "repos/${GH_REPO}/tags?per_page=100" \
+            --jq '.[].name' > "$RUNNER_TEMP/rc-all-tags.txt"
+          prefix="v${version}-rc."
+          jq -Rr --arg prefix "$prefix" \
+            'select(startswith($prefix) and length > ($prefix | length))' \
+            "$RUNNER_TEMP/rc-all-tags.txt" > "$RUNNER_TEMP/rc-matching-tags.txt"
+
+          printf '## RC tags for v%s\n\n' "$version" >> "$GITHUB_STEP_SUMMARY"
+          if [[ ! -s "$RUNNER_TEMP/rc-matching-tags.txt" ]]; then
+            echo 'No matching RC tags found.' | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          while IFS= read -r tag; do
+            if [[ "$DRY_RUN" == 'true' ]]; then
+              printf 'Would delete %s\n' "$tag"
+              printf -- '- Would delete `%s`\n' "$tag" >> "$GITHUB_STEP_SUMMARY"
+            else
+              encoded_tag=$(jq -rn --arg tag "$tag" '$tag | @uri')
+              gh api --method DELETE "repos/${GH_REPO}/git/refs/tags/${encoded_tag}"
+              printf 'Deleted %s\n' "$tag"
+              printf -- '- Deleted `%s`\n' "$tag" >> "$GITHUB_STEP_SUMMARY"
+            fi
+          done < "$RUNNER_TEMP/rc-matching-tags.txt"
