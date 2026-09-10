@@ -20,6 +20,7 @@ pub struct ZodCompiler<'a> {
     resolver: &'a Resolver<'a>,
     root_enums: HashMap<String, String>,
     extracted_enums: IndexMap<String, (String, String)>,
+    extracted_enum_objects: Map<String, Value>,
     circular_getters: HashSet<String>,
     runtime_tags: Rc<RefCell<HashMap<String, HashSet<String>>>>,
 }
@@ -57,7 +58,8 @@ impl<'a> ZodCompiler<'a> {
                 }
             }
         }
-        let extracted_enums = collect_extracted_enums(document, resolver, options, &root_enums);
+        let (extracted_enums, extracted_enum_objects) =
+            collect_extracted_enums(document, resolver, options, &root_enums);
         let circular_getters = collect_precompiled_circular_refs(document, resolver);
         Self {
             document,
@@ -65,6 +67,7 @@ impl<'a> ZodCompiler<'a> {
             resolver,
             root_enums,
             extracted_enums,
+            extracted_enum_objects,
             circular_getters,
             runtime_tags,
         }
@@ -146,6 +149,10 @@ impl<'a> ZodCompiler<'a> {
             .iter()
             .map(|(code, (name, _))| (name.clone(), Value::String(code.clone())))
             .collect()
+    }
+
+    pub fn extracted_schema_objects(&self) -> Map<String, Value> {
+        self.extracted_enum_objects.clone()
     }
 
     pub fn extracted_schema_tags(&self) -> HashMap<String, String> {
@@ -847,8 +854,9 @@ fn escape_pattern(value: &str) -> String {
 
 #[derive(Default)]
 struct ExtractedEnumCandidate {
-    last_segments: Vec<String>,
+    name_segments: Vec<Vec<String>>,
     tags: HashSet<String>,
+    schema_object: Map<String, Value>,
 }
 
 fn collect_extracted_enums(
@@ -856,11 +864,12 @@ fn collect_extracted_enums(
     resolver: &Resolver<'_>,
     options: &GenerateOptions,
     root_enums: &HashMap<String, String>,
-) -> IndexMap<String, (String, String)> {
+) -> (IndexMap<String, (String, String)>, Map<String, Value>) {
     if !options.extract_enums {
-        return IndexMap::default();
+        return (IndexMap::default(), Map::new());
     }
     let mut candidates: IndexMap<String, ExtractedEnumCandidate> = IndexMap::default();
+    collect_operation_enum_candidates(document, resolver, &mut candidates);
     if let Some(schemas) = document
         .pointer("/components/schemas")
         .and_then(Value::as_object)
@@ -875,15 +884,25 @@ fn collect_extracted_enums(
                 .get(&reference)
                 .cloned()
                 .unwrap_or_default();
-            collect_inline_enum_candidates(schema, component_name, &tags, &mut candidates);
+            collect_inline_enum_candidates(
+                schema,
+                &[component_name.clone()],
+                &tags,
+                &mut candidates,
+            );
         }
     }
     // Codes backed by a canonical component enum never become separately extracted schemas.
     candidates.retain(|code, _| !root_enums.contains_key(code));
 
     let mut preliminary: IndexMap<String, (String, String)> = IndexMap::default();
-    for (code, candidate) in candidates {
-        let Some(common) = most_common_adjacent(&candidate.last_segments) else {
+    for (code, candidate) in &candidates {
+        let last_segments = candidate
+            .name_segments
+            .iter()
+            .filter_map(|segments| segments.last().cloned())
+            .collect::<Vec<_>>();
+        let Some(common) = most_common_adjacent(&last_segments) else {
             continue;
         };
         let name = enum_schema_name(&common, &options.enum_suffix, &options.schema_suffix);
@@ -897,60 +916,255 @@ fn collect_extracted_enums(
         } else {
             options.default_tag.clone()
         };
-        preliminary.insert(code, (name, tag));
+        preliminary.insert(code.clone(), (name, tag));
     }
-    preliminary
+    // Match JavaScript's progressive disambiguation using preceding name segments.
+    for depth in 2..=6 {
+        for index in 0..preliminary.len() {
+            let name = preliminary[index].0.clone();
+            let duplicates: Vec<usize> = (0..preliminary.len())
+                .filter(|&other| preliminary[other].0 == name)
+                .collect();
+            if duplicates.len() < 2 {
+                continue;
+            }
+            for other in duplicates {
+                let (code, (name, _)) = preliminary.get_index_mut(other).unwrap();
+                let preceding: Vec<String> = candidates[code]
+                    .name_segments
+                    .iter()
+                    .filter_map(|segments| {
+                        segments
+                            .len()
+                            .checked_sub(depth)
+                            .map(|i| segments[i].clone())
+                    })
+                    .collect();
+                let prefix = if preceding.len() == 1 {
+                    preceding.first().cloned()
+                } else {
+                    most_common_adjacent(&preceding)
+                };
+                if let Some(prefix) = prefix {
+                    *name = format!("{}{name}", sanitize_enum_segment(&prefix));
+                }
+            }
+        }
+    }
+    let duplicates: Vec<usize> = (0..preliminary.len())
+        .filter(|&index| {
+            preliminary
+                .values()
+                .filter(|(name, _)| name == &preliminary[index].0)
+                .count()
+                > 1
+        })
+        .collect();
+    for index in duplicates {
+        let (code, (name, _)) = preliminary.get_index_mut(index).unwrap();
+        let full_name = candidates[code].name_segments[0]
+            .iter()
+            .map(|segment| sanitize_enum_segment(segment))
+            .collect::<String>();
+        *name = enum_schema_name(&full_name, &options.enum_suffix, &options.schema_suffix);
+    }
+    let objects = preliminary
+        .iter()
+        .map(|(code, (name, _))| {
+            (
+                name.clone(),
+                Value::Object(candidates[code].schema_object.clone()),
+            )
+        })
+        .collect();
+    (preliminary, objects)
+}
+
+fn sanitize_enum_segment(segment: &str) -> String {
+    capitalize(segment)
+        .replace("Dto", "")
+        .replace("DTO", "")
+        .replace("Response", "")
+        .replace("Request", "")
+}
+
+fn collect_operation_enum_candidates(
+    document: &Value,
+    resolver: &Resolver<'_>,
+    candidates: &mut IndexMap<String, ExtractedEnumCandidate>,
+) {
+    fn resolve<'a>(document: &'a Value, value: &'a Value) -> &'a Value {
+        value
+            .get("$ref")
+            .and_then(Value::as_str)
+            .and_then(|reference| document.pointer(reference.trim_start_matches('#')))
+            .unwrap_or(value)
+    }
+    let mut name_counts = HashMap::default();
+    for operation in &resolver.operations {
+        *name_counts.entry(operation.name.as_str()).or_insert(0usize) += 1;
+    }
+    for operation in &resolver.operations {
+        let unique = name_counts[operation.name.as_str()] == 1;
+        let operation_name = normalize_name(&if unique {
+            operation.name.clone()
+        } else {
+            format!("{}_{}", operation.tag, operation.name)
+        });
+        let tags = HashSet::from_iter([operation.tag.clone()]);
+        let mut parameters: IndexMap<String, &Value> = IndexMap::default();
+        for source in [
+            operation.path_parameters,
+            operation.operation.get("parameters"),
+        ]
+        .into_iter()
+        .flatten()
+        {
+            for parameter in source.as_array().into_iter().flatten() {
+                let key = parameter
+                    .get("$ref")
+                    .or_else(|| parameter.get("name"))
+                    .and_then(Value::as_str)
+                    .unwrap_or_default();
+                parameters.insert(key.to_string(), parameter);
+            }
+        }
+        for parameter in parameters.values() {
+            let parameter = resolve(document, parameter);
+            if let Some(schema) = parameter.get("schema") {
+                let segments = vec![
+                    operation_name.clone(),
+                    parameter
+                        .get("name")
+                        .and_then(Value::as_str)
+                        .unwrap_or_default()
+                        .to_string(),
+                ];
+                add_enum_candidate(schema, &segments, &tags, candidates);
+                collect_inline_enum_candidates(schema, &segments, &tags, candidates);
+            }
+        }
+        if let Some(body) = operation.operation.get("requestBody") {
+            let body = resolve(document, body);
+            if let Some(content) = body.get("content").and_then(Value::as_object) {
+                if let Some((_, media)) = content.iter().find(|(media, _)| {
+                    (media.contains("application/") && media.contains("json"))
+                        || media.contains("text/")
+                        || matches!(
+                            media.as_str(),
+                            "application/x-www-form-urlencoded"
+                                | "multipart/form-data"
+                                | "application/octet-stream"
+                                | "*/*"
+                        )
+                }) {
+                    if let Some(schema) = media.get("schema") {
+                        collect_inline_enum_candidates(
+                            schema,
+                            &[format!("{operation_name}Body")],
+                            &tags,
+                            candidates,
+                        );
+                    }
+                }
+            }
+        }
+        if let Some(responses) = operation
+            .operation
+            .get("responses")
+            .and_then(Value::as_object)
+        {
+            for (status, response) in responses {
+                let response = resolve(document, response);
+                if let Some(content) = response.get("content").and_then(Value::as_object) {
+                    if let Some((_, media)) = content
+                        .iter()
+                        .find(|(_, media)| media.get("schema").is_some())
+                        .or_else(|| {
+                            content
+                                .iter()
+                                .find(|(media, _)| media.starts_with("application/"))
+                        })
+                    {
+                        if let Some(schema) = media.get("schema") {
+                            let name = if status == "default"
+                                || status
+                                    .parse::<u16>()
+                                    .is_ok_and(|status| (200..300).contains(&status))
+                            {
+                                format!("{operation_name}Response")
+                            } else {
+                                format!("{operation_name}{status}ErrorResponse")
+                            };
+                            collect_inline_enum_candidates(schema, &[name], &tags, candidates);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+fn add_enum_candidate(
+    schema: &Value,
+    segments: &[String],
+    tags: &HashSet<String>,
+    candidates: &mut IndexMap<String, ExtractedEnumCandidate>,
+) {
+    if let Some(code) = enum_code(schema) {
+        let candidate = candidates.entry(code).or_default();
+        candidate.name_segments.push(segments.to_vec());
+        if let Some(object) = schema.as_object() {
+            candidate.schema_object.extend(object.clone());
+        }
+        candidate.tags.extend(tags.iter().cloned());
+    }
 }
 
 fn collect_inline_enum_candidates(
     schema: &Value,
-    component_name: &str,
+    segments: &[String],
     tags: &HashSet<String>,
     candidates: &mut IndexMap<String, ExtractedEnumCandidate>,
 ) {
     let Some(object) = schema.as_object() else {
         return;
     };
-    if object.contains_key("$ref") {
+    if object.contains_key("$ref") || object.contains_key("x-domain-error-domain") {
         return;
+    }
+    if let Some(items) = object
+        .get("allOf")
+        .or_else(|| object.get("anyOf"))
+        .or_else(|| object.get("oneOf"))
+        .and_then(Value::as_array)
+    {
+        for item in items {
+            add_enum_candidate(item, segments, tags, candidates);
+            collect_inline_enum_candidates(item, segments, tags, candidates);
+        }
     }
     if let Some(properties) = object.get("properties").and_then(Value::as_object) {
         for (property_name, property) in properties {
-            if let Some(code) = enum_code(property) {
-                let candidate = candidates.entry(code).or_default();
-                candidate.last_segments.push(property_name.clone());
-                candidate.tags.extend(tags.iter().cloned());
-            }
-            collect_inline_enum_candidates(property, component_name, tags, candidates);
-        }
-    }
-    for keyword in ["allOf", "anyOf", "oneOf"] {
-        if let Some(items) = object.get(keyword).and_then(Value::as_array) {
-            for item in items {
-                if let Some(code) = enum_code(item) {
-                    let candidate = candidates.entry(code).or_default();
-                    candidate.last_segments.push(component_name.to_string());
-                    candidate.tags.extend(tags.iter().cloned());
-                }
-                collect_inline_enum_candidates(item, component_name, tags, candidates);
-            }
-        }
-    }
-    if object.get("type").and_then(Value::as_str) == Some("array") {
-        if let Some(item) = object.get("items") {
-            if let Some(code) = enum_code(item) {
-                let candidate = candidates.entry(code).or_default();
-                candidate.last_segments.push(component_name.to_string());
-                candidate.tags.extend(tags.iter().cloned());
-            }
-            collect_inline_enum_candidates(item, component_name, tags, candidates);
+            let mut property_segments = segments.to_vec();
+            property_segments.push(property_name.clone());
+            add_enum_candidate(property, &property_segments, tags, candidates);
+            // The JS schema iterator carries the original context into nested schemas.
+            collect_inline_enum_candidates(property, segments, tags, candidates);
         }
     }
     if let Some(additional) = object
         .get("additionalProperties")
         .filter(|value| value.is_object())
     {
-        collect_inline_enum_candidates(additional, component_name, tags, candidates);
+        add_enum_candidate(additional, segments, tags, candidates);
+        collect_inline_enum_candidates(additional, segments, tags, candidates);
+    }
+    if object.get("type").and_then(Value::as_str) == Some("array") {
+        if let Some(item) = object.get("items") {
+            add_enum_candidate(item, segments, tags, candidates);
+            collect_inline_enum_candidates(item, segments, tags, candidates);
+        }
     }
 }
 

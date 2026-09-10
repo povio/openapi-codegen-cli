@@ -1602,14 +1602,16 @@ fn endpoint_name(value: &str) -> String {
 }
 
 fn snake_to_camel(value: &str) -> String {
+    // JavaScript snakeToCamel replaces non-overlapping /(_\w)/g matches.
     let mut output = String::new();
-    let mut uppercase = false;
-    for character in value.chars() {
-        if character == '_' || character == '-' || character == ' ' {
-            uppercase = true;
-        } else if uppercase {
-            output.extend(character.to_uppercase());
-            uppercase = false;
+    let mut characters = value.chars().peekable();
+    while let Some(character) = characters.next() {
+        if character == '_'
+            && characters
+                .peek()
+                .is_some_and(|next| next.is_ascii_alphanumeric() || *next == '_')
+        {
+            output.push(characters.next().unwrap().to_ascii_uppercase());
         } else {
             output.push(character);
         }
@@ -3079,6 +3081,7 @@ fn parameter_description(parameter: &Value) -> String {
         .or_else(|| parameter.get("bodyObject"))
         .and_then(|object| object.get("description"))
         .and_then(Value::as_str)
+        .filter(|description| !description.is_empty())
     {
         parts.push(description.to_string());
     }
