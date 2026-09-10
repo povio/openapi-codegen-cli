@@ -74,6 +74,7 @@ export function getEndpointsFromOpenAPIDoc(resolver: SchemaResolver, profiler = 
           resolver,
           param,
           operationName,
+          operationId: operation.operationId,
           isUniqueOperationName,
           tag,
         }),
