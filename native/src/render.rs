@@ -52,6 +52,7 @@ pub fn render_model_proxies(
                 document,
                 schemas,
                 schema_refs,
+                schema_owners,
                 generated_objects,
                 circular_schemas,
                 &options.default_tag,
@@ -217,7 +218,14 @@ fn render_local_models(
             let namespace_prefixes = schema_owners
                 .values()
                 .filter_map(Value::as_str)
-                .map(|owner| format!("{}Models.", capitalize(owner)))
+                .map(|owner| {
+                    let suffix = options
+                        .configs
+                        .get("models")
+                        .map(|config| config.namespace_suffix.as_str())
+                        .unwrap_or("Models");
+                    format!("{}{suffix}.", capitalize(owner))
+                })
                 .collect::<HashSet<_>>();
             for value in tag_schemas.values_mut() {
                 let Value::String(code) = value else {
@@ -232,6 +240,7 @@ fn render_local_models(
             document,
             &tag_schemas,
             schema_refs,
+            schema_owners,
             generated_objects,
             circular_schemas,
             &tag,
@@ -243,7 +252,16 @@ fn render_local_models(
                 let owner_tag = decapitalize(&owner);
                 lines.push(format!(
                     "import {{ {} }} from \"{import_root}{owner_tag}/{owner_tag}.{model_suffix}\";",
-                    names.join(", ")
+                    if options.ts_namespaces {
+                        let suffix = options
+                            .configs
+                            .get("models")
+                            .map(|config| config.namespace_suffix.as_str())
+                            .unwrap_or("Models");
+                        format!("{}{suffix}", capitalize(&owner))
+                    } else {
+                        names.join(", ")
+                    }
                 ));
             }
             content = content.replacen("import { z } from \"zod\";", &lines.join("\n"), 1);
@@ -424,6 +442,7 @@ fn render_common_models(
     document: &Value,
     schemas: &Map<String, Value>,
     schema_refs: &Map<String, Value>,
+    schema_owners: &Map<String, Value>,
     generated_objects: &Map<String, Value>,
     circular_schemas: &[String],
     namespace_tag: &str,
@@ -436,6 +455,27 @@ fn render_common_models(
         .map(|config| config.namespace_suffix.as_str())
         .unwrap_or("Models");
     let namespace = format!("{}{}", capitalize(namespace_tag), namespace_suffix);
+    let property_ref_names: HashMap<&str, String> = schema_refs
+        .iter()
+        .filter_map(|(name, reference)| {
+            let reference = reference.as_str()?;
+            let type_name = remove_suffix(name, suffix);
+            let owner = if options.models_in_common || !options.split_by_tags {
+                Some(options.default_tag.as_str())
+            } else {
+                schema_owners.get(name).and_then(Value::as_str)
+            };
+            let type_name = if let Some(owner) = owner
+                && options.ts_namespaces
+                && owner != namespace_tag
+            {
+                format!("{}{namespace_suffix}.{type_name}", capitalize(owner))
+            } else {
+                type_name.to_string()
+            };
+            Some((reference, type_name))
+        })
+        .collect();
     let mut enum_objects = HashMap::default();
     if let Some(component_schemas) = document.pointer("/components/schemas") {
         collect_enum_objects(component_schemas, &mut enum_objects);
@@ -463,6 +503,7 @@ fn render_common_models(
                                 &enum_objects,
                                 circular_schemas,
                                 suffix,
+                                &property_ref_names,
                                 options,
                             )
                         })
@@ -491,6 +532,7 @@ fn render_common_schema_lines(
     enum_objects: &HashMap<String, Value>,
     circular_schemas: &[String],
     suffix: &str,
+    property_ref_names: &HashMap<&str, String>,
     options: &GenerateOptions,
 ) -> Option<Vec<String>> {
     let code = code.as_str()?;
@@ -522,7 +564,7 @@ fn render_common_schema_lines(
             ));
         }
         let mut properties = IndexMap::default();
-        collect_property_docs(document, schema, "", &mut properties, suffix);
+        collect_property_docs(document, schema, "", &mut properties, property_ref_names);
         for (property, (ty, description)) in properties {
             lines.push(format!(
                 " * @property {{ {ty} }} {property} {} ",
@@ -744,18 +786,24 @@ fn collect_property_docs(
     schema: &Value,
     prefix: &str,
     properties: &mut IndexMap<String, (String, String)>,
-    schema_suffix: &str,
+    property_ref_names: &HashMap<&str, String>,
 ) {
     if let Some(all_of) = schema.get("allOf").and_then(Value::as_array) {
         for member in all_of.iter().filter(|member| member.get("$ref").is_some()) {
             if let Some(reference) = member.get("$ref").and_then(Value::as_str) {
                 if let Some(resolved) = resolve_document_ref(document, reference) {
-                    collect_property_docs(document, resolved, prefix, properties, schema_suffix);
+                    collect_property_docs(
+                        document,
+                        resolved,
+                        prefix,
+                        properties,
+                        property_ref_names,
+                    );
                 }
             }
         }
         for member in all_of.iter().filter(|member| member.get("$ref").is_none()) {
-            collect_property_docs(document, member, prefix, properties, schema_suffix);
+            collect_property_docs(document, member, prefix, properties, property_ref_names);
         }
     }
     if let Some(object) = schema.get("properties").and_then(Value::as_object) {
@@ -770,7 +818,7 @@ fn collect_property_docs(
                 .and_then(Value::as_str)
                 .and_then(|reference| resolve_document_ref(document, reference))
                 .unwrap_or(property_schema);
-            let ty = property_doc_type(document, property_schema, schema_suffix);
+            let ty = property_doc_type(document, property_schema, property_ref_names);
             let preserve_existing_object = properties.contains_key(&key)
                 && property_schema.get("type").and_then(Value::as_str) == Some("object");
             if !preserve_existing_object {
@@ -791,7 +839,7 @@ fn collect_property_docs(
                                 items,
                                 &format!("{key}.[0]"),
                                 properties,
-                                schema_suffix,
+                                property_ref_names,
                             );
                         }
                     }
@@ -801,7 +849,7 @@ fn collect_property_docs(
                         property_schema,
                         &key,
                         properties,
-                        schema_suffix,
+                        property_ref_names,
                     );
                 }
             } else if composite {
@@ -818,7 +866,7 @@ fn collect_property_docs(
                                 member,
                                 &key,
                                 properties,
-                                schema_suffix,
+                                property_ref_names,
                             );
                         }
                     }
@@ -838,24 +886,28 @@ fn collect_property_docs(
         properties.insert(
             key.clone(),
             (
-                property_doc_type(document, additional, schema_suffix),
+                property_doc_type(document, additional, property_ref_names),
                 schema_description(additional),
             ),
         );
-        collect_property_docs(document, additional, &key, properties, schema_suffix);
+        collect_property_docs(document, additional, &key, properties, property_ref_names);
     }
 }
 
-fn property_doc_type(document: &Value, schema: &Value, schema_suffix: &str) -> String {
+fn property_doc_type(
+    document: &Value,
+    schema: &Value,
+    property_ref_names: &HashMap<&str, String>,
+) -> String {
     if let Some(reference) = schema.get("$ref").and_then(Value::as_str) {
-        return property_ref_type(reference);
+        return property_ref_type(reference, property_ref_names);
     }
     if schema.get("type").and_then(Value::as_str) == Some("array") {
         let item_type = schema
             .get("items")
             .and_then(|items| {
                 if let Some(reference) = items.get("$ref").and_then(Value::as_str) {
-                    Some(property_ref_type(reference))
+                    Some(property_ref_type(reference, property_ref_names))
                 } else {
                     Some(
                         items
@@ -875,7 +927,7 @@ fn property_doc_type(document: &Value, schema: &Value, schema_suffix: &str) -> S
             .and_then(Value::as_array)
             .and_then(|values| values.first())
         {
-            return property_doc_type(document, first, schema_suffix);
+            return property_doc_type(document, first, property_ref_names);
         }
     }
     schema
@@ -885,7 +937,10 @@ fn property_doc_type(document: &Value, schema: &Value, schema_suffix: &str) -> S
         .to_string()
 }
 
-fn property_ref_type(reference: &str) -> String {
+fn property_ref_type(reference: &str, property_ref_names: &HashMap<&str, String>) -> String {
+    if let Some(name) = property_ref_names.get(reference) {
+        return name.clone();
+    }
     let mut name = reference
         .rsplit('/')
         .next()
@@ -1024,7 +1079,7 @@ fn schema_identifiers(code: &str) -> Vec<&str> {
     for candidate in code.split(|character: char| {
         !(character.is_ascii_alphanumeric() || character == '_' || character == '$')
     }) {
-        if candidate.ends_with("Schema") && !candidate.is_empty() && !result.contains(&candidate) {
+        if !candidate.is_empty() && !result.contains(&candidate) {
             result.push(candidate);
         }
     }
@@ -1172,6 +1227,7 @@ fn decapitalize(value: &str) -> String {
 }
 
 fn remove_suffix(value: &str, suffix: &str) -> String {
+    let value = value.split('.').next().unwrap_or(value);
     value.strip_suffix(suffix).unwrap_or(value).to_string()
 }
 
@@ -1250,7 +1306,7 @@ fn render_endpoint_module(
 ) -> String {
     let mut lines = vec![format!(
         "import {{ AppRestClient }} from \"{}\";",
-        options.rest_client_import_path
+        rest_client_import_path(options)
     )];
     let has_get = endpoints
         .iter()
@@ -1433,7 +1489,12 @@ fn render_endpoint_module(
     if options.ts_namespaces {
         lines.push("}".into());
     }
-    format!("{}\n", lines.join("\n").trim_end())
+    resolve_model_namespace_owners(
+        format!("{}\n", lines.join("\n").trim_end()),
+        tag,
+        schema_owners,
+        options,
+    )
 }
 
 #[derive(Clone)]
@@ -2199,8 +2260,9 @@ fn render_acl_module(
     if has_models {
         if options.ts_namespaces {
             lines.push(format!(
-                "import type {{ {models_namespace} }} from \"./{}.models\";",
-                decapitalize(tag)
+                "import type {{ {models_namespace} }} from \"./{}.{}\";",
+                decapitalize(tag),
+                output_suffix(options, "models", "models")
             ));
         } else {
             let mut imports: IndexMap<String, Vec<String>> = IndexMap::default();
@@ -2227,9 +2289,16 @@ fn render_acl_module(
             for (owner, names) in imports {
                 let owner_tag = decapitalize(&owner);
                 let path = if owner == tag {
-                    format!("./{owner_tag}.models")
+                    format!(
+                        "./{owner_tag}.{}",
+                        output_suffix(options, "models", "models")
+                    )
                 } else {
-                    format!("{}{owner_tag}/{owner_tag}.models", import_root(options))
+                    format!(
+                        "{}{owner_tag}/{owner_tag}.{}",
+                        import_root(options),
+                        output_suffix(options, "models", "models")
+                    )
                 };
                 lines.push(format!(
                     "import type {{ {} }} from \"{path}\";",
@@ -2503,7 +2572,7 @@ fn render_query_module(
     if uses_native_rest_client(options) && has_media_upload {
         lines.push(format!(
             "import {{ AppRestClient }} from \"{}\";",
-            options.rest_client_import_path
+            rest_client_import_path(options)
         ));
     }
     if uses_native_rest_client(options) {
@@ -2563,8 +2632,9 @@ fn render_query_module(
         ));
         if options.ts_namespaces {
             lines.push(format!(
-                "import {{ {acl_namespace} }} from \"./{}.acl\";",
-                decapitalize(tag)
+                "import {{ {acl_namespace} }} from \"./{}.{}\";",
+                decapitalize(tag),
+                output_suffix(options, "acl", "acl")
             ));
         } else {
             let abilities = acl_endpoints
@@ -2572,9 +2642,10 @@ fn render_query_module(
                 .map(|endpoint| format!("canUse{}", query_names(endpoint).1))
                 .collect::<Vec<_>>();
             lines.push(format!(
-                "import {{ {} }} from \"./{}.acl\";",
+                "import {{ {} }} from \"./{}.{}\";",
                 abilities.join(", "),
-                decapitalize(tag)
+                decapitalize(tag),
+                output_suffix(options, "acl", "acl")
             ));
         }
     }
@@ -2610,8 +2681,9 @@ fn render_query_module(
     {
         if options.ts_namespaces {
             lines.push(format!(
-                "import {{ {models_namespace} }} from \"./{}.models\";",
-                decapitalize(tag)
+                "import {{ {models_namespace} }} from \"./{}.{}\";",
+                decapitalize(tag),
+                output_suffix(options, "models", "models")
             ));
         } else {
             let mut imports: IndexMap<String, Vec<String>> = IndexMap::default();
@@ -2642,9 +2714,16 @@ fn render_query_module(
             for (owner, names) in imports {
                 let owner_tag = decapitalize(&owner);
                 let path = if owner == tag {
-                    format!("./{owner_tag}.models")
+                    format!(
+                        "./{owner_tag}.{}",
+                        output_suffix(options, "models", "models")
+                    )
                 } else {
-                    format!("{}{owner_tag}/{owner_tag}.models", import_root(options))
+                    format!(
+                        "{}{owner_tag}/{owner_tag}.{}",
+                        import_root(options),
+                        output_suffix(options, "models", "models")
+                    )
                 };
                 lines.push(format!(
                     "import type {{ {} }} from \"{path}\";",
@@ -2655,8 +2734,9 @@ fn render_query_module(
     }
     if options.ts_namespaces {
         lines.push(format!(
-            "import {{ {api_namespace} }} from \"./{}.api\";",
-            decapitalize(tag)
+            "import {{ {api_namespace} }} from \"./{}.{}\";",
+            decapitalize(tag),
+            output_suffix(options, "endpoints", "api")
         ));
     } else {
         let operations = endpoints
@@ -2671,9 +2751,10 @@ fn render_query_module(
             })
             .collect::<Vec<_>>();
         lines.push(format!(
-            "import {{ {} }} from \"./{}.api\";",
+            "import {{ {} }} from \"./{}.{}\";",
             operations.join(", "),
-            decapitalize(tag)
+            decapitalize(tag),
+            output_suffix(options, "endpoints", "api")
         ));
     }
     lines.push(String::new());
@@ -2774,7 +2855,212 @@ fn render_query_module(
         content = content.replace(&format!("{api_namespace}."), "");
         content = content.replace(&format!("{acl_namespace}."), "");
     }
-    content
+    resolve_model_namespace_owners(content, tag, schema_owners, options)
+}
+
+// Namespace-based modules can reference models shared by several tags.
+fn resolve_model_namespace_owners(
+    content: String,
+    tag: &str,
+    schema_owners: &Map<String, Value>,
+    options: &GenerateOptions,
+) -> String {
+    if !options.ts_namespaces || options.models_in_common || options.models_in_modules {
+        return content;
+    }
+    let namespace_suffix = options
+        .configs
+        .get("models")
+        .map(|config| config.namespace_suffix.as_str())
+        .unwrap_or("Models");
+    let local_namespace = format!("{}{namespace_suffix}", capitalize(tag));
+    let prefix = format!("{local_namespace}.");
+    let mut owners = HashMap::default();
+    for (schema, owner) in schema_owners {
+        if let Some(owner) = owner.as_str().filter(|owner| *owner != tag) {
+            owners.insert(schema.as_str().to_string(), owner);
+            owners.insert(remove_suffix(schema, &options.schema_suffix), owner);
+        }
+    }
+    let mut imports = IndexSet::default();
+    let mut has_local = false;
+    let mut output = String::with_capacity(content.len());
+    let mut remaining = content.as_str();
+    while !remaining.is_empty() {
+        // URLs, literal values and descriptions are data, not model references.
+        if remaining.starts_with("/*") {
+            let end = remaining
+                .find("*/")
+                .map(|index| index + 2)
+                .unwrap_or(remaining.len());
+            for (index, line) in remaining[..end].split('\n').enumerate() {
+                if index > 0 {
+                    output.push('\n');
+                }
+                let trimmed = line.trim_start();
+                let typed_doc = ["* @param { ", "* @returns { ", "* @property { "]
+                    .iter()
+                    .any(|start| trimmed.starts_with(start));
+                if typed_doc {
+                    let start = line.find("{ ").unwrap() + 2;
+                    let end = line[start..]
+                        .find(" }")
+                        .map(|end| start + end)
+                        .unwrap_or(start);
+                    output.push_str(&line[..start]);
+                    let mut ty = line[start..end].to_string();
+                    for (name, owner) in &owners {
+                        let source = format!("{prefix}{name}");
+                        let target = format!("{}{namespace_suffix}.{name}", capitalize(owner));
+                        ty = replace_model_identifier(&ty, &source, &target);
+                    }
+                    output.push_str(&ty);
+                    output.push_str(&line[end..]);
+                } else {
+                    output.push_str(line);
+                }
+            }
+            remaining = &remaining[end..];
+            continue;
+        }
+        if remaining.starts_with("//") {
+            let end = remaining.find('\n').unwrap_or(remaining.len());
+            output.push_str(&remaining[..end]);
+            remaining = &remaining[end..];
+            continue;
+        }
+        let first = remaining.chars().next().unwrap();
+        if first == '/' && output.trim_end().ends_with(".regex(") {
+            let mut escaped = false;
+            let mut character_class = false;
+            let mut end = remaining.len();
+            for (index, ch) in remaining.char_indices().skip(1) {
+                if escaped { escaped = false; continue; }
+                if ch == '\\' { escaped = true; continue; }
+                if ch == '[' { character_class = true; }
+                if ch == ']' { character_class = false; }
+                if ch == '/' && !character_class { end = index + 1; break; }
+            }
+            output.push_str(&remaining[..end]);
+            remaining = &remaining[end..];
+            continue;
+        }
+        if matches!(first, '\'' | '"' | '`') {
+            // Native templates interpolate endpoint parameter names, never model expressions.
+            let mut escaped = false;
+            let mut end = remaining.len();
+            for (index, ch) in remaining.char_indices().skip(1) {
+                if escaped {
+                    escaped = false;
+                    continue;
+                }
+                if ch == '\\' {
+                    escaped = true;
+                    continue;
+                }
+                if ch == first {
+                    end = index + ch.len_utf8();
+                    break;
+                }
+            }
+            output.push_str(&remaining[..end]);
+            remaining = &remaining[end..];
+            continue;
+        }
+        if remaining.starts_with(&prefix)
+            && output
+                .chars()
+                .last()
+                .is_none_or(|ch| !model_identifier_char(ch))
+        {
+            remaining = &remaining[prefix.len()..];
+            let length = remaining
+                .find(|ch: char| !model_identifier_char(ch))
+                .unwrap_or(remaining.len());
+            let name = &remaining[..length];
+            if let Some(owner) = owners.get(name) {
+                imports.insert(*owner);
+                output.push_str(&format!("{}{namespace_suffix}.", capitalize(owner)));
+            } else {
+                has_local = true;
+                output.push_str(&prefix);
+            }
+            continue;
+        }
+        output.push(first);
+        remaining = &remaining[first.len_utf8()..];
+    }
+    if imports.is_empty() {
+        return output;
+    }
+    let local_import = format!("import {{ {local_namespace} }} from ");
+    let mut lines = output.lines().map(str::to_string).collect::<Vec<_>>();
+    let insertion = lines
+        .iter()
+        .position(|line| line.starts_with(&local_import))
+        .unwrap_or_else(|| lines.iter().position(|line| line.is_empty()).unwrap_or(0));
+    if !has_local
+        && lines
+            .get(insertion)
+            .is_some_and(|line| line.starts_with(&local_import))
+    {
+        lines.remove(insertion);
+    }
+    let insertion = insertion + usize::from(has_local);
+    let suffix = output_suffix(options, "models", "models");
+    for (offset, owner) in imports.into_iter().enumerate() {
+        let owner_tag = decapitalize(owner);
+        lines.insert(
+            insertion + offset,
+            format!(
+                "import {{ {}{namespace_suffix} }} from \"{}{owner_tag}/{owner_tag}.{suffix}\";",
+                capitalize(owner),
+                import_root(options)
+            ),
+        );
+    }
+    format!("{}\n", lines.join("\n"))
+}
+
+fn model_identifier_char(ch: char) -> bool {
+    ch.is_ascii_alphanumeric() || ch == '_' || ch == '$'
+}
+
+fn replace_model_identifier(value: &str, source: &str, target: &str) -> String {
+    let mut output = String::new();
+    let mut remaining = value;
+    while let Some(index) = remaining.find(source) {
+        output.push_str(&remaining[..index]);
+        let after = &remaining[index + source.len()..];
+        let boundary = output
+            .chars()
+            .last()
+            .is_none_or(|ch| !model_identifier_char(ch))
+            && after
+                .chars()
+                .next()
+                .is_none_or(|ch| !model_identifier_char(ch));
+        output.push_str(if boundary { target } else { source });
+        remaining = after;
+    }
+    output.push_str(remaining);
+    output
+}
+
+fn rest_client_import_path(options: &GenerateOptions) -> String {
+    if options.rest_client_import_path.is_empty() {
+        format!("{}app-rest-client", import_root(options))
+    } else {
+        options.rest_client_import_path.clone()
+    }
+}
+
+fn output_suffix<'a>(options: &'a GenerateOptions, kind: &str, default: &'a str) -> &'a str {
+    options
+        .configs
+        .get(kind)
+        .map(|config| config.output_file_name_suffix.as_str())
+        .unwrap_or(default)
 }
 
 fn import_root(options: &GenerateOptions) -> String {
@@ -2982,7 +3268,7 @@ fn render_query_hook_native(
     } else {
         "AppQueryOptions"
     };
-    lines.push(format!("export const {hook} = <TData>({}options?: {option_type}<typeof {api_namespace}.{api_operation}, TData>) => {{", if params.is_empty() { "".into() } else { format!("{{ {args} }}: {{ {} }}, ", render_param_list(&params)) }));
+    lines.push(format!("export const {hook} = <TData>({}options?: {option_type}<typeof {api_namespace}.{api_operation}, TData>{}) => {{", if params.is_empty() { "".into() } else { format!("{{ {args} }}: {{ {} }}, ", render_param_list(&params)) }, if options.axios_request_config { format!(", config?: {}", request_config_type(options)) } else { String::new() }));
     lines.push("  const queryConfig = OpenApiQueryConfig.useConfig();".into());
     let has_acl = options.check_acl
         && endpoint
@@ -3006,11 +3292,16 @@ fn render_query_hook_native(
         if infinite { "Infinite" } else { "" }
     );
     let call_args = format!(
-        "{}{{ allowInvalidResponseData: queryConfig.allowInvalidResponseData }}",
+        "{}{{ {}allowInvalidResponseData: queryConfig.allowInvalidResponseData }}",
         if params.is_empty() {
             "".into()
         } else {
             format!("{{ {args} }}, ")
+        },
+        if options.axios_request_config {
+            "...config, "
+        } else {
+            ""
         }
     );
     lines.push(format!("    ...{options_name}({call_args}),"));
@@ -3443,8 +3734,9 @@ fn render_mutation_native(
         format!(", {{ {variables} }}")
     };
     lines.push(format!(
-        "export const use{mutation_cap} = ({path_arg}options?: AppMutationOptions<typeof {api_namespace}.{api_operation}{variables_arg}>{}) => {{",
-        if options.mutation_effects { " & MutationEffectsOptions" } else { "" }
+        "export const use{mutation_cap} = ({path_arg}options?: AppMutationOptions<typeof {api_namespace}.{api_operation}{variables_arg}>{}{}) => {{",
+        if options.mutation_effects { " & MutationEffectsOptions" } else { "" },
+        if options.axios_request_config { format!(", config?: {}", request_config_type(options)) } else { String::new() }
     ));
     if options.mutation_default_on_error {
         lines.push("  const queryConfig = OpenApiQueryConfig.useConfig();".into());
@@ -3503,12 +3795,32 @@ fn render_mutation_native(
         );
         lines.push("    },".into());
     } else if has_acl {
+        let config_arg = if options.axios_request_config {
+            if args.is_empty() {
+                "config"
+            } else {
+                ", config"
+            }
+        } else {
+            ""
+        };
         lines.push(format!(
-            "      return {api_namespace}.{api_operation}({args})"
+            "      return {api_namespace}.{api_operation}({args}{config_arg})"
         ));
         lines.push("    },".into());
     } else {
-        lines.push(format!("      {api_namespace}.{api_operation}({args})"));
+        let config_arg = if options.axios_request_config {
+            if args.is_empty() {
+                "config"
+            } else {
+                ", config"
+            }
+        } else {
+            ""
+        };
+        lines.push(format!(
+            "      {api_namespace}.{api_operation}({args}{config_arg})"
+        ));
         lines.push(",".into());
     }
     if is_scoped {
@@ -3814,4 +4126,48 @@ fn render_mutation_docs(
         .join(", ");
     lines.push(format!(" * @statusCodes [{statuses}]"));
     lines.push(" */".into());
+}
+
+#[cfg(test)]
+mod namespace_owner_tests {
+    use super::*;
+
+    #[test]
+    fn shared_model_routing_preserves_literals_and_description_text() {
+        let options: GenerateOptions = serde_json::from_value(serde_json::json!({})).unwrap();
+        let owners = serde_json::json!({ "BaseLogLevelEnumSchema": "Common" })
+            .as_object()
+            .unwrap()
+            .clone();
+        let source = r#"import { EmailAdminModels } from "./emailAdmin.models";
+
+/**
+ * @returns { EmailAdminModels.BaseLogLevelEnum } EmailAdminModels.BaseLogLevelEnumSchema stays literal
+ * @description EmailAdminModels.BaseLogLevelEnumSchema remains unchanged
+ */
+const value = EmailAdminModels.BaseLogLevelEnumSchema;
+const path = `/EmailAdminModels.BaseLogLevelEnumSchema/${id}`;
+const quoted = "EmailAdminModels.BaseLogLevelEnumSchema";
+const single = 'EmailAdminModels.BaseLogLevelEnumSchema';
+const regex = z.string().regex(/EmailAdminModels.BaseLogLevelEnumSchema/);
+const escapedRegex = z.string().regex(/\/[/]EmailAdminModels.BaseLogLevelEnumSchema/);
+// EmailAdminModels.BaseLogLevelEnumSchema remains unchanged
+"#;
+        let actual = resolve_model_namespace_owners(source.into(), "EmailAdmin", &owners, &options);
+        assert!(actual.contains("const value = CommonModels.BaseLogLevelEnumSchema;"));
+        assert!(actual.contains("* @returns { CommonModels.BaseLogLevelEnum } EmailAdminModels.BaseLogLevelEnumSchema stays literal"));
+        assert!(
+            actual.contains(
+                "* @description EmailAdminModels.BaseLogLevelEnumSchema remains unchanged"
+            )
+        );
+        assert!(actual.contains("const path = `/EmailAdminModels.BaseLogLevelEnumSchema/${id}`;"));
+        assert!(actual.contains("const quoted = \"EmailAdminModels.BaseLogLevelEnumSchema\";"));
+        assert!(actual.contains("const single = 'EmailAdminModels.BaseLogLevelEnumSchema';"));
+        assert!(actual.contains("// EmailAdminModels.BaseLogLevelEnumSchema remains unchanged"));
+        assert!(actual.contains("const regex = z.string().regex(/EmailAdminModels.BaseLogLevelEnumSchema/);"));
+        assert!(actual.contains(r"const escapedRegex = z.string().regex(/\/[/]EmailAdminModels.BaseLogLevelEnumSchema/);"));
+        assert!(!actual.contains("import { EmailAdminModels }"));
+        assert!(actual.contains("import { CommonModels }"));
+    }
 }

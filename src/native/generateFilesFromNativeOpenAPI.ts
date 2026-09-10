@@ -21,6 +21,9 @@ export function generateFilesFromNativeOpenAPI(
   yaml: boolean,
   options: GenerateOptions,
 ): GenerateFileData[] | undefined {
+  if (options.standalone && options.importPath === "ts") {
+    options = { ...options, importPath: "relative" };
+  }
   if (!supportsCompleteNativeRender(options)) {
     if (process.env.OPENAPI_CODEGEN_REQUIRE_FULL_NATIVE === "1") {
       throw new Error("The selected options are not supported by the full native renderer");

@@ -14,14 +14,14 @@ import { isNamedZodSchema } from "@/generators/utils/zod-schema.utils";
 import { getSchemaDescriptions } from "./generate.openapi.utils";
 
 export const getZodSchemaInferedTypeName = (zodSchemaName: string, options: GenerateOptions) =>
-  removeSuffix(zodSchemaName, options.schemaSuffix);
+  removeSuffix(isNamedZodSchema(zodSchemaName) ? zodSchemaName.split(".")[0] : zodSchemaName, options.schemaSuffix);
 
 export const getImportedZodSchemaName = (resolver: SchemaResolver, zodSchemaName: string, namespaceTag?: string) => {
   if (!isNamedZodSchema(zodSchemaName)) {
     return zodSchemaName;
   }
 
-  const tag = getOwningOrLocalProxyTag(resolver, zodSchemaName, namespaceTag);
+  const tag = getOwningOrLocalProxyTag(resolver, zodSchemaName.split(".")[0], namespaceTag);
   const namespacePrefix = resolver.options.tsNamespaces
     ? `${getNamespaceName({ type: GenerateType.Models, tag, options: resolver.options })}.`
     : "";
@@ -57,7 +57,7 @@ export const getImportedZodSchemaInferedTypeName = (
 
   // See getOwningOrLocalProxyTag. namespaceTag still forces the prefix to render even when
   // tag === currentTag.
-  const tag = getOwningOrLocalProxyTag(resolver, zodSchemaName, namespaceTag);
+  const tag = getOwningOrLocalProxyTag(resolver, zodSchemaName.split(".")[0], namespaceTag);
   const namespacePrefix =
     resolver.options.tsNamespaces && (Boolean(namespaceTag) || tag !== currentTag)
       ? `${getNamespaceName({ type: GenerateType.Models, tag, options: resolver.options })}.`

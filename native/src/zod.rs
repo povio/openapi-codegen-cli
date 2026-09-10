@@ -225,7 +225,7 @@ impl<'a> ZodCompiler<'a> {
             let zod_name = schema_name(name, &self.options.schema_suffix);
             let owner = self.schema_tag(&reference);
             let output = if self.options.ts_namespaces && owner != tag {
-                format!("{}Models.{zod_name}", capitalize(&owner))
+                format!("{}.{zod_name}", self.models_namespace(&owner))
             } else {
                 zod_name
             };
@@ -297,11 +297,10 @@ impl<'a> ZodCompiler<'a> {
                     root_ref,
                     stack,
                 )?;
-                let actual = self.resolve_schema(items).unwrap_or(items);
                 format!(
                     "{code}{}",
                     chain(
-                        actual,
+                        items,
                         Meta {
                             required: true,
                             parent_partial: false
@@ -375,7 +374,7 @@ impl<'a> ZodCompiler<'a> {
                         if root_ref != Some(enum_ref.as_str()) {
                             let owner = self.schema_tag(&enum_ref);
                             return Ok(Some(if self.options.ts_namespaces && owner != tag {
-                                format!("{}Models.{name}", capitalize(&owner))
+                                format!("{}.{name}", self.models_namespace(&owner))
                             } else {
                                 name.clone()
                             }));
@@ -383,7 +382,7 @@ impl<'a> ZodCompiler<'a> {
                     }
                     if let Some((name, owner)) = self.extracted_enums.get(&code) {
                         return Ok(Some(if self.options.ts_namespaces && owner != tag {
-                            format!("{}Models.{name}", capitalize(owner))
+                            format!("{}.{name}", self.models_namespace(owner))
                         } else {
                             name.clone()
                         }));
@@ -587,6 +586,16 @@ impl<'a> ZodCompiler<'a> {
     fn resolve_schema<'b>(&'b self, schema: &'b Value) -> Option<&'b Value> {
         let reference = schema.get("$ref")?.as_str()?;
         self.document.pointer(reference.strip_prefix('#')?)
+    }
+
+    fn models_namespace(&self, tag: &str) -> String {
+        let suffix = self
+            .options
+            .configs
+            .get("models")
+            .map(|config| config.namespace_suffix.as_str())
+            .unwrap_or("Models");
+        format!("{}{suffix}", capitalize(tag))
     }
 
     fn schema_tag(&self, reference: &str) -> String {

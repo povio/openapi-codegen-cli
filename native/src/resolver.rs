@@ -96,6 +96,22 @@ impl<'a> Resolver<'a> {
             .collect();
         let mut operations = index_operations(document, options)?;
         assign_unique_names(&mut operations, options);
+        // Naming shares a single collision index when tags are not split, but
+        // schema compilation still uses each operation's source tag, as in the
+        // JavaScript resolver's operation contexts.
+        if !options.split_by_tags {
+            for operation in &mut operations {
+                operation.tag = format_tag(
+                    operation
+                        .operation
+                        .get("tags")
+                        .and_then(Value::as_array)
+                        .and_then(|tags| tags.first())
+                        .and_then(Value::as_str)
+                        .unwrap_or(&options.default_tag),
+                );
+            }
+        }
         let after_operations = started.elapsed();
         let mut schema_tags = collect_schema_tags(document, &operations, &deep_dependencies);
         let after_tags = started.elapsed();
@@ -457,8 +473,8 @@ fn index_operations<'a>(
                 .unwrap_or(&options.default_tag);
             let formatted = format_tag(source_tag);
             let normalized = formatted.to_lowercase();
-            if (!include.is_empty() && !include.contains(&normalized))
-                || exclude.contains(&normalized)
+            if !include.contains(&normalized)
+                && (!include.is_empty() || exclude.contains(&normalized))
             {
                 continue;
             }

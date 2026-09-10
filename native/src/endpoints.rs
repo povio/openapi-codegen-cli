@@ -654,6 +654,25 @@ impl<'a> EndpointExtractor<'a> {
         } else {
             obj.get("schema").unwrap_or(&Value::Null)
         };
+        let mut described_schema;
+        let schema = if self.options.with_description {
+            described_schema = schema.clone();
+            if let Some(object) = described_schema.as_object_mut() {
+                object.insert(
+                    "description".into(),
+                    Value::String(
+                        obj.get("description")
+                            .and_then(Value::as_str)
+                            .unwrap_or("")
+                            .trim()
+                            .to_string(),
+                    ),
+                );
+            }
+            &described_schema
+        } else {
+            schema
+        };
         let required = location == "path"
             || obj
                 .get("required")

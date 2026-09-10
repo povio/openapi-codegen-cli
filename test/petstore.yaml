@@ -38,6 +38,30 @@ tags:
   - name: user
     description: Operations about user
 paths:
+  /activity/email:
+    get:
+      tags: [EmailAdmin]
+      summary: Shared-model import regression example
+      operationId: readEmailAdminActivity
+      responses:
+        "200":
+          description: Activity with shared log level and label
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailActivityAdminResponse"
+  /activity/push:
+    get:
+      tags: [PushNotificationAdmin]
+      summary: Shared-model import regression example
+      operationId: readPushNotificationAdminActivity
+      responses:
+        "200":
+          description: Activity with shared log level and label
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PushNotificationActivityAdminResponse"
   /pet:
     put:
       tags:
@@ -599,6 +623,31 @@ paths:
           description: User not found
 components:
   schemas:
+    # Shared across tags to exercise namespace imports in module-local output.
+    BaseLogLevelEnum:
+      type: string
+      enum: [info, error]
+    LabelResponse:
+      type: object
+      properties:
+        text:
+          type: string
+    EmailActivityAdminResponse:
+      type: object
+      required: [level]
+      properties:
+        level:
+          $ref: "#/components/schemas/BaseLogLevelEnum"
+        label:
+          $ref: "#/components/schemas/LabelResponse"
+    PushNotificationActivityAdminResponse:
+      type: object
+      required: [level]
+      properties:
+        level:
+          $ref: "#/components/schemas/BaseLogLevelEnum"
+        label:
+          $ref: "#/components/schemas/LabelResponse"
     Order:
       type: object
       properties:

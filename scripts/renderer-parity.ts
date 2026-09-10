@@ -1,12 +1,8 @@
 import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { parse } from "yaml";
-import type { OpenAPIV3 } from "openapi-types";
-
-import { resolveConfig } from "../src/generators/core/resolveConfig";
-import { generateCodeFromOpenAPIDoc } from "../src/generators/generateCodeFromOpenAPIDoc";
-import { generateFilesFromNativeOpenAPI } from "../src/native/generateFilesFromNativeOpenAPI";
+import { parityScenarios } from "./renderer-parity-configs";
+import { parityFixtures, renderParityCase } from "./renderer-parity-cases";
 
 export type Manifest = Record<string, string>;
 
@@ -34,48 +30,48 @@ async function generate(renderer: string, output: string) {
   // Explicit selection also protects against accidentally adding automatic fallback here.
   process.env.OPENAPI_CODEGEN_NATIVE = renderer === "js" ? "0" : "1";
   process.env.OPENAPI_CODEGEN_REQUIRE_FULL_NATIVE = "1";
-  const source = await readFile("test/petstore.yaml", "utf8");
-  const document = parse(source) as OpenAPIV3.Document;
-  // Refuse stale output: every uploaded file must belong to this generation.
+  // Refuse stale output: every uploaded file belongs to this generation.
   await mkdir(path.dirname(output), { recursive: true });
   await mkdir(output);
   const manifest: Manifest = {};
-  for (const tsNamespaces of [true, false]) {
-    const scenario = tsNamespaces ? "namespaces" : "modules";
-    const options = resolveConfig({
-      fileConfig: {
-        input: "test/petstore.yaml",
-        output: "generated",
-        tsNamespaces,
-        modelsInCommon: tsNamespaces,
-        acl: false,
-        restClientImportPath: "@test/app-rest-client",
-      },
-      params: {},
-    });
-    const files =
-      renderer === "js"
-        ? generateCodeFromOpenAPIDoc(document, options)
-        : generateFilesFromNativeOpenAPI(source, true, options);
-    if (!files?.length) throw new Error(`${renderer} did not generate files for ${scenario}`);
-    for (const file of files) {
-      const relative = path.relative(options.output, file.fileName);
-      if (relative.startsWith("..") || path.isAbsolute(relative))
-        throw new Error(`Unexpected output: ${file.fileName}`);
-      const name = `${scenario}/${relative.split(path.sep).join("/")}`;
-      if (name in manifest) throw new Error(`Duplicate generated file: ${name}`);
-      const destination = path.join(output, "files", name);
-      await mkdir(path.dirname(destination), { recursive: true });
-      await writeFile(destination, file.content);
-      // Hash exact bytes on disk; do not normalize whitespace or generated code.
-      manifest[name] = createHash("sha256")
-        .update(await readFile(destination))
+  const routes: Record<string, string> = {};
+  for (const fixture of parityFixtures) {
+    const source = await readFile(fixture, "utf8");
+    for (const scenario of parityScenarios) {
+      const prefix = `${path.basename(fixture, ".yaml")}/${scenario.name}`;
+      const { files, route } = renderParityCase(source, scenario, renderer);
+      routes[prefix] = route;
+      // Include even deliberately empty and rejected cases in the hash contract.
+      manifest[`${prefix}/case.json`] = createHash("sha256")
+        .update(
+          JSON.stringify({
+            options: scenario.options,
+            rejected: Boolean(scenario.invalid),
+            files: files.map((f) => f.fileName).sort(),
+          }),
+        )
         .digest("hex");
+      for (const file of files) {
+        const relative = path.relative("generated", file.fileName);
+        if (relative.startsWith("..") || path.isAbsolute(relative))
+          throw new Error(`Unexpected output: ${file.fileName}`);
+        const name = `${prefix}/${relative.split(path.sep).join("/")}`;
+        if (name in manifest) throw new Error(`Duplicate generated file: ${name}`);
+        const destination = path.join(output, "files", name);
+        await mkdir(path.dirname(destination), { recursive: true });
+        await writeFile(destination, file.content);
+        manifest[name] = createHash("sha256")
+          .update(await readFile(destination))
+          .digest("hex");
+      }
     }
   }
+  await writeFile(path.join(output, "routes.json"), `${JSON.stringify(routes, null, 2)}\n`);
   const sorted = Object.fromEntries(Object.entries(manifest).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)));
   await writeFile(path.join(output, "manifest.json"), `${JSON.stringify(sorted, null, 2)}\n`);
-  console.log(`${renderer}: hashed ${Object.keys(manifest).length} generated files`);
+  console.log(
+    `${renderer}: hashed ${Object.keys(manifest).length - Object.keys(routes).length} generated files across ${Object.keys(routes).length} cases`,
+  );
 }
 
 async function compare(directory: string, artifacts: string[]) {
@@ -95,7 +91,9 @@ async function compare(directory: string, artifacts: string[]) {
     }
   }
   if (failed) throw new Error("Generated file lists or SHA-256 hashes differ");
-  console.log(`All ${artifacts.length} renderers/platforms match (${Object.keys(manifests[0]).length} files each)`);
+  console.log(
+    `All ${artifacts.length} renderers/platforms match (${Object.keys(manifests[0]).length} manifest entries each)`,
+  );
 }
 
 if (import.meta.main) {

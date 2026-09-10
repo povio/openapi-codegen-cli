@@ -260,6 +260,21 @@ pub fn compile_data(source: String, yaml: bool, options_json: String) -> Result<
     ordered_schemas.extend(schemas);
     let mut usage_tags: rustc_hash::FxHashMap<String, rustc_hash::FxHashSet<String>> =
         rustc_hash::FxHashMap::default();
+    // Direct inline responses need not produce a named generated schema. Keep
+    // the resolver's reference usage too, so those endpoints still contribute
+    // to ownership when the rendered-schema graph is propagated below.
+    for (reference, tags) in &resolver.schema_tags {
+        let name = zod::schema_name(
+            reference.rsplit('/').next().unwrap_or_default(),
+            &options.schema_suffix,
+        );
+        if ordered_schemas.contains_key(&name) {
+            usage_tags
+                .entry(name)
+                .or_default()
+                .extend(tags.iter().cloned());
+        }
+    }
     for endpoint in &endpoints {
         let tag = endpoint
             .get("tags")
@@ -413,6 +428,7 @@ pub fn compile_data(source: String, yaml: bool, options_json: String) -> Result<
         "endpoints": if rendered_complete { Value::Array(Vec::new()) } else { Value::Array(endpoints) },
         "schemas": if rendered_complete { compact() } else { Value::Object(ordered_schemas) },
         "schemaOwners": if rendered_complete { compact() } else { Value::Object(schema_owners) },
+        "schemaUsageTags": if rendered_complete { compact() } else { serde_json::to_value(usage_tags).unwrap() },
         "schemaRefs": if rendered_complete { compact() } else { Value::Object(schema_refs) },
         "circularSchemas": if rendered_complete { Value::Array(Vec::new()) } else { serde_json::to_value(circular_schemas).unwrap() },
         "topologyOrder": if rendered_complete { Value::Array(Vec::new()) } else { serde_json::to_value(topology_order).unwrap() },

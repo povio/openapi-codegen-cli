@@ -23,6 +23,9 @@ export function resolveConfig({
     inlineEndpointsExcludeModules: inlineEndpointsExcludeModules?.split(","),
     workspaceContext: workspaceContext?.split(","),
   });
+  if (resolvedConfig.modelsInCommon && resolvedConfig.modelsInModules) {
+    throw new Error("modelsInCommon and modelsInModules cannot both be enabled");
+  }
   resolvedConfig.checkAcl = resolvedConfig.acl && resolvedConfig.checkAcl;
   resolvedConfig.workspaceContext = Array.from(
     new Set((resolvedConfig.workspaceContext ?? []).map((value) => value.trim()).filter(Boolean)),
