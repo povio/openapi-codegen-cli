@@ -25,14 +25,14 @@ export function getModelsImports({
   zodSchemasAsTypes?: string[];
 }) {
   const type = GenerateType.Models;
-  const getTag = (zodSchemaName: string) => resolver.getTagByZodSchemaName(zodSchemaName);
+  const getTag = (zodSchemaName: string) => resolver.getTagByZodSchemaName(zodSchemaName.split(".")[0]);
 
   const zodSchemaImports = getImports({
     type,
     tag,
     entities: zodSchemas,
     getTag,
-    getEntityName: (zodSchema) => zodSchema,
+    getEntityName: (zodSchema) => zodSchema.split(".")[0],
     options: resolver.options,
   });
 

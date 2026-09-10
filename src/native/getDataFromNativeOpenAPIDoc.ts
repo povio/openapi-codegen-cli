@@ -12,6 +12,7 @@ type NativeData = {
   endpoints: Endpoint[];
   schemas: Record<string, string>;
   schemaOwners: Record<string, string>;
+  schemaUsageTags: Record<string, string[]>;
   schemaRefs: Record<string, string>;
   circularSchemas: string[];
   topologyOrder: string[];
@@ -106,7 +107,9 @@ class NativeSchemaResolver {
   }
 
   getTagByZodSchemaName(name: string) {
-    return this.options.modelsInCommon ? this.options.defaultTag : this.nativeData.schemaOwners[name];
+    return !this.options.splitByTags || this.options.modelsInCommon
+      ? this.options.defaultTag
+      : (this.nativeData.schemaOwners[name] ?? this.options.defaultTag);
   }
 
   isSchemaCircular(ref: string) {
@@ -255,8 +258,12 @@ export function getDataFromNativeOpenAPIDoc(
     getTagElement(getEndpointTag(endpoint, options), data).endpoints.push(endpoint);
   }
   for (const [name, code] of Object.entries(nativeData.schemas)) {
-    const tag = options.modelsInCommon ? options.defaultTag : nativeData.schemaOwners[name];
-    if (tag) getTagElement(tag, data).zodSchemas[name] = code;
+    const tags = options.modelsInModules
+      ? (nativeData.schemaUsageTags[name] ?? [options.defaultTag])
+      : [options.modelsInCommon ? options.defaultTag : nativeData.schemaOwners[name]];
+    for (const tag of tags) {
+      if (tag) getTagElement(tag, data).zodSchemas[name] = code;
+    }
   }
 
   if (process.env.OPENAPI_NATIVE_PROFILE === "1") {

@@ -159,6 +159,10 @@ Set `OPENAPI_CODEGEN_NATIVE=0` to force the TypeScript path, or `OPENAPI_CODEGEN
 
 Release packages include native binaries for Linux x64, macOS arm64, and Windows x64. Build a binary for the current platform with `bun run build:native`.
 
+Run `bun run test:parity` after building the addon to compare every generated file across 64 layout combinations and representative values for every other renderer option. The matrix uses both `test/petstore.yaml` and `test/configuration.yaml`, exercises complete native and hybrid native generation, and loads generated models to check runtime references. The contradictory combination `modelsInCommon: true` with `modelsInModules: true` is rejected explicitly. Arbitrary strings and lists are covered by representative cases, not every possible value.
+
+The separate Renderer parity workflow generates this matrix with JavaScript and native on Linux and macOS, then compares exact file lists and SHA-256 hashes. Artifacts include route reports identifying complete versus hybrid native generation. Runner integration tests cover input/output, stale-file cleanup, and unchanged files; `incremental` is currently retained as a compatibility option and does not change the writer's unchanged-file optimization.
+
 ## Common Issues
 
 ### App REST Client Interceptors

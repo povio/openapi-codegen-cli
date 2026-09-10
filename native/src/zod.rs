@@ -297,11 +297,10 @@ impl<'a> ZodCompiler<'a> {
                     root_ref,
                     stack,
                 )?;
-                let actual = self.resolve_schema(items).unwrap_or(items);
                 format!(
                     "{code}{}",
                     chain(
-                        actual,
+                        items,
                         Meta {
                             required: true,
                             parent_partial: false
@@ -590,8 +589,12 @@ impl<'a> ZodCompiler<'a> {
     }
 
     fn models_namespace(&self, tag: &str) -> String {
-        let suffix = self.options.configs.get("models")
-            .map(|config| config.namespace_suffix.as_str()).unwrap_or("Models");
+        let suffix = self
+            .options
+            .configs
+            .get("models")
+            .map(|config| config.namespace_suffix.as_str())
+            .unwrap_or("Models");
         format!("{}{suffix}", capitalize(tag))
     }
 

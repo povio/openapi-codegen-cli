@@ -1,0 +1,127 @@
+openapi: 3.0.3
+info:
+  title: Generator configuration coverage
+  version: 1.0.0
+servers:
+  - url: https://example.test/api
+paths:
+  /offices/{officeId}/items:
+    parameters:
+      - name: officeId
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [Items]
+      operationId: ItemsController_list
+      x-acl: [{ action: read, subject: Item, conditions: { officeId: "$params.officeId" } }]
+      parameters:
+        - { name: page, in: query, schema: { type: integer, default: 1 } }
+        - { name: pageIndex, in: query, schema: { type: integer, default: 1 } }
+        - { name: limit, in: query, schema: { type: integer, default: 20 } }
+        - { name: filter, in: query, schema: { type: string } }
+        - { name: filters, in: query, schema: { type: string } }
+      responses:
+        "200":
+          description: A page of items
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ItemsPage" }
+    post:
+      tags: [Items]
+      operationId: ItemsController_create
+      x-acl: [{ action: create, subject: Item }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Item" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Item" }
+  /offices/{officeId}/items/{id}:
+    parameters:
+      - { name: officeId, in: path, required: true, schema: { type: string } }
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Items]
+      operationId: ItemsController_read
+      responses:
+        "200":
+          description: Item
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Item" }
+        "404":
+          description: Missing item
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ItemNotFound" }
+    patch:
+      tags: [Items]
+      operationId: ItemsController_update
+      x-acl: [{ action: update, subject: Item, conditions: { officeId: "$params.officeId" } }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Item" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Item" }
+    delete:
+      tags: [Items]
+      operationId: ItemsController_delete
+      responses:
+        "204": { description: Deleted }
+  /legacy-items:
+    get:
+      tags: [Legacy]
+      operationId: LegacyController_list
+      deprecated: true
+      responses:
+        "200":
+          description: Legacy items
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/Item" } }
+components:
+  schemas:
+    ItemNotFound:
+      type: object
+      x-domain-error-domain: item
+      x-domain-error-name: ItemNotFound
+      properties:
+        code: { type: number, enum: [4001] }
+        message: { type: string }
+    Item:
+      type: object
+      description: Item configuration example
+      required: [id]
+      properties:
+        id: { type: string, readOnly: true }
+        title: { type: string, default: Untitled, description: Display title }
+        note: { type: string, nullable: true }
+        enabled: { type: boolean, default: true }
+        status: { type: string, enum: [active, archived] }
+    ItemsPage:
+      type: object
+      required: [items, limit]
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/Item" } }
+        results: { type: array, items: { $ref: "#/components/schemas/Item" } }
+        page: { type: integer }
+        pageIndex: { type: integer }
+        totalItems: { type: integer }
+        count: { type: integer }
+        limit: { type: integer }
+        pageSize: { type: integer }
+    Unused:
+      type: object
+      properties: { value: { type: string } }

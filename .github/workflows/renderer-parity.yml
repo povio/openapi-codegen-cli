@@ -33,7 +33,7 @@ jobs:
       - run: bun run build:native
         if: matrix.renderer == 'native'
 
-      - name: Check naming regressions
+      - name: Check configuration parity and runtime regressions
         if: matrix.renderer == 'native'
         run: bun run test:parity
         env:
