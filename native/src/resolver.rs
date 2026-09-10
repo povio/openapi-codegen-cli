@@ -480,29 +480,85 @@ fn index_operations<'a>(
     Ok(result)
 }
 
+#[derive(Default)]
+struct OperationNameIndex {
+    stable_counts: HashMap<String, usize>,
+    path_source_count: usize,
+    reserved_fallback_count: usize,
+}
+
 fn assign_unique_names(operations: &mut [IndexedOperation<'_>], options: &GenerateOptions) {
-    let mut counts: HashMap<(String, String), usize> = HashMap::default();
+    // Match the JavaScript index: path-derived names are evaluated in the current
+    // operation's context, not at each candidate's own path.
+    let mut indexes: HashMap<String, [OperationNameIndex; 2]> = HashMap::default();
     for operation in operations.iter() {
-        let name = operation_name(operation, options, false, false);
-        *counts.entry((operation.tag.clone(), name)).or_default() += 1;
-    }
-    let mut tag_counts: HashMap<(String, String), usize> = HashMap::default();
-    for operation in operations.iter() {
-        let name = operation_name(operation, options, true, false);
-        *tag_counts.entry((operation.tag.clone(), name)).or_default() += 1;
-    }
-    for operation in operations.iter_mut() {
-        let short = operation_name(operation, options, false, false);
-        operation.name = if counts.get(&(operation.tag.clone(), short.clone())) == Some(&1) {
-            short
-        } else {
-            let tagged = operation_name(operation, options, true, false);
-            if tag_counts.get(&(operation.tag.clone(), tagged.clone())) == Some(&1) {
-                tagged
-            } else {
-                operation_name(operation, options, true, true)
+        let tag_indexes = indexes.entry(operation.tag.clone()).or_default();
+        for (index, keep_tag) in tag_indexes.iter_mut().zip([false, true]) {
+            if operation
+                .operation
+                .get("operationId")
+                .and_then(Value::as_str)
+                .unwrap_or_default()
+                .is_empty()
+            {
+                index.path_source_count += 1;
+                continue;
             }
-        };
+            let context = IndexedOperation {
+                path: "",
+                method: "",
+                operation: operation.operation,
+                tag: operation.tag.clone(),
+                name: String::new(),
+                path_parameters: None,
+            };
+            let (name, reserved_fallback) =
+                resolve_operation_name(&context, options, keep_tag, false);
+            if reserved_fallback {
+                index.reserved_fallback_count += 1;
+            } else {
+                *index.stable_counts.entry(name).or_default() += 1;
+            }
+        }
+    }
+    let empty_operation = Map::new();
+    for operation in operations.iter_mut() {
+        let mut unique = None;
+        for (index, keep_tag) in indexes[&operation.tag].iter().zip([false, true]) {
+            let name = operation_name(operation, options, keep_tag, false);
+            let path_context = IndexedOperation {
+                path: operation.path,
+                method: operation.method,
+                operation: &empty_operation,
+                tag: operation.tag.clone(),
+                name: String::new(),
+                path_parameters: None,
+            };
+            let path_matches = index.path_source_count > 0
+                && operation_name(&path_context, options, keep_tag, false) == name;
+            let reserved_matches = index.reserved_fallback_count > 0
+                && format!(
+                    "{}{}",
+                    operation.method,
+                    path_to_variable_name(operation.path)
+                ) == name;
+            let count = index.stable_counts.get(&name).copied().unwrap_or_default()
+                + if path_matches {
+                    index.path_source_count
+                } else {
+                    0
+                }
+                + if reserved_matches {
+                    index.reserved_fallback_count
+                } else {
+                    0
+                };
+            if count == 1 {
+                unique = Some(name);
+                break;
+            }
+        }
+        operation.name = unique.unwrap_or_else(|| operation_name(operation, options, true, true));
     }
 }
 
@@ -512,10 +568,20 @@ fn operation_name(
     keep_tag: bool,
     keep_prefix: bool,
 ) -> String {
+    resolve_operation_name(operation, options, keep_tag, keep_prefix).0
+}
+
+fn resolve_operation_name(
+    operation: &IndexedOperation<'_>,
+    options: &GenerateOptions,
+    keep_tag: bool,
+    keep_prefix: bool,
+) -> (String, bool) {
     let mut name = operation
         .operation
         .get("operationId")
         .and_then(Value::as_str)
+        .filter(|id| !id.is_empty())
         .map(invalid_identifier)
         .unwrap_or_else(|| {
             format!(
@@ -550,13 +616,16 @@ fn operation_name(
         }
     }
     if RESERVED.contains(&name.as_str()) {
-        format!(
-            "{}{}",
-            operation.method,
-            path_to_variable_name(operation.path)
+        (
+            format!(
+                "{}{}",
+                operation.method,
+                path_to_variable_name(operation.path)
+            ),
+            true,
         )
     } else {
-        name
+        (name, false)
     }
 }
 

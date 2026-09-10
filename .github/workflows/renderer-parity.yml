@@ -1,0 +1,79 @@
+name: Renderer parity
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  generate:
+    name: Generate (${{ matrix.renderer }}, ${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        renderer: [js, native]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.14"
+
+      - uses: dtolnay/rust-toolchain@stable
+        if: matrix.renderer == 'native'
+
+      - run: bun install --frozen-lockfile
+
+      - run: bun run build:native
+        if: matrix.renderer == 'native'
+
+      - name: Check naming regressions
+        if: matrix.renderer == 'native'
+        run: bun run test:parity
+        env:
+          OPENAPI_CODEGEN_REQUIRE_FULL_NATIVE: "1"
+
+      - name: Generate and hash every output file
+        run: bun scripts/renderer-parity.ts generate "${{ matrix.renderer }}" "$RUNNER_TEMP/renderer-parity"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: renderer-${{ matrix.renderer }}-${{ matrix.os }}
+          path: ${{ runner.temp }}/renderer-parity
+          if-no-files-found: error
+          retention-days: 7
+
+  compare:
+    name: Compare generated file hashes
+    needs: generate
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require all generation jobs to succeed
+        if: needs.generate.result != 'success'
+        run: exit 1
+
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.14"
+
+      - run: bun install --frozen-lockfile
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: renderer-*
+          path: ${{ runner.temp }}/renderer-artifacts
+
+      - name: Require identical file lists and SHA-256 hashes
+        run: >-
+          bun scripts/renderer-parity.ts compare "$RUNNER_TEMP/renderer-artifacts"
+          renderer-js-ubuntu-latest renderer-js-macos-latest
+          renderer-native-ubuntu-latest renderer-native-macos-latest
