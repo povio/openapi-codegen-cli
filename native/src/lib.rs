@@ -206,7 +206,8 @@ pub fn compile_data(source: String, yaml: bool, options_json: String) -> Result<
         schema_owners.insert(name, Value::String(tag));
     }
     let circular_schemas = compiler.circular_schema_names();
-    let generated_objects = generated.objects;
+    let mut generated_objects = compiler.extracted_schema_objects();
+    generated_objects.extend(generated.objects);
     let generated_dependencies = generated.dependencies;
     let topology_order: Vec<String> = resolver
         .topology_order
