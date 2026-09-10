@@ -898,6 +898,30 @@ describe("getEndpointsFromOpenAPIDoc", () => {
     const resolver = new SchemaResolver(openApiDoc, generateOptions);
     const endpoints = getEndpointsFromOpenAPIDoc(resolver);
     expect(endpoints).toEqual([
+      ...[
+        ["EmailAdmin", "email", "EmailActivityAdminResponse"],
+        ["PushNotificationAdmin", "push", "PushNotificationActivityAdminResponse"],
+      ].map(([tag, route, response]) => ({
+        description: undefined,
+        summary: "Shared-model import regression example",
+        errors: [],
+        method: "get",
+        operationName: `read${tag}Activity`,
+        parameters: [],
+        path: `/activity/${route}`,
+        tags: [tag],
+        mediaDownload: false,
+        mediaUpload: false,
+        requestFormat: "application/json",
+        response,
+        responseFormat: "application/json",
+        responseDescription: "Activity with shared log level and label",
+        responseStatusCodes: ["200"],
+        responseObject: {
+          description: "Activity with shared log level and label",
+          content: { "application/json": { schema: { $ref: `#/components/schemas/${response}` } } },
+        },
+      })),
       {
         description: "Update an existing pet by Id",
         summary: "Update an existing pet",
@@ -1821,6 +1845,10 @@ describe("getEndpointsFromOpenAPIDoc", () => {
       },
     ]);
     expect(resolver.getZodSchemas()).toStrictEqual({
+      BaseLogLevelEnum: 'z.enum(["info", "error"])',
+      LabelResponse: "z.object({ text: z.string() }).partial()",
+      EmailActivityAdminResponse: "z.object({ level: BaseLogLevelEnum, label: LabelResponse.optional() })",
+      PushNotificationActivityAdminResponse: "z.object({ level: BaseLogLevelEnum, label: LabelResponse.optional() })",
       ApiResponse: "z.object({ code: z.int(), type: z.string(), message: z.string() }).partial()",
       Category: "z.object({ id: z.int(), name: z.string() }).partial()",
       CreateUsersWithListInputBody: "z.array(User)",

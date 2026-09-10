@@ -7,6 +7,9 @@ import type { OpenAPIV3 } from "openapi-types";
 import { resolveConfig } from "../src/generators/core/resolveConfig";
 import { generateCodeFromOpenAPIDoc } from "../src/generators/generateCodeFromOpenAPIDoc";
 import { generateFilesFromNativeOpenAPI } from "../src/native/generateFilesFromNativeOpenAPI";
+import { getNativeBindings } from "../src/native/native-bindings";
+import { GenerateType, type GenerateFileData } from "../src/generators/types/generate";
+import { getTagFileName } from "../src/generators/utils/generate/generate.utils";
 
 export type Manifest = Record<string, string>;
 
@@ -40,23 +43,40 @@ async function generate(renderer: string, output: string) {
   await mkdir(path.dirname(output), { recursive: true });
   await mkdir(output);
   const manifest: Manifest = {};
-  for (const tsNamespaces of [true, false]) {
-    const scenario = tsNamespaces ? "namespaces" : "modules";
+  const scenarios = [
+    { name: "namespaces", tsNamespaces: true, modelsInCommon: true, modelsOnly: false },
+    { name: "modules", tsNamespaces: false, modelsInCommon: false, modelsOnly: false },
+    { name: "local-model-namespaces", tsNamespaces: true, modelsInCommon: false, modelsOnly: true },
+  ];
+  for (const { name: scenario, tsNamespaces, modelsInCommon, modelsOnly } of scenarios) {
     const options = resolveConfig({
       fileConfig: {
         input: "test/petstore.yaml",
         output: "generated",
         tsNamespaces,
-        modelsInCommon: tsNamespaces,
+        modelsInCommon,
+        modelsOnly,
         acl: false,
         restClientImportPath: "@test/app-rest-client",
       },
       params: {},
     });
-    const files =
-      renderer === "js"
-        ? generateCodeFromOpenAPIDoc(document, options)
-        : generateFilesFromNativeOpenAPI(source, true, options);
+    let files: GenerateFileData[] | undefined;
+    if (renderer === "js") {
+      files = generateCodeFromOpenAPIDoc(document, options);
+    } else if (modelsOnly) {
+      // This configuration uses native model rendering through the hybrid pipeline.
+      // Read native output directly so JS fallback cannot mask a regression.
+      const { renderedModels } = getNativeBindings().compileData(source, true, JSON.stringify(options)).data as {
+        renderedModels: Record<string, string>;
+      };
+      files = Object.entries(renderedModels).map(([tag, content]) => ({
+        fileName: path.join(options.output, getTagFileName({ tag, type: GenerateType.Models, options })),
+        content,
+      }));
+    } else {
+      files = generateFilesFromNativeOpenAPI(source, true, options);
+    }
     if (!files?.length) throw new Error(`${renderer} did not generate files for ${scenario}`);
     for (const file of files) {
       const relative = path.relative(options.output, file.fileName);

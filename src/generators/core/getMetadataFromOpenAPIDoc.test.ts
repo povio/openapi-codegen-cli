@@ -193,7 +193,39 @@ describe("getMetadataFromOpenAPIDoc", () => {
     metaType: "primitive",
   };
 
+  const BaseLogLevelEnum: ModelMetadata = {
+    type: "BaseLogLevelEnum",
+    namespace: "CommonModels",
+    importPath: "common/common.models",
+    metaType: "primitive",
+  };
+  const LabelResponse: ModelMetadata = {
+    type: "LabelResponse",
+    namespace: "CommonModels",
+    importPath: "common/common.models",
+    metaType: "object",
+    objectProperties: [{ name: "text", type: "string", isRequired: false, metaType: "primitive" }],
+  };
+  const EmailActivityAdminResponse: ModelMetadata = {
+    type: "EmailActivityAdminResponse",
+    namespace: "EmailAdminModels",
+    importPath: "emailAdmin/emailAdmin.models",
+    metaType: "object",
+    objectProperties: [
+      { name: "level", isRequired: true, ...BaseLogLevelEnum },
+      { name: "label", isRequired: false, ...LabelResponse },
+    ],
+  };
+  const PushNotificationActivityAdminResponse: ModelMetadata = {
+    ...EmailActivityAdminResponse,
+    type: "PushNotificationActivityAdminResponse",
+    namespace: "PushNotificationAdminModels",
+    importPath: "pushNotificationAdmin/pushNotificationAdmin.models",
+  };
+
   const models = (withEnums = true): ModelMetadata[] => [
+    EmailActivityAdminResponse,
+    PushNotificationActivityAdminResponse,
     ...(withEnums ? [FindByStatusStatusEnum] : []),
     Category,
     Tag,
@@ -208,11 +240,31 @@ describe("getMetadataFromOpenAPIDoc", () => {
     GetInventoryResponse,
     User,
     CreateWithListInputBody,
+    BaseLogLevelEnum,
+    LabelResponse,
     Address,
     Customer,
   ];
 
   const queries: QueryMetadata[] = [
+    {
+      name: "useReadActivity",
+      importPath: "emailAdmin/emailAdmin.queries",
+      namespace: "EmailAdminQueries",
+      isQuery: true,
+      isMutation: false,
+      params: [],
+      response: { ...EmailActivityAdminResponse },
+    },
+    {
+      name: "useReadActivity",
+      importPath: "pushNotificationAdmin/pushNotificationAdmin.queries",
+      namespace: "PushNotificationAdminQueries",
+      isQuery: true,
+      isMutation: false,
+      params: [],
+      response: { ...PushNotificationActivityAdminResponse },
+    },
     {
       name: "useUpdate",
       importPath: "pet/pet.queries",

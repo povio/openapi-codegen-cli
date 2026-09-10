@@ -52,6 +52,7 @@ pub fn render_model_proxies(
                 document,
                 schemas,
                 schema_refs,
+                schema_owners,
                 generated_objects,
                 circular_schemas,
                 &options.default_tag,
@@ -217,7 +218,11 @@ fn render_local_models(
             let namespace_prefixes = schema_owners
                 .values()
                 .filter_map(Value::as_str)
-                .map(|owner| format!("{}Models.", capitalize(owner)))
+                .map(|owner| {
+                    let suffix = options.configs.get("models")
+                        .map(|config| config.namespace_suffix.as_str()).unwrap_or("Models");
+                    format!("{}{suffix}.", capitalize(owner))
+                })
                 .collect::<HashSet<_>>();
             for value in tag_schemas.values_mut() {
                 let Value::String(code) = value else {
@@ -232,6 +237,7 @@ fn render_local_models(
             document,
             &tag_schemas,
             schema_refs,
+            schema_owners,
             generated_objects,
             circular_schemas,
             &tag,
@@ -243,7 +249,14 @@ fn render_local_models(
                 let owner_tag = decapitalize(&owner);
                 lines.push(format!(
                     "import {{ {} }} from \"{import_root}{owner_tag}/{owner_tag}.{model_suffix}\";",
-                    names.join(", ")
+                    if options.ts_namespaces {
+                        let suffix = options.configs.get("models")
+                            .map(|config| config.namespace_suffix.as_str())
+                            .unwrap_or("Models");
+                        format!("{}{suffix}", capitalize(&owner))
+                    } else {
+                        names.join(", ")
+                    }
                 ));
             }
             content = content.replacen("import { z } from \"zod\";", &lines.join("\n"), 1);
@@ -424,6 +437,7 @@ fn render_common_models(
     document: &Value,
     schemas: &Map<String, Value>,
     schema_refs: &Map<String, Value>,
+    schema_owners: &Map<String, Value>,
     generated_objects: &Map<String, Value>,
     circular_schemas: &[String],
     namespace_tag: &str,
@@ -436,6 +450,27 @@ fn render_common_models(
         .map(|config| config.namespace_suffix.as_str())
         .unwrap_or("Models");
     let namespace = format!("{}{}", capitalize(namespace_tag), namespace_suffix);
+    let property_ref_names: HashMap<&str, String> = schema_refs
+        .iter()
+        .filter_map(|(name, reference)| {
+            let reference = reference.as_str()?;
+            let type_name = remove_suffix(name, suffix);
+            let owner = if options.models_in_common || !options.split_by_tags {
+                Some(options.default_tag.as_str())
+            } else {
+                schema_owners.get(name).and_then(Value::as_str)
+            };
+            let type_name = if let Some(owner) = owner
+                && options.ts_namespaces
+                && owner != namespace_tag
+            {
+                format!("{}{namespace_suffix}.{type_name}", capitalize(owner))
+            } else {
+                type_name.to_string()
+            };
+            Some((reference, type_name))
+        })
+        .collect();
     let mut enum_objects = HashMap::default();
     if let Some(component_schemas) = document.pointer("/components/schemas") {
         collect_enum_objects(component_schemas, &mut enum_objects);
@@ -463,6 +498,7 @@ fn render_common_models(
                                 &enum_objects,
                                 circular_schemas,
                                 suffix,
+                                &property_ref_names,
                                 options,
                             )
                         })
@@ -491,6 +527,7 @@ fn render_common_schema_lines(
     enum_objects: &HashMap<String, Value>,
     circular_schemas: &[String],
     suffix: &str,
+    property_ref_names: &HashMap<&str, String>,
     options: &GenerateOptions,
 ) -> Option<Vec<String>> {
     let code = code.as_str()?;
@@ -522,7 +559,7 @@ fn render_common_schema_lines(
             ));
         }
         let mut properties = IndexMap::default();
-        collect_property_docs(document, schema, "", &mut properties, suffix);
+        collect_property_docs(document, schema, "", &mut properties, property_ref_names);
         for (property, (ty, description)) in properties {
             lines.push(format!(
                 " * @property {{ {ty} }} {property} {} ",
@@ -744,18 +781,18 @@ fn collect_property_docs(
     schema: &Value,
     prefix: &str,
     properties: &mut IndexMap<String, (String, String)>,
-    schema_suffix: &str,
+    property_ref_names: &HashMap<&str, String>,
 ) {
     if let Some(all_of) = schema.get("allOf").and_then(Value::as_array) {
         for member in all_of.iter().filter(|member| member.get("$ref").is_some()) {
             if let Some(reference) = member.get("$ref").and_then(Value::as_str) {
                 if let Some(resolved) = resolve_document_ref(document, reference) {
-                    collect_property_docs(document, resolved, prefix, properties, schema_suffix);
+                    collect_property_docs(document, resolved, prefix, properties, property_ref_names);
                 }
             }
         }
         for member in all_of.iter().filter(|member| member.get("$ref").is_none()) {
-            collect_property_docs(document, member, prefix, properties, schema_suffix);
+            collect_property_docs(document, member, prefix, properties, property_ref_names);
         }
     }
     if let Some(object) = schema.get("properties").and_then(Value::as_object) {
@@ -770,7 +807,7 @@ fn collect_property_docs(
                 .and_then(Value::as_str)
                 .and_then(|reference| resolve_document_ref(document, reference))
                 .unwrap_or(property_schema);
-            let ty = property_doc_type(document, property_schema, schema_suffix);
+            let ty = property_doc_type(document, property_schema, property_ref_names);
             let preserve_existing_object = properties.contains_key(&key)
                 && property_schema.get("type").and_then(Value::as_str) == Some("object");
             if !preserve_existing_object {
@@ -791,7 +828,7 @@ fn collect_property_docs(
                                 items,
                                 &format!("{key}.[0]"),
                                 properties,
-                                schema_suffix,
+                                property_ref_names,
                             );
                         }
                     }
@@ -801,7 +838,7 @@ fn collect_property_docs(
                         property_schema,
                         &key,
                         properties,
-                        schema_suffix,
+                        property_ref_names,
                     );
                 }
             } else if composite {
@@ -818,7 +855,7 @@ fn collect_property_docs(
                                 member,
                                 &key,
                                 properties,
-                                schema_suffix,
+                                property_ref_names,
                             );
                         }
                     }
@@ -838,24 +875,28 @@ fn collect_property_docs(
         properties.insert(
             key.clone(),
             (
-                property_doc_type(document, additional, schema_suffix),
+                property_doc_type(document, additional, property_ref_names),
                 schema_description(additional),
             ),
         );
-        collect_property_docs(document, additional, &key, properties, schema_suffix);
+        collect_property_docs(document, additional, &key, properties, property_ref_names);
     }
 }
 
-fn property_doc_type(document: &Value, schema: &Value, schema_suffix: &str) -> String {
+fn property_doc_type(
+    document: &Value,
+    schema: &Value,
+    property_ref_names: &HashMap<&str, String>,
+) -> String {
     if let Some(reference) = schema.get("$ref").and_then(Value::as_str) {
-        return property_ref_type(reference);
+        return property_ref_type(reference, property_ref_names);
     }
     if schema.get("type").and_then(Value::as_str) == Some("array") {
         let item_type = schema
             .get("items")
             .and_then(|items| {
                 if let Some(reference) = items.get("$ref").and_then(Value::as_str) {
-                    Some(property_ref_type(reference))
+                    Some(property_ref_type(reference, property_ref_names))
                 } else {
                     Some(
                         items
@@ -875,7 +916,7 @@ fn property_doc_type(document: &Value, schema: &Value, schema_suffix: &str) -> S
             .and_then(Value::as_array)
             .and_then(|values| values.first())
         {
-            return property_doc_type(document, first, schema_suffix);
+            return property_doc_type(document, first, property_ref_names);
         }
     }
     schema
@@ -885,7 +926,10 @@ fn property_doc_type(document: &Value, schema: &Value, schema_suffix: &str) -> S
         .to_string()
 }
 
-fn property_ref_type(reference: &str) -> String {
+fn property_ref_type(reference: &str, property_ref_names: &HashMap<&str, String>) -> String {
+    if let Some(name) = property_ref_names.get(reference) {
+        return name.clone();
+    }
     let mut name = reference
         .rsplit('/')
         .next()
