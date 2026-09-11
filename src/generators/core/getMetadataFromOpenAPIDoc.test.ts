@@ -248,6 +248,15 @@ describe("getMetadataFromOpenAPIDoc", () => {
 
   const queries: QueryMetadata[] = [
     {
+      name: "useGet",
+      namespace: "HealthQueries",
+      importPath: "health/health.queries",
+      isMutation: false,
+      isQuery: true,
+      params: [],
+      response: { metaType: "primitive", type: "void" },
+    },
+    {
       name: "useReadActivity",
       importPath: "emailAdmin/emailAdmin.queries",
       namespace: "EmailAdminQueries",

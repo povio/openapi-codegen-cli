@@ -2,7 +2,7 @@ import { parse, stringify } from "yaml";
 import { readFileSync } from "node:fs";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { parityScenarios, optionCases, lifecycleOptions } from "../../scripts/renderer-parity-configs";
-import { parityFixtures, renderParityCase } from "../../scripts/renderer-parity-cases";
+import { parityFixtures, readParityFixture, renderParityCase } from "../../scripts/renderer-parity-cases";
 import { getNativeBindings } from "./native-bindings";
 
 afterEach(() => {
@@ -22,8 +22,8 @@ describe("configuration coverage inventory", () => {
 });
 
 for (const fixture of parityFixtures) {
-  const source = readFileSync(fixture, "utf8");
-  describe(`all renderer configurations: ${fixture}`, () => {
+  const source = readParityFixture(fixture);
+  describe(`all renderer configurations: ${fixture.name}`, () => {
     test.each(parityScenarios)("$name", (scenario) => {
       vi.stubEnv("OPENAPI_CODEGEN_NATIVE", "1");
       const binding = vi.spyOn(getNativeBindings(), "compileData");
@@ -44,7 +44,7 @@ for (const fixture of parityFixtures) {
 
 test("canonical layouts retain full native rendering and local namespaces use native hybrid", () => {
   vi.stubEnv("OPENAPI_CODEGEN_NATIVE", "1");
-  const source = readFileSync(parityFixtures[0], "utf8");
+  const source = readParityFixture(parityFixtures[0]);
   for (const [tsNamespaces, modelsInCommon] of [
     [true, true],
     [false, false],
@@ -116,4 +116,21 @@ test("model owner resolution preserves model-like text inside validation regexes
   const api = (files: typeof actual.files) => files.find((f) => f.fileName.endsWith("emailAdmin.api.ts"))!.content;
   expect(api(expected.files)).toContain(".regex(/EmailAdminModels.BaseLogLevelEnumSchema/)");
   expect(api(actual.files)).toBe(api(expected.files));
+});
+
+test.each([false, true])("Petstore empty shared model scenario is active with modelsOnly=%s", (modelsOnly) => {
+  const source = readParityFixture(parityFixtures.find((fixture) => fixture.name === "petstore-health")!);
+  const scenario = parityScenarios.find((entry) => entry.name === `layout-${modelsOnly ? "010111" : "000111"}`)!;
+  expect(scenario).toBeDefined();
+  for (const renderer of ["js", "native"] as const) {
+    vi.stubEnv("OPENAPI_CODEGEN_NATIVE", renderer === "native" ? "1" : "0");
+    const result = renderParityCase(source, scenario, renderer);
+    expect(result.route).toBe(renderer === "native" ? "full-native" : "js");
+    expect(result.files.some((file) => file.fileName.endsWith("common.models.ts"))).toBe(false);
+    if (modelsOnly) {
+      expect(result.files.every((file) => file.fileName.endsWith(".models.ts"))).toBe(true);
+    } else {
+      expect(result.files.find((file) => file.fileName.endsWith("health.api.ts"))?.content).toContain("/health");
+    }
+  }
 });
