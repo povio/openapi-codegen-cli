@@ -112,7 +112,8 @@
     "dev:check": "bun run start check --config ./test/config.mjs",
     "snapshot:openapi-localhost": "bun ./scripts/snapshot-openapi-localhost.mjs",
     "bench:vite-codegen": "bun ./scripts/benchmark-vite-codegen.mjs",
-    "verify:tree-shaking": "bun run build:ts && bun ./scripts/verify-tree-shaking.mjs"
+    "verify:tree-shaking": "bun run build:ts && bun ./scripts/verify-tree-shaking.mjs",
+    "verify:optional-axios": "bun run build:ts && node ./scripts/verify-optional-axios.mjs"
   },
   "dependencies": {
     "@orpc/contract": "^1.14.3",

@@ -1,4 +1,3 @@
-import type { AxiosError, AxiosResponseHeaders } from "axios";
 import { z } from "zod";
 
 import { isAxiosErrorLike } from "./http-error.utils";
@@ -28,7 +27,7 @@ export namespace RestUtils {
     return null;
   };
 
-  export const doesServerErrorMessageContain = (e: AxiosError, text: string): boolean => {
+  export const doesServerErrorMessageContain = (e: unknown, text: string): boolean => {
     const message = extractServerErrorMessage(e);
     if (message === null || message === undefined) {
       return false;
@@ -51,8 +50,11 @@ export namespace RestUtils {
     return null;
   };
 
-  export const extractContentDispositionFilename = (headers: AxiosResponseHeaders) => {
-    const contentDisposition = headers["content-disposition"] as string | undefined;
-    return contentDisposition ? /filename=["']?([^"';]+)/i.exec(contentDisposition)?.[1] : undefined;
+  export const extractContentDispositionFilename = (headers: Headers | Record<string, unknown>) => {
+    const contentDisposition =
+      headers instanceof Headers ? headers.get("content-disposition") : headers["content-disposition"];
+    return typeof contentDisposition === "string"
+      ? /filename=["']?([^"';]+)/i.exec(contentDisposition)?.[1]
+      : undefined;
   };
 }
