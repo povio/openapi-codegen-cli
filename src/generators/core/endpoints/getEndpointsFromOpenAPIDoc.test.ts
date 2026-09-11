@@ -898,6 +898,21 @@ describe("getEndpointsFromOpenAPIDoc", () => {
     const resolver = new SchemaResolver(openApiDoc, generateOptions);
     const endpoints = getEndpointsFromOpenAPIDoc(resolver);
     expect(endpoints).toEqual([
+      {
+        description: undefined,
+        summary: "No-model response for empty shared model parity coverage",
+        errors: [],
+        method: "get",
+        operationName: "getHealth",
+        parameters: [],
+        path: "/health",
+        tags: ["Health"],
+        mediaDownload: false,
+        mediaUpload: false,
+        requestFormat: "application/json",
+        response: "z.void()",
+        responseStatusCodes: ["204"],
+      },
       ...[
         ["EmailAdmin", "email", "EmailActivityAdminResponse"],
         ["PushNotificationAdmin", "push", "PushNotificationActivityAdminResponse"],

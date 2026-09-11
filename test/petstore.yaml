@@ -38,6 +38,14 @@ tags:
   - name: user
     description: Operations about user
 paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: No-model response for empty shared model parity coverage
+      operationId: getHealth
+      responses:
+        "204":
+          description: Healthy
   /activity/email:
     get:
       tags: [EmailAdmin]

@@ -1,10 +1,25 @@
-import { parse } from "yaml";
+import { readFileSync } from "node:fs";
+import { parse, stringify } from "yaml";
 import { resolveConfig } from "../src/generators/core/resolveConfig";
 import { generateCodeFromOpenAPIDoc } from "../src/generators/generateCodeFromOpenAPIDoc";
 import { generateFilesFromNativeOpenAPI } from "../src/native/generateFilesFromNativeOpenAPI";
 import { type ParityScenario } from "./renderer-parity-configs";
 
-export const parityFixtures = ["test/petstore.yaml", "test/configuration.yaml"];
+export const parityFixtures = [
+  { name: "petstore", file: "test/petstore.yaml" },
+  { name: "configuration", file: "test/configuration.yaml" },
+  { name: "petstore-health", file: "test/petstore.yaml", healthOnly: true },
+];
+
+export function readParityFixture(fixture: (typeof parityFixtures)[number]) {
+  const source = readFileSync(fixture.file, "utf8");
+  if (!fixture.healthOnly) return source;
+  const document = parse(source);
+  const health = document.paths["/health"];
+  if (!health) throw new Error("Petstore health parity endpoint is missing");
+  // A schema-free Petstore slice exercises omission across every configuration.
+  return stringify({ ...document, paths: { "/health": health }, components: {} });
+}
 
 export function renderParityCase(source: string, scenario: ParityScenario, renderer: "js" | "native") {
   let options;

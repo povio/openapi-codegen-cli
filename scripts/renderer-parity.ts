@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { parityScenarios } from "./renderer-parity-configs";
-import { parityFixtures, renderParityCase } from "./renderer-parity-cases";
+import { parityFixtures, readParityFixture, renderParityCase } from "./renderer-parity-cases";
 
 export type Manifest = Record<string, string>;
 
@@ -36,9 +36,9 @@ async function generate(renderer: string, output: string) {
   const manifest: Manifest = {};
   const routes: Record<string, string> = {};
   for (const fixture of parityFixtures) {
-    const source = await readFile(fixture, "utf8");
+    const source = readParityFixture(fixture);
     for (const scenario of parityScenarios) {
-      const prefix = `${path.basename(fixture, ".yaml")}/${scenario.name}`;
+      const prefix = `${fixture.name}/${scenario.name}`;
       const { files, route } = renderParityCase(source, scenario, renderer);
       routes[prefix] = route;
       // Include even deliberately empty and rejected cases in the hash contract.
