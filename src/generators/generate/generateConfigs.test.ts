@@ -106,6 +106,10 @@ describe("generateConfigs builderConfigs", () => {
 
     const configsFile = files.find((file) => file.fileName.endsWith("/items/items.configs.ts"));
 
+    expect(configsFile?.content).toContain(
+      'import { useMutationEffects, type MutationEffectsOptions } from "@povio/openapi-codegen-cli/query";',
+    );
+    expect(configsFile?.content).not.toContain('from "@povio/openapi-codegen-cli";');
     expect(configsFile?.content).toContain("useMutationEffects<QueryModule.items>");
     expect(configsFile?.content).not.toContain("useMutationEffects<typeof QueryModule.items>");
     expect(configsFile?.content).toContain("& MutationEffectsOptions)");

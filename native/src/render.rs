@@ -2665,7 +2665,11 @@ fn render_query_module(
     lines.push(format!(
         "import {{ {} }} from \"{}\";",
         query_types.join(", "),
-        options.query_types_import_path
+        if options.query_types_import_path == "@povio/openapi-codegen-cli" {
+            "@povio/openapi-codegen-cli/query"
+        } else {
+            &options.query_types_import_path
+        }
     ));
     if endpoints
         .iter()

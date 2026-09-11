@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { OpenAPIV3 } from "openapi-types";
 
+import { generateFilesFromNativeOpenAPI } from "@/native/generateFilesFromNativeOpenAPI";
+
 import { DEFAULT_GENERATE_OPTIONS } from "@/generators/const/options.const";
 import { generateCodeFromOpenAPIDoc } from "@/generators/generateCodeFromOpenAPIDoc";
 
@@ -511,6 +513,33 @@ describe("generateQueries mutationEffects + infiniteQuery", () => {
     expect(queriesFile?.content).toContain('from "@/data/useMutationEffects";');
     expect(queriesFile?.content).toContain('from "@/data/acl/useAclCheck";');
     expect(apiFile?.content).toContain('from "@/data/zod.extended";');
+  });
+
+  it.each(["native", "axios"] as const)("uses only package subpaths for %s runtime imports", (restClient) => {
+    const options = {
+      ...DEFAULT_GENERATE_OPTIONS,
+      output: "test-output",
+      restClient,
+      splitByTags: true,
+      modelsInCommon: true,
+      tsNamespaces: true,
+      inlineEndpoints: false,
+      workspaceContext: [],
+      builderConfigs: false,
+    };
+    const tsFiles = generateCodeFromOpenAPIDoc(structuredClone(openApiDoc), options);
+    const nativeFiles = generateFilesFromNativeOpenAPI(JSON.stringify(openApiDoc), false, options);
+    expect(nativeFiles).toBeDefined();
+    for (const files of [tsFiles, nativeFiles!]) {
+      const appClient = files.find((file) => file.fileName.endsWith("/app-rest-client.ts"));
+      expect(appClient?.content).toContain(`from "@povio/openapi-codegen-cli/${restClient}";`);
+      for (const file of files) {
+        expect(file.content).not.toMatch(/import\s+(?!type\b)[^;]*from\s+["']@povio\/openapi-codegen-cli["']/);
+        if (restClient === "native") {
+          expect(file.content).not.toContain('from "@povio/openapi-codegen-cli/axios"');
+        }
+      }
+    }
   });
 
   it("generates an Axios-free native REST client mode", () => {

@@ -1,3 +1,4 @@
+import { PACKAGE_IMPORT_PATH, QUERY_PACKAGE_IMPORT_PATH } from "@/generators/const/package.const";
 import { ACL_APP_ABILITY_FILE } from "@/generators/const/acl.const";
 import { APP_REST_CLIENT_FILE, QUERY_MODULES_FILE } from "@/generators/const/deps.const";
 import { DEFAULT_GENERATE_OPTIONS } from "@/generators/const/options.const";
@@ -49,7 +50,9 @@ export function getQueryModulesImportPath(options: GenerateOptions) {
 }
 
 export function getQueryTypesImportPath(options: GenerateOptions) {
-  return options.queryTypesImportPath;
+  return options.queryTypesImportPath === PACKAGE_IMPORT_PATH
+    ? QUERY_PACKAGE_IMPORT_PATH
+    : options.queryTypesImportPath;
 }
 
 export function getAppAbilitiesImportPath(options: GenerateOptions) {
