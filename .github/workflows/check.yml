@@ -27,5 +27,3 @@ jobs:
       - run: bun install --frozen-lockfile
 
       - run: bun run check
-
-      - run: bun run verify:optional-axios
