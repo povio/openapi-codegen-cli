@@ -4,9 +4,11 @@
 
 **NOTE:** Version 1+ requires zod v4 and is not compatible with zod v3.
 
-**NOTE:** Version 2+ includes supporting classes/types/components for the generated code as well as auth, therefore it has peerDependencies for @tanstack/react-query, axios, react and zod. @casl/ability and @casl/react are also required if you are generating ACL checks and/or using imports from "@povio/openapi-codegen-cli/acl"!
+**NOTE:** The package includes supporting classes, types, components, and auth utilities. Zod is a required peer dependency. Axios, @tanstack/react-query, react, i18next, @casl/ability, @casl/react, and Vite are optional peers; install the ones used by your chosen features.
 
-Use this tool to generate code (Zod schemas, TypeScript types, API definitions, and React queries) from an OpenAPI v3 specification. API definitions are generated to use a REST client wrapper that utilizes Axios. React queries are generated in alignment with our code standards, without the need for explicit types.
+Axios is required when using the Axios transport (the default), the `/axios` entry point, or the root runtime exports. Projects using the native transport can omit Axios: generate with `--restClient native` and import `NativeRestClient` from `@povio/openapi-codegen-cli/native`. CLI-only usage and the `/generator`, `/tiny`, `/vite`, and `/metro` entry points do not require Axios.
+
+Use this tool to generate code (Zod schemas, TypeScript types, API definitions, and React queries) from an OpenAPI v3 specification. API definitions use a REST client wrapper with either Axios or the native transport. React queries are generated in alignment with our code standards, without the need for explicit types.
 
 The tool partially leverages code from [openapi-zod-client](https://github.com/astahmer/openapi-zod-client) repository.
 
