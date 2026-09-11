@@ -1,3 +1,4 @@
+import { rolldown } from "rolldown";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { cpSync, mkdtempSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
@@ -37,7 +38,7 @@ try {
       if (id === "axios" || id.startsWith("axios/")) throw new Error("AXIOS_UNAVAILABLE");
       return next(id, context);
     }});
-    for (const entry of ["", "/native", "/rest", "/errors", "/query", "/config", "/auth", "/generator", "/tiny", "/vite", "/metro", "/zod", "/acl"]) {
+    for (const entry of ["/native", "/rest", "/errors", "/query", "/config", "/auth", "/generator", "/tiny", "/vite", "/metro", "/zod", "/acl"]) {
       await import("${manifest.name}" + entry);
     }
     const { RestUtils } = await import("${manifest.name}/errors");
@@ -46,10 +47,41 @@ try {
   `,
   );
   run(["runtime.mjs"]);
+  // A root barrel needs a bundler to remove unused peer-dependent exports.
+  // Resolve against the isolated consumer, where Axios is actually absent.
+  writeFileSync(
+    path.join(fixture, "entry.mjs"),
+    `
+    import { NativeRestClient, RestUtils } from "${manifest.name}";
+    export { NativeRestClient, RestUtils };
+  `,
+  );
+  const bundle = await rolldown({
+    input: path.join(fixture, "entry.mjs"),
+    platform: "browser",
+    external: ["zod"],
+  });
+  try {
+    const { output } = await bundle.generate({ format: "esm" });
+    const code = output
+      .filter((item) => item.type === "chunk")
+      .map((item) => item.code)
+      .join("\n");
+    assert.doesNotMatch(code, /from\s+["']axios["']|import\(["']axios["']\)|require\(["']axios["']\)/);
+    writeFileSync(path.join(fixture, "bundle.mjs"), code);
+    run([
+      "--input-type=module",
+      "-e",
+      'const m = await import("./bundle.mjs"); if (typeof m.NativeRestClient !== "function" || !m.RestUtils) process.exit(1)',
+    ]);
+  } finally {
+    await bundle.close();
+  }
   writeFileSync(
     path.join(fixture, "consumer.ts"),
     `
-    import { NativeRestClient, ErrorHandler, RestUtils } from "${manifest.name}";
+    import { NativeRestClient } from "${manifest.name}/native";
+    import { ErrorHandler, RestUtils } from "${manifest.name}/errors";
     import { NativeHttpError } from "${manifest.name}/native";
     import { SharedErrorHandler } from "${manifest.name}/errors";
     export { NativeRestClient, NativeHttpError, ErrorHandler, SharedErrorHandler };
@@ -80,7 +112,9 @@ try {
   writeFileSync(
     path.join(fixture, "consumer.ts"),
     `
-    import { RestClient, RestInterceptor } from "${manifest.name}/axios";
+    import { RestClient, RestInterceptor } from "${manifest.name}";
+    import type { RequestInfo, RequestConfig, Response, IRestClient } from "${manifest.name}";
+    export type { RequestInfo, RequestConfig, Response, IRestClient };
     import { RestUtils } from "${manifest.name}/errors";
     import { AxiosHeaders } from "axios";
     export { RestClient, RestInterceptor };
@@ -89,7 +123,9 @@ try {
   );
   run([path.resolve("node_modules/typescript/bin/tsc"), "-p", "tsconfig.json"]);
   run(["--input-type=module", "-e", `await import("${manifest.name}/axios")`]);
-  console.log("Runtime imports and consumer declarations pass without Axios; /axios works when installed.");
+  console.log(
+    "Native subpaths and tree-shaken root work without Axios; legacy root exports type-check with Axios installed.",
+  );
 } finally {
   rmSync(fixture, { recursive: true, force: true });
 }
