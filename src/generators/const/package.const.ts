@@ -1,4 +1,5 @@
 export const PACKAGE_IMPORT_PATH = "@povio/openapi-codegen-cli";
+export const AXIOS_PACKAGE_IMPORT_PATH = `${PACKAGE_IMPORT_PATH}/axios`;
 export const NATIVE_PACKAGE_IMPORT_PATH = `${PACKAGE_IMPORT_PATH}/native`;
 export const REST_PACKAGE_IMPORT_PATH = `${PACKAGE_IMPORT_PATH}/rest`;
 export const ERRORS_PACKAGE_IMPORT_PATH = `${PACKAGE_IMPORT_PATH}/errors`;

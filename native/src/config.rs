@@ -116,7 +116,7 @@ pub struct GenerateOptions {
     pub mutation_default_on_error: bool,
     #[serde(default)]
     pub query_types_import_path: String,
-    #[serde(default = "default_package_import_path")]
+    #[serde(default = "default_query_import_path")]
     pub mutation_effects_import_path: String,
     #[serde(default = "default_true")]
     pub check_acl: bool,
@@ -156,12 +156,21 @@ fn default_total_items() -> String {
 fn default_limit() -> String {
     "limit".into()
 }
-fn default_package_import_path() -> String {
-    "@povio/openapi-codegen-cli".into()
+fn default_query_import_path() -> String {
+    "@povio/openapi-codegen-cli/query".into()
 }
 fn default_acl_import_path() -> String {
     "@povio/openapi-codegen-cli/acl".into()
 }
 fn default_zod_import_path() -> String {
     "@povio/openapi-codegen-cli/zod".into()
+}
+
+#[cfg(test)]
+mod runtime_import_tests {
+    #[test]
+    fn mutation_effects_default_uses_query_subpath() {
+        let options: super::GenerateOptions = serde_json::from_str("{}").unwrap();
+        assert_eq!(options.mutation_effects_import_path, "@povio/openapi-codegen-cli/query");
+    }
 }

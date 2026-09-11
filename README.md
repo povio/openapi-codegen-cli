@@ -4,9 +4,11 @@
 
 **NOTE:** Version 1+ requires zod v4 and is not compatible with zod v3.
 
-**NOTE:** Version 2+ includes supporting classes/types/components for the generated code as well as auth, therefore it has peerDependencies for @tanstack/react-query, axios, react and zod. @casl/ability and @casl/react are also required if you are generating ACL checks and/or using imports from "@povio/openapi-codegen-cli/acl"!
+**NOTE:** The package includes supporting classes, types, components, and auth utilities. Zod is a required peer dependency. Axios, @tanstack/react-query, react, i18next, @casl/ability, @casl/react, and Vite are optional peers; install the ones used by your chosen features.
 
-Use this tool to generate code (Zod schemas, TypeScript types, API definitions, and React queries) from an OpenAPI v3 specification. API definitions are generated to use a REST client wrapper that utilizes Axios. React queries are generated in alignment with our code standards, without the need for explicit types.
+Axios is required when using the Axios transport (the default) or the `/axios` entry point. Projects using the native transport can omit Axios: generate with `--restClient native` and import `NativeRestClient` from `@povio/openapi-codegen-cli/native`. The root exports remain available for compatibility and support tree-shaking in consumer bundles. For direct runtime imports without bundling, use `/native` and `/errors` to avoid loading the Axios client. The `/axios` entry point is also available for Axios-specific imports. CLI-only usage and the `/generator`, `/tiny`, `/vite`, and `/metro` entry points do not require Axios.
+
+Use this tool to generate code (Zod schemas, TypeScript types, API definitions, and React queries) from an OpenAPI v3 specification. API definitions use a REST client wrapper with either Axios or the native transport. React queries are generated in alignment with our code standards, without the need for explicit types.
 
 The tool partially leverages code from [openapi-zod-client](https://github.com/astahmer/openapi-zod-client) repository.
 
@@ -33,7 +35,7 @@ The CLI supports TypeScript configuration files to simplify command execution an
 Create an `openapi-codegen.config.ts` file:
 
 ```typescript
-import { OpenAPICodegenConfig } from "@povio/openapi-codegen-cli";
+import type { OpenAPICodegenConfig } from "@povio/openapi-codegen-cli";
 
 const config: OpenAPICodegenConfig = {
   input: "http://localhost:4000/docs-json/",
@@ -210,7 +212,7 @@ directly in query callbacks, error boundaries, or their own normalization layer.
 In order to add interceptors to the used REST client, you must create your own instance of a RestClient and pass your implemented interceptors into the constructor. Make sure to set `restClientImportPath` in your openapi generation configuration too.
 
 ```ts
-import { RestInterceptor } from "@povio/openapi-codegen-cli";
+import { RestInterceptor } from "@povio/openapi-codegen-cli/axios";
 
 import { ACCESS_TOKEN_KEY } from "@/config/jwt.config";
 
@@ -227,7 +229,7 @@ export const AuthorizationHeaderInterceptor = new RestInterceptor((client) => {
 ```
 
 ```ts
-import { RestClient } from "@povio/openapi-codegen-cli";
+import { RestClient } from "@povio/openapi-codegen-cli/axios";
 
 import { AuthorizationHeaderInterceptor } from "@/clients/rest/interceptors/authorization-header.interceptor";
 import { AppConfig } from "@/config/app.config";
@@ -256,7 +258,8 @@ export default config;
 Set `mutationDefaultOnError: true` in codegen config (or pass `--mutationDefaultOnError`) to let generated mutation hooks fall back to `OpenApiQueryConfig.Provider` when a mutation call does not define its own `onError`.
 
 ```tsx
-import { ErrorHandler, OpenApiQueryConfig } from "@povio/openapi-codegen-cli";
+import { ErrorHandler } from "@povio/openapi-codegen-cli/errors";
+import { OpenApiQueryConfig } from "@povio/openapi-codegen-cli/query";
 
 <OpenApiQueryConfig.Provider
   onError={(error) => {
@@ -282,7 +285,7 @@ Use `OpenApiQueryConfig.Provider` to allow generated GET query hooks to return i
 Set `workspaceContext` to a list of param names in codegen config (or pass `--workspaceContext officeId,projectId`) and wrap your app subtree with `OpenApiWorkspaceContext.Provider` if generated hooks frequently repeat workspace-scoped params.
 
 ```tsx
-import { OpenApiWorkspaceContext } from "@povio/openapi-codegen-cli";
+import { OpenApiWorkspaceContext } from "@povio/openapi-codegen-cli/config";
 // openapi-codegen.config.ts -> { workspaceContext: ["officeId", "projectId"] }
 
 <OpenApiWorkspaceContext.Provider values={{ officeId: "office_123" }}>
@@ -554,3 +557,22 @@ export class JSONDto {
   nested: NestedDto;
 }
 ```
+
+### Runtime import paths
+
+Use package subpaths for runtime imports. Pure `import type` imports may use the package root.
+
+| Runtime exports | Subpath |
+| --- | --- |
+| `AuthContext`, `AuthGuard` | `/auth` |
+| `AbilityContext`, `useAclCheck`, `Can`, `createAclGuard` | `/acl` |
+| `ErrorHandler`, `SharedErrorHandler`, `ApplicationException`, `DomainErrorRegistry` | `/errors` |
+| `useMutationEffects`, `OpenApiQueryConfig` | `/query` |
+| `OpenApiRouter`, `OpenApiWorkspaceContext`, `useWorkspaceContext`, translation configuration | `/config` |
+| `ZodExtended` | `/zod` |
+| `HttpError`, transport types | `/rest` |
+| `NativeRestClient` | `/native` |
+| `RestClient`, `RestInterceptor` (Axios transport) | `/axios` |
+
+For example: `import { AuthContext, AuthGuard } from "@povio/openapi-codegen-cli/auth"`.
+Custom application helpers should import error helpers from `/errors`, `AbilityContext` from `/acl`, and mutation effects from `/query`.
