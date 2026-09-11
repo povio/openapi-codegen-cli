@@ -77,7 +77,10 @@ pub fn render_model_proxies(
         let (proxies, proxies_elapsed) = proxies.join().unwrap();
         (common, proxies, common_elapsed, proxies_elapsed)
     });
-    rendered.insert(options.default_tag.clone(), Value::String(common));
+    // Match JavaScript: an empty schema collection emits no shared model file.
+    if !schemas.is_empty() {
+        rendered.insert(options.default_tag.clone(), Value::String(common));
+    }
     rendered.extend(proxies);
     if std::env::var_os("OPENAPI_NATIVE_PROFILE").is_some() {
         eprintln!(

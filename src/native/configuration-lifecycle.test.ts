@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, rm, stat, utimes, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, stat, utimes, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { stringify } from "yaml";
@@ -86,4 +86,73 @@ describe("configuration input and output lifecycle", () => {
       await rm(directory, { recursive: true, force: true });
     }
   });
+});
+
+describe("empty shared models", () => {
+  test.each(cases.flatMap((entry) => [false, true].map((modelsOnly) => ({ ...entry, modelsOnly }))))(
+    "$renderer / $format / incremental=$incremental / modelsOnly=$modelsOnly preserves shared enums",
+    async ({ renderer, format, incremental, modelsOnly }) => {
+      const directory = await mkdtemp(path.join(os.tmpdir(), "codegen-empty-models-"));
+      const input = path.join(directory, `schema.${format}`);
+      const output = path.join(directory, "output");
+      const common = path.join(output, "common/common.models.ts");
+      const previousNative = process.env.OPENAPI_CODEGEN_NATIVE;
+      const previousRequired = process.env.OPENAPI_CODEGEN_REQUIRE_FULL_NATIVE;
+      process.env.OPENAPI_CODEGEN_NATIVE = renderer === "native" ? "1" : "0";
+      process.env.OPENAPI_CODEGEN_REQUIRE_FULL_NATIVE = "1";
+      try {
+        const document = {
+          openapi: "3.0.3",
+          info: { title: "No models", version: "1" },
+          paths: {
+            "/health": {
+              get: {
+                operationId: "health",
+                tags: ["health"],
+                responses: { "204": { description: "OK" } },
+              },
+            },
+          },
+        };
+        await writeFile(input, format === "json" ? JSON.stringify(document) : stringify(document));
+        const generate = (clearOutput = false) =>
+          runGenerate({
+            fileConfig: {
+              input,
+              output,
+              clearOutput,
+              incremental,
+              modelsOnly,
+              modelsInCommon: true,
+              acl: false,
+              mutationEffects: false,
+              restClientImportPath: "@test/rest",
+            },
+          });
+        await generate();
+        await expect(stat(common)).rejects.toMatchObject({ code: "ENOENT" });
+        if (!modelsOnly) {
+          expect(await readFile(path.join(output, "health/health.api.ts"), "utf8")).toContain("/health");
+        }
+        await mkdir(path.dirname(common), { recursive: true });
+        const existing = 'export enum Status { Ready = "ready" }\n';
+        await writeFile(common, existing);
+        const sentinel = new Date("2001-01-01T00:00:00Z");
+        await utimes(common, sentinel, sentinel);
+        const before = (await stat(common)).mtimeMs;
+        await generate();
+        expect(await readFile(common, "utf8")).toBe(existing);
+        expect((await stat(common)).mtimeMs).toBe(before);
+        // Explicit cleanup removes stale generated models, rather than replacing them with an empty module.
+        await generate(true);
+        await expect(stat(common)).rejects.toMatchObject({ code: "ENOENT" });
+      } finally {
+        if (previousNative === undefined) delete process.env.OPENAPI_CODEGEN_NATIVE;
+        else process.env.OPENAPI_CODEGEN_NATIVE = previousNative;
+        if (previousRequired === undefined) delete process.env.OPENAPI_CODEGEN_REQUIRE_FULL_NATIVE;
+        else process.env.OPENAPI_CODEGEN_REQUIRE_FULL_NATIVE = previousRequired;
+        await rm(directory, { recursive: true, force: true });
+      }
+    },
+  );
 });
