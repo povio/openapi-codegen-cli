@@ -32,6 +32,8 @@ pub struct InfiniteQueryParamNames {
 #[derive(Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GenerateOptions {
+    #[serde(default)]
+    pub compile_schemas: bool,
     #[serde(default = "default_true")]
     pub split_by_tags: bool,
     #[serde(default = "default_tag")]

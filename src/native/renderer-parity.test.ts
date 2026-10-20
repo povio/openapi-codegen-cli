@@ -117,9 +117,7 @@ describe("renderer naming parity", () => {
       .map(({ content }) => content)
       .join("\n");
     expect(models).toContain('z.enum(["available", "pending", "sold"])');
-    expect(models).toContain(
-      'export const OrderStatusEnumSchema = z.compile(z.enum(["placed", "approved", "delivered"]))',
-    );
+    expect(models).toContain('export const OrderStatusEnumSchema = z.enum(["placed", "approved", "delivered"])');
   });
 
   test.each([

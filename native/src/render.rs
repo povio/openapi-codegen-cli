@@ -586,7 +586,12 @@ fn render_common_schema_lines(
             "export const {name}: z.ZodObject<z.ZodRawShape> & z.ZodType<{type_name}> = {code};"
         ));
     } else {
-        lines.push(format!("export const {name} = z.compile({code});"));
+        let schema_code = if options.compile_schemas {
+            format!("z.compile({code})")
+        } else {
+            code.to_string()
+        };
+        lines.push(format!("export const {name} = {schema_code};"));
         lines.push(format!("export type {type_name} = z.infer<typeof {name}>;"));
     }
     if code.starts_with("z.enum(") {

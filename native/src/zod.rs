@@ -1257,7 +1257,7 @@ fn collect_precompiled_circular_refs(document: &Value, resolver: &Resolver<'_>) 
         for reference in refs {
             if indexes
                 .get(&reference)
-                .is_some_and(|target_index| *target_index > source_index)
+                .is_some_and(|target_index| *target_index >= source_index)
                 && resolver
                     .deep_dependencies
                     .get(&reference)

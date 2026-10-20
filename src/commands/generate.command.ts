@@ -52,6 +52,9 @@ class GenerateOptions implements GenerateParams {
   @YargOption({ envAlias: "importPath" })
   importPath?: "ts" | "relative" | "absolute";
 
+  @YargOption({ envAlias: "compileSchemas", type: "boolean" })
+  compileSchemas?: boolean;
+
   @YargOption({ envAlias: "extractEnums", type: "boolean" })
   extractEnums?: boolean;
 
