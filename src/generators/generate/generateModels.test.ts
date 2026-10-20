@@ -7,6 +7,7 @@ import { describe, expect, test } from "vitest";
 
 import { DEFAULT_GENERATE_OPTIONS } from "@/generators/const/options.const";
 import { getDataFromOpenAPIDoc } from "@/generators/core/getDataFromOpenAPIDoc";
+import { getNativeBindings } from "@/native/native-bindings";
 
 import { generateModels } from "./generateModels";
 
@@ -37,6 +38,7 @@ describe("generateModels", () => {
     } as OpenAPIV3.Document;
     const options = {
       ...DEFAULT_GENERATE_OPTIONS,
+      compileSchemas: true,
       excludeRedundantZodSchemas: false,
       splitByTags: false,
       tsNamespaces: false,
@@ -77,6 +79,7 @@ describe("generateModels", () => {
     } as OpenAPIV3.Document;
     const options = {
       ...DEFAULT_GENERATE_OPTIONS,
+      compileSchemas: true,
       excludeRedundantZodSchemas: false,
       splitByTags: false,
       tsNamespaces: false,
@@ -90,62 +93,86 @@ describe("generateModels", () => {
     expect(models).toContain("export const Status = StatusSchema.enum;");
   });
 
-  test("generated compiled schemas retain runtime behavior", async () => {
-    const doc = {
-      openapi: "3.0.3",
-      info: { title: "Compiled schema runtime", version: "1.0.0" },
-      paths: {},
-      components: {
-        schemas: {
-          Status: { type: "string", enum: ["active", "inactive"] },
-          User: {
-            type: "object",
-            required: ["status"],
-            properties: { status: { $ref: "#/components/schemas/Status" } },
-          },
-          Category: {
-            type: "object",
-            required: ["name", "children"],
-            properties: {
-              name: { type: "string" },
-              children: { type: "array", items: { $ref: "#/components/schemas/Category" } },
+  test.each(
+    [undefined, false, true].flatMap((compileSchemas) =>
+      ["typescript", "native"].flatMap((backend) =>
+        [false, true].map((tsNamespaces) => ({ compileSchemas, backend, tsNamespaces })),
+      ),
+    ),
+  )(
+    "validates without a compile import ($backend, compileSchemas=$compileSchemas, namespaces=$tsNamespaces)",
+    async ({ compileSchemas, backend, tsNamespaces }) => {
+      const doc = {
+        openapi: "3.0.3",
+        info: { title: "Compiled schema runtime", version: "1.0.0" },
+        paths: {},
+        components: {
+          schemas: {
+            Status: { type: "string", enum: ["active", "inactive"] },
+            User: {
+              type: "object",
+              required: ["status"],
+              properties: { status: { $ref: "#/components/schemas/Status" } },
+            },
+            Category: {
+              type: "object",
+              required: ["name", "children"],
+              properties: {
+                name: { type: "string" },
+                children: { type: "array", items: { $ref: "#/components/schemas/Category" } },
+              },
             },
           },
         },
-      },
-    } as OpenAPIV3.Document;
-    const options = {
-      ...DEFAULT_GENERATE_OPTIONS,
-      excludeRedundantZodSchemas: false,
-      splitByTags: false,
-      tsNamespaces: false,
-    };
-    const { resolver, data } = getDataFromOpenAPIDoc(doc, options);
-    const models = generateModels({ resolver, data, tag: options.defaultTag });
-    expect(models).toBeDefined();
-    if (!models) {
-      throw new Error("Expected generated models");
-    }
-    const tempDir = await fs.mkdtemp(path.join(process.cwd(), ".generated-models-"));
-    const modulePath = path.join(tempDir, "models.ts");
+      } as OpenAPIV3.Document;
+      const options = {
+        ...DEFAULT_GENERATE_OPTIONS,
+        excludeRedundantZodSchemas: false,
+        splitByTags: true,
+        modelsInCommon: true,
+        tsNamespaces,
+        compileSchemas,
+      };
+      const models =
+        backend === "native"
+          ? (
+              getNativeBindings().compileData(JSON.stringify(doc), false, JSON.stringify(options)).data as {
+                renderedModels: Record<string, string>;
+              }
+            ).renderedModels[options.defaultTag]
+          : (() => {
+              const { resolver, data } = getDataFromOpenAPIDoc(doc, options);
+              return generateModels({ resolver, data, tag: options.defaultTag });
+            })();
+      expect(models).toBeDefined();
+      if (!models) {
+        throw new Error("Expected generated models");
+      }
+      expect(models.includes("z.compile(")).toBe(compileSchemas === true);
+      expect(models).not.toContain("zod/compile");
+      expect(models).not.toMatch(/CategorySchema[^\n]*= z\.compile/);
+      const tempDir = await fs.mkdtemp(path.join(process.cwd(), ".generated-models-"));
+      const modulePath = path.join(tempDir, "models.ts");
 
-    try {
-      await fs.writeFile(modulePath, models);
-      const generated = await import(`${pathToFileURL(modulePath).href}?cacheBust=${Date.now()}`);
+      try {
+        await fs.writeFile(modulePath, models);
+        const module = await import(`${pathToFileURL(modulePath).href}?cacheBust=${Date.now()}`);
+        const generated = tsNamespaces ? module.CommonModels : module;
 
-      expect(generated.Status).toEqual({ active: "active", inactive: "inactive" });
-      expect(generated.UserSchema.safeParse({ status: "active" }).success).toBe(true);
-      expect(generated.UserSchema.safeParse({ status: "unknown" }).success).toBe(false);
+        expect(generated.Status).toEqual({ active: "active", inactive: "inactive" });
+        expect(generated.UserSchema.safeParse({ status: "active" }).success).toBe(true);
+        expect(generated.UserSchema.safeParse({ status: "unknown" }).success).toBe(false);
 
-      const category: { name: string; children: unknown[] } = { name: "root", children: [] };
-      category.children.push(category);
-      const parsedCategory = generated.CategorySchema.parse(category);
-      expect(parsedCategory.children[0]).toBe(parsedCategory);
-      expect(generated.CategorySchema.safeParse({ name: 1, children: [] }).success).toBe(false);
-    } finally {
-      await fs.rm(tempDir, { recursive: true, force: true });
-    }
-  });
+        const category: { name: string; children: unknown[] } = { name: "root", children: [] };
+        category.children.push(category);
+        const parsedCategory = generated.CategorySchema.parse(category);
+        expect(parsedCategory.children[0]).toBe(parsedCategory);
+        expect(generated.CategorySchema.safeParse({ name: 1, children: [] }).success).toBe(false);
+      } finally {
+        await fs.rm(tempDir, { recursive: true, force: true });
+      }
+    },
+  );
 
   test("uses lazy properties for circular refs inside allOf object composition", () => {
     const doc = {

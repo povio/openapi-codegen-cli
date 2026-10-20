@@ -46,6 +46,7 @@ export const optionCases = {
   enumSuffix: [{ enumSuffix: "Kind" }, { enumSuffix: "" }],
   withImplicitRequiredProps: bool("withImplicitRequiredProps"),
   withDefaultValues: bool("withDefaultValues"),
+  compileSchemas: bool("compileSchemas"),
   withDescription: bool("withDescription"),
   allReadonly: bool("allReadonly"),
   extractEnums: bool("extractEnums"),

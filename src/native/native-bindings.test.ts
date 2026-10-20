@@ -118,7 +118,7 @@ describe("native OpenAPI bindings", () => {
     };
 
     expect(actual.renderedModels.Chat).toContain("export namespace ChatModels {");
-    expect(actual.renderedModels.Chat).toContain("export const MessageSchema = z.compile(z.object(");
+    expect(actual.renderedModels.Chat).toContain("export const MessageSchema = z.object(");
     expect(actual.renderedModels.Chat).not.toContain("export namespace CommonModels {");
   });
 

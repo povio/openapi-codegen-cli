@@ -24,6 +24,18 @@ bun add @povio/openapi-codegen-cli
 bunx openapi-codegen generate --input http://localhost:3001/docs-json
 ```
 
+## Schema compilation
+
+Generated models use ordinary Zod schemas by default, preserving validation without the startup work of explicit `z.compile(...)` calls. Regenerate existing clients to remove previously emitted compilation calls. A frontend entry-point `import "zod/compile"` used solely for these generated models can then be removed.
+
+Set `compileSchemas: true` in your generator configuration (or pass `--compileSchemas`) to opt into eager compilation for non-recursive schemas. This trades initialization time for potential validation throughput improvements. Recursive schemas remain uncompiled. Both the TypeScript and native generators honor this option.
+
+```typescript
+export default {
+  compileSchemas: false, // Default; normal Zod validation stays enabled.
+};
+```
+
 ## Configuration Files
 
 The CLI supports TypeScript configuration files to simplify command execution and provide consistent settings with full type safety. Configuration files are automatically discovered in your project root.
@@ -87,6 +99,7 @@ bunx openapi-codegen generate --config my-config.ts
   --importPath                        Module import style for generated files (default: 'ts'; options: 'ts' | 'relative' | 'absolute')
   --tsPath                            (Requires `--importPath` to be 'ts') Typescript import path (default: '@/data')
   --removeOperationPrefixEndingWith   Remove operation name prefixes that end with the specified string (default: 'Controller_')
+  --compileSchemas                    Eagerly compile non-recursive Zod schemas (default: false)
   --extractEnums                      Extract enums into separate Zod schemas (default: true)
   --modelsInCommon                    Keep all schema declarations in defaultTag models and emit per-module proxy exports (default: false)
   --replaceOptionalWithNullish        Replace `.optional()` chains with `.nullish()` in generated Zod schemas (default: false)

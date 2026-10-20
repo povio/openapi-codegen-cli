@@ -1,6 +1,8 @@
 import { GenerateType } from "./generate";
 
 interface ZodGenerateOptions {
+  /** Eagerly compile non-recursive schemas. Defaults to false to avoid startup work. */
+  compileSchemas?: boolean;
   schemaSuffix: string;
   enumSuffix: string;
   modelsInCommon?: boolean;
