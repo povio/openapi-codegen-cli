@@ -3703,37 +3703,9 @@ fn render_mutation_native(
             .map(|param| param.name.as_str())
             .collect::<Vec<_>>()
             .join(", ");
-        let common_namespace = if options.models_in_modules {
-            models_namespace.to_string()
-        } else {
-            format!(
-                "{}{}",
-                capitalize(&options.default_tag),
-                options
-                    .configs
-                    .get("models")
-                    .map(|config| config.namespace_suffix.as_str())
-                    .unwrap_or("Models")
-            )
-        };
         let types = scope_params
             .iter()
-            .map(|param| {
-                let schema = param
-                    .source
-                    .get("zodSchema")
-                    .and_then(Value::as_str)
-                    .unwrap_or_default();
-                let ty = if is_named_schema(schema) {
-                    format!(
-                        "{common_namespace}.{}",
-                        remove_suffix(schema, &options.schema_suffix)
-                    )
-                } else {
-                    param.ty.clone()
-                };
-                format!("{}: {ty}", param.name)
-            })
+            .map(|param| format!("{}: {}", param.name, param.ty))
             .collect::<Vec<_>>()
             .join("; ");
         format!("{{ {names} }}: {{ {types} }}, ")

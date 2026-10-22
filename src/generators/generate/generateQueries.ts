@@ -1032,7 +1032,7 @@ function renderMutation({
     }
   }
   const scopePathParams = scopeEnabled
-    ? getEndpointParamMapping(resolver, endpoint, {}).filter((p) => p.paramType === "Path")
+    ? getEndpointParamMapping(resolver, endpoint, { modelNamespaceTag: tag }).filter((p) => p.paramType === "Path")
     : [];
   const isScoped = scopePathParams.length > 0;
 
