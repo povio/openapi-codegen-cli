@@ -14,21 +14,24 @@ import { GenerateOptions } from "./types/options";
 const root = process.cwd();
 
 // Typed against the generated client: `petId` exists on some pet mutations, `username` on some user ones.
+// `InvalidationMap<QueryModule>` gets the types through the generated global registration.
 const invalidationMap = `
 import type { InvalidationMap } from "@povio/openapi-codegen-cli/query";
 import { QueryModule, type QueryModuleMutations } from "./data/queryModules";
 
-export const invalidationMap: InvalidationMap<QueryModule, QueryModuleMutations> = {
+export const invalidationMap: InvalidationMap<QueryModule> = {
   [QueryModule.pet]: (data, { petId }) => [["pet", petId, data]],
   [QueryModule.user]: (_data, variables) => [["user", variables.username]],
 };
 
-export const unknownVariable: InvalidationMap<QueryModule, QueryModuleMutations> = {
+export const explicitMutations: InvalidationMap<QueryModule, QueryModuleMutations> = invalidationMap;
+
+export const unknownVariable: InvalidationMap<QueryModule> = {
   // @ts-expect-error -- no pet mutation has \`nope\`
   [QueryModule.pet]: (_data, { nope }) => [[nope]],
 };
 
-export const wrongType: InvalidationMap<QueryModule, QueryModuleMutations> = {
+export const wrongType: InvalidationMap<QueryModule> = {
   // @ts-expect-error -- \`petId\` is a number
   [QueryModule.pet]: (_data, { petId }) => [[petId?.toUpperCase()]],
 };

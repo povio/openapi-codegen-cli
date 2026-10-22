@@ -2147,6 +2147,13 @@ fn render_query_modules(endpoints: &[Value], options: &GenerateOptions) -> Strin
         ));
     }
     lines.push("}".into());
+    lines.push(String::new());
+    // Registers the types globally, so `InvalidationMap<QueryModule>` picks them up without naming them.
+    lines.push("declare global {".into());
+    lines.push(
+        "   interface OpenApiCodegenQueryModuleMutations extends QueryModuleMutations {}".into(),
+    );
+    lines.push("}".into());
     lines.join("\n")
 }
 

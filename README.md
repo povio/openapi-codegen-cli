@@ -285,20 +285,21 @@ import { OpenApiQueryConfig } from "@povio/openapi-codegen-cli/query";
 
 ### Typed invalidation maps
 
-With `mutationEffects` (the default), `queryModules.ts` exports `QueryModuleMutations`: for each module, the `data` and `variables` of its mutation hooks. Pass it to `InvalidationMap` to type each module's callback from the spec.
+With `mutationEffects` (the default), `queryModules.ts` exports `QueryModuleMutations` (for each module, the `data` and `variables` of its mutation hooks) and registers it globally, so `InvalidationMap<QueryModule>` types each module's callback from the spec:
 
 ```ts
 import type { InvalidationMap } from "@povio/openapi-codegen-cli/query";
-import { QueryModule, type QueryModuleMutations } from "@/data/queryModules";
+import { QueryModule } from "@/data/queryModules";
 
-export const invalidationMap: InvalidationMap<QueryModule, QueryModuleMutations> = {
+export const invalidationMap: InvalidationMap<QueryModule> = {
   // `data` is any of the module's mutation responses; variables that only some
   // of its mutations take (here `id`) are optional.
   [QueryModule.Items]: (data, { officeId, id }) => [["items", officeId, id]],
 };
 ```
 
-Without `QueryModuleMutations`, callbacks receive `unknown`; annotate their parameters to read them.
+The registration is global, so a program with several generated clients should pass the mutations explicitly
+instead: `InvalidationMap<QueryModule, QueryModuleMutations>`.
 
 ### Runtime response validation
 

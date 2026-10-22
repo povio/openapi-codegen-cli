@@ -47,9 +47,19 @@ type InvalidationMapFuncFor<T> = InvalidationMapFunc<
  * Query keys to invalidate after a module's mutations. Pass the generated `QueryModuleMutations` as
  * `TMutations` to type each module's callback with its mutations' `data` and `variables`.
  */
+declare global {
+  /**
+   * Mutation types per module. The generated `queryModules.ts` extends it with `QueryModuleMutations`, so
+   * `InvalidationMap<QueryModule>` types its callbacks from the spec. Global, because interfaces re-exported
+   * from bundled declaration chunks can't be augmented through the package's entry points.
+   */
+  // oxlint-disable-next-line typescript/no-empty-interface, typescript/no-empty-object-type -- extended by generated code
+  interface OpenApiCodegenQueryModuleMutations {}
+}
+
 export type InvalidationMap<
   TQueryModule extends QueryModule = QueryModule,
-  TMutations extends { [K in TQueryModule]?: MutationEffectsTypes } = {},
+  TMutations extends { [K in TQueryModule]?: MutationEffectsTypes } = OpenApiCodegenQueryModuleMutations,
 > = {
   [K in TQueryModule]?: K extends keyof TMutations ? InvalidationMapFuncFor<TMutations[K]> : InvalidationMapFunc;
 };

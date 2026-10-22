@@ -57,5 +57,10 @@ export function generateQueryModules({ resolver, data }: Omit<GenerateTypeParams
     lines.push(`   [QueryModule.${module.tag}]: MutationEffectsOf<${hooks}>;`);
   }
   lines.push("}");
+  lines.push("");
+  // Registers the types globally, so `InvalidationMap<QueryModule>` picks them up without naming them.
+  lines.push("declare global {");
+  lines.push("   interface OpenApiCodegenQueryModuleMutations extends QueryModuleMutations {}");
+  lines.push("}");
   return lines.join("\n");
 }
