@@ -1,4 +1,4 @@
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { mkdtemp, mkdir, rm, writeFile, symlink } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
@@ -122,14 +122,14 @@ describe("generated module enum references", () => {
           tsNamespaces
             ? `
         export { BusinessPartnersModels } from "./businessPartners/businessPartners.models";
-        export { ABBYYModels } from "./ABBYY/aBBYY.models";
+        export { ABBYYModels } from "./aBBYY/aBBYY.models";
       `
             : `
         export * as BusinessPartnersModels from "./businessPartners/businessPartners.models";
-        export * as ABBYYModels from "./ABBYY/aBBYY.models";
+        export * as ABBYYModels from "./aBBYY/aBBYY.models";
       `,
         );
-        execFileSync(
+        const typecheck = spawnSync(
           "bun",
           [
             join(process.cwd(), "node_modules/typescript/bin/tsc"),
@@ -142,8 +142,9 @@ describe("generated module enum references", () => {
             "preserve",
             entry,
           ],
-          { cwd: output, stdio: "pipe" },
+          { cwd: output, encoding: "utf8" },
         );
+        expect(typecheck.status, `${typecheck.stdout}\n${typecheck.stderr}`).toBe(0);
         const bundle = join(output, "bundle.mjs");
         execFileSync("bun", ["build", entry, "--outfile", bundle, "--target", "node", "--minify"], { stdio: "pipe" });
         const { BusinessPartnersModels, ABBYYModels } = await import(/* @vite-ignore */ pathToFileURL(bundle).href);
