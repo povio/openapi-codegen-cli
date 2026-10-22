@@ -86,7 +86,6 @@ export function generateFilesFromNativeOpenAPI(
 export function supportsCompleteNativeRender(options: GenerateOptions) {
   return (
     options.splitByTags &&
-    ((options.modelsInCommon && options.tsNamespaces) || (!options.modelsInCommon && !options.tsNamespaces)) &&
     !options.inlineEndpoints &&
     !options.builderConfigs &&
     (options.workspaceContext?.length ?? 0) === 0

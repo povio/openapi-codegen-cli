@@ -15,15 +15,16 @@ describe("supportsCompleteNativeRender", () => {
     expect(supportsCompleteNativeRender(supportedOptions)).toBe(true);
   });
 
-  it("supports namespace-free module-local models", () => {
-    expect(supportsCompleteNativeRender({ ...supportedOptions, modelsInCommon: false, tsNamespaces: false })).toBe(
-      true,
-    );
+  it.each([
+    ["module-local models with namespaces", { modelsInCommon: false, tsNamespaces: true }],
+    ["namespace-free module-local models", { modelsInCommon: false, tsNamespaces: false }],
+    ["namespace-free common models", { modelsInCommon: true, tsNamespaces: false }],
+    ["the default options", DEFAULT_GENERATE_OPTIONS],
+  ])("supports %s", (_name, override) => {
+    expect(supportsCompleteNativeRender({ ...supportedOptions, ...override })).toBe(true);
   });
 
   it.each([
-    ["module-local models with namespaces", { modelsInCommon: false }],
-    ["namespace-free common models", { tsNamespaces: false }],
     ["unsplit output", { splitByTags: false }],
     ["inline endpoints", { inlineEndpoints: true }],
     ["builder configs", { builderConfigs: true }],

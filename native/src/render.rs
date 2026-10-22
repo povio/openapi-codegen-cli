@@ -1306,6 +1306,7 @@ pub fn render_endpoints(
             .unwrap_or(&options.default_tag);
         by_tag.entry(tag.to_string()).or_default().push(endpoint);
     }
+    let model_owners = ModelOwners::new(schema_owners, options);
     for (tag, tag_endpoints) in by_tag {
         if should_inline_endpoints(&tag, options) || tag_endpoints.is_empty() {
             continue;
@@ -1317,6 +1318,7 @@ pub fn render_endpoints(
                 &tag_endpoints,
                 schemas,
                 schema_owners,
+                &model_owners,
                 options,
             )),
         );
@@ -1357,6 +1359,7 @@ fn render_endpoint_module(
     endpoints: &[&Value],
     schemas: &Map<String, Value>,
     schema_owners: &Map<String, Value>,
+    model_owners: &ModelOwners,
     options: &GenerateOptions,
 ) -> String {
     let mut lines = vec![format!(
@@ -1547,7 +1550,7 @@ fn render_endpoint_module(
     resolve_model_namespace_owners(
         format!("{}\n", lines.join("\n").trim_end()),
         tag,
-        schema_owners,
+        model_owners,
         options,
     )
 }
@@ -1984,6 +1987,7 @@ pub fn render_queries(
         by_tag.entry(tag.to_string()).or_default().push(endpoint);
     }
     let tags = by_tag.into_iter().collect::<Vec<_>>();
+    let model_owners = ModelOwners::new(schema_owners, options);
     let chunk_size = tags.len().div_ceil(4).max(1);
     let modules = std::thread::scope(|scope| {
         tags.chunks(chunk_size)
@@ -1998,6 +2002,7 @@ pub fn render_queries(
                                     tag,
                                     tag_endpoints,
                                     schema_owners,
+                                    &model_owners,
                                     options,
                                 )),
                             )
@@ -2114,7 +2119,13 @@ fn render_app_acl(endpoints: &[Value]) -> Option<String> {
     }
     let acl_endpoints: Vec<&Value> = by_tag.into_values().flatten().collect();
     if acl_endpoints.is_empty() {
-        return None;
+        // Without ACL rules the TypeScript renderer still emits an untyped ability.
+        return Some(
+            "import type { PureAbility, AbilityTuple, Subject } from \"@casl/ability\";\n\n\
+             export type AppAbilities = AbilityTuple<string, Subject>;\n\n\
+             export type AppAbility = PureAbility<AppAbilities>;"
+                .into(),
+        );
     }
     // Named schema conditions need the full TypeScript import merger for uncommon configurations.
     if acl_endpoints
@@ -2560,6 +2571,7 @@ fn render_query_module(
     tag: &str,
     endpoints: &[&Value],
     schema_owners: &Map<String, Value>,
+    model_owners: &ModelOwners,
     options: &GenerateOptions,
 ) -> String {
     let model_suffix = options
@@ -2914,14 +2926,59 @@ fn render_query_module(
         content = content.replace(&format!("{api_namespace}."), "");
         content = content.replace(&format!("{acl_namespace}."), "");
     }
-    resolve_model_namespace_owners(content, tag, schema_owners, options)
+    resolve_model_namespace_owners(content, tag, model_owners, options)
+}
+
+/// Model name (with and without the schema suffix) -> owning tags, in `schema_owners` order.
+/// Built once per render; each tag's module looks names up through `for_tag`.
+pub(crate) struct ModelOwners<'a> {
+    owners: HashMap<String, Vec<&'a str>>,
+}
+
+impl<'a> ModelOwners<'a> {
+    pub(crate) fn new(schema_owners: &'a Map<String, Value>, options: &GenerateOptions) -> Self {
+        let mut owners: HashMap<String, Vec<&'a str>> = HashMap::default();
+        for (schema, owner) in schema_owners {
+            if let Some(owner) = owner.as_str() {
+                owners.entry(schema.clone()).or_default().push(owner);
+                owners
+                    .entry(remove_suffix(schema, &options.schema_suffix))
+                    .or_default()
+                    .push(owner);
+            }
+        }
+        Self { owners }
+    }
+
+    fn for_tag<'b>(&'b self, tag: &'b str) -> TagModelOwners<'a, 'b> {
+        TagModelOwners { owners: self, tag }
+    }
+}
+
+/// The owners of models referenced from `tag`'s module: tags other than `tag`.
+struct TagModelOwners<'a, 'b> {
+    owners: &'b ModelOwners<'a>,
+    tag: &'b str,
+}
+
+impl<'a> TagModelOwners<'a, '_> {
+    /// The last owner other than this tag, as the previous per-tag map (later inserts win) had it.
+    fn get(&self, name: &str) -> Option<&'a str> {
+        self.owners
+            .owners
+            .get(name)?
+            .iter()
+            .rev()
+            .find(|owner| **owner != self.tag)
+            .copied()
+    }
 }
 
 // Namespace-based modules can reference models shared by several tags.
 fn resolve_model_namespace_owners(
     content: String,
     tag: &str,
-    schema_owners: &Map<String, Value>,
+    model_owners: &ModelOwners,
     options: &GenerateOptions,
 ) -> String {
     if !options.ts_namespaces || options.models_in_common || options.models_in_modules {
@@ -2934,13 +2991,7 @@ fn resolve_model_namespace_owners(
         .unwrap_or("Models");
     let local_namespace = format!("{}{namespace_suffix}", capitalize(tag));
     let prefix = format!("{local_namespace}.");
-    let mut owners = HashMap::default();
-    for (schema, owner) in schema_owners {
-        if let Some(owner) = owner.as_str().filter(|owner| *owner != tag) {
-            owners.insert(schema.as_str().to_string(), owner);
-            owners.insert(remove_suffix(schema, &options.schema_suffix), owner);
-        }
-    }
+    let owners = model_owners.for_tag(tag);
     let mut imports = IndexSet::default();
     let mut has_local = false;
     let mut output = String::with_capacity(content.len());
@@ -2967,13 +3018,12 @@ fn resolve_model_namespace_owners(
                         .map(|end| start + end)
                         .unwrap_or(start);
                     output.push_str(&line[..start]);
-                    let mut ty = line[start..end].to_string();
-                    for (name, owner) in &owners {
-                        let source = format!("{prefix}{name}");
-                        let target = format!("{}{namespace_suffix}.{name}", capitalize(owner));
-                        ty = replace_model_identifier(&ty, &source, &target);
-                    }
-                    output.push_str(&ty);
+                    output.push_str(&rename_owned_models(
+                        &line[start..end],
+                        &prefix,
+                        &owners,
+                        namespace_suffix,
+                    ));
                     output.push_str(&line[end..]);
                 } else {
                     output.push_str(line);
@@ -3051,7 +3101,7 @@ fn resolve_model_namespace_owners(
                 .unwrap_or(remaining.len());
             let name = &remaining[..length];
             if let Some(owner) = owners.get(name) {
-                imports.insert(*owner);
+                imports.insert(owner);
                 output.push_str(&format!("{}{namespace_suffix}.", capitalize(owner)));
             } else {
                 has_local = true;
@@ -3098,22 +3148,38 @@ fn model_identifier_char(ch: char) -> bool {
     ch.is_ascii_alphanumeric() || ch == '_' || ch == '$'
 }
 
-fn replace_model_identifier(value: &str, source: &str, target: &str) -> String {
-    let mut output = String::new();
+/// Rewrites `{prefix}{name}` to `{Owner}{namespace_suffix}.{name}` for models owned by another tag.
+/// One pass: a match needs identifier boundaries on both sides, so only the identifier right after
+/// the prefix can match, and a rewritten reference never forms a new match.
+fn rename_owned_models(
+    value: &str,
+    prefix: &str,
+    owners: &TagModelOwners,
+    namespace_suffix: &str,
+) -> String {
+    let mut output = String::with_capacity(value.len());
     let mut remaining = value;
-    while let Some(index) = remaining.find(source) {
+    while let Some(index) = remaining.find(prefix) {
         output.push_str(&remaining[..index]);
-        let after = &remaining[index + source.len()..];
+        let after = &remaining[index + prefix.len()..];
+        let length = after
+            .find(|ch: char| !model_identifier_char(ch))
+            .unwrap_or(after.len());
+        let name = &after[..length];
         let boundary = output
             .chars()
             .last()
-            .is_none_or(|ch| !model_identifier_char(ch))
-            && after
-                .chars()
-                .next()
-                .is_none_or(|ch| !model_identifier_char(ch));
-        output.push_str(if boundary { target } else { source });
-        remaining = after;
+            .is_none_or(|ch| !model_identifier_char(ch));
+        match owners.get(name).filter(|_| boundary) {
+            Some(owner) => {
+                output.push_str(&capitalize(owner));
+                output.push_str(namespace_suffix);
+                output.push('.');
+            }
+            None => output.push_str(prefix),
+        }
+        output.push_str(name);
+        remaining = &after[length..];
     }
     output.push_str(remaining);
     output
@@ -4197,7 +4263,12 @@ const regex = z.string().regex(/EmailAdminModels.BaseLogLevelEnumSchema/);
 const escapedRegex = z.string().regex(/\/[/]EmailAdminModels.BaseLogLevelEnumSchema/);
 // EmailAdminModels.BaseLogLevelEnumSchema remains unchanged
 "#;
-        let actual = resolve_model_namespace_owners(source.into(), "EmailAdmin", &owners, &options);
+        let actual = resolve_model_namespace_owners(
+            source.into(),
+            "EmailAdmin",
+            &ModelOwners::new(&owners, &options),
+            &options,
+        );
         assert!(actual.contains("const value = CommonModels.BaseLogLevelEnumSchema;"));
         assert!(actual.contains("* @returns { CommonModels.BaseLogLevelEnum } EmailAdminModels.BaseLogLevelEnumSchema stays literal"));
         assert!(

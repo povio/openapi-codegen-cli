@@ -404,8 +404,6 @@ pub fn compile_data(source: String, yaml: bool, options_json: String) -> Result<
         .len();
     let rendered_complete = options.native_compact
         && options.split_by_tags
-        && ((options.models_in_common && options.ts_namespaces)
-            || (!options.models_in_common && !options.ts_namespaces))
         && !options.inline_endpoints
         && !options.builder_configs
         && options.workspace_context.is_empty()
