@@ -364,7 +364,10 @@ impl<'a> ZodCompiler<'a> {
             if schema_type == "string" {
                 let code = enum_code(&Value::Object(schema.clone()))
                     .unwrap_or_else(|| "z.enum([])".into());
-                if self.options.extract_enums {
+                // Match the TypeScript renderer: module-local singleton uses do not
+                // need a dependency on an enum declaration owned by another module.
+                let inline_module_singleton = self.options.models_in_modules && values.len() == 1;
+                if self.options.extract_enums && !inline_module_singleton {
                     if let Some(name) = self.root_enums.get(&code) {
                         let enum_ref = format!(
                             "#/components/schemas/{}",
