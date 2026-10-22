@@ -383,7 +383,10 @@ function getEnumZodSchema({ resolver, schema, zodSchema, meta, tag }: GetPartial
   }
 
   const code = getEnumZodSchemaCode(schema);
-  if (!resolver.options.extractEnums) {
+  // A singleton can match an enum owned by another module without an OpenAPI
+  // reference to bring that declaration into the local models. Keep the value
+  // inline; named enum exports and explicit $refs are still generated normally.
+  if (!resolver.options.extractEnums || (resolver.options.modelsInModules && schema.enum?.length === 1)) {
     return zodSchema.assign(code);
   }
 
