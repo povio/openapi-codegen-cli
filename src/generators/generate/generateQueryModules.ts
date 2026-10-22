@@ -58,8 +58,9 @@ export function generateQueryModules({ resolver, data }: Omit<GenerateTypeParams
   }
   lines.push("}");
   lines.push("");
-  // Registers the types globally, so `InvalidationMap<QueryModule>` picks them up without naming them.
+  // Registers the types globally, so a bare `InvalidationMap` is keyed and typed by this client.
   lines.push("declare global {");
+  lines.push("   interface OpenApiCodegenQueryModules { queryModule: QueryModule }");
   lines.push("   interface OpenApiCodegenQueryModuleMutations extends QueryModuleMutations {}");
   lines.push("}");
   return lines.join("\n");

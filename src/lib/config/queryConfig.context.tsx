@@ -26,13 +26,22 @@ export type MutationEffectsOf<THook> = THook extends (
 type ObjectMembers<T> = T extends object ? T : never;
 type KeysOfUnion<T> = T extends unknown ? keyof T : never;
 type ValueOfUnion<T, K extends PropertyKey> = T extends unknown ? (K extends keyof T ? T[K] : undefined) : never;
-type MergedObjects<T> = { [K in keyof T]: ValueOfUnion<T, K> } & {
-  [K in Exclude<KeysOfUnion<T>, keyof T>]?: ValueOfUnion<T, K>;
+type IsUnion<T, TAll = T> = T extends unknown ? ([TAll] extends [T] ? false : true) : never;
+// Objects whose fields merge; arrays, functions and dates are kept as they are.
+type MergeableMembers<T> = T extends readonly unknown[] | ((...args: never) => unknown) | Date
+  ? never
+  : ObjectMembers<T>;
+type MergedValue<T> =
+  true extends IsUnion<MergeableMembers<T>> ? MergedObjects<MergeableMembers<T>> | Exclude<T, MergeableMembers<T>> : T;
+// `Extract<keyof T, …>` rather than `keyof T`: a homomorphic mapped type would map each union member separately.
+type MergedObjects<T> = { [K in Extract<keyof T, PropertyKey>]: MergedValue<ValueOfUnion<T, K>> } & {
+  [K in Exclude<KeysOfUnion<T>, keyof T>]?: MergedValue<ValueOfUnion<T, K>>;
 };
 
 /**
- * The variables of a module's mutations as one object: keys some mutations lack become optional.
- * Mutations without variables (`void`) stay in the union, as their callbacks receive `undefined`.
+ * The variables of a module's mutations as one object: keys some mutations lack become optional, at any
+ * depth (e.g. fields of request bodies only some mutations send). Mutations without variables (`void`)
+ * stay in the union, as their callbacks receive `undefined`.
  */
 export type MergedMutationVariables<T> = [ObjectMembers<T>] extends [never]
   ? T
@@ -43,10 +52,6 @@ type InvalidationMapFuncFor<T> = InvalidationMapFunc<
   MergedMutationVariables<T extends MutationEffectsTypes ? T["variables"] : never>
 >;
 
-/**
- * Query keys to invalidate after a module's mutations. Pass the generated `QueryModuleMutations` as
- * `TMutations` to type each module's callback with its mutations' `data` and `variables`.
- */
 declare global {
   /**
    * Mutation types per module. The generated `queryModules.ts` extends it with `QueryModuleMutations`, so
@@ -55,10 +60,25 @@ declare global {
    */
   // oxlint-disable-next-line typescript/no-empty-interface, typescript/no-empty-object-type -- extended by generated code
   interface OpenApiCodegenQueryModuleMutations {}
+
+  /** The generated `QueryModule` enum, registered by `queryModules.ts` as `{ queryModule: QueryModule }`. */
+  // oxlint-disable-next-line typescript/no-empty-interface, typescript/no-empty-object-type -- extended by generated code
+  interface OpenApiCodegenQueryModules {}
 }
 
+/** The generated `QueryModule` enum once `queryModules.ts` registers it, else any module key. */
+export type RegisteredQueryModule = OpenApiCodegenQueryModules extends {
+  queryModule: infer TModule extends QueryModule;
+}
+  ? TModule
+  : QueryModule;
+
+/**
+ * Query keys to invalidate after a module's mutations. Without type arguments it is keyed by the generated
+ * `QueryModule` and typed by its `QueryModuleMutations`, so a bare `InvalidationMap` is typed from the spec.
+ */
 export type InvalidationMap<
-  TQueryModule extends QueryModule = QueryModule,
+  TQueryModule extends QueryModule = RegisteredQueryModule,
   TMutations extends { [K in TQueryModule]?: MutationEffectsTypes } = OpenApiCodegenQueryModuleMutations,
 > = {
   [K in TQueryModule]?: K extends keyof TMutations ? InvalidationMapFuncFor<TMutations[K]> : InvalidationMapFunc;

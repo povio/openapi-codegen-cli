@@ -14,17 +14,22 @@ import { GenerateOptions } from "./types/options";
 const root = process.cwd();
 
 // Typed against the generated client: `petId` exists on some pet mutations, `username` on some user ones.
-// `InvalidationMap<QueryModule>` gets the types through the generated global registration.
+// A bare `InvalidationMap` gets the module keys and types through the generated global registration.
 const invalidationMap = `
-import type { InvalidationMap } from "@povio/openapi-codegen-cli/query";
+import type { InvalidationMap, MergedMutationVariables } from "@povio/openapi-codegen-cli/query";
 import { QueryModule, type QueryModuleMutations } from "./data/queryModules";
 
-export const invalidationMap: InvalidationMap<QueryModule> = {
+export const invalidationMap: InvalidationMap = {
   [QueryModule.pet]: (data, { petId }) => [["pet", petId, data]],
   [QueryModule.user]: (_data, variables) => [["user", variables.username]],
 };
 
+export const withModule: InvalidationMap<QueryModule> = invalidationMap;
 export const explicitMutations: InvalidationMap<QueryModule, QueryModuleMutations> = invalidationMap;
+
+// Request-body fields only some mutations send are optional too.
+declare const nested: MergedMutationVariables<{ data: { projectId: string } } | { id: string; data: { name: string } }>;
+export const projectId: string | undefined = nested.data.projectId;
 
 export const unknownVariable: InvalidationMap<QueryModule> = {
   // @ts-expect-error -- no pet mutation has \`nope\`
