@@ -12,7 +12,8 @@ codegen-units = 1
 lto = "fat"
 opt-level = 3
 panic = "abort"
-strip = "symbols"
+# Stripped dylibs fail to load on recent macOS ("mis-aligned LINKEDIT string pool").
+strip = false
 
 [profile.dev]
 opt-level = 2
