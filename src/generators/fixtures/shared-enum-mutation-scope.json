@@ -1,0 +1,66 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Namespace reproduction",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/tracking/{provider}": {
+      "delete": {
+        "operationId": "cancelProviderTracking",
+        "tags": [
+          "Position Tracking"
+        ],
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Provider"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Cancelled"
+          }
+        }
+      }
+    },
+    "/other/{provider}": {
+      "delete": {
+        "operationId": "cancelOther",
+        "tags": [
+          "Other"
+        ],
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Provider"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Cancelled"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Provider": {
+        "type": "string",
+        "enum": [
+          "alpha",
+          "beta"
+        ]
+      }
+    }
+  }
+}
