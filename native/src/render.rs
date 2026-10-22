@@ -52,8 +52,9 @@ pub fn render_model_proxies(
                 document,
                 schemas,
                 schema_refs,
-                schema_owners,
                 generated_objects,
+                &document_enum_objects(document),
+                &property_refs(schema_refs, schema_owners, options),
                 circular_schemas,
                 &options.default_tag,
                 options,
@@ -145,6 +146,17 @@ fn render_local_models(
                 .map(|reference| (reference, name.as_str()))
         })
         .collect();
+    let enum_objects = document_enum_objects(document);
+    let property_refs = property_refs(schema_refs, schema_owners, options);
+    // First non-ref schema per enum code, matching the previous linear `find_map` over `schemas`.
+    let mut enum_name_by_code: HashMap<&str, &str> = HashMap::default();
+    for (name, value) in schemas {
+        if let Some(code) = value.as_str()
+            && !schema_refs.contains_key(name)
+        {
+            enum_name_by_code.entry(code).or_insert(name.as_str());
+        }
+    }
     for (tag, mut tag_schemas) in by_tag {
         let mut imports: IndexMap<String, Vec<String>> = IndexMap::default();
         for schema_name in tag_schemas.keys() {
@@ -169,11 +181,7 @@ fn render_local_models(
                     let mut enum_codes = Vec::new();
                     collect_inline_enum_codes(schema, &mut enum_codes);
                     for code in enum_codes {
-                        let Some(name) = schemas.iter().find_map(|(name, value)| {
-                            (value.as_str() == Some(code.as_str())
-                                && !schema_refs.contains_key(name))
-                            .then_some(name.as_str())
-                        }) else {
+                        let Some(name) = enum_name_by_code.get(code.as_str()).copied() else {
                             continue;
                         };
                         let Some(owner) = schema_owners.get(name).and_then(Value::as_str) else {
@@ -243,8 +251,9 @@ fn render_local_models(
             document,
             &tag_schemas,
             schema_refs,
-            schema_owners,
             generated_objects,
+            &enum_objects,
+            &property_refs,
             circular_schemas,
             &tag,
             options,
@@ -445,8 +454,9 @@ fn render_common_models(
     document: &Value,
     schemas: &Map<String, Value>,
     schema_refs: &Map<String, Value>,
-    schema_owners: &Map<String, Value>,
     generated_objects: &Map<String, Value>,
+    enum_objects: &HashMap<String, Value>,
+    property_refs: &PropertyRefs,
     circular_schemas: &[String],
     namespace_tag: &str,
     options: &GenerateOptions,
@@ -458,31 +468,12 @@ fn render_common_models(
         .map(|config| config.namespace_suffix.as_str())
         .unwrap_or("Models");
     let namespace = format!("{}{}", capitalize(namespace_tag), namespace_suffix);
-    let property_ref_names: HashMap<&str, String> = schema_refs
-        .iter()
-        .filter_map(|(name, reference)| {
-            let reference = reference.as_str()?;
-            let type_name = remove_suffix(name, suffix);
-            let owner = if options.models_in_common || !options.split_by_tags {
-                Some(options.default_tag.as_str())
-            } else {
-                schema_owners.get(name).and_then(Value::as_str)
-            };
-            let type_name = if let Some(owner) = owner
-                && options.ts_namespaces
-                && owner != namespace_tag
-            {
-                format!("{}{namespace_suffix}.{type_name}", capitalize(owner))
-            } else {
-                type_name.to_string()
-            };
-            Some((reference, type_name))
-        })
-        .collect();
-    let mut enum_objects = HashMap::default();
-    if let Some(component_schemas) = document.pointer("/components/schemas") {
-        collect_enum_objects(component_schemas, &mut enum_objects);
-    }
+    let property_ref_names = PropertyRefNames {
+        refs: property_refs,
+        namespace_tag,
+        namespace_suffix,
+        ts_namespaces: options.ts_namespaces,
+    };
     let mut lines = vec!["import { z } from \"zod\";".to_string(), String::new()];
     if options.ts_namespaces {
         lines.push(format!("export namespace {namespace} {{"));
@@ -503,7 +494,7 @@ fn render_common_models(
                                 code,
                                 schema_refs,
                                 generated_objects,
-                                &enum_objects,
+                                enum_objects,
                                 circular_schemas,
                                 suffix,
                                 &property_ref_names,
@@ -535,7 +526,7 @@ fn render_common_schema_lines(
     enum_objects: &HashMap<String, Value>,
     circular_schemas: &[String],
     suffix: &str,
-    property_ref_names: &HashMap<&str, String>,
+    property_ref_names: &PropertyRefNames,
     options: &GenerateOptions,
 ) -> Option<Vec<String>> {
     let code = code.as_str()?;
@@ -714,6 +705,62 @@ fn add_nullable_type(schema: &Value, rendered: String) -> String {
     }
 }
 
+/// Schema reference -> (type name, owner tag); independent of the tag being rendered.
+type PropertyRefs = HashMap<String, (String, Option<String>)>;
+
+fn property_refs(
+    schema_refs: &Map<String, Value>,
+    schema_owners: &Map<String, Value>,
+    options: &GenerateOptions,
+) -> PropertyRefs {
+    schema_refs
+        .iter()
+        .filter_map(|(name, reference)| {
+            let reference = reference.as_str()?;
+            let owner = if options.models_in_common || !options.split_by_tags {
+                Some(options.default_tag.as_str())
+            } else {
+                schema_owners.get(name).and_then(Value::as_str)
+            };
+            Some((
+                reference.to_string(),
+                (
+                    remove_suffix(name, &options.schema_suffix),
+                    owner.map(str::to_string),
+                ),
+            ))
+        })
+        .collect()
+}
+
+/// Resolves property reference type names as seen from `namespace_tag`'s models file.
+struct PropertyRefNames<'a> {
+    refs: &'a PropertyRefs,
+    namespace_tag: &'a str,
+    namespace_suffix: &'a str,
+    ts_namespaces: bool,
+}
+
+impl PropertyRefNames<'_> {
+    fn get(&self, reference: &str) -> Option<String> {
+        let (type_name, owner) = self.refs.get(reference)?;
+        Some(match owner {
+            Some(owner) if self.ts_namespaces && owner != self.namespace_tag => {
+                format!("{}{}.{type_name}", capitalize(owner), self.namespace_suffix)
+            }
+            _ => type_name.clone(),
+        })
+    }
+}
+
+fn document_enum_objects(document: &Value) -> HashMap<String, Value> {
+    let mut enum_objects = HashMap::default();
+    if let Some(component_schemas) = document.pointer("/components/schemas") {
+        collect_enum_objects(component_schemas, &mut enum_objects);
+    }
+    enum_objects
+}
+
 fn collect_enum_objects(value: &Value, enums: &mut HashMap<String, Value>) {
     match value {
         Value::Array(values) => values
@@ -794,7 +841,7 @@ fn collect_property_docs(
     schema: &Value,
     prefix: &str,
     properties: &mut IndexMap<String, (String, String)>,
-    property_ref_names: &HashMap<&str, String>,
+    property_ref_names: &PropertyRefNames,
 ) {
     if let Some(all_of) = schema.get("allOf").and_then(Value::as_array) {
         for member in all_of.iter().filter(|member| member.get("$ref").is_some()) {
@@ -905,7 +952,7 @@ fn collect_property_docs(
 fn property_doc_type(
     document: &Value,
     schema: &Value,
-    property_ref_names: &HashMap<&str, String>,
+    property_ref_names: &PropertyRefNames,
 ) -> String {
     if let Some(reference) = schema.get("$ref").and_then(Value::as_str) {
         return property_ref_type(reference, property_ref_names);
@@ -945,9 +992,9 @@ fn property_doc_type(
         .to_string()
 }
 
-fn property_ref_type(reference: &str, property_ref_names: &HashMap<&str, String>) -> String {
+fn property_ref_type(reference: &str, property_ref_names: &PropertyRefNames) -> String {
     if let Some(name) = property_ref_names.get(reference) {
-        return name.clone();
+        return name;
     }
     let mut name = reference
         .rsplit('/')
@@ -2947,11 +2994,24 @@ fn resolve_model_namespace_owners(
             let mut character_class = false;
             let mut end = remaining.len();
             for (index, ch) in remaining.char_indices().skip(1) {
-                if escaped { escaped = false; continue; }
-                if ch == '\\' { escaped = true; continue; }
-                if ch == '[' { character_class = true; }
-                if ch == ']' { character_class = false; }
-                if ch == '/' && !character_class { end = index + 1; break; }
+                if escaped {
+                    escaped = false;
+                    continue;
+                }
+                if ch == '\\' {
+                    escaped = true;
+                    continue;
+                }
+                if ch == '[' {
+                    character_class = true;
+                }
+                if ch == ']' {
+                    character_class = false;
+                }
+                if ch == '/' && !character_class {
+                    end = index + 1;
+                    break;
+                }
             }
             output.push_str(&remaining[..end]);
             remaining = &remaining[end..];
@@ -4149,7 +4209,9 @@ const escapedRegex = z.string().regex(/\/[/]EmailAdminModels.BaseLogLevelEnumSch
         assert!(actual.contains("const quoted = \"EmailAdminModels.BaseLogLevelEnumSchema\";"));
         assert!(actual.contains("const single = 'EmailAdminModels.BaseLogLevelEnumSchema';"));
         assert!(actual.contains("// EmailAdminModels.BaseLogLevelEnumSchema remains unchanged"));
-        assert!(actual.contains("const regex = z.string().regex(/EmailAdminModels.BaseLogLevelEnumSchema/);"));
+        assert!(actual.contains(
+            "const regex = z.string().regex(/EmailAdminModels.BaseLogLevelEnumSchema/);"
+        ));
         assert!(actual.contains(r"const escapedRegex = z.string().regex(/\/[/]EmailAdminModels.BaseLogLevelEnumSchema/);"));
         assert!(!actual.contains("import { EmailAdminModels }"));
         assert!(actual.contains("import { CommonModels }"));
