@@ -10,8 +10,8 @@ import { parityScenarios } from "../../scripts/renderer-parity-configs";
 const layouts = parityScenarios.filter(({ name, invalid }) => name.startsWith("layout-") && !invalid);
 
 describe("generated model runtime across valid layouts", () => {
-  test("covers all 48 supported layout combinations", () => {
-    expect(layouts).toHaveLength(48);
+  test("covers all 72 supported layout combinations", () => {
+    expect(layouts).toHaveLength(72);
   });
 
   test.each(layouts)("loads and validates models for $name", async (scenario) => {

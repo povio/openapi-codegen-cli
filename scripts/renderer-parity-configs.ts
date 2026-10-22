@@ -9,6 +9,7 @@ const layoutKeys = [
   "modelsInModules",
   "modelsOnly",
   "treeShakeableNamespaces",
+  "lazySchemas",
 ] as const;
 type LayoutKey = (typeof layoutKeys)[number];
 type LifecycleKey = "input" | "output" | "clearOutput" | "incremental";
@@ -103,16 +104,21 @@ export const lifecycleOptions = [
   "incremental",
 ] as const satisfies readonly LifecycleKey[];
 export const parityScenarios: ParityScenario[] = [];
-for (let bits = 0; bits < 64; bits++) {
+const layoutInvalidReason = (options: Partial<GenerateOptions>) => {
+  if (options.modelsInCommon && options.modelsInModules)
+    return "modelsInCommon and modelsInModules cannot both be enabled";
+  if (options.lazySchemas && !options.tsNamespaces) return "lazySchemas requires tsNamespaces";
+  return undefined;
+};
+for (let bits = 0; bits < 1 << layoutKeys.length; bits++) {
   const options = Object.fromEntries(
     layoutKeys.map((key, bit) => [key, Boolean(bits & (1 << bit))]),
   ) as Partial<GenerateOptions>;
+  const invalid = layoutInvalidReason(options);
   parityScenarios.push({
-    name: `layout-${bits.toString(2).padStart(6, "0")}`,
+    name: `layout-${bits.toString(2).padStart(layoutKeys.length, "0")}`,
     options,
-    ...(options.modelsInCommon && options.modelsInModules
-      ? { invalid: "modelsInCommon and modelsInModules cannot both be enabled" }
-      : {}),
+    ...(invalid ? { invalid } : {}),
   });
 }
 for (const [key, variants] of Object.entries(optionCases)) {

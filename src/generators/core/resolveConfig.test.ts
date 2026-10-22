@@ -14,6 +14,14 @@ describe("resolveConfig", () => {
     ).toBe(true);
   });
 
+  it("rejects lazySchemas without tsNamespaces", () => {
+    expect(resolveConfig({ params: {} }).lazySchemas).toBe(false);
+    expect(resolveConfig({ fileConfig: { lazySchemas: true }, params: {} }).lazySchemas).toBe(true);
+    expect(() => resolveConfig({ fileConfig: { lazySchemas: true, tsNamespaces: false }, params: {} })).toThrow(
+      "lazySchemas requires tsNamespaces",
+    );
+  });
+
   it("normalizes workspaceContext from comma-separated CLI input", () => {
     const config = resolveConfig({
       params: {
