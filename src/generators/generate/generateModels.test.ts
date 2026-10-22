@@ -253,3 +253,194 @@ describe("generateModels", () => {
     expect(models).not.toContain("get TeamPlayers()");
   });
 });
+
+describe("generateModels lazySchemas", () => {
+  const doc = {
+    openapi: "3.0.3",
+    info: { title: "Lazy schemas", version: "1.0.0" },
+    paths: {
+      "/users": {
+        get: {
+          tags: ["users"],
+          responses: {
+            200: {
+              description: "ok",
+              content: { "application/json": { schema: { $ref: "#/components/schemas/User" } } },
+            },
+          },
+        },
+      },
+    },
+    components: {
+      schemas: {
+        Status: { type: "string", enum: ["active", "inactive"] },
+        User: {
+          type: "object",
+          required: ["status"],
+          properties: {
+            status: { $ref: "#/components/schemas/Status" },
+            code: { type: "string", pattern: "^[A-Z]{2}/[0-9]+$" },
+            Status: { type: "string" },
+          },
+        },
+        Category: {
+          type: "object",
+          required: ["name", "children"],
+          properties: {
+            name: { type: "string" },
+            children: { type: "array", items: { $ref: "#/components/schemas/Category" } },
+          },
+        },
+      },
+    },
+  } as OpenAPIV3.Document;
+
+  const render = (backend: "typescript" | "native", options: typeof DEFAULT_GENERATE_OPTIONS, tag: string) => {
+    if (backend === "native") {
+      const { renderedModels } = getNativeBindings().compileData(JSON.stringify(doc), false, JSON.stringify(options))
+        .data as { renderedModels: Record<string, string> };
+      return renderedModels[tag];
+    }
+    const { resolver, data } = getDataFromOpenAPIDoc(doc, options);
+    return generateModels({ resolver, data, tag });
+  };
+
+  test("emits memoized factories, getters and a declared namespace", () => {
+    const options = {
+      ...DEFAULT_GENERATE_OPTIONS,
+      excludeRedundantZodSchemas: false,
+      splitByTags: true,
+      modelsInModules: true,
+      tsNamespaces: true,
+      lazySchemas: true,
+    };
+
+    const models = render("typescript", options, "users");
+
+    expect(models).toContain("const once = <T>(create: () => T) => {");
+    expect(models).toContain('const StatusSchema = once(() => z.enum(["active", "inactive"]));');
+    expect(models).toContain("const Status = once(() => StatusSchema().enum);");
+    // Sibling schemas become calls; object keys, member accesses and regex literals are untouched.
+    expect(models).toContain(
+      "const UserSchema = once(() => z.object({ status: StatusSchema(), code: z.string().regex(/^[A-Z]{2}\\/[0-9]+$/).optional(), Status: z.string().optional() }));",
+    );
+    expect(models).toContain("export const UsersModels = {");
+    expect(models).toContain("  get UserSchema() {\n    return UserSchema();\n  },");
+    expect(models).toContain("  get Status() {\n    return Status();\n  },");
+    expect(models).toContain("export declare namespace UsersModels {");
+    expect(models).toContain("  export type User = z.infer<typeof UsersModels.UserSchema>;");
+    expect(models).not.toContain("export namespace");
+    expect(models).not.toContain("export const UserSchema");
+  });
+
+  test("types circular schemas through the declared namespace", () => {
+    const options = {
+      ...DEFAULT_GENERATE_OPTIONS,
+      excludeRedundantZodSchemas: false,
+      splitByTags: false,
+      tsNamespaces: true,
+      lazySchemas: true,
+    };
+
+    const models = render("typescript", options, options.defaultTag);
+
+    expect(models).toContain(
+      "const CategorySchema: () => z.ZodObject<z.ZodRawShape> & z.ZodType<CommonModels.Category> = once(",
+    );
+    expect(models).toContain("export declare namespace CommonModels {");
+    expect(models).toContain("  export type Category = { name: string; children: Array<Category> };");
+  });
+
+  test("compiles non-circular factories when compileSchemas is enabled", () => {
+    const options = {
+      ...DEFAULT_GENERATE_OPTIONS,
+      excludeRedundantZodSchemas: false,
+      splitByTags: false,
+      tsNamespaces: true,
+      lazySchemas: true,
+      compileSchemas: true,
+    };
+
+    const models = render("typescript", options, options.defaultTag);
+
+    expect(models).toContain('const StatusSchema = once(() => z.compile(z.enum(["active", "inactive"])));');
+    expect(models).not.toMatch(/CategorySchema[^\n]*z\.compile/);
+  });
+
+  test("proxies common models through lazy getters", () => {
+    const options = {
+      ...DEFAULT_GENERATE_OPTIONS,
+      excludeRedundantZodSchemas: false,
+      splitByTags: true,
+      tsNamespaces: true,
+      modelsInCommon: true,
+      lazySchemas: true,
+    };
+
+    const proxy = render("typescript", options, "users");
+
+    expect(proxy).toContain("export const UsersModels = {");
+    expect(proxy).toContain("  get UserSchema() {\n    return CommonModels.UserSchema;\n  },");
+    expect(proxy).toContain("  get Status() {\n    return CommonModels.Status;\n  },");
+    expect(proxy).toContain("export declare namespace UsersModels {\n  export type User = CommonModels.User;");
+    expect(proxy).not.toContain("export namespace");
+  });
+
+  test.each(["typescript", "native"] as const)("native output matches typescript output (%s)", (backend) => {
+    for (const layout of [{ modelsInCommon: true }, { modelsInModules: true }, {}]) {
+      const options = {
+        ...DEFAULT_GENERATE_OPTIONS,
+        excludeRedundantZodSchemas: false,
+        splitByTags: true,
+        tsNamespaces: true,
+        lazySchemas: true,
+        ...layout,
+      };
+      const models = render(backend, options, "users");
+      expect(models).toBeDefined();
+      expect(models).toContain("export const UsersModels = {");
+      expect(models).toContain("export declare namespace UsersModels {");
+    }
+  });
+
+  test.each(["typescript", "native"] as const)("builds schemas on first access at runtime (%s)", async (backend) => {
+    const options = {
+      ...DEFAULT_GENERATE_OPTIONS,
+      excludeRedundantZodSchemas: false,
+      splitByTags: true,
+      modelsInCommon: true,
+      tsNamespaces: true,
+      lazySchemas: true,
+    };
+    const models = render(backend, options, options.defaultTag);
+    expect(models).toBeDefined();
+    if (!models) {
+      throw new Error("Expected generated models");
+    }
+    const tempDir = await fs.mkdtemp(path.join(process.cwd(), ".generated-lazy-models-"));
+    const modulePath = path.join(tempDir, "models.ts");
+
+    try {
+      await fs.writeFile(modulePath, models);
+      const module = await import(`${pathToFileURL(modulePath).href}?cacheBust=${Date.now()}`);
+      const generated = module.CommonModels;
+
+      expect(Object.keys(generated)).toEqual(["StatusSchema", "Status", "UserSchema", "CategorySchema"]);
+      expect(generated.Status).toEqual({ active: "active", inactive: "inactive" });
+      expect(generated.UserSchema).toBe(generated.UserSchema);
+      expect(generated.UserSchema.safeParse({ status: "active", code: "AB/12" }).success).toBe(true);
+      expect(generated.UserSchema.safeParse({ status: "active", code: "ab" }).success).toBe(false);
+      expect(generated.UserSchema.safeParse({ status: "unknown" }).success).toBe(false);
+      expect(Object.keys(generated.UserSchema.shape)).toEqual(["status", "code", "Status"]);
+      expect(generated.UserSchema.shape.status).toBe(generated.StatusSchema);
+
+      const category: { name: string; children: unknown[] } = { name: "root", children: [] };
+      category.children.push(category);
+      const parsedCategory = generated.CategorySchema.parse(category);
+      expect(parsedCategory.children[0]).toBe(parsedCategory);
+      expect(generated.CategorySchema.safeParse({ name: 1, children: [] }).success).toBe(false);
+    } finally {
+      await fs.rm(tempDir, { recursive: true, force: true });
+    }
+  });
+});

@@ -26,6 +26,9 @@ export function resolveConfig({
   if (resolvedConfig.modelsInCommon && resolvedConfig.modelsInModules) {
     throw new Error("modelsInCommon and modelsInModules cannot both be enabled");
   }
+  if (resolvedConfig.lazySchemas && !resolvedConfig.tsNamespaces) {
+    throw new Error("lazySchemas requires tsNamespaces");
+  }
   resolvedConfig.checkAcl = resolvedConfig.acl && resolvedConfig.checkAcl;
   resolvedConfig.workspaceContext = Array.from(
     new Set((resolvedConfig.workspaceContext ?? []).map((value) => value.trim()).filter(Boolean)),

@@ -36,6 +36,31 @@ export default {
 };
 ```
 
+## Lazy schemas
+
+With `tsNamespaces` enabled, every schema of a models namespace is built the moment the module is imported, even when the importer only needs one of them. Set `lazySchemas: true` (or pass `--lazySchemas`) to build each schema on first access instead:
+
+```typescript
+// Generated with lazySchemas: true
+const once = <T>(create: () => T) => {
+  let value: T | undefined;
+  return () => (value ??= create());
+};
+
+const PetSchema = once(() => z.object({ id: z.int(), category: CategorySchema() }));
+
+export const PetModels = {
+  get PetSchema() {
+    return PetSchema();
+  },
+};
+export declare namespace PetModels {
+  export type Pet = z.infer<typeof PetModels.PetSchema>;
+}
+```
+
+`PetModels.PetSchema` stays a regular Zod schema (`.extend`, `.shape`, `.pick` all work and return the same instance on every access), `PetModels.Pet` keeps resolving as a type, and `modelsInCommon` proxies forward to the shared namespace lazily as well. The option requires `tsNamespaces` and is honored by both the TypeScript and native generators. It helps cold starts of apps that import large model modules but render only a slice of them.
+
 ## Configuration Files
 
 The CLI supports TypeScript configuration files to simplify command execution and provide consistent settings with full type safety. Configuration files are automatically discovered in your project root.
@@ -100,6 +125,7 @@ bunx openapi-codegen generate --config my-config.ts
   --tsPath                            (Requires `--importPath` to be 'ts') Typescript import path (default: '@/data')
   --removeOperationPrefixEndingWith   Remove operation name prefixes that end with the specified string (default: 'Controller_')
   --compileSchemas                    Eagerly compile non-recursive Zod schemas (default: false)
+  --lazySchemas                       Build namespace model schemas on first access instead of at import; requires `--tsNamespaces` (default: false)
   --extractEnums                      Extract enums into separate Zod schemas (default: true)
   --modelsInCommon                    Keep all schema declarations in defaultTag models and emit per-module proxy exports (default: false)
   --replaceOptionalWithNullish        Replace `.optional()` chains with `.nullish()` in generated Zod schemas (default: false)
@@ -325,6 +351,8 @@ const config: OpenAPICodegenConfig = {
   // modelsOnly: true,
   // 4) Keep all model declarations in common.models and generate per-module model proxies
   // modelsInCommon: true,
+  // 5) Build each namespace schema on first access instead of at import (requires tsNamespaces)
+  // lazySchemas: true,
 };
 ```
 
@@ -575,17 +603,17 @@ export class JSONDto {
 
 Use package subpaths for runtime imports. Pure `import type` imports may use the package root.
 
-| Runtime exports | Subpath |
-| --- | --- |
-| `AuthContext`, `AuthGuard` | `/auth` |
-| `AbilityContext`, `useAclCheck`, `Can`, `createAclGuard` | `/acl` |
-| `ErrorHandler`, `SharedErrorHandler`, `ApplicationException`, `DomainErrorRegistry` | `/errors` |
-| `useMutationEffects`, `OpenApiQueryConfig` | `/query` |
+| Runtime exports                                                                              | Subpath   |
+| -------------------------------------------------------------------------------------------- | --------- |
+| `AuthContext`, `AuthGuard`                                                                   | `/auth`   |
+| `AbilityContext`, `useAclCheck`, `Can`, `createAclGuard`                                     | `/acl`    |
+| `ErrorHandler`, `SharedErrorHandler`, `ApplicationException`, `DomainErrorRegistry`          | `/errors` |
+| `useMutationEffects`, `OpenApiQueryConfig`                                                   | `/query`  |
 | `OpenApiRouter`, `OpenApiWorkspaceContext`, `useWorkspaceContext`, translation configuration | `/config` |
-| `ZodExtended` | `/zod` |
-| `HttpError`, transport types | `/rest` |
-| `NativeRestClient` | `/native` |
-| `RestClient`, `RestInterceptor` (Axios transport) | `/axios` |
+| `ZodExtended`                                                                                | `/zod`    |
+| `HttpError`, transport types                                                                 | `/rest`   |
+| `NativeRestClient`                                                                           | `/native` |
+| `RestClient`, `RestInterceptor` (Axios transport)                                            | `/axios`  |
 
 For example: `import { AuthContext, AuthGuard } from "@povio/openapi-codegen-cli/auth"`.
 Custom application helpers should import error helpers from `/errors`, `AbilityContext` from `/acl`, and mutation effects from `/query`.

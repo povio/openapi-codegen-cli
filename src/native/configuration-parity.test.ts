@@ -13,8 +13,8 @@ afterEach(() => {
 describe("configuration coverage inventory", () => {
   test("covers every layout combination without duplicate cases", () => {
     const layouts = parityScenarios.filter((s) => s.name.startsWith("layout-"));
-    expect(layouts).toHaveLength(64);
-    expect(layouts.filter((s) => s.invalid)).toHaveLength(16);
+    expect(layouts).toHaveLength(128);
+    expect(layouts.filter((s) => s.invalid)).toHaveLength(56);
     expect(new Set(parityScenarios.map((s) => s.name)).size).toBe(parityScenarios.length);
     expect(Object.keys(optionCases).length).toBeGreaterThan(40);
     expect(lifecycleOptions).toEqual(["input", "output", "clearOutput", "incremental"]);
@@ -120,7 +120,7 @@ test("model owner resolution preserves model-like text inside validation regexes
 
 test.each([false, true])("Petstore empty shared model scenario is active with modelsOnly=%s", (modelsOnly) => {
   const source = readParityFixture(parityFixtures.find((fixture) => fixture.name === "petstore-health")!);
-  const scenario = parityScenarios.find((entry) => entry.name === `layout-${modelsOnly ? "010111" : "000111"}`)!;
+  const scenario = parityScenarios.find((entry) => entry.name === `layout-${modelsOnly ? "0010111" : "0000111"}`)!;
   expect(scenario).toBeDefined();
   for (const renderer of ["js", "native"] as const) {
     vi.stubEnv("OPENAPI_CODEGEN_NATIVE", renderer === "native" ? "1" : "0");
