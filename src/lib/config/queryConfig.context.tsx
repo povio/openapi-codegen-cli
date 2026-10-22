@@ -5,10 +5,15 @@ import type { QueryKey } from "@tanstack/react-query";
 
 export type QueryModule = string | number | symbol;
 
-export type InvalidationMapFunc<TData = any, TVariables = any> = (data: TData, variables: TVariables) => QueryKey[];
-export type InvalidationMap<TQueryModule extends QueryModule = QueryModule, TData = any, TVariables = any> = Partial<
-  Record<TQueryModule, InvalidationMapFunc<TData, TVariables>>
->;
+// Method syntax keeps parameters bivariant, so callbacks with annotated parameters fit the `unknown` defaults.
+export type InvalidationMapFunc<TData = unknown, TVariables = unknown> = {
+  invalidate(data: TData, variables: TVariables): QueryKey[];
+}["invalidate"];
+export type InvalidationMap<
+  TQueryModule extends QueryModule = QueryModule,
+  TData = unknown,
+  TVariables = unknown,
+> = Partial<Record<TQueryModule, InvalidationMapFunc<TData, TVariables>>>;
 
 export namespace OpenApiQueryConfig {
   export interface Type<TQueryModule extends QueryModule = QueryModule> {

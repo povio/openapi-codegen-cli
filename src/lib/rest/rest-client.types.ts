@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { AxiosRequestConfig, AxiosResponse } from "axios";
 import { z } from "zod";
 
@@ -22,11 +21,11 @@ export type Response<ZOutput, IsRawRes extends boolean = false> = IsRawRes exten
   : ZOutput;
 
 export interface RestClient {
-  attachInterceptors<T extends any[]>(interceptors?: RestInterceptor<T>[], ...args: T): void;
+  attachInterceptors<T extends unknown[]>(interceptors?: RestInterceptor<T>[], ...args: T): void;
 
-  attachInterceptor<T extends any[]>(interceptor: RestInterceptor<T>, ...args: T): void;
+  attachInterceptor<T extends unknown[]>(interceptor: RestInterceptor<T>, ...args: T): void;
 
-  ejectInterceptor<T extends any[]>(interceptor: RestInterceptor<T>): void;
+  ejectInterceptor<T extends unknown[]>(interceptor: RestInterceptor<T>): void;
 
   get<ZOutput, ECodes extends string = GeneralErrorCodes, IsRawRes extends boolean = false>(
     requestInfo: RequestInfo<ZOutput, ECodes>,
@@ -37,28 +36,28 @@ export interface RestClient {
   post<ZOutput, ECodes extends string = GeneralErrorCodes, IsRawRes extends boolean = false>(
     requestInfo: RequestInfo<ZOutput, ECodes>,
     url: string,
-    data?: any,
+    data?: unknown,
     requestConfig?: AxiosRequestConfig & RequestConfig<IsRawRes>,
   ): Promise<Response<ZOutput, IsRawRes>>;
 
   patch<ZOutput, ECodes extends string = GeneralErrorCodes, IsRawRes extends boolean = false>(
     requestInfo: RequestInfo<ZOutput, ECodes>,
     url: string,
-    data?: any,
+    data?: unknown,
     requestConfig?: AxiosRequestConfig & RequestConfig<IsRawRes>,
   ): Promise<Response<ZOutput, IsRawRes>>;
 
   put<ZOutput, ECodes extends string = GeneralErrorCodes, IsRawRes extends boolean = false>(
     requestInfo: RequestInfo<ZOutput, ECodes>,
     url: string,
-    data?: any,
+    data?: unknown,
     requestConfig?: AxiosRequestConfig & RequestConfig<IsRawRes>,
   ): Promise<Response<ZOutput, IsRawRes>>;
 
   delete<ZOutput, ECodes extends string = GeneralErrorCodes, IsRawRes extends boolean = false>(
     requestInfo: RequestInfo<ZOutput, ECodes>,
     url: string,
-    data?: any,
+    data?: unknown,
     requestConfig?: AxiosRequestConfig & RequestConfig<IsRawRes>,
   ): Promise<Response<ZOutput, IsRawRes>>;
 }

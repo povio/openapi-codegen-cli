@@ -14,6 +14,7 @@ import {
 } from "@/generators/const/deps.const";
 import { ZOD_IMPORT } from "@/generators/const/zod.const";
 import { BuilderConfig, DynamicColumnsConfig, DynamicInputsConfig } from "@/generators/types/builder-config";
+import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
 import { Endpoint } from "@/generators/types/endpoint";
 import { GenerateType, GenerateTypeParams, Import } from "@/generators/types/generate";
 import {
@@ -229,7 +230,7 @@ function renderColumnsConfig(columnsConfig: DynamicColumnsConfig) {
   return lines.join("\n");
 }
 
-function renderMutationContent(resolver: any, endpoint: Endpoint, tag: string) {
+function renderMutationContent(resolver: SchemaResolver, endpoint: Endpoint, tag: string) {
   const hasAclCheck = resolver.options.checkAcl && endpoint.acl;
   const hasMutationEffects = resolver.options.mutationEffects;
   const hasMutationDefaultOnError = resolver.options.mutationDefaultOnError;

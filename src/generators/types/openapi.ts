@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { OpenAPIV3 } from "openapi-types";
 
 export type CompositeType = "oneOf" | "anyOf" | "allOf" | "enum" | "array" | "empty-object" | "object" | "record";
 
-export type SingleType = Exclude<OpenAPIV3.SchemaObject["type"], any[] | undefined>;
+export type SingleType = Exclude<OpenAPIV3.SchemaObject["type"], unknown[] | undefined>;
 
 export type PrimitiveType = "string" | "number" | "integer" | "boolean";
 
@@ -16,8 +15,8 @@ export interface OperationAclInfo {
 
 interface OperationObjectAdditions {
   "x-acl"?: OperationAclInfo[];
-  "x-media-upload"?: any;
-  "x-media-download"?: any;
+  "x-media-upload"?: unknown;
+  "x-media-download"?: unknown;
 }
 
 export type OperationObject = OpenAPIV3.OperationObject<OperationObjectAdditions>;

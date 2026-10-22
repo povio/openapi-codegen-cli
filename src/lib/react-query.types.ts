@@ -8,8 +8,7 @@ import {
 
 import { ApplicationException, GeneralErrorCodes } from "./rest/error-handling";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Function = (...args: any) => any;
+type Function = (...args: never) => unknown;
 type IfAny<T, Y, N> = 0 extends 1 & T ? Y : N;
 type IsAny<T> = IfAny<T, true, never>;
 type IsUnknown<T, Y, N = T> = IsAny<T> extends never ? (unknown extends T ? Y : N) : N;
