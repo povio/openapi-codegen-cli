@@ -1,13 +1,13 @@
 import axios, { AxiosInstance, AxiosRequestConfig, CreateAxiosDefaults } from "axios";
 import { z } from "zod";
 
-import { ErrorHandler, GeneralErrorCodes, SharedErrorHandler } from "./error-handling";
+import { ErrorRethrower, GeneralErrorCodes, SharedErrorHandler } from "./error-handling";
 import { RestClient as IRestClient, RequestConfig, RequestInfo, Response } from "./rest-client.types";
 import { RestInterceptor } from "./rest-interceptor";
 
 export class RestClient implements IRestClient {
   private readonly client: AxiosInstance;
-  private readonly errorHandler: ErrorHandler<never>;
+  private readonly errorHandler: ErrorRethrower;
 
   constructor({
     config,
@@ -17,7 +17,7 @@ export class RestClient implements IRestClient {
     config?: CreateAxiosDefaults;
     // Attached with no arguments, so each must take none.
     interceptors?: RestInterceptor<[]>[];
-    errorHandler?: ErrorHandler<never>;
+    errorHandler?: ErrorRethrower;
   } = {}) {
     this.client = axios.create(config);
     this.errorHandler = errorHandler ?? SharedErrorHandler;

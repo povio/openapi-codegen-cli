@@ -236,3 +236,6 @@ export class ErrorHandler<CodeT extends string | number> {
 
 // can be used for endpoints that only need general error handling
 export const SharedErrorHandler = new ErrorHandler<never>({ entries: [] });
+
+/** What a REST client needs from an error handler; every `ErrorHandler<Codes>` satisfies it. */
+export type ErrorRethrower = Pick<ErrorHandler<string | number>, "rethrowError">;
