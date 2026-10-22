@@ -84,12 +84,7 @@ export function generateFilesFromNativeOpenAPI(
 }
 
 export function supportsCompleteNativeRender(options: GenerateOptions) {
-  return (
-    options.splitByTags &&
-    !options.inlineEndpoints &&
-    !options.builderConfigs &&
-    (options.workspaceContext?.length ?? 0) === 0
-  );
+  return options.splitByTags && !options.inlineEndpoints && (options.workspaceContext?.length ?? 0) === 0;
 }
 
 function taggedFile(options: GenerateOptions, tag: string, type: GenerateType, content: string) {

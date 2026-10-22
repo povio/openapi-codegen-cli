@@ -1,7 +1,6 @@
 import { OpenAPIV3 } from "openapi-types";
 import { getDataFromOpenAPIDoc } from "./core/getDataFromOpenAPIDoc";
 import { generateAcl } from "./generate/generateAcl";
-import { generateConfigs } from "./generate/generateConfigs";
 import { generateEndpoints } from "./generate/generateEndpoints";
 import { generateModels } from "./generate/generateModels";
 import { generateQueries } from "./generate/generateQueries";
@@ -48,14 +47,12 @@ export function generateCodeFromOpenAPIDoc(
         ...(shouldGenerateEndpoints ? [GenerateType.Endpoints] : []),
         GenerateType.Queries,
         ...(resolver.options.acl ? [GenerateType.Acl] : []),
-        ...(resolver.options.builderConfigs ? [GenerateType.Configs] : []),
       ];
   const generateFunctions: Record<GenerateType, (params: GenerateTypeParams) => string | undefined> = {
     [GenerateType.Models]: generateModels,
     [GenerateType.Endpoints]: generateEndpoints,
     [GenerateType.Queries]: generateQueries,
     [GenerateType.Acl]: generateAcl,
-    [GenerateType.Configs]: generateConfigs,
   };
 
   data.forEach((_, tag) => {

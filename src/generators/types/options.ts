@@ -58,14 +58,6 @@ interface ACLGenerateOptions {
   aclCheckImportPath: string;
 }
 
-interface BuilderConfigsGenerateOptions {
-  builderConfigs?: boolean;
-  filterParamName: string;
-  dataResponseParamNames: string[];
-  dynamicInputsImportPath: string;
-  dynamicColumnsImportPath: string;
-}
-
 interface GenerateConfig {
   outputFileNameSuffix: string;
   namespaceSuffix: string;
@@ -99,5 +91,4 @@ export interface GenerateOptions
     EndpointsGenerateOptions,
     QueriesGenerateOptions,
     InfiniteQueriesGenerateOptions,
-    ACLGenerateOptions,
-    BuilderConfigsGenerateOptions {}
+    ACLGenerateOptions {}

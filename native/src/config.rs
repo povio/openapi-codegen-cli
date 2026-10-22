@@ -96,8 +96,6 @@ pub struct GenerateOptions {
     pub parse_request_params: bool,
     #[serde(default)]
     pub inline_endpoints: bool,
-    #[serde(default)]
-    pub builder_configs: bool,
     #[serde(default = "default_true")]
     pub acl: bool,
     #[serde(default)]

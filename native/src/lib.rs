@@ -405,7 +405,6 @@ pub fn compile_data(source: String, yaml: bool, options_json: String) -> Result<
     let rendered_complete = options.native_compact
         && options.split_by_tags
         && !options.inline_endpoints
-        && !options.builder_configs
         && options.workspace_context.is_empty()
         && (!options.acl
             || (rendered_acl.len() == acl_tag_count && rendered_shared.contains_key("appAcl")));

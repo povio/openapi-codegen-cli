@@ -4,7 +4,6 @@ const config = {
   output: "./test/generated/next",
   includeTags: ["auth"],
   replaceOptionalWithNullish: true,
-  builderConfigs: true,
   infiniteQueries: true,
 };
 

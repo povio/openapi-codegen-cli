@@ -122,7 +122,6 @@ bunx openapi-codegen generate --config my-config.ts
   --acl                               Generate ACL related files (default: true)
   --checkAcl                          Add ACL check to queries (default: true)
 
-  --builderConfigs                    Generate configs for builders (default: false)
 
   --baseUrl                           (Requires `--restClientImportPath` to NOT be set) Base URL for the generated REST client; falls back to the OpenAPI spec if not provided
 ```

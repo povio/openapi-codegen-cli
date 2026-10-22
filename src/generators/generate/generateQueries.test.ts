@@ -174,7 +174,6 @@ describe("generateQueries workspaceContext", () => {
       acl: false,
       checkAcl: false,
       mutationEffects: false,
-      builderConfigs: false,
       prefetchQueries: false,
     });
 
@@ -206,7 +205,6 @@ describe("generateQueries workspaceContext", () => {
       acl: false,
       checkAcl: false,
       mutationEffects: false,
-      builderConfigs: false,
       prefetchQueries: false,
     });
 
@@ -230,7 +228,6 @@ describe("generateQueries workspaceContext", () => {
       ...DEFAULT_GENERATE_OPTIONS,
       output: "test-output",
       workspaceContext: ["officeId", "positionId", "id"],
-      builderConfigs: false,
       prefetchQueries: false,
     });
 
@@ -262,7 +259,6 @@ describe("generateQueries workspaceContext", () => {
       workspaceContext: ["officeId"],
       acl: false,
       checkAcl: false,
-      builderConfigs: false,
       prefetchQueries: false,
     });
 
@@ -291,7 +287,6 @@ describe("generateQueries workspaceContext", () => {
       ...DEFAULT_GENERATE_OPTIONS,
       output: "test-output",
       workspaceContext: ["officeId"],
-      builderConfigs: false,
       prefetchQueries: false,
     });
 
@@ -318,7 +313,6 @@ describe("generateQueries workspaceContext", () => {
       acl: false,
       checkAcl: false,
       mutationEffects: false,
-      builderConfigs: false,
       prefetchQueries: false,
     });
 
@@ -342,7 +336,6 @@ describe("generateQueries workspaceContext", () => {
       acl: false,
       checkAcl: false,
       mutationEffects: false,
-      builderConfigs: false,
       prefetchQueries: false,
     });
 
@@ -361,7 +354,6 @@ describe("generateQueries workspaceContext", () => {
       checkAcl: false,
       mutationEffects: false,
       mutationDefaultOnError: true,
-      builderConfigs: false,
       prefetchQueries: false,
     });
 
@@ -440,7 +432,6 @@ describe("generateQueries mutationEffects + infiniteQuery", () => {
       infiniteQueries: true,
       acl: false,
       checkAcl: false,
-      builderConfigs: false,
       prefetchQueries: false,
     });
 
@@ -478,7 +469,6 @@ describe("generateQueries mutationEffects + infiniteQuery", () => {
       prefetchQueries: true,
       acl: false,
       checkAcl: false,
-      builderConfigs: false,
     });
 
     const queriesFile = files.find((file) => file.fileName.endsWith("/items/items.queries.ts"));
@@ -504,7 +494,6 @@ describe("generateQueries mutationEffects + infiniteQuery", () => {
       mutationEffectsImportPath: "@/data/useMutationEffects",
       aclCheckImportPath: "@/data/acl/useAclCheck",
       zodImportPath: "@/data/zod.extended",
-      builderConfigs: false,
     });
 
     const queriesFile = files.find((file) => file.fileName.endsWith("/workspace/workspace.queries.ts"));
@@ -525,7 +514,6 @@ describe("generateQueries mutationEffects + infiniteQuery", () => {
       tsNamespaces: true,
       inlineEndpoints: false,
       workspaceContext: [],
-      builderConfigs: false,
     };
     const tsFiles = generateCodeFromOpenAPIDoc(structuredClone(openApiDoc), options);
     const nativeFiles = generateFilesFromNativeOpenAPI(JSON.stringify(openApiDoc), false, options);
@@ -548,7 +536,6 @@ describe("generateQueries mutationEffects + infiniteQuery", () => {
       output: "test-output",
       restClient: "native",
       axiosRequestConfig: true,
-      builderConfigs: false,
     });
 
     const appClient = files.find((file) => file.fileName.endsWith("/app-rest-client.ts"));

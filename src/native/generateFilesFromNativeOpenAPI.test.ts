@@ -27,7 +27,6 @@ describe("supportsCompleteNativeRender", () => {
   it.each([
     ["unsplit output", { splitByTags: false }],
     ["inline endpoints", { inlineEndpoints: true }],
-    ["builder configs", { builderConfigs: true }],
     ["workspace context", { workspaceContext: ["officeId"] }],
   ])("does not claim full native support for %s", (_name, override) => {
     expect(supportsCompleteNativeRender({ ...supportedOptions, ...override })).toBe(false);

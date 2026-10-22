@@ -197,9 +197,8 @@ function createEndpointConfig(endpoint: Endpoint) {
 }
 
 /** Renders the body of a media-upload mutationFn: call the endpoint (without the file arg) to
- * get upload instructions, then upload the file itself to the returned URL. Shared between
- * renderMutation (*.queries.ts) and renderMutationContent (*.configs.ts / builderConfigs) so
- * both mutation paths stay in sync. Lines are relative to the caller's own indent. */
+ * get upload instructions, then upload the file itself to the returned URL. Lines are relative
+ * to the caller's own indent. */
 export function renderMediaUploadMutationBody({
   resolver,
   endpointFunction,
