@@ -283,6 +283,23 @@ import { OpenApiQueryConfig } from "@povio/openapi-codegen-cli/query";
 </OpenApiQueryConfig.Provider>;
 ```
 
+### Typed invalidation maps
+
+With `mutationEffects` (the default), `queryModules.ts` exports `QueryModuleMutations`: for each module, the `data` and `variables` of its mutation hooks. Pass it to `InvalidationMap` to type each module's callback from the spec.
+
+```ts
+import type { InvalidationMap } from "@povio/openapi-codegen-cli/query";
+import { QueryModule, type QueryModuleMutations } from "@/data/queryModules";
+
+export const invalidationMap: InvalidationMap<QueryModule, QueryModuleMutations> = {
+  // `data` is any of the module's mutation responses; variables that only some
+  // of its mutations take (here `id`) are optional.
+  [QueryModule.Items]: (data, { officeId, id }) => [["items", officeId, id]],
+};
+```
+
+Without `QueryModuleMutations`, callbacks receive `unknown`; annotate their parameters to read them.
+
 ### Runtime response validation
 
 Use `OpenApiQueryConfig.Provider` to allow generated GET query hooks to return invalid response data while still logging the response Zod error to the console. Non-GET requests still throw on invalid response data.

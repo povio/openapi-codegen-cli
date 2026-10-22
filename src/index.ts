@@ -35,7 +35,14 @@ export type { MutationEffectsOptions } from "./lib/react-query/useMutationEffect
 // Config
 export { OpenApiRouter } from "./lib/config/router.context";
 export { OpenApiQueryConfig } from "./lib/config/queryConfig.context";
-export type { InvalidationMap, InvalidationMapFunc, QueryModule } from "./lib/config/queryConfig.context";
+export type {
+  InvalidationMap,
+  InvalidationMapFunc,
+  MergedMutationVariables,
+  MutationEffectsOf,
+  MutationEffectsTypes,
+  QueryModule,
+} from "./lib/config/queryConfig.context";
 export { OpenApiWorkspaceContext, useWorkspaceContext } from "./lib/config/workspace.context";
 
 // i18n resources (for consumer apps to merge into their i18n config)

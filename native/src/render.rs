@@ -2083,7 +2083,8 @@ fn render_query_modules(endpoints: &[Value], options: &GenerateOptions) -> Strin
         .get("queries")
         .map(|config| config.namespace_suffix.as_str())
         .unwrap_or("Queries");
-    let mut tags = IndexSet::default();
+    // Each tag's mutation hooks, for the `QueryModuleMutations` interface.
+    let mut tags: IndexMap<&str, Vec<String>> = IndexMap::default();
     for endpoint in endpoints {
         let tag = endpoint
             .get("tags")
@@ -2091,11 +2092,59 @@ fn render_query_modules(endpoints: &[Value], options: &GenerateOptions) -> Strin
             .and_then(|tags| tags.first())
             .and_then(Value::as_str)
             .unwrap_or(&options.default_tag);
-        tags.insert(tag);
+        let hooks = tags.entry(tag).or_default();
+        if is_mutation_endpoint(endpoint) {
+            let (_, cap) = query_names(endpoint);
+            if endpoint.get("method").and_then(Value::as_str) == Some("get") {
+                hooks.push(format!("use{cap}Mutation"));
+            } else {
+                hooks.push(format!("use{cap}"));
+            }
+        }
     }
-    let mut lines = vec!["export const enum QueryModule {".to_string()];
-    for tag in tags {
+    let mutation_tags = tags
+        .iter()
+        .filter(|(_, hooks)| !hooks.is_empty())
+        .collect::<Vec<_>>();
+    let mut lines = Vec::new();
+    if !mutation_tags.is_empty() {
+        lines.push(format!(
+            "import type {{ MutationEffectsOf }} from \"{}\";",
+            query_types_import_path(options)
+        ));
+        let queries_suffix = output_suffix(options, "queries", "queries");
+        for (tag, _) in &mutation_tags {
+            let namespace = format!("{}{suffix}", capitalize(tag));
+            let file = decapitalize(tag);
+            let from = format!(
+                "{}{file}/{file}.{queries_suffix}",
+                root_import_root(options)
+            );
+            lines.push(if options.ts_namespaces {
+                format!("import type {{ {namespace} }} from \"{from}\";")
+            } else {
+                format!("import type * as {namespace} from \"{from}\";")
+            });
+        }
+        lines.push(String::new());
+    }
+    lines.push("export const enum QueryModule {".to_string());
+    for tag in tags.keys() {
         lines.push(format!("   {tag} = \"{}{suffix}\",", capitalize(tag)));
+    }
+    lines.push("}".into());
+    lines.push(String::new());
+    lines.push("export interface QueryModuleMutations {".into());
+    for (tag, hooks) in &mutation_tags {
+        let namespace = format!("{}{suffix}", capitalize(tag));
+        let hooks = hooks
+            .iter()
+            .map(|hook| format!("typeof {namespace}.{hook}"))
+            .collect::<Vec<_>>()
+            .join(" | ");
+        lines.push(format!(
+            "   [QueryModule.{tag}]: MutationEffectsOf<{hooks}>;"
+        ));
     }
     lines.push("}".into());
     lines.join("\n")
@@ -2732,11 +2781,7 @@ fn render_query_module(
     lines.push(format!(
         "import {{ {} }} from \"{}\";",
         query_types.join(", "),
-        if options.query_types_import_path == "@povio/openapi-codegen-cli" {
-            "@povio/openapi-codegen-cli/query"
-        } else {
-            &options.query_types_import_path
-        }
+        query_types_import_path(options)
     ));
     if endpoints
         .iter()
@@ -3199,6 +3244,22 @@ fn output_suffix<'a>(options: &'a GenerateOptions, kind: &str, default: &'a str)
         .get(kind)
         .map(|config| config.output_file_name_suffix.as_str())
         .unwrap_or(default)
+}
+
+fn query_types_import_path(options: &GenerateOptions) -> &str {
+    if options.query_types_import_path == "@povio/openapi-codegen-cli" {
+        "@povio/openapi-codegen-cli/query"
+    } else {
+        &options.query_types_import_path
+    }
+}
+
+/// Like `import_root`, for files at the output root (`queryModules.ts`).
+fn root_import_root(options: &GenerateOptions) -> String {
+    match options.import_path.as_str() {
+        "relative" => "./".into(),
+        _ => import_root(options),
+    }
 }
 
 fn import_root(options: &GenerateOptions) -> String {
