@@ -590,7 +590,7 @@ fn render_schema_docs<'a>(
     schema_refs: &Map<String, Value>,
     generated_objects: &'a Map<String, Value>,
     enum_objects: &'a HashMap<String, Value>,
-    property_ref_names: &HashMap<&str, String>,
+    property_ref_names: &PropertyRefNames,
 ) -> (Vec<String>, Option<&'a Value>) {
     let schema_object = generated_objects
         .get(name)
@@ -656,7 +656,7 @@ fn render_lazy_common_models(
     enum_objects: &HashMap<String, Value>,
     circular_schemas: &[String],
     suffix: &str,
-    property_ref_names: &HashMap<&str, String>,
+    property_ref_names: &PropertyRefNames,
     namespace: &str,
     mut lines: Vec<String>,
     options: &GenerateOptions,
@@ -723,7 +723,7 @@ fn render_lazy_schema_parts(
     enum_objects: &HashMap<String, Value>,
     circular_schemas: &[String],
     suffix: &str,
-    property_ref_names: &HashMap<&str, String>,
+    property_ref_names: &PropertyRefNames,
     schema_names: &HashSet<&str>,
     namespace: &str,
     options: &GenerateOptions,
