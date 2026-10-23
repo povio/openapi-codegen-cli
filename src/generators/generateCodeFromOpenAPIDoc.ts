@@ -15,6 +15,7 @@ import {
   getZodExtendedFiles,
 } from "./utils/generate-files.utils";
 import { getTagFileName } from "./utils/generate/generate.utils";
+import { trimTrailingWhitespace } from "./utils/string.utils";
 import { shouldInlineEndpointsForTag } from "./utils/tag.utils";
 import { Profiler } from "../helpers/profile.helper";
 import { getDataFromNativeOpenAPIDoc } from "../native/getDataFromNativeOpenAPIDoc";
@@ -81,5 +82,5 @@ export function generateCodeFromOpenAPIDoc(
     );
   }
 
-  return generateFilesData;
+  return generateFilesData.map((file) => ({ ...file, content: trimTrailingWhitespace(file.content) }));
 }

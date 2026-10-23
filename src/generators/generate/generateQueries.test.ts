@@ -324,7 +324,7 @@ describe("generateQueries workspaceContext", () => {
     expect(queriesFile?.content).toContain(
       "const { officeId: officeIdWorkspace } = useWorkspaceContext<{ officeId?: string }>();",
     );
-    expect(queriesFile?.content).toContain("mutationFn: ({ officeId, data }) => { ");
+    expect(queriesFile?.content).toContain("mutationFn: ({ officeId, data }) => {");
     expect(queriesFile?.content).toContain("const normalizeOfficeId = officeId ?? officeIdWorkspace;");
     expect(queriesFile?.content).toContain("return WorkspaceApi.createPosition(normalizeOfficeId, data)");
   });
