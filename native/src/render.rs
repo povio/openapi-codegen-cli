@@ -475,6 +475,21 @@ fn render_common_models(
         ts_namespaces: options.ts_namespaces,
     };
     let mut lines = vec!["import { z } from \"zod\";".to_string(), String::new()];
+    if options.lazy_schemas && options.ts_namespaces {
+        return render_lazy_common_models(
+            document,
+            schemas,
+            schema_refs,
+            generated_objects,
+            &enum_objects,
+            circular_schemas,
+            suffix,
+            &property_ref_names,
+            &namespace,
+            lines,
+            options,
+        );
+    }
     if options.ts_namespaces {
         lines.push(format!("export namespace {namespace} {{"));
     }
@@ -530,6 +545,53 @@ fn render_common_schema_lines(
     options: &GenerateOptions,
 ) -> Option<Vec<String>> {
     let code = code.as_str()?;
+    let (mut lines, schema_object) = render_schema_docs(
+        document,
+        name,
+        code,
+        schema_refs,
+        generated_objects,
+        enum_objects,
+        property_ref_names,
+    );
+    let type_name = remove_suffix(name, suffix);
+    let is_circular = circular_schemas.iter().any(|schema| schema == name);
+    if is_circular {
+        if let Some(schema) = schema_object {
+            lines.push(format!(
+                "export type {type_name} = {};",
+                render_schema_type(schema, suffix, options)
+            ));
+        }
+        lines.push(format!(
+            "export const {name}: z.ZodObject<z.ZodRawShape> & z.ZodType<{type_name}> = {code};"
+        ));
+    } else {
+        let schema_code = if options.compile_schemas {
+            format!("z.compile({code})")
+        } else {
+            code.to_string()
+        };
+        lines.push(format!("export const {name} = {schema_code};"));
+        lines.push(format!("export type {type_name} = z.infer<typeof {name}>;"));
+    }
+    if code.starts_with("z.enum(") {
+        lines.push(format!("export const {type_name} = {name}.enum;"));
+    }
+    lines.push(String::new());
+    Some(lines)
+}
+
+/// Renders the JSDoc block for a schema and returns the schema object it was derived from.
+fn render_schema_docs<'a>(
+    document: &'a Value,
+    name: &str,
+    code: &str,
+    schema_refs: &Map<String, Value>,
+    generated_objects: &'a Map<String, Value>,
+    enum_objects: &'a HashMap<String, Value>,
+    property_ref_names: &HashMap<&str, String>,
+) -> (Vec<String>, Option<&'a Value>) {
     let schema_object = generated_objects
         .get(name)
         .or_else(|| {
@@ -567,32 +629,244 @@ fn render_common_schema_lines(
         }
     }
     lines.push(" */".into());
-    let type_name = remove_suffix(name, suffix);
-    let is_circular = circular_schemas.iter().any(|schema| schema == name);
-    if is_circular {
-        if let Some(schema) = schema_object {
-            lines.push(format!(
-                "export type {type_name} = {};",
-                render_schema_type(schema, suffix, options)
-            ));
-        }
-        lines.push(format!(
-            "export const {name}: z.ZodObject<z.ZodRawShape> & z.ZodType<{type_name}> = {code};"
-        ));
-    } else {
-        let schema_code = if options.compile_schemas {
-            format!("z.compile({code})")
-        } else {
-            code.to_string()
-        };
-        lines.push(format!("export const {name} = {schema_code};"));
-        lines.push(format!("export type {type_name} = z.infer<typeof {name}>;"));
-    }
-    if code.starts_with("z.enum(") {
-        lines.push(format!("export const {type_name} = {name}.enum;"));
+    (lines, schema_object)
+}
+
+// Lazy namespaces mirror src/generators/generate/generateModels.ts (renderLazyModels) byte for byte:
+// memoized module-level factories, an exported object of getters and a merged `declare namespace`
+// for the inferred types.
+const ONCE_HELPER_LINES: [&str; 4] = [
+    "const once = <T>(create: () => T) => {",
+    "  let value: T | undefined;",
+    "  return () => (value ??= create());",
+    "};",
+];
+
+struct LazySchemaParts {
+    factories: Vec<String>,
+    members: Vec<String>,
+    types: Vec<String>,
+}
+
+fn render_lazy_common_models(
+    document: &Value,
+    schemas: &Map<String, Value>,
+    schema_refs: &Map<String, Value>,
+    generated_objects: &Map<String, Value>,
+    enum_objects: &HashMap<String, Value>,
+    circular_schemas: &[String],
+    suffix: &str,
+    property_ref_names: &HashMap<&str, String>,
+    namespace: &str,
+    mut lines: Vec<String>,
+    options: &GenerateOptions,
+) -> String {
+    let schema_names: HashSet<&str> = schemas.keys().map(String::as_str).collect();
+    lines.extend(ONCE_HELPER_LINES.iter().map(|line| line.to_string()));
+    lines.push(String::new());
+    let schemas = schemas.iter().collect::<Vec<_>>();
+    let chunk_size = schemas.len().div_ceil(4).max(1);
+    let parts = std::thread::scope(|scope| {
+        schemas
+            .chunks(chunk_size)
+            .map(|chunk| {
+                scope.spawn(|| {
+                    chunk
+                        .iter()
+                        .filter_map(|(name, code)| {
+                            render_lazy_schema_parts(
+                                document,
+                                name,
+                                code,
+                                schema_refs,
+                                generated_objects,
+                                enum_objects,
+                                circular_schemas,
+                                suffix,
+                                property_ref_names,
+                                &schema_names,
+                                namespace,
+                                options,
+                            )
+                        })
+                        .collect::<Vec<_>>()
+                })
+            })
+            .collect::<Vec<_>>()
+            .into_iter()
+            .flat_map(|handle| handle.join().unwrap())
+            .collect::<Vec<_>>()
+    });
+    let mut members = Vec::new();
+    let mut types = Vec::new();
+    for part in parts {
+        lines.extend(part.factories);
+        members.extend(part.members);
+        types.extend(part.types);
     }
     lines.push(String::new());
-    Some(lines)
+    lines.push(format!("export const {namespace} = {{"));
+    lines.extend(members);
+    lines.push("};".into());
+    lines.push(format!("export declare namespace {namespace} {{"));
+    lines.extend(types);
+    lines.push("}".into());
+    format!("{}\n", lines.join("\n").trim_end())
+}
+
+fn render_lazy_schema_parts(
+    document: &Value,
+    name: &str,
+    code: &Value,
+    schema_refs: &Map<String, Value>,
+    generated_objects: &Map<String, Value>,
+    enum_objects: &HashMap<String, Value>,
+    circular_schemas: &[String],
+    suffix: &str,
+    property_ref_names: &HashMap<&str, String>,
+    schema_names: &HashSet<&str>,
+    namespace: &str,
+    options: &GenerateOptions,
+) -> Option<LazySchemaParts> {
+    let code = code.as_str()?;
+    let (docs, schema_object) = render_schema_docs(
+        document,
+        name,
+        code,
+        schema_refs,
+        generated_objects,
+        enum_objects,
+        property_ref_names,
+    );
+    let type_name = remove_suffix(name, suffix);
+    let is_circular = circular_schemas.iter().any(|schema| schema == name);
+    let type_annotation = if is_circular {
+        format!(": () => z.ZodObject<z.ZodRawShape> & z.ZodType<{namespace}.{type_name}>")
+    } else {
+        String::new()
+    };
+    let schema_code = if options.compile_schemas && !is_circular {
+        format!("z.compile({code})")
+    } else {
+        code.to_string()
+    };
+    let mut factories = vec![format!(
+        "const {name}{type_annotation} = once(() => {});",
+        call_lazy_schema_references(&schema_code, schema_names)
+    )];
+    let mut members: Vec<String> = docs
+        .iter()
+        .flat_map(|line| line.split('\n'))
+        .map(|line| format!("  {line}"))
+        .collect();
+    members.extend(render_lazy_member(name, &format!("{name}()")));
+    let types = vec![match (is_circular, schema_object) {
+        (true, Some(schema)) => format!(
+            "  export type {type_name} = {};",
+            render_schema_type(schema, suffix, options)
+        ),
+        _ => format!("  export type {type_name} = z.infer<typeof {namespace}.{name}>;"),
+    }];
+    if code.starts_with("z.enum(") {
+        factories.push(format!("const {type_name} = once(() => {name}().enum);"));
+        members.extend(render_lazy_member(&type_name, &format!("{type_name}()")));
+    }
+    Some(LazySchemaParts {
+        factories,
+        members,
+        types,
+    })
+}
+
+fn render_lazy_member(name: &str, value: &str) -> [String; 3] {
+    [
+        format!("  get {name}() {{"),
+        format!("    return {value};"),
+        "  },".to_string(),
+    ]
+}
+
+fn is_identifier_char(ch: char) -> bool {
+    ch.is_ascii_alphanumeric() || ch == '_' || ch == '$'
+}
+
+fn find_literal_end(chars: &[char], start: usize, quote: char) -> usize {
+    let mut index = start + 1;
+    while index < chars.len() {
+        let ch = chars[index];
+        if ch == '\\' {
+            index += 2;
+            continue;
+        }
+        index += 1;
+        if ch == quote {
+            break;
+        }
+    }
+    index.min(chars.len())
+}
+
+fn find_regex_end(chars: &[char], start: usize) -> usize {
+    let mut escaped = false;
+    let mut character_class = false;
+    for (index, ch) in chars.iter().enumerate().skip(start + 1) {
+        if escaped {
+            escaped = false;
+            continue;
+        }
+        match ch {
+            '\\' => escaped = true,
+            '[' => character_class = true,
+            ']' => character_class = false,
+            '/' if !character_class => return index + 1,
+            _ => {}
+        }
+    }
+    chars.len()
+}
+
+/// Rewrites bare references to sibling schemas (`PetSchema`) into factory calls (`PetSchema()`).
+/// Member accesses (`CommonModels.PetSchema`, `.enum`), object keys and literal values are left alone.
+fn call_lazy_schema_references(code: &str, schema_names: &HashSet<&str>) -> String {
+    let chars: Vec<char> = code.chars().collect();
+    let mut output = String::with_capacity(code.len());
+    let mut index = 0;
+    while index < chars.len() {
+        let ch = chars[index];
+        if ch == '"' || ch == '\'' || ch == '`' {
+            let end = find_literal_end(&chars, index, ch);
+            output.extend(&chars[index..end]);
+            index = end;
+            continue;
+        }
+        if ch == '/' && output.trim_end().ends_with(".regex(") {
+            let end = find_regex_end(&chars, index);
+            output.extend(&chars[index..end]);
+            index = end;
+            continue;
+        }
+        if is_identifier_char(ch) {
+            let mut end = index + 1;
+            while end < chars.len() && is_identifier_char(chars[end]) {
+                end += 1;
+            }
+            let identifier: String = chars[index..end].iter().collect();
+            let is_member_access = output.ends_with('.');
+            let is_object_key = chars[end..]
+                .iter()
+                .find(|next| !next.is_whitespace())
+                .is_some_and(|next| *next == ':');
+            output.push_str(&identifier);
+            if schema_names.contains(identifier.as_str()) && !is_member_access && !is_object_key {
+                output.push_str("()");
+            }
+            index = end;
+            continue;
+        }
+        output.push(ch);
+        index += 1;
+    }
+    output
 }
 
 fn render_schema_type(schema: &Value, suffix: &str, options: &GenerateOptions) -> String {
@@ -1218,6 +1492,29 @@ fn render_proxy(
         })
         .map(|name| remove_suffix(name, &options.schema_suffix))
         .collect();
+    if options.ts_namespaces && options.lazy_schemas {
+        let mut lines = vec![
+            format!("import {{ {common_namespace} }} from \"{common_path}\";"),
+            String::new(),
+            format!("export const {namespace} = {{"),
+        ];
+        for name in names.iter().chain(enum_names.iter()) {
+            lines.extend(render_lazy_member(
+                name,
+                &format!("{common_namespace}.{name}"),
+            ));
+        }
+        lines.push("};".into());
+        lines.push(format!("export declare namespace {namespace} {{"));
+        lines.extend(
+            inferred
+                .iter()
+                .map(|name| format!("  export type {name} = {common_namespace}.{name};")),
+        );
+        lines.push("}".into());
+        lines.push(String::new());
+        return lines.join("\n");
+    }
     if options.ts_namespaces {
         let mut lines = vec![
             format!("import {{ {common_namespace} }} from \"{common_path}\";"),

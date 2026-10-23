@@ -3,6 +3,8 @@ import { GenerateType } from "./generate";
 interface ZodGenerateOptions {
   /** Eagerly compile non-recursive schemas. Defaults to false to avoid startup work. */
   compileSchemas?: boolean;
+  /** Build namespace model schemas on first access instead of at import. Requires tsNamespaces. */
+  lazySchemas?: boolean;
   schemaSuffix: string;
   enumSuffix: string;
   modelsInCommon?: boolean;

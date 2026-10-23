@@ -5,6 +5,7 @@ import { getZodSchemaRefs } from "@/generators/core/zod/getZodSchemaRefs";
 import { Endpoint } from "@/generators/types/endpoint";
 import { GenerateType, GenerateTypeParams, GenerateZodSchemaData, Import } from "@/generators/types/generate";
 import { getModelsImports, getImportPath } from "@/generators/utils/generate/generate.imports.utils";
+import { callLazySchemaReferences, ONCE_HELPER_LINES } from "@/generators/utils/generate/generate.lazy.utils";
 import { getTagImportPath } from "@/generators/utils/generate/generate.utils";
 import {
   getZodSchemaDescription,
@@ -67,6 +68,10 @@ export function generateModels({ resolver, data, tag }: GenerateTypeParams) {
   }
   lines.push("");
 
+  if (resolver.options.lazySchemas && resolver.options.tsNamespaces) {
+    return renderLazyModels({ resolver, tag, zodSchemasData, lines });
+  }
+
   if (resolver.options.tsNamespaces) {
     lines.push(`export namespace ${getNamespaceName({ type: GenerateType.Models, tag, options: resolver.options })} {`);
   }
@@ -95,6 +100,64 @@ export function generateModels({ resolver, data, tag }: GenerateTypeParams) {
   }
 
   return lines.join("\n").trimEnd() + "\n";
+}
+
+// Lazy namespaces: every schema is a module-level memoized factory, the exported namespace
+// object exposes them through getters, and a merged `declare namespace` keeps the inferred types.
+// Nothing is built until a member is first read, so importing one schema no longer constructs
+// every schema of the module.
+function renderLazyModels({
+  resolver,
+  tag,
+  zodSchemasData,
+  lines,
+}: {
+  resolver: GenerateTypeParams["resolver"];
+  tag: string;
+  zodSchemasData: Record<string, GenerateZodSchemaData>;
+  lines: string[];
+}) {
+  const namespace = getNamespaceName({ type: GenerateType.Models, tag, options: resolver.options });
+  const schemaNames = new Set(Object.keys(zodSchemasData));
+  const members: string[] = [];
+  const types: string[] = [];
+
+  lines.push(...ONCE_HELPER_LINES, "");
+
+  for (const [name, zodSchema] of Object.entries(zodSchemasData)) {
+    const inferredTypeName = getZodSchemaInferedTypeName(name, resolver.options);
+    const typeAnnotation = zodSchema.isCircular
+      ? `: () => z.ZodObject<z.ZodRawShape> & z.ZodType<${namespace}.${inferredTypeName}>`
+      : "";
+    const schemaCode =
+      resolver.options.compileSchemas && !zodSchema.isCircular ? `z.compile(${zodSchema.code})` : zodSchema.code;
+    lines.push(`const ${name}${typeAnnotation} = once(() => ${callLazySchemaReferences(schemaCode, schemaNames)});`);
+    members.push(...indent(renderModelJsDocs({ name, zodSchema, tag, resolver }).split("\n")));
+    members.push(...renderLazyMember(name, `${name}()`));
+    if (zodSchema.isCircular && zodSchema.schemaObj) {
+      types.push(`  export type ${inferredTypeName} = ${renderSchemaType(zodSchema.schemaObj, resolver)};`);
+    } else {
+      types.push(`  export type ${inferredTypeName} = z.infer<typeof ${namespace}.${name}>;`);
+    }
+    if (zodSchema.isEnum) {
+      lines.push(`const ${inferredTypeName} = once(() => ${name}().enum);`);
+      members.push(...renderLazyMember(inferredTypeName, `${inferredTypeName}()`));
+    }
+  }
+
+  lines.push("");
+  lines.push(`export const ${namespace} = {`, ...members, "};");
+  lines.push(`export declare namespace ${namespace} {`, ...types, "}");
+
+  return lines.join("\n") + "\n";
+}
+
+function renderLazyMember(name: string, value: string) {
+  return [`  get ${name}() {`, `    return ${value};`, `  },`];
+}
+
+function indent(lines: string[]) {
+  return lines.map((line) => `  ${line}`);
 }
 
 function renderSchemaType(
@@ -187,6 +250,27 @@ function renderModelsProxy({ resolver, data, tag }: GenerateTypeParams) {
   const enumInferredTypeNames = schemaNames
     .filter((schemaName) => isEnumZodSchema(commonZodSchemas[schemaName] ?? ""))
     .map((schemaName) => getZodSchemaInferedTypeName(schemaName, resolver.options));
+
+  if (resolver.options.tsNamespaces && resolver.options.lazySchemas) {
+    const lines: string[] = [];
+    lines.push(`import { ${commonNamespace} } from "${commonModelsPath}";`);
+    lines.push("");
+    lines.push(`export const ${modelsNamespace} = {`);
+    for (const schemaName of schemaNames) {
+      lines.push(...renderLazyMember(schemaName, `${commonNamespace}.${schemaName}`));
+    }
+    for (const enumName of enumInferredTypeNames) {
+      lines.push(...renderLazyMember(enumName, `${commonNamespace}.${enumName}`));
+    }
+    lines.push("};");
+    lines.push(`export declare namespace ${modelsNamespace} {`);
+    for (const typeName of inferredTypeNames) {
+      lines.push(`  export type ${typeName} = ${commonNamespace}.${typeName};`);
+    }
+    lines.push("}");
+    lines.push("");
+    return lines.join("\n");
+  }
 
   if (resolver.options.tsNamespaces) {
     const lines: string[] = [];

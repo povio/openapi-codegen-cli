@@ -34,6 +34,8 @@ pub struct InfiniteQueryParamNames {
 pub struct GenerateOptions {
     #[serde(default)]
     pub compile_schemas: bool,
+    #[serde(default)]
+    pub lazy_schemas: bool,
     #[serde(default = "default_true")]
     pub split_by_tags: bool,
     #[serde(default = "default_tag")]
