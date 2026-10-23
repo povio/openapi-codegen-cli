@@ -1,0 +1,370 @@
+openapi: 3.0.3
+info:
+  title: Renderer regressions
+  version: "1"
+  description: >-
+    Shapes from a large production spec where the native and TypeScript renderers used to differ.
+    Each path or schema notes the difference it covers.
+paths:
+  # An inline path enum with a component enum's values is named by that enum, which is emitted with
+  # the other component enums, after the endpoint error schemas.
+  /tracking/providers/{provider}/refresh:
+    post:
+      operationId: TrackingController_refreshProvider
+      tags: [Tracking]
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema: { type: string, enum: [alpha, beta, gamma] }
+      responses:
+        "204": { description: Refreshed }
+        "400":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, code, message]
+                properties:
+                  status: { type: string, enum: [error] }
+                  code: { type: string, enum: [tracking_not_found] }
+                  message: { type: string }
+  /tracking/providers/{provider}/sync:
+    post:
+      operationId: TrackingController_syncProvider
+      tags: [Tracking]
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema: { type: string, enum: [alpha, beta, gamma] }
+      responses:
+        "204": { description: Synced }
+        "400":
+          description: Invalid
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, code, message]
+                properties:
+                  status: { type: string, enum: [error] }
+                  code: { type: string, enum: [invalid_direction] }
+                  message: { type: string }
+  # Query parameter docs list every schema constraint; the response is owned by Common.
+  /tracking/labels:
+    get:
+      operationId: TrackingController_labels
+      tags: [Tracking]
+      parameters:
+        - name: query
+          in: query
+          required: false
+          schema: { nullable: true, type: string, minLength: 2, maxLength: 200 }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20, example: 10 }
+      responses:
+        "200":
+          description: Labels
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LabelPageDto" }
+  # Imports follow the first use of each owner: Common's response comes before the local filter.
+  /accounts/labels:
+    get:
+      operationId: AccountsController_labels
+      tags: [Accounts]
+      parameters:
+        - name: direction
+          in: query
+          schema: { $ref: "#/components/schemas/DirectionEnum" }
+        - name: filter
+          in: query
+          schema:
+            nullable: true
+            allOf: [{ $ref: "#/components/schemas/AccountLabelsFilterDto" }]
+      responses:
+        "200":
+          description: Labels
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LabelPageDto" }
+  /accounts/items:
+    get:
+      operationId: AccountsController_items
+      tags: [Accounts]
+      parameters:
+        - name: direction
+          in: query
+          schema: { $ref: "#/components/schemas/DirectionEnum" }
+        - name: metric
+          in: query
+          schema: { type: string, enum: [count, sum] }
+      responses:
+        "200":
+          description: Items
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AccountItemListDto" }
+    post:
+      operationId: AccountsController_createItem
+      tags: [Accounts]
+      requestBody:
+        required: true
+        description: The item to create
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateRemarkDto" }
+            example: '{"position":1}'
+      responses:
+        "201": { description: Created }
+  # Body parameter docs use the media type's schema and example.
+  /accounts/notes:
+    post:
+      operationId: AccountsController_createNote
+      tags: [Accounts]
+      requestBody:
+        content:
+          application/json:
+            schema: { type: string, minLength: 1, maxLength: 500 }
+            example: A note
+      responses:
+        "204": { description: Created }
+  # The extracted `status` enum is owned by the tag of the component that declares it, not by the
+  # tags whose inline error responses reuse it.
+  /scanner/results:
+    get:
+      operationId: ScannerController_results
+      tags: [Scanner]
+      responses:
+        "200":
+          description: Results
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ScannerErrorDto" }
+  # A later endpoint's composite response depends on the component enum with the same values as a
+  # property's enum, although an earlier endpoint already registered the property's schema.
+  /quotes/{quoteId}/items:
+    post:
+      operationId: QuoteItemsController_create
+      tags: [Quote Items]
+      parameters:
+        - { name: quoteId, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/QuoteItemDto" }
+  /quotes/{quoteId}/items/bulk:
+    post:
+      operationId: QuoteItemsController_createMany
+      tags: [Quote Items]
+      parameters:
+        - { name: quoteId, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/QuoteItemDto" }
+  /positions/{positionId}/items:
+    get:
+      operationId: PositionItemsController_list
+      tags: [Position Items]
+      parameters:
+        - { name: positionId, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Items
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PositionItemDto" }
+  # Two component enums share values; neither declaration uses the other.
+  /messages/outgoing:
+    get:
+      operationId: OutgoingMessagesController_list
+      tags: [Outgoing Messages]
+      responses:
+        "200":
+          description: Messages
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OutgoingMessageDto" }
+  /messages/incoming:
+    get:
+      operationId: IncomingMessagesController_list
+      tags: [Incoming Messages]
+      responses:
+        "200":
+          description: Messages
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/IncomingMessageDto" }
+  # Recursive properties use `z.lazy`; `additionalProperties: false` adds no index signature.
+  /folders/tree:
+    get:
+      operationId: FoldersController_tree
+      tags: [Folders]
+      responses:
+        "200":
+          description: Tree
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FolderTreeDto" }
+  # The native transport types are imported before the rest client used for uploads.
+  /uploads/{uploadId}:
+    get:
+      operationId: UploadsController_get
+      tags: [Uploads]
+      parameters:
+        - { name: uploadId, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Upload
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/UploadDto" }
+    post:
+      operationId: UploadsController_upload
+      tags: [Uploads]
+      x-media-upload: true
+      parameters:
+        - { name: uploadId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UploadRequestDto" }
+      responses:
+        "200":
+          description: Upload instructions
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/UploadDto" }
+components:
+  schemas:
+    ProviderNameEnum:
+      type: string
+      enum: [alpha, beta, gamma]
+    DirectionEnum:
+      type: string
+      enum: [Import, Export]
+    LabelPageDto:
+      type: object
+      required: [items, total]
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            required: [id, label]
+            properties:
+              id: { type: string }
+              label: { type: string }
+        total: { type: integer }
+    # Declared before the filter, but has no dependencies, so it sorts after it.
+    CreateRemarkDto:
+      type: object
+      required: [content]
+      properties:
+        content:
+          type: object
+          properties:
+            html: { nullable: true, type: string }
+            json: { nullable: true, type: object, additionalProperties: {} }
+        position: { nullable: true, type: integer }
+    # `null` in an enum does not stop it matching DirectionEnum.
+    AccountLabelsFilterDto:
+      type: object
+      properties:
+        search: { nullable: true, type: string }
+        direction: { nullable: true, type: string, enum: [Import, Export, null] }
+    # A top-level array documents its items' properties.
+    AccountItemListDto:
+      type: array
+      items:
+        type: object
+        required: [id, name]
+        properties:
+          id: { type: string }
+          name: { type: string, description: The item name }
+          tags: { type: array, items: { type: string } }
+    ScannerErrorDto:
+      type: object
+      required: [status, message]
+      properties:
+        status: { type: string, enum: [error] }
+        message: { type: string }
+    ItemTypeAEnum:
+      type: string
+      enum: [CHARGE, TEXT, DIVIDER]
+    ItemTypeBEnum:
+      type: string
+      enum: [CHARGE, TEXT, DIVIDER]
+    # The nullable status matches an extracted enum owned by Common, which the models then import.
+    QuoteItemDto:
+      type: object
+      required: [id, type]
+      properties:
+        id: { type: string }
+        type: { $ref: "#/components/schemas/ItemTypeBEnum" }
+        determinationStatus: { nullable: true, type: string, enum: [MATCHED, NO_MATCH, null] }
+    PositionItemDto:
+      type: object
+      required: [id, type]
+      properties:
+        id: { type: string }
+        type: { $ref: "#/components/schemas/ItemTypeAEnum" }
+        determinationStatus: { type: string, enum: [MATCHED, NO_MATCH] }
+    MessageStatusAEnum:
+      type: string
+      enum: [Pending, Uploaded, Failed]
+    MessageStatusBEnum:
+      type: string
+      enum: [Pending, Uploaded, Failed]
+    OutgoingMessageDto:
+      type: object
+      properties:
+        status: { $ref: "#/components/schemas/MessageStatusAEnum" }
+    IncomingMessageDto:
+      type: object
+      properties:
+        status: { $ref: "#/components/schemas/MessageStatusBEnum" }
+    FolderTreeDto:
+      type: object
+      required: [id, folders]
+      properties:
+        id: { type: string }
+        folders:
+          type: array
+          items: { $ref: "#/components/schemas/FolderTreeDto__schema0" }
+    FolderTreeDto__schema0:
+      type: object
+      required: [id, name, folders]
+      additionalProperties: false
+      properties:
+        id: { type: string }
+        name: { type: string }
+        symlink:
+          nullable: true
+          type: object
+          required: [targetId]
+          additionalProperties: false
+          properties:
+            targetId: { type: string }
+        folders:
+          type: array
+          items: { $ref: "#/components/schemas/FolderTreeDto__schema0" }
+    UploadDto:
+      type: object
+      properties:
+        id: { type: string }
+        url: { type: string }
+    UploadRequestDto:
+      type: object
+      properties:
+        fileName: { type: string }

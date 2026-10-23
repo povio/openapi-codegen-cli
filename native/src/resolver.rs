@@ -171,9 +171,10 @@ fn collect_ordered_dependencies(
     };
     let mut enum_ref_by_values: IndexMap<String, String> = IndexMap::default();
     for (name, schema) in schemas {
-        if let Some(values) = schema.get("enum").and_then(Value::as_array) {
+        // Keyed by the rendered code, which leaves out `null`, as the TypeScript resolver compares enums.
+        if let Some(code) = crate::zod::enum_code(schema) {
             enum_ref_by_values
-                .entry(Value::Array(values.clone()).to_string())
+                .entry(code)
                 .or_insert_with(|| format!("#/components/schemas/{name}"));
         }
     }
@@ -228,8 +229,8 @@ fn collect_inline_enum_values(value: &Value, values: &mut HashSet<String>) {
             }
         }
         Value::Object(object) => {
-            if let Some(enum_values) = object.get("enum").and_then(Value::as_array) {
-                values.insert(Value::Array(enum_values.clone()).to_string());
+            if let Some(code) = crate::zod::enum_code(value) {
+                values.insert(code);
             }
             for value in object.values() {
                 collect_inline_enum_values(value, values);

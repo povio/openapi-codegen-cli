@@ -173,6 +173,9 @@ mod runtime_import_tests {
     #[test]
     fn mutation_effects_default_uses_query_subpath() {
         let options: super::GenerateOptions = serde_json::from_str("{}").unwrap();
-        assert_eq!(options.mutation_effects_import_path, "@povio/openapi-codegen-cli/query");
+        assert_eq!(
+            options.mutation_effects_import_path,
+            "@povio/openapi-codegen-cli/query"
+        );
     }
 }

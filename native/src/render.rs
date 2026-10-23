@@ -157,6 +157,16 @@ fn render_local_models(
             enum_name_by_code.entry(code).or_insert(name.as_str());
         }
     }
+    // Inline enums with a component enum's values are rendered as that enum.
+    if options.extract_enums {
+        for (name, value) in schemas {
+            if let Some(code) = value.as_str().filter(|code| code.starts_with("z.enum("))
+                && schema_refs.contains_key(name)
+            {
+                enum_name_by_code.entry(code).or_insert(name.as_str());
+            }
+        }
+    }
     for (tag, mut tag_schemas) in by_tag {
         let mut imports: IndexMap<String, Vec<String>> = IndexMap::default();
         for schema_name in tag_schemas.keys() {
@@ -177,7 +187,10 @@ fn render_local_models(
                         }
                     }
                 }
-                if let Some(schema) = resolve_document_ref(document, reference) {
+                // An enum component declares its values; it does not use another enum.
+                if let Some(schema) = resolve_document_ref(document, reference)
+                    .filter(|schema| schema.get("enum").is_none())
+                {
                     let mut enum_codes = Vec::new();
                     collect_inline_enum_codes(schema, &mut enum_codes);
                     for code in enum_codes {
@@ -290,11 +303,7 @@ fn collect_inline_enum_codes(value: &Value, codes: &mut Vec<String>) {
             .for_each(|value| collect_inline_enum_codes(value, codes)),
         Value::Object(object) => {
             if !object.contains_key("$ref") {
-                if let Some(values) = object.get("enum").and_then(Value::as_array) {
-                    let code = format!(
-                        "z.enum({})",
-                        Value::Array(values.clone()).to_string().replace(',', ", ")
-                    );
+                if let Some(code) = crate::zod::enum_code(value) {
                     if !codes.contains(&code) {
                         codes.push(code);
                     }
@@ -429,11 +438,20 @@ fn render_proxy_modules(
                     );
                 }
             }
+            // Generated schemas reach components only: JavaScript collects their refs, not the
+            // extracted enums they use.
+            let is_component = ref_by_name.contains_key(name.as_str());
             if let Some(code) = schemas.get(&name).and_then(Value::as_str) {
                 for candidate in schema_identifiers(code) {
+                    let extracted_enum = !ref_by_name.contains_key(candidate)
+                        && schemas
+                            .get(candidate)
+                            .and_then(Value::as_str)
+                            .is_some_and(|code| code.starts_with("z.enum("));
                     if candidate != name
                         && schemas.contains_key(candidate)
                         && !direct_names.contains(candidate)
+                        && (is_component || !extracted_enum)
                     {
                         enqueue(candidate, &mut used, &mut seen, &mut queue);
                     }
@@ -950,7 +968,11 @@ fn render_schema_type(schema: &Value, suffix: &str, options: &GenerateOptions) -
                 format!("{property_name}{optional}: {property_type}")
             })
             .collect::<Vec<_>>();
-        if let Some(additional) = schema.get("additionalProperties") {
+        // Like JavaScript's truthiness check, `false` and `null` add no index signature.
+        if let Some(additional) = schema
+            .get("additionalProperties")
+            .filter(|additional| !matches!(additional, Value::Bool(false) | Value::Null))
+        {
             let value_type = if additional.is_object() {
                 render_schema_type(additional, suffix, options)
             } else {
@@ -1117,6 +1139,19 @@ fn collect_property_docs(
     properties: &mut IndexMap<String, (String, String)>,
     property_ref_names: &PropertyRefNames,
 ) {
+    if schema.get("type").and_then(Value::as_str) == Some("array") {
+        if let Some(items) = schema
+            .get("items")
+            .filter(|items| items.get("$ref").is_none())
+        {
+            let key = if prefix.is_empty() {
+                "[0]".into()
+            } else {
+                format!("{prefix}.[0]")
+            };
+            collect_property_docs(document, items, &key, properties, property_ref_names);
+        }
+    }
     if let Some(all_of) = schema.get("allOf").and_then(Value::as_array) {
         for member in all_of.iter().filter(|member| member.get("$ref").is_some()) {
             if let Some(reference) = member.get("$ref").and_then(Value::as_str) {
@@ -1750,7 +1785,8 @@ fn render_endpoint_module(
             let mut imports: IndexMap<String, Vec<String>> = IndexMap::default();
             for schema in &used_schemas {
                 if is_named_schema(schema) {
-                    let owner = if options.models_in_modules {
+                    // Like JavaScript, shared models are imported through the module's own proxy.
+                    let owner = if options.models_in_modules || options.models_in_common {
                         tag
                     } else {
                         schema_owners
@@ -1774,7 +1810,7 @@ fn render_endpoint_module(
                     .filter(|schema| is_named_schema(schema))
                 {
                     let name = remove_suffix(schema, &options.schema_suffix);
-                    let owner = if options.models_in_modules {
+                    let owner = if options.models_in_modules || options.models_in_common {
                         tag
                     } else {
                         schema_owners
@@ -1844,10 +1880,20 @@ fn render_endpoint_module(
     if options.ts_namespaces {
         lines.push("}".into());
     }
+    let mut schema_order = used_schemas.clone();
+    schema_order.extend(endpoints.iter().flat_map(|endpoint| {
+        endpoint
+            .get("parameters")
+            .and_then(Value::as_array)
+            .into_iter()
+            .flatten()
+            .filter_map(|parameter| parameter.get("zodSchema").and_then(Value::as_str))
+    }));
     resolve_model_namespace_owners(
         format!("{}\n", lines.join("\n").trim_end()),
         tag,
         model_owners,
+        &schema_order,
         options,
     )
 }
@@ -2692,7 +2738,7 @@ fn render_acl_module(
             {
                 if let Some(schema) = condition.get("zodSchemaName").and_then(Value::as_str) {
                     let name = remove_suffix(schema, &options.schema_suffix);
-                    let owner = if options.models_in_modules {
+                    let owner = if options.models_in_modules || options.models_in_common {
                         tag
                     } else {
                         schema_owners
@@ -2990,12 +3036,6 @@ fn render_query_module(
         })
         .collect();
     let mut lines = Vec::new();
-    if uses_native_rest_client(options) && has_media_upload {
-        lines.push(format!(
-            "import {{ AppRestClient }} from \"{}\";",
-            rest_client_import_path(options)
-        ));
-    }
     if uses_native_rest_client(options) {
         let mut transport_types = Vec::new();
         if !queries.is_empty() || options.axios_request_config {
@@ -3016,6 +3056,12 @@ fn render_query_module(
         } else {
             "import { type AxiosRequestConfig } from \"axios\";".to_string()
         });
+    }
+    if uses_native_rest_client(options) && has_media_upload {
+        lines.push(format!(
+            "import {{ AppRestClient }} from \"{}\";",
+            rest_client_import_path(options)
+        ));
     }
     let mut query_imports = Vec::new();
     if options.prefetch_queries && !queries.is_empty() {
@@ -3118,7 +3164,7 @@ fn render_query_module(
                     .filter(|schema| is_named_schema(schema))
                 {
                     let name = remove_suffix(&schema, &options.schema_suffix);
-                    let owner = if options.models_in_modules {
+                    let owner = if options.models_in_modules || options.models_in_common {
                         tag
                     } else {
                         schema_owners
@@ -3276,7 +3322,18 @@ fn render_query_module(
         content = content.replace(&format!("{api_namespace}."), "");
         content = content.replace(&format!("{acl_namespace}."), "");
     }
-    resolve_model_namespace_owners(content, tag, model_owners, options)
+    let schema_order: Vec<&str> = endpoints
+        .iter()
+        .flat_map(|endpoint| {
+            endpoint
+                .get("parameters")
+                .and_then(Value::as_array)
+                .into_iter()
+                .flatten()
+                .filter_map(|parameter| parameter.get("zodSchema").and_then(Value::as_str))
+        })
+        .collect();
+    resolve_model_namespace_owners(content, tag, model_owners, &schema_order, options)
 }
 
 /// Model name (with and without the schema suffix) -> owning tags, in `schema_owners` order.
@@ -3325,10 +3382,13 @@ impl<'a> TagModelOwners<'a, '_> {
 }
 
 // Namespace-based modules can reference models shared by several tags.
+/// `schema_order` lists the schemas whose models the TypeScript renderer imports, in its order: the
+/// imports follow the first use of each owner there.
 fn resolve_model_namespace_owners(
     content: String,
     tag: &str,
     model_owners: &ModelOwners,
+    schema_order: &[&str],
     options: &GenerateOptions,
 ) -> String {
     if !options.ts_namespaces || options.models_in_common || options.models_in_modules {
@@ -3467,29 +3527,40 @@ fn resolve_model_namespace_owners(
     }
     let local_import = format!("import {{ {local_namespace} }} from ");
     let mut lines = output.lines().map(str::to_string).collect::<Vec<_>>();
-    let insertion = lines
+    let local_position = lines
         .iter()
-        .position(|line| line.starts_with(&local_import))
+        .position(|line| line.starts_with(&local_import));
+    let insertion = local_position
         .unwrap_or_else(|| lines.iter().position(|line| line.is_empty()).unwrap_or(0));
-    if !has_local
-        && lines
-            .get(insertion)
-            .is_some_and(|line| line.starts_with(&local_import))
-    {
-        lines.remove(insertion);
+    let local_line = local_position
+        .map(|position| lines.remove(position))
+        .filter(|_| has_local);
+    let mut owner_order = IndexSet::default();
+    for schema in schema_order.iter().filter(|schema| is_named_schema(schema)) {
+        owner_order.insert(owners.get(schema).unwrap_or(tag));
     }
-    let insertion = insertion + usize::from(has_local);
+    let rank = |owner: &str| owner_order.get_index_of(owner).unwrap_or(usize::MAX);
     let suffix = output_suffix(options, "models", "models");
-    for (offset, owner) in imports.into_iter().enumerate() {
-        let owner_tag = decapitalize(owner);
-        lines.insert(
-            insertion + offset,
-            format!(
-                "import {{ {}{namespace_suffix} }} from \"{}{owner_tag}/{owner_tag}.{suffix}\";",
-                capitalize(owner),
-                import_root(options)
-            ),
-        );
+    let mut entries = imports
+        .into_iter()
+        .map(|owner| {
+            let owner_tag = decapitalize(owner);
+            (
+                rank(owner),
+                format!(
+                    "import {{ {}{namespace_suffix} }} from \"{}{owner_tag}/{owner_tag}.{suffix}\";",
+                    capitalize(owner),
+                    import_root(options)
+                ),
+            )
+        })
+        .collect::<Vec<_>>();
+    if let Some(line) = local_line {
+        entries.push((rank(tag), line));
+    }
+    entries.sort_by_key(|(rank, _)| *rank);
+    for (offset, (_, line)) in entries.into_iter().enumerate() {
+        lines.insert(insertion + offset, line);
     }
     format!("{}\n", lines.join("\n"))
 }
@@ -4056,35 +4127,34 @@ fn parameter_description(parameter: &Value) -> String {
     {
         parts.push(description.to_string());
     }
-    let schema = parameter
-        .pointer("/parameterObject/schema")
+    let media = parameter
+        .pointer("/bodyObject/content")
+        .and_then(Value::as_object)
+        .and_then(|content| {
+            content
+                .iter()
+                .find(|(name, _)| crate::endpoints::is_parameter_media(name))
+        })
+        .map(|(_, media)| media);
+    let schema = media
+        .and_then(|media| media.get("schema"))
+        .or_else(|| parameter.pointer("/parameterObject/schema"))
         .filter(|schema| schema.get("$ref").is_none());
     if let Some(schema) = schema {
-        if let Some(minimum) = schema.get("minimum") {
-            parts.push(format!("Minimum: `{minimum}`"));
+        for (key, label) in DESCRIPTION_KEYS {
+            if let Some(value) = schema.get(*key) {
+                parts.push(format!("{label}: `{}`", display_js_value(value)));
+            }
         }
-        if let Some(maximum) = schema.get("maximum") {
-            parts.push(format!("Maximum: `{maximum}`"));
-        }
-        if let Some(default) = schema.get("default") {
-            parts.push(format!("Default: `{}`", display_json(default)));
-        }
-        if let Some(example) = schema.get("example") {
-            parts.push(format!("Example: `{}`", display_json(example)));
-        }
+    }
+    if let Some(example) = media.and_then(|media| media.get("example")) {
+        parts.push(format!("Example: `{}`", display_js_value(example)));
     }
     if parts.is_empty() {
         String::new()
     } else {
         format!(". {}", parts.join(". "))
     }
-}
-
-fn display_json(value: &Value) -> String {
-    value
-        .as_str()
-        .map(str::to_string)
-        .unwrap_or_else(|| value.to_string())
 }
 
 fn is_mutation_endpoint(endpoint: &Value) -> bool {
@@ -4633,6 +4703,7 @@ const escapedRegex = z.string().regex(/\/[/]EmailAdminModels.BaseLogLevelEnumSch
             source.into(),
             "EmailAdmin",
             &ModelOwners::new(&owners, &options),
+            &[],
             &options,
         );
         assert!(actual.contains("const value = CommonModels.BaseLogLevelEnumSchema;"));
