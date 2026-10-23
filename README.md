@@ -119,6 +119,7 @@ bunx openapi-codegen generate --config my-config.ts
   --excludeTags                       Comma-separated list of tags to exclude from generation
   --excludePathRegex                  Exclude operations whose paths match the given regular expression
   --excludeRedundantZodSchemas        Exclude any redundant Zod schemas (default: true)
+  --includeSchemas                    Comma-separated component schemas to generate even when no operation uses them
 
   --tsNamespaces                      Wrap generated files in TypeScript namespaces (default: true)
   --importPath                        Module import style for generated files (default: 'ts'; options: 'ts' | 'relative' | 'absolute')
@@ -166,6 +167,7 @@ bunx openapi-codegen generate --config my-config.ts
   --excludeTags                       Comma-separated list of tags to exclude from generation
   --excludePathRegex                  Exclude operations whose paths match the given regular expression
   --excludeRedundantZodSchemas        Exclude any redundant Zod schemas (default: true)
+  --includeSchemas                    Comma-separated component schemas to generate even when no operation uses them
 ```
 
 ## Development

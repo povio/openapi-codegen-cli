@@ -31,6 +31,9 @@ class CheckOptions implements CheckParams {
   @YargOption({ envAlias: "excludeRedundantZodSchemas", type: "boolean" })
   excludeRedundantZodSchemas?: boolean;
 
+  @YargOption({ envAlias: "includeSchemas" })
+  includeSchemas?: string;
+
   @YargOption({ envAlias: "verbose", default: false, type: "boolean" })
   verbose?: boolean;
 }

@@ -8,12 +8,14 @@ export function getZodSchemasFromOpenAPIDoc(resolver: SchemaResolver, profiler?:
   const p = profiler ?? new Profiler(false);
   const zodSchemas = {} as Record<string, string>;
   const enumZodSchemas = {} as Record<string, string>;
+  const includedSchemaRefs = getIncludedSchemaRefs(resolver);
 
   Object.entries(resolver.openApiDoc.components?.schemas ?? {}).forEach(([name, schema]) =>
     p.runSync("zod.extract.schemaEntry", () => {
       const schemaData = resolver.getSchemaDataByName(name);
       if (
         resolver.options.excludeRedundantZodSchemas &&
+        !includedSchemaRefs.has(`#/components/schemas/${name}`) &&
         (!schemaData || (schemaData.deepRefOperations.length === 0 && schemaData.tags.length === 0))
       ) {
         return;
@@ -45,6 +47,17 @@ export function getZodSchemasFromOpenAPIDoc(resolver: SchemaResolver, profiler?:
   );
 
   return { zodSchemas, enumZodSchemas };
+}
+
+/** The `includeSchemas` components and every schema they depend on. */
+function getIncludedSchemaRefs(resolver: SchemaResolver) {
+  const refs = new Set<string>();
+  for (const name of resolver.options.includeSchemas) {
+    const ref = `#/components/schemas/${name}`;
+    refs.add(ref);
+    resolver.dependencyGraph.deepDependencyGraph[ref]?.forEach((dependency) => refs.add(dependency));
+  }
+  return refs;
 }
 
 export function getEnumZodSchemasFromOpenAPIDoc(resolver: SchemaResolver) {

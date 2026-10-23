@@ -390,6 +390,11 @@ fn render_proxy_modules(
                 .map(|reference| (name.as_str(), reference))
         })
         .collect();
+    let schema_positions: HashMap<&str, usize> = schemas
+        .keys()
+        .enumerate()
+        .map(|(position, name)| (name.as_str(), position))
+        .collect();
     let mut by_tag: IndexMap<String, Vec<&Value>> = IndexMap::default();
     for endpoint in endpoints {
         let tag = endpoint
@@ -439,22 +444,32 @@ fn render_proxy_modules(
                 }
             }
             // Generated schemas reach components only: JavaScript collects their refs, not the
-            // extracted enums they use.
+            // extracted enums they use. A component's extracted enums follow its refs, in extraction
+            // order (the order of `schemas`).
             let is_component = ref_by_name.contains_key(name.as_str());
             if let Some(code) = schemas.get(&name).and_then(Value::as_str) {
+                let mut extracted_enums = Vec::new();
                 for candidate in schema_identifiers(code) {
+                    if candidate == name
+                        || !schemas.contains_key(candidate)
+                        || direct_names.contains(candidate)
+                    {
+                        continue;
+                    }
                     let extracted_enum = !ref_by_name.contains_key(candidate)
                         && schemas
                             .get(candidate)
                             .and_then(Value::as_str)
                             .is_some_and(|code| code.starts_with("z.enum("));
-                    if candidate != name
-                        && schemas.contains_key(candidate)
-                        && !direct_names.contains(candidate)
-                        && (is_component || !extracted_enum)
-                    {
+                    if !extracted_enum {
                         enqueue(candidate, &mut used, &mut seen, &mut queue);
+                    } else if is_component {
+                        extracted_enums.push(candidate);
                     }
+                }
+                extracted_enums.sort_by_key(|candidate| schema_positions.get(candidate).copied());
+                for candidate in extracted_enums {
+                    enqueue(candidate, &mut used, &mut seen, &mut queue);
                 }
             }
         }

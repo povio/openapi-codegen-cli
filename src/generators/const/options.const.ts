@@ -16,6 +16,7 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   excludeTags: [],
   excludePathRegex: "",
   excludeRedundantZodSchemas: true,
+  includeSchemas: [],
   tsNamespaces: true,
   treeShakeableNamespaces: false,
   tsPath: "@/data",

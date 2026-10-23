@@ -76,6 +76,8 @@ interface BaseGenerateOptions {
   excludeTags: string[];
   excludePathRegex: string;
   excludeRedundantZodSchemas: boolean;
+  /** Component schemas to generate even when no included operation uses them, with their dependencies. */
+  includeSchemas: string[];
   tsNamespaces: boolean;
   treeShakeableNamespaces?: boolean;
   tsPath: string;

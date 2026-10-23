@@ -368,3 +368,18 @@ components:
       type: object
       properties:
         fileName: { type: string }
+    # No operation uses these; `includeSchemas: [ReportPayloadDto]` generates both.
+    ReportPayloadDto:
+      type: object
+      required: [title, lines]
+      properties:
+        title: { type: string }
+        locale: { type: string, enum: [en, de] }
+        lines:
+          type: array
+          items: { $ref: "#/components/schemas/ReportLineDto" }
+    ReportLineDto:
+      type: object
+      properties:
+        label: { type: string }
+        amount: { type: number }

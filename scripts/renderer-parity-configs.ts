@@ -26,6 +26,7 @@ export const optionCases = {
   excludeTags: [{ excludeTags: ["pet"] }],
   excludePathRegex: [{ excludePathRegex: "^/pet" }],
   excludeRedundantZodSchemas: bool("excludeRedundantZodSchemas"),
+  includeSchemas: [{ includeSchemas: ["ReportPayloadDto", "Pet"] }],
   tsPath: [{ tsPath: "@/openapi" }],
   importPath: ["ts", "relative", "absolute"].map((importPath) => ({ importPath })) as Partial<GenerateOptions>[],
   configs: [

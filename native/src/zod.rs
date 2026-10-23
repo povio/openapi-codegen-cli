@@ -79,6 +79,19 @@ impl<'a> ZodCompiler<'a> {
         self.compile_components_with_tags(&HashMap::default())
     }
 
+    /// The `includeSchemas` components and every schema they depend on.
+    fn included_schema_refs(&self) -> HashSet<String> {
+        let mut refs = HashSet::default();
+        for name in &self.options.include_schemas {
+            let reference = format!("#/components/schemas/{name}");
+            if let Some(dependencies) = self.resolver.deep_dependencies.get(&reference) {
+                refs.extend(dependencies.iter().cloned());
+            }
+            refs.insert(reference);
+        }
+        refs
+    }
+
     pub fn compile_components_with_tags(
         &self,
         first_tags: &HashMap<String, String>,
@@ -91,6 +104,7 @@ impl<'a> ZodCompiler<'a> {
         else {
             return Ok(result);
         };
+        let included = self.included_schema_refs();
         for (name, schema) in schemas {
             let zod_name = schema_name(name, &self.options.schema_suffix);
             let reference = format!("#/components/schemas/{name}");
@@ -98,6 +112,7 @@ impl<'a> ZodCompiler<'a> {
             if self.options.exclude_redundant_zod_schemas
                 && !self.resolver.schema_tags.contains_key(&reference)
                 && !first_tags.contains_key(&reference)
+                && !included.contains(&reference)
             {
                 continue;
             }

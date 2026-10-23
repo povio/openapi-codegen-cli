@@ -49,6 +49,9 @@ class GenerateOptions implements GenerateParams {
   @YargOption({ envAlias: "excludeRedundantZodSchemas", type: "boolean" })
   excludeRedundantZodSchemas?: boolean;
 
+  @YargOption({ envAlias: "includeSchemas" })
+  includeSchemas?: string;
+
   @YargOption({ envAlias: "importPath" })
   importPath?: "ts" | "relative" | "absolute";
 

@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import { OpenAPIV3 } from "openapi-types";
 
-import { resolveConfig } from "@/generators/core/resolveConfig";
+import { type ConfigParams, resolveConfig } from "@/generators/core/resolveConfig";
 import { GenerateFileFormatter } from "@/generators/types/generate";
 import { GenerateOptions } from "@/generators/types/options";
 import { removeStaleGeneratedFiles, writeGenerateFileData } from "@/generators/utils/file.utils";
@@ -22,14 +22,7 @@ export async function runGenerate({
   profiler = new Profiler(process.env.OPENAPI_CODEGEN_PROFILE === "1"),
 }: {
   fileConfig?: Partial<GenerateOptions> | null;
-  params?: Partial<
-    Omit<GenerateOptions, "includeTags" | "excludeTags" | "inlineEndpointsExcludeModules" | "workspaceContext"> & {
-      includeTags: string;
-      excludeTags: string;
-      inlineEndpointsExcludeModules: string;
-      workspaceContext: string;
-    }
-  >;
+  params?: ConfigParams;
   formatGeneratedFile?: GenerateFileFormatter;
   profiler?: Profiler;
 }) {

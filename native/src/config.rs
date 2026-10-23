@@ -74,6 +74,8 @@ pub struct GenerateOptions {
     pub replace_optional_with_nullish: bool,
     #[serde(default = "default_true")]
     pub exclude_redundant_zod_schemas: bool,
+    #[serde(default)]
+    pub include_schemas: Vec<String>,
     #[serde(default = "default_enum_suffix")]
     pub enum_suffix: String,
     #[serde(default)]
