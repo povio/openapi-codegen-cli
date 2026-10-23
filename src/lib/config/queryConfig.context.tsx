@@ -38,17 +38,26 @@ type MergedObjects<T> = { [K in Extract<keyof T, PropertyKey>]: MergedValue<Valu
   [K in Exclude<KeysOfUnion<T>, keyof T>]?: MergedValue<ValueOfUnion<T, K>>;
 };
 
+// `void` (a mutation without variables or response body) is `undefined` at runtime.
+type VoidAsUndefined<T> = [void] extends [T] ? Exclude<T, void> | undefined : T;
+
 /**
- * The variables of a module's mutations as one object: keys some mutations lack become optional, at any
- * depth (e.g. fields of request bodies only some mutations send). Mutations without variables (`void`)
- * stay in the union, as their callbacks receive `undefined`.
+ * A union of a module's mutation values as one object: keys some mutations lack become optional, at any
+ * depth (e.g. fields of request bodies only some mutations send). `void` becomes `undefined`, which is
+ * what callbacks receive for mutations without one.
  */
-export type MergedMutationVariables<T> = [ObjectMembers<T>] extends [never]
-  ? T
-  : MergedObjects<ObjectMembers<T>> | Exclude<T, object>;
+export type MergedMutationValues<T> = [ObjectMembers<T>] extends [never]
+  ? VoidAsUndefined<T>
+  : MergedObjects<ObjectMembers<T>> | VoidAsUndefined<Exclude<T, object>>;
+
+/** The variables of a module's mutations as one object; see `MergedMutationValues`. */
+export type MergedMutationVariables<T> = MergedMutationValues<T>;
+
+/** The responses of a module's mutations as one object; see `MergedMutationValues`. */
+export type MergedMutationData<T> = MergedMutationValues<T>;
 
 type InvalidationMapFuncFor<T> = InvalidationMapFunc<
-  T extends MutationEffectsTypes ? T["data"] : never,
+  MergedMutationData<T extends MutationEffectsTypes ? T["data"] : never>,
   MergedMutationVariables<T extends MutationEffectsTypes ? T["variables"] : never>
 >;
 

@@ -38,6 +38,8 @@ export { OpenApiQueryConfig } from "./lib/config/queryConfig.context";
 export type {
   InvalidationMap,
   InvalidationMapFunc,
+  MergedMutationData,
+  MergedMutationValues,
   MergedMutationVariables,
   MutationEffectsOf,
   MutationEffectsTypes,

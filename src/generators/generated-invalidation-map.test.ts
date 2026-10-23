@@ -16,7 +16,7 @@ const root = process.cwd();
 // Typed against the generated client: `petId` exists on some pet mutations, `username` on some user ones.
 // A bare `InvalidationMap` gets the module keys and types through the generated global registration.
 const invalidationMap = `
-import type { InvalidationMap, MergedMutationVariables } from "@povio/openapi-codegen-cli/query";
+import type { InvalidationMap, MergedMutationData, MergedMutationVariables } from "@povio/openapi-codegen-cli/query";
 import { QueryModule, type QueryModuleMutations } from "./data/queryModules";
 
 export const invalidationMap: InvalidationMap = {
@@ -30,6 +30,11 @@ export const explicitMutations: InvalidationMap<QueryModule, QueryModuleMutation
 // Request-body fields only some mutations send are optional too.
 declare const nested: MergedMutationVariables<{ data: { projectId: string } } | { id: string; data: { name: string } }>;
 export const projectId: string | undefined = nested.data.projectId;
+
+// Responses merge the same way, and \`void\` (no variables or body) becomes \`undefined\`.
+declare const response: MergedMutationData<{ data: { id: string } } | { count: number } | void>;
+export const responseCount: number | undefined = response?.count;
+export const noResponse: MergedMutationData<void> = undefined;
 
 export const unknownVariable: InvalidationMap<QueryModule> = {
   // @ts-expect-error -- no pet mutation has \`nope\`
