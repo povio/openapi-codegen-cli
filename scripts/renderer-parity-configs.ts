@@ -26,6 +26,7 @@ export const optionCases = {
   excludeTags: [{ excludeTags: ["pet"] }],
   excludePathRegex: [{ excludePathRegex: "^/pet" }],
   excludeRedundantZodSchemas: bool("excludeRedundantZodSchemas"),
+  includeSchemas: [{ includeSchemas: ["ReportPayloadDto", "Pet"] }],
   tsPath: [{ tsPath: "@/openapi" }],
   importPath: ["ts", "relative", "absolute"].map((importPath) => ({ importPath })) as Partial<GenerateOptions>[],
   configs: [
@@ -90,11 +91,6 @@ export const optionCases = {
   })),
   abilityContextImportPath: [{ acl: true, abilityContextImportPath: "@test/ability-context" }],
   aclCheckImportPath: [{ acl: true, aclCheckImportPath: "@test/acl" }],
-  builderConfigs: bool("builderConfigs"),
-  filterParamName: [{ builderConfigs: true, filterParamName: "filters" }],
-  dataResponseParamNames: [{ builderConfigs: true, dataResponseParamNames: ["results"] }],
-  dynamicInputsImportPath: [{ builderConfigs: true, dynamicInputsImportPath: "@test/inputs" }],
-  dynamicColumnsImportPath: [{ builderConfigs: true, dynamicColumnsImportPath: "@test/columns" }],
 } satisfies Record<OptionKey, readonly Partial<GenerateOptions>[]>;
 
 export const lifecycleOptions = [

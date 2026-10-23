@@ -49,6 +49,9 @@ class GenerateOptions implements GenerateParams {
   @YargOption({ envAlias: "excludeRedundantZodSchemas", type: "boolean" })
   excludeRedundantZodSchemas?: boolean;
 
+  @YargOption({ envAlias: "includeSchemas" })
+  includeSchemas?: string;
+
   @YargOption({ envAlias: "importPath" })
   importPath?: "ts" | "relative" | "absolute";
 
@@ -123,9 +126,6 @@ class GenerateOptions implements GenerateParams {
 
   @YargOption({ envAlias: "axiosRequestConfig", type: "boolean" })
   axiosRequestConfig?: boolean;
-
-  @YargOption({ envAlias: "builderConfigs", type: "boolean" })
-  builderConfigs?: boolean;
 
   @YargOption({ envAlias: "format", default: true, type: "boolean" })
   format?: boolean;

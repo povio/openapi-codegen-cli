@@ -64,3 +64,6 @@ export const removeWord = (source: string, wordToRemove: string) => {
 };
 
 export const isString = (str: string | undefined): str is string => str !== undefined;
+
+/** Removes spaces and tabs at the end of every line (formatters such as `bun fmt` keep them in comments). */
+export const trimTrailingWhitespace = (text: string) => text.replace(/[ \t]+$/gm, "");

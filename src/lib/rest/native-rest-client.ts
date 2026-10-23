@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { z } from "zod";
-import { ErrorHandler } from "./error-handling";
+import { ErrorRethrower } from "./error-handling";
 
 import {
   NativeHttpError,
@@ -22,7 +21,7 @@ type NativeResult<T, IsRawRes extends boolean> = IsRawRes extends true ? NativeR
 
 export class NativeRestClient implements RestTransport {
   private readonly interceptors: RestTransportInterceptor[];
-  private readonly errorHandler?: ErrorHandler<any>;
+  private readonly errorHandler?: ErrorRethrower;
 
   constructor({
     config,
@@ -36,7 +35,7 @@ export class NativeRestClient implements RestTransport {
       fetch?: TransportFetch;
     };
     interceptors?: RestTransportInterceptor[];
-    errorHandler?: ErrorHandler<any>;
+    errorHandler?: ErrorRethrower;
   } = {}) {
     this.baseURL = config?.baseURL ?? "";
     this.headers = config?.headers;

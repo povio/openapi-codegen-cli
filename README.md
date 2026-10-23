@@ -119,6 +119,7 @@ bunx openapi-codegen generate --config my-config.ts
   --excludeTags                       Comma-separated list of tags to exclude from generation
   --excludePathRegex                  Exclude operations whose paths match the given regular expression
   --excludeRedundantZodSchemas        Exclude any redundant Zod schemas (default: true)
+  --includeSchemas                    Comma-separated component schemas to generate even when no operation uses them
 
   --tsNamespaces                      Wrap generated files in TypeScript namespaces (default: true)
   --importPath                        Module import style for generated files (default: 'ts'; options: 'ts' | 'relative' | 'absolute')
@@ -148,7 +149,6 @@ bunx openapi-codegen generate --config my-config.ts
   --acl                               Generate ACL related files (default: true)
   --checkAcl                          Add ACL check to queries (default: true)
 
-  --builderConfigs                    Generate configs for builders (default: false)
 
   --baseUrl                           (Requires `--restClientImportPath` to NOT be set) Base URL for the generated REST client; falls back to the OpenAPI spec if not provided
 ```
@@ -167,6 +167,7 @@ bunx openapi-codegen generate --config my-config.ts
   --excludeTags                       Comma-separated list of tags to exclude from generation
   --excludePathRegex                  Exclude operations whose paths match the given regular expression
   --excludeRedundantZodSchemas        Exclude any redundant Zod schemas (default: true)
+  --includeSchemas                    Comma-separated component schemas to generate even when no operation uses them
 ```
 
 ## Development
@@ -308,6 +309,24 @@ import { OpenApiQueryConfig } from "@povio/openapi-codegen-cli/query";
   <App />
 </OpenApiQueryConfig.Provider>;
 ```
+
+### Typed invalidation maps
+
+With `mutationEffects` (the default), `queryModules.ts` exports `QueryModuleMutations` (for each module, the `data` and `variables` of its mutation hooks) and registers it globally, so `InvalidationMap<QueryModule>` types each module's callback from the spec:
+
+```ts
+import type { InvalidationMap } from "@povio/openapi-codegen-cli/query";
+import { QueryModule } from "@/data/queryModules";
+
+export const invalidationMap: InvalidationMap<QueryModule> = {
+  // `data` is any of the module's mutation responses; variables that only some
+  // of its mutations take (here `id`) are optional.
+  [QueryModule.Items]: (data, { officeId, id }) => [["items", officeId, id]],
+};
+```
+
+The registration is global, so a program with several generated clients should pass the mutations explicitly
+instead: `InvalidationMap<QueryModule, QueryModuleMutations>`.
 
 ### Runtime response validation
 

@@ -8,10 +8,10 @@ export function getNested<
   From extends ObjectLiteral,
   Return = HasNestedPath<Path> extends 1 ? From[Path] : Get<From, Path>,
 >(obj: From, path: Path): Return {
-  let target = obj || {};
+  let target: unknown = obj || {};
   const props = path.split(".");
   for (let i = 0, len = props.length; i < len; ++i) {
-    target = target[props[i] as keyof typeof target];
+    target = (target as ObjectLiteral)[props[i]];
     if (target === undefined || target === null) {
       break;
     }
@@ -26,7 +26,7 @@ export function pick<T extends ObjectLiteral, K extends keyof T>(obj: T, paths: 
 
   Object.keys(obj).forEach((key) => {
     if (!paths.includes(key as K)) return;
-    result[key as keyof Pick<T, K>] = obj[key];
+    result[key as keyof Pick<T, K>] = obj[key as K];
   });
 
   return result;

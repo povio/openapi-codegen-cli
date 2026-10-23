@@ -5,7 +5,6 @@ export const config: OpenAPICodegenConfig = {
   output: "./output",
   includeTags: ["auth"],
   replaceOptionalWithNullish: true,
-  builderConfigs: true,
   infiniteQueries: true,
 };
 

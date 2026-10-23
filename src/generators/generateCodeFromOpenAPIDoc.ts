@@ -1,7 +1,6 @@
 import { OpenAPIV3 } from "openapi-types";
 import { getDataFromOpenAPIDoc } from "./core/getDataFromOpenAPIDoc";
 import { generateAcl } from "./generate/generateAcl";
-import { generateConfigs } from "./generate/generateConfigs";
 import { generateEndpoints } from "./generate/generateEndpoints";
 import { generateModels } from "./generate/generateModels";
 import { generateQueries } from "./generate/generateQueries";
@@ -16,6 +15,7 @@ import {
   getZodExtendedFiles,
 } from "./utils/generate-files.utils";
 import { getTagFileName } from "./utils/generate/generate.utils";
+import { trimTrailingWhitespace } from "./utils/string.utils";
 import { shouldInlineEndpointsForTag } from "./utils/tag.utils";
 import { Profiler } from "../helpers/profile.helper";
 import { getDataFromNativeOpenAPIDoc } from "../native/getDataFromNativeOpenAPIDoc";
@@ -48,14 +48,12 @@ export function generateCodeFromOpenAPIDoc(
         ...(shouldGenerateEndpoints ? [GenerateType.Endpoints] : []),
         GenerateType.Queries,
         ...(resolver.options.acl ? [GenerateType.Acl] : []),
-        ...(resolver.options.builderConfigs ? [GenerateType.Configs] : []),
       ];
   const generateFunctions: Record<GenerateType, (params: GenerateTypeParams) => string | undefined> = {
     [GenerateType.Models]: generateModels,
     [GenerateType.Endpoints]: generateEndpoints,
     [GenerateType.Queries]: generateQueries,
     [GenerateType.Acl]: generateAcl,
-    [GenerateType.Configs]: generateConfigs,
   };
 
   data.forEach((_, tag) => {
@@ -84,5 +82,5 @@ export function generateCodeFromOpenAPIDoc(
     );
   }
 
-  return generateFilesData;
+  return generateFilesData.map((file) => ({ ...file, content: trimTrailingWhitespace(file.content) }));
 }

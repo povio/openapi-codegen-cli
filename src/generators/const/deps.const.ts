@@ -27,10 +27,6 @@ export const ABILITY_CONTEXT_IMPORT: Import = {
   bindings: [ABILITY_CONTEXT],
   from: ACL_PACKAGE_IMPORT_PATH,
 };
-export const BUILDERS_UTILS = {
-  dynamicInputs: "dynamicInputs",
-  dynamicColumns: "dynamicColumns",
-};
 
 // QueryModules
 export const QUERY_MODULE_ENUM = "QueryModule";

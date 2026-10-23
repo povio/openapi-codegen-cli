@@ -16,6 +16,8 @@ import {
 } from "@/generators/const/endpoints.const";
 import { CONFIG_PACKAGE_IMPORT_PATH, REST_PACKAGE_IMPORT_PATH } from "@/generators/const/package.const";
 import { QUERIES_MODULE_NAME, QUERY_HOOKS, QUERY_IMPORT } from "@/generators/const/queries.const";
+import { OpenAPIV3 } from "openapi-types";
+
 import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
 import { Endpoint, EndpointParameter } from "@/generators/types/endpoint";
 import { GenerateType, GenerateTypeParams, Import } from "@/generators/types/generate";
@@ -421,8 +423,8 @@ function renderEndpointParamDescription(endpointParam: ReturnType<typeof mapEndp
     strs.push(description);
   }
 
-  let schema: any = undefined;
-  let mediaTypeObject: any = undefined;
+  let schema: OpenAPIV3.SchemaObject | undefined = undefined;
+  let mediaTypeObject: OpenAPIV3.MediaTypeObject | undefined = undefined;
   if (endpointParam.parameterObject?.schema && isSchemaObject(endpointParam.parameterObject.schema)) {
     schema = endpointParam.parameterObject?.schema;
   }

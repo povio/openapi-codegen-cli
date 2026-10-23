@@ -16,6 +16,7 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   excludeTags: [],
   excludePathRegex: "",
   excludeRedundantZodSchemas: true,
+  includeSchemas: [],
   tsNamespaces: true,
   treeShakeableNamespaces: false,
   tsPath: "@/data",
@@ -36,10 +37,6 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
     [GenerateType.Acl]: {
       outputFileNameSuffix: "acl",
       namespaceSuffix: "Acl",
-    },
-    [GenerateType.Configs]: {
-      outputFileNameSuffix: "configs",
-      namespaceSuffix: "Configs",
     },
   },
   baseUrl: "",
@@ -90,9 +87,4 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   abilityContextImportPath: "",
   aclCheckImportPath: "@povio/openapi-codegen-cli/acl",
   // Builder Configs options
-  builderConfigs: false,
-  filterParamName: "filter",
-  dataResponseParamNames: ["data", "items"],
-  dynamicInputsImportPath: "@povio/ui",
-  dynamicColumnsImportPath: "@povio/ui",
 };

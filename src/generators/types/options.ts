@@ -60,14 +60,6 @@ interface ACLGenerateOptions {
   aclCheckImportPath: string;
 }
 
-interface BuilderConfigsGenerateOptions {
-  builderConfigs?: boolean;
-  filterParamName: string;
-  dataResponseParamNames: string[];
-  dynamicInputsImportPath: string;
-  dynamicColumnsImportPath: string;
-}
-
 interface GenerateConfig {
   outputFileNameSuffix: string;
   namespaceSuffix: string;
@@ -84,6 +76,8 @@ interface BaseGenerateOptions {
   excludeTags: string[];
   excludePathRegex: string;
   excludeRedundantZodSchemas: boolean;
+  /** Component schemas to generate even when no included operation uses them, with their dependencies. */
+  includeSchemas: string[];
   tsNamespaces: boolean;
   treeShakeableNamespaces?: boolean;
   tsPath: string;
@@ -101,5 +95,4 @@ export interface GenerateOptions
     EndpointsGenerateOptions,
     QueriesGenerateOptions,
     InfiniteQueriesGenerateOptions,
-    ACLGenerateOptions,
-    BuilderConfigsGenerateOptions {}
+    ACLGenerateOptions {}

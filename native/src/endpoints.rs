@@ -102,11 +102,10 @@ impl<'a> EndpointExtractor<'a> {
     }
 
     fn generated_dependency_names_from_references(&self, references: &[String]) -> Vec<String> {
-        let registered = self.first_tags.borrow();
         let mut names = Vec::new();
         let mut expanded = HashSet::default();
         for reference in references {
-            self.add_generated_dependency(reference, &registered, &mut expanded, &mut names);
+            self.add_generated_dependency(reference, &mut expanded, &mut names);
         }
         names
     }
@@ -130,7 +129,6 @@ impl<'a> EndpointExtractor<'a> {
     fn add_generated_dependency(
         &self,
         reference: &str,
-        registered: &HashMap<String, String>,
         expanded: &mut HashSet<String>,
         names: &mut Vec<String>,
     ) {
@@ -141,10 +139,14 @@ impl<'a> EndpointExtractor<'a> {
         if !names.contains(&name) {
             names.push(name);
         }
-        if registered.contains_key(reference) || !expanded.insert(reference.to_string()) {
+        if !expanded.insert(reference.to_string()) {
             return;
         }
-        if let Some(canonical) = self.canonical_enum_refs.get(reference) {
+        if let Some(canonical) = self
+            .canonical_enum_refs
+            .get(reference)
+            .filter(|_| self.options.extract_enums)
+        {
             let canonical_name = schema_name(
                 canonical.rsplit('/').next().unwrap_or_default(),
                 &self.options.schema_suffix,
@@ -155,7 +157,7 @@ impl<'a> EndpointExtractor<'a> {
         }
         if let Some(children) = self.resolver.ordered_dependencies.get(reference) {
             for child in children {
-                self.add_generated_dependency(child, registered, expanded, names);
+                self.add_generated_dependency(child, expanded, names);
             }
         }
     }
@@ -297,14 +299,23 @@ impl<'a> EndpointExtractor<'a> {
                             .compile_endpoint_schema(schema, true, &indexed.tag)?;
                     let fallback =
                         response_schema_name(status_code, &indexed.name, unique_name, &indexed.tag);
+                    let named = naming_schema(&self.compiler, schema);
+                    if let Some(reference) = named
+                        .as_ref()
+                        .and_then(|named| named.get("$ref"))
+                        .and_then(Value::as_str)
+                    {
+                        self.register_reference_usage(reference, &indexed.tag);
+                    }
+                    let naming = named.as_ref().unwrap_or(schema);
                     let resolved = resolve_schema_name(
-                        schema,
+                        naming,
                         schema_object,
                         code.clone(),
                         Some(&fallback),
                         self.options,
                     );
-                    if schema.get("$ref").is_none() && complexity(schema_object) >= 2 {
+                    if naming.get("$ref").is_none() && complexity(schema_object) >= 2 {
                         self.set_generated_schema(resolved.clone(), code, &indexed.tag);
                         self.set_generated_object(&resolved, schema_object);
                         self.set_generated_dependencies(&resolved, dependencies);
@@ -582,9 +593,18 @@ impl<'a> EndpointExtractor<'a> {
         };
         let fallback = snake_to_camel(&format!("{operation_name}_Body"));
         let actual = self.resolve(schema).unwrap_or(schema);
+        let named = naming_schema(&self.compiler, schema);
+        if let Some(reference) = named
+            .as_ref()
+            .and_then(|named| named.get("$ref"))
+            .and_then(Value::as_str)
+        {
+            self.register_reference_usage(reference, &indexed.tag);
+        }
+        let naming = named.as_ref().unwrap_or(schema);
         let resolved =
-            resolve_schema_name(schema, actual, code.clone(), Some(&fallback), self.options);
-        if schema.get("$ref").is_none() && complexity(actual) >= 2 {
+            resolve_schema_name(naming, actual, code.clone(), Some(&fallback), self.options);
+        if naming.get("$ref").is_none() && complexity(actual) >= 2 {
             self.set_generated_schema(resolved.clone(), code, &indexed.tag);
             self.set_generated_object(&resolved, actual);
             self.set_generated_dependencies(&resolved, dependencies);
@@ -703,14 +723,23 @@ impl<'a> EndpointExtractor<'a> {
             chain
         };
         let composed_code = format!("{code}{effective_chain}");
+        let named = naming_schema(&self.compiler, schema);
+        if let Some(reference) = named
+            .as_ref()
+            .and_then(|named| named.get("$ref"))
+            .and_then(Value::as_str)
+        {
+            self.register_reference_usage(reference, &indexed.tag);
+        }
+        let naming = named.as_ref().unwrap_or(schema);
         let zod = resolve_schema_name(
-            schema,
+            naming,
             actual,
             composed_code.clone(),
             Some(&fallback),
             self.options,
         );
-        if schema.get("$ref").is_none() && complexity(actual) >= 2 {
+        if naming.get("$ref").is_none() && complexity(actual) >= 2 {
             self.set_generated_schema(zod.clone(), composed_code, &indexed.tag);
             self.set_generated_object(&zod, actual);
             self.set_generated_dependencies(&zod, dependencies);
@@ -768,6 +797,21 @@ impl<'a> EndpointExtractor<'a> {
     fn resolve<'b>(&'b self, value: &'b Value) -> Option<&'b Value> {
         let reference = value.get("$ref")?.as_str()?;
         self.document.pointer(reference.strip_prefix('#')?)
+    }
+
+    /// Records that `tag` uses the component enum `reference` without generating its schema here, as the
+    /// TypeScript renderer does for inline enums it names by a matching component enum: the enum is then
+    /// emitted with the other component enums, after the endpoint schemas.
+    fn register_reference_usage(&self, reference: &str, tag: &str) {
+        self.runtime_tags
+            .borrow_mut()
+            .entry(reference.to_string())
+            .or_default()
+            .insert(tag.to_string());
+        self.first_tags
+            .borrow_mut()
+            .entry(reference.to_string())
+            .or_insert_with(|| tag.to_string());
     }
 
     fn register_reference_schema(&self, schema: &Value, tag: &str) -> Result<(), String> {
@@ -919,6 +963,17 @@ fn canonical_enum_refs(document: &Value) -> HashMap<String, String> {
     result
 }
 
+/// A schema to name an endpoint schema by: an inline enum matching a component enum names like its `$ref`.
+fn naming_schema(compiler: &ZodCompiler, schema: &Value) -> Option<Value> {
+    compiler
+        .matching_component_enum_ref(schema)
+        .map(|reference| {
+            let mut object = Map::new();
+            object.insert("$ref".into(), Value::String(reference));
+            Value::Object(object)
+        })
+}
+
 fn resolve_schema_name(
     original: &Value,
     actual: &Value,
@@ -1058,7 +1113,7 @@ fn capitalize(value: &str) -> String {
 fn is_success(status: u16) -> bool {
     (200..300).contains(&status)
 }
-fn is_parameter_media(name: &str) -> bool {
+pub(crate) fn is_parameter_media(name: &str) -> bool {
     (name.contains("application/") && name.contains("json"))
         || name.contains("text/")
         || matches!(

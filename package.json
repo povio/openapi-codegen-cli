@@ -101,7 +101,7 @@
     "gen:next": "rm -rf ./test/generated/next && mkdir -p ./test/generated/next && bun run start generate --config ./test/config.mjs --output ./test/generated/next --no-prettier",
     "test:generated-eq": "vitest run ./src/generators/generated-output-eq.test.ts",
     "gen:verify": "bun run gen:base && bun run gen:next && bun run test:generated-eq",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsrs --noEmit",
     "lint": "oxlint --type-aware --fix",
     "lint:check": "oxlint --type-aware",
     "format": "oxfmt",
@@ -128,7 +128,7 @@
     "@casl/ability": "6.8.0",
     "@casl/react": "5.0.1",
     "@tanstack/react-query": "~5.90.21",
-    "@types/bun": "1.4.1",
+    "@types/bun": "1.4.4",
     "@types/node": "^25.3.0",
     "@types/prompt-sync": "^4.2.3",
     "@types/react": "^19.2.14",
@@ -141,7 +141,7 @@
     "oxlint-tsgolint": "^0.15.0",
     "react": "^19.2.4",
     "tsdown": "^0.22.14",
-    "tsx": "^4.21.0",
+    "tsrs": "0.18.0-ts7.1.0-dev.20260929",
     "type-fest": "^5.4.4",
     "typescript": "^7.0.2",
     "vite": "npm:rolldown-vite@^7.3.1",
@@ -183,8 +183,8 @@
     }
   },
   "engines": {
-    "bun": ">= 1.4",
+    "bun": ">= 1.4.4",
     "node": ">= 18"
   },
-  "packageManager": "bun@1.4.1"
+  "packageManager": "bun@1.4.4"
 }

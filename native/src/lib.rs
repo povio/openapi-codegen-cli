@@ -339,7 +339,23 @@ pub fn compile_data(source: String, yaml: bool, options_json: String) -> Result<
             }
         }
     }
+    // Like the TypeScript renderer, extracted enums keep the owner their component usages gave them,
+    // and with `modelsInModules` go to the modules of all those usages.
+    let extracted_tags = compiler.extracted_schema_tags();
+    if options.models_in_modules {
+        for (name, tags) in compiler.extracted_schema_usage_tags() {
+            let tags = if tags.is_empty() {
+                extracted_tags.get(name).cloned().into_iter().collect()
+            } else {
+                tags.iter().cloned().collect()
+            };
+            usage_tags.insert(name.clone(), tags);
+        }
+    }
     for (name, tags) in &usage_tags {
+        if extracted_tags.contains_key(name) {
+            continue;
+        }
         let owner = if tags.len() == 1 {
             tags.iter()
                 .next()
@@ -404,10 +420,7 @@ pub fn compile_data(source: String, yaml: bool, options_json: String) -> Result<
         .len();
     let rendered_complete = options.native_compact
         && options.split_by_tags
-        && ((options.models_in_common && options.ts_namespaces)
-            || (!options.models_in_common && !options.ts_namespaces))
         && !options.inline_endpoints
-        && !options.builder_configs
         && options.workspace_context.is_empty()
         && (!options.acl
             || (rendered_acl.len() == acl_tag_count && rendered_shared.contains_key("appAcl")));

@@ -1,7 +1,6 @@
 import { AxiosInstance } from "axios";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export class RestInterceptor<T extends any[]> {
+export class RestInterceptor<T extends unknown[]> {
   private interceptorIdMap: { client: AxiosInstance; interceptorId: number }[] = [];
 
   constructor(private applyInterceptor: (client: AxiosInstance, ...args: T) => number) {}

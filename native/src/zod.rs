@@ -21,6 +21,7 @@ pub struct ZodCompiler<'a> {
     root_enums: HashMap<String, String>,
     extracted_enums: IndexMap<String, (String, String)>,
     extracted_enum_objects: Map<String, Value>,
+    extracted_enum_usage_tags: HashMap<String, Vec<String>>,
     circular_getters: HashSet<String>,
     runtime_tags: Rc<RefCell<HashMap<String, HashSet<String>>>>,
 }
@@ -58,7 +59,7 @@ impl<'a> ZodCompiler<'a> {
                 }
             }
         }
-        let (extracted_enums, extracted_enum_objects) =
+        let (extracted_enums, extracted_enum_objects, extracted_enum_usage_tags) =
             collect_extracted_enums(document, resolver, options, &root_enums);
         let circular_getters = collect_precompiled_circular_refs(document, resolver);
         Self {
@@ -68,6 +69,7 @@ impl<'a> ZodCompiler<'a> {
             root_enums,
             extracted_enums,
             extracted_enum_objects,
+            extracted_enum_usage_tags,
             circular_getters,
             runtime_tags,
         }
@@ -75,6 +77,19 @@ impl<'a> ZodCompiler<'a> {
 
     pub fn compile_components(&self) -> Result<Map<String, Value>, String> {
         self.compile_components_with_tags(&HashMap::default())
+    }
+
+    /// The `includeSchemas` components and every schema they depend on.
+    fn included_schema_refs(&self) -> HashSet<String> {
+        let mut refs = HashSet::default();
+        for name in &self.options.include_schemas {
+            let reference = format!("#/components/schemas/{name}");
+            if let Some(dependencies) = self.resolver.deep_dependencies.get(&reference) {
+                refs.extend(dependencies.iter().cloned());
+            }
+            refs.insert(reference);
+        }
+        refs
     }
 
     pub fn compile_components_with_tags(
@@ -89,11 +104,15 @@ impl<'a> ZodCompiler<'a> {
         else {
             return Ok(result);
         };
+        let included = self.included_schema_refs();
         for (name, schema) in schemas {
             let zod_name = schema_name(name, &self.options.schema_suffix);
             let reference = format!("#/components/schemas/{name}");
+            // Endpoints can use a component enum without referencing it (see `matching_component_enum_ref`).
             if self.options.exclude_redundant_zod_schemas
                 && !self.resolver.schema_tags.contains_key(&reference)
+                && !first_tags.contains_key(&reference)
+                && !included.contains(&reference)
             {
                 continue;
             }
@@ -132,6 +151,31 @@ impl<'a> ZodCompiler<'a> {
         Ok((code, chain(actual, meta, self.options)))
     }
 
+    /// The `#/components/schemas/…` ref of the component enum an inline string enum has the values of.
+    /// The compiler renders such a schema by that enum's name, as the TypeScript renderer turns it into
+    /// a `$ref`; endpoint schemas are then named like that `$ref` instead of getting a `…Param`/`…Body`
+    /// alias.
+    pub fn matching_component_enum_ref(&self, schema: &Value) -> Option<String> {
+        let object = schema.as_object()?;
+        if object.contains_key("$ref") || !self.options.extract_enums {
+            return None;
+        }
+        let values = object.get("enum")?.as_array()?;
+        let is_string = object
+            .get("type")
+            .and_then(Value::as_str)
+            .is_some_and(|schema_type| schema_type.eq_ignore_ascii_case("string"));
+        if !is_string || (self.options.models_in_modules && values.len() == 1) {
+            return None;
+        }
+        let name = self.root_enums.get(&enum_code(schema)?)?;
+        Some(format!(
+            "#/components/schemas/{}",
+            name.strip_suffix(&self.options.schema_suffix)
+                .unwrap_or(name)
+        ))
+    }
+
     pub fn endpoint_chain(&self, schema: &Value, required: bool) -> String {
         let actual = self.resolve_schema(schema).unwrap_or(schema);
         chain(
@@ -160,6 +204,11 @@ impl<'a> ZodCompiler<'a> {
             .values()
             .map(|(name, tag)| (name.clone(), tag.clone()))
             .collect()
+    }
+
+    /// Every tag whose schemas use each extracted enum: its modules with `modelsInModules`.
+    pub fn extracted_schema_usage_tags(&self) -> &HashMap<String, Vec<String>> {
+        &self.extracted_enum_usage_tags
     }
 
     pub fn schema_owner(&self, reference: &str) -> String {
@@ -467,7 +516,7 @@ impl<'a> ZodCompiler<'a> {
                         && schema_reaches(property, root, self.resolver)
                 });
                 rendered.push(if circular {
-                    format!("get {property_name}() {{ return {code} }}")
+                    format!("{property_name}: z.lazy(() => {code})")
                 } else {
                     format!("{property_name}: {code}")
                 });
@@ -746,7 +795,7 @@ fn chain(schema: &Value, meta: Meta, options: &GenerateOptions) -> String {
     }
 }
 
-fn enum_code(schema: &Value) -> Option<String> {
+pub(crate) fn enum_code(schema: &Value) -> Option<String> {
     let values = schema.get("enum")?.as_array()?;
     let values = values
         .iter()
@@ -872,9 +921,13 @@ fn collect_extracted_enums(
     resolver: &Resolver<'_>,
     options: &GenerateOptions,
     root_enums: &HashMap<String, String>,
-) -> (IndexMap<String, (String, String)>, Map<String, Value>) {
+) -> (
+    IndexMap<String, (String, String)>,
+    Map<String, Value>,
+    HashMap<String, Vec<String>>,
+) {
     if !options.extract_enums {
-        return (IndexMap::default(), Map::new());
+        return (IndexMap::default(), Map::new(), HashMap::default());
     }
     let mut candidates: IndexMap<String, ExtractedEnumCandidate> = IndexMap::default();
     collect_operation_enum_candidates(document, resolver, &mut candidates);
@@ -985,7 +1038,15 @@ fn collect_extracted_enums(
             )
         })
         .collect();
-    (preliminary, objects)
+    let usage_tags = preliminary
+        .iter()
+        .map(|(code, (name, _))| {
+            let mut tags = candidates[code].tags.iter().cloned().collect::<Vec<_>>();
+            tags.sort();
+            (name.clone(), tags)
+        })
+        .collect();
+    (preliminary, objects, usage_tags)
 }
 
 fn sanitize_enum_segment(segment: &str) -> String {

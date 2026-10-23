@@ -42,21 +42,16 @@ for (const fixture of parityFixtures) {
   });
 }
 
-test("canonical layouts retain full native rendering and local namespaces use native hybrid", () => {
+test("every namespace and model layout renders fully native", () => {
   vi.stubEnv("OPENAPI_CODEGEN_NATIVE", "1");
   const source = readParityFixture(parityFixtures[0]);
-  for (const [tsNamespaces, modelsInCommon] of [
-    [true, true],
-    [false, false],
-  ]) {
-    expect(renderParityCase(source, { name: "full", options: { tsNamespaces, modelsInCommon } }, "native").route).toBe(
-      "full-native",
-    );
+  for (const tsNamespaces of [true, false]) {
+    for (const modelsInCommon of [true, false]) {
+      expect(
+        renderParityCase(source, { name: "full", options: { tsNamespaces, modelsInCommon } }, "native").route,
+      ).toBe("full-native");
+    }
   }
-  expect(
-    renderParityCase(source, { name: "hybrid", options: { tsNamespaces: true, modelsInCommon: false } }, "native")
-      .route,
-  ).toBe("hybrid-native");
 });
 
 test("mutation scope include/exclude examples exercise the selected path mutation", () => {

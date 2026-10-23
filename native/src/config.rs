@@ -74,6 +74,8 @@ pub struct GenerateOptions {
     pub replace_optional_with_nullish: bool,
     #[serde(default = "default_true")]
     pub exclude_redundant_zod_schemas: bool,
+    #[serde(default)]
+    pub include_schemas: Vec<String>,
     #[serde(default = "default_enum_suffix")]
     pub enum_suffix: String,
     #[serde(default)]
@@ -98,8 +100,6 @@ pub struct GenerateOptions {
     pub parse_request_params: bool,
     #[serde(default)]
     pub inline_endpoints: bool,
-    #[serde(default)]
-    pub builder_configs: bool,
     #[serde(default = "default_true")]
     pub acl: bool,
     #[serde(default)]
@@ -175,6 +175,9 @@ mod runtime_import_tests {
     #[test]
     fn mutation_effects_default_uses_query_subpath() {
         let options: super::GenerateOptions = serde_json::from_str("{}").unwrap();
-        assert_eq!(options.mutation_effects_import_path, "@povio/openapi-codegen-cli/query");
+        assert_eq!(
+            options.mutation_effects_import_path,
+            "@povio/openapi-codegen-cli/query"
+        );
     }
 }
