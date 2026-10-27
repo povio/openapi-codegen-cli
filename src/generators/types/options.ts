@@ -68,6 +68,14 @@ interface BuilderConfigsGenerateOptions {
   dynamicColumnsImportPath: string;
 }
 
+interface QueryFilterComponentNameOptions {
+  /**
+   * Optional map of OpenAPI operationId to stable filter schema names.
+   * Used for inline `filter` query objects when migrating away from named filter DTO refs.
+   */
+  queryFilterComponentNames?: Record<string, string>;
+}
+
 interface GenerateConfig {
   outputFileNameSuffix: string;
   namespaceSuffix: string;
@@ -79,6 +87,8 @@ interface BaseGenerateOptions {
   clearOutput?: boolean;
   incremental?: boolean;
   splitByTags: boolean;
+  /** When true, non-default tags emit proxy models that re-export from CommonModels. */
+  modelsInCommon?: boolean;
   defaultTag: string;
   includeTags: string[];
   excludeTags: string[];
@@ -102,4 +112,5 @@ export interface GenerateOptions
     QueriesGenerateOptions,
     InfiniteQueriesGenerateOptions,
     ACLGenerateOptions,
-    BuilderConfigsGenerateOptions {}
+    BuilderConfigsGenerateOptions,
+    QueryFilterComponentNameOptions {}
