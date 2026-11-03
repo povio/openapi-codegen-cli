@@ -1,5 +1,5 @@
-import type { AbilityTuple, PureAbility, Subject } from "@casl/ability";
+import type { AbilityTuple, Ability, Subject } from "@casl/ability";
 
 export type AppAbilities = AbilityTuple<string, Subject>;
 
-export type AppAbility = PureAbility<AppAbilities>;
+export type AppAbility = Ability<AppAbilities>;

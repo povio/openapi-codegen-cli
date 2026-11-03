@@ -1,19 +1,26 @@
-import type { AbilityTuple, PureAbility } from "@casl/ability";
-import { type BoundCanProps, createContextualCan } from "@casl/react";
+import type { ReactNode } from "react";
 
-import { AbilityContext } from "./ability.context";
-import type { AppAbilities } from "./appAbility.types";
+import { Can as CaslCan, type CanProps as CaslCanProps } from "@casl/react";
 
-type CanAbility = PureAbility<AbilityTuple<AppAbilities[0], AppAbilities[1]>>;
-
-const ContextualCan = createContextualCan<CanAbility>(AbilityContext.Consumer);
+import type { AppAbilities, AppAbility } from "./appAbility.types";
 
 type CanProps<TAppAbilities extends AppAbilities = AppAbilities> = {
   use: TAppAbilities;
-} & Omit<BoundCanProps<CanAbility>, "do" | "I" | "on" | "a" | "an" | "this">;
+  children: ReactNode | ((isAllowed: boolean, ability: AppAbility) => ReactNode);
+} & Omit<CaslCanProps<AppAbility>, "do" | "I" | "on" | "a" | "an" | "this" | "children">;
 
-export const Can = <TAppAbilities extends AppAbilities = AppAbilities>({ use, ...props }: CanProps<TAppAbilities>) => {
+export const Can = <TAppAbilities extends AppAbilities = AppAbilities>({
+  use,
+  children,
+  ...props
+}: CanProps<TAppAbilities>) => {
   const [action, subject] = use;
 
-  return <ContextualCan {...props} do={action} on={subject} />;
+  return (
+    <CaslCan<AppAbility> {...props} do={action} on={subject}>
+      {typeof children === "function"
+        ? ({ isAllowed, ability }) => (props.passThrough || isAllowed ? children(isAllowed, ability) : null)
+        : children}
+    </CaslCan>
+  );
 };
