@@ -2428,7 +2428,7 @@ fn render_app_acl(endpoints: &[Value]) -> Option<String> {
     }
     let forced = if additional { ", ForcedSubject" } else { "" };
     let mut lines = vec![
-        format!("import type {{ PureAbility, AbilityTuple{forced} }} from \"@casl/ability\";"),
+        format!("import type {{ Ability, AbilityTuple{forced} }} from \"@casl/ability\";"),
         String::new(),
         "export type AppAbilities = ".into(),
     ];
@@ -2439,7 +2439,7 @@ fn render_app_acl(endpoints: &[Value]) -> Option<String> {
         ));
     }
     lines.push(String::new());
-    lines.push("export type AppAbility = PureAbility<AppAbilities>;".into());
+    lines.push("export type AppAbility = Ability<AppAbilities>;".into());
     Some(lines.join("\n"))
 }
 

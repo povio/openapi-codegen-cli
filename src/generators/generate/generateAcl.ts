@@ -82,7 +82,7 @@ export function generateAppAcl({ resolver, data }: Omit<GenerateTypeParams, "tag
   const caslAbilityTupleImport: Import = {
     bindings: [],
     typeBindings: [
-      CASL_ABILITY_BINDING.pureAbility,
+      CASL_ABILITY_BINDING.ability,
       CASL_ABILITY_BINDING.abilityTuple,
       ...(!appAbilitiesType ? [CASL_ABILITY_BINDING.subjectType] : []),
       ...(hasAdditionalAbilityImports ? [CASL_ABILITY_BINDING.forcedSubject] : []),
@@ -109,7 +109,7 @@ export function generateAppAcl({ resolver, data }: Omit<GenerateTypeParams, "tag
     );
   }
   lines.push("");
-  lines.push(`export type AppAbility = PureAbility<${ACL_APP_ABILITIES}>;`);
+  lines.push(`export type AppAbility = ${CASL_ABILITY_BINDING.ability}<${ACL_APP_ABILITIES}>;`);
   return lines.join("\n");
 }
 
