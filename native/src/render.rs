@@ -2536,9 +2536,9 @@ fn render_app_acl(endpoints: &[Value]) -> Option<String> {
     if acl_endpoints.is_empty() {
         // Without ACL rules the TypeScript renderer still emits an untyped ability.
         return Some(
-            "import type { PureAbility, AbilityTuple, Subject } from \"@casl/ability\";\n\n\
+            "import type { Ability, AbilityTuple, Subject } from \"@casl/ability\";\n\n\
              export type AppAbilities = AbilityTuple<string, Subject>;\n\n\
-             export type AppAbility = PureAbility<AppAbilities>;"
+             export type AppAbility = Ability<AppAbilities>;"
                 .into(),
         );
     }
@@ -2604,7 +2604,7 @@ fn render_app_acl(endpoints: &[Value]) -> Option<String> {
     }
     let forced = if additional { ", ForcedSubject" } else { "" };
     let mut lines = vec![
-        format!("import type {{ PureAbility, AbilityTuple{forced} }} from \"@casl/ability\";"),
+        format!("import type {{ Ability, AbilityTuple{forced} }} from \"@casl/ability\";"),
         String::new(),
         "export type AppAbilities = ".into(),
     ];
@@ -2615,7 +2615,7 @@ fn render_app_acl(endpoints: &[Value]) -> Option<String> {
         ));
     }
     lines.push(String::new());
-    lines.push("export type AppAbility = PureAbility<AppAbilities>;".into());
+    lines.push("export type AppAbility = Ability<AppAbilities>;".into());
     Some(lines.join("\n"))
 }
 

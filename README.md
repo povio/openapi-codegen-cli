@@ -8,6 +8,8 @@
 
 Axios is required when using the Axios transport (the default) or the `/axios` entry point. Projects using the native transport can omit Axios: generate with `--restClient native` and import `NativeRestClient` from `@povio/openapi-codegen-cli/native`. The root exports remain available for compatibility and support tree-shaking in consumer bundles. For direct runtime imports without bundling, use `/native` and `/errors` to avoid loading the Axios client. The `/axios` entry point is also available for Axios-specific imports. CLI-only usage and the `/generator`, `/tiny`, `/vite`, and `/metro` entry points do not require Axios.
 
+ACL features require `@casl/ability@^7.1.1` and `@casl/react@^7.1.0`. When migrating to CASL 7, regenerate the client so `AppAbility` uses `Ability` instead of `PureAbility`, and update any handwritten CASL types. The runtime continues to use `createMongoAbility` for condition matching. CASL 7 treats empty conditions (`{}`) as matching everything. The `Can` helper keeps its `use` tuple and `(isAllowed, ability)` render callback.
+
 Use this tool to generate code (Zod schemas, TypeScript types, API definitions, and React queries) from an OpenAPI v3 specification. API definitions use a REST client wrapper with either Axios or the native transport. React queries are generated in alignment with our code standards, without the need for explicit types.
 
 The tool partially leverages code from [openapi-zod-client](https://github.com/astahmer/openapi-zod-client) repository.

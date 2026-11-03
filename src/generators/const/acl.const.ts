@@ -7,7 +7,7 @@ export const ACL_CHECK_HOOK = "useAclCheck";
 
 export const CASL_ABILITY_BINDING = {
   abilityTuple: "AbilityTuple",
-  pureAbility: "PureAbility",
+  ability: "Ability",
   forcedSubject: "ForcedSubject",
   subjectType: "Subject",
   subject: "subject",
@@ -15,7 +15,7 @@ export const CASL_ABILITY_BINDING = {
 export const CASL_ABILITY_IMPORT: Import = {
   bindings: [
     CASL_ABILITY_BINDING.abilityTuple,
-    CASL_ABILITY_BINDING.pureAbility,
+    CASL_ABILITY_BINDING.ability,
     CASL_ABILITY_BINDING.forcedSubject,
     CASL_ABILITY_BINDING.subjectType,
     CASL_ABILITY_BINDING.subject,

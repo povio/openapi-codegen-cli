@@ -1,8 +1,8 @@
 import { type PropsWithChildren, createContext, useMemo } from "react";
 
-import { AbilityBuilder, type PureAbility, type RawRuleOf, createMongoAbility } from "@casl/ability";
+import { AbilityBuilder, type Ability, type RawRuleOf, createMongoAbility } from "@casl/ability";
 import { type PackRule, unpackRules } from "@casl/ability/extra";
-import { useAbility as useCaslAbility } from "@casl/react";
+import { AbilityProvider, useAbility as useCaslAbility } from "@casl/react";
 
 import { AuthContext } from "../auth/auth.context";
 import type { AppAbilities, AppAbility } from "./appAbility.types";
@@ -36,11 +36,15 @@ export namespace AbilityContext {
       return build();
     }, [user]);
 
-    return <Context.Provider value={ability}>{children}</Context.Provider>;
+    return (
+      <Context.Provider value={ability}>
+        <AbilityProvider value={ability}>{children}</AbilityProvider>
+      </Context.Provider>
+    );
   };
 
   export const useAbility = <TAppAbilities extends AppAbilities = AppAbilities>() => {
-    const ability = useCaslAbility(Context);
-    return ability as PureAbility<TAppAbilities>;
+    const ability = useCaslAbility<AppAbility>();
+    return ability as Ability<TAppAbilities>;
   };
 }
