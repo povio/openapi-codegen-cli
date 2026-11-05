@@ -559,7 +559,7 @@ function renderQueryJsDocs({
   mode: "query" | "mutation" | "infiniteQuery";
   tag: string;
 }) {
-  if (resolver.options.generateJsDoc === false) return "";
+  if (resolver.options.generateJsDoc !== true) return "";
   const lines: string[] = ["/** "];
 
   if (mode === "infiniteQuery") {
@@ -946,7 +946,7 @@ function renderQuery({
   const queryOptionsArgs = `${resolvedEndpointArgs ? `{ ${resolvedEndpointArgs} }, ` : ""}${requestConfig}`;
 
   const lines: string[] = [];
-  if (resolver.options.generateJsDoc !== false) {
+  if (resolver.options.generateJsDoc === true) {
     lines.push(renderQueryJsDocs({ resolver, endpoint, mode: "query", tag }));
   }
   lines.push(
@@ -1063,7 +1063,7 @@ function renderMutation({
     : `, { ${mutationVariablesType} }`;
 
   const lines: string[] = [];
-  if (resolver.options.generateJsDoc !== false) {
+  if (resolver.options.generateJsDoc === true) {
     lines.push(renderQueryJsDocs({ resolver, endpoint, mode: "mutation", tag }));
   }
   lines.push(
@@ -1261,7 +1261,7 @@ function renderInfiniteQuery({
   const hasQueryFnOverride = hasAclCheck;
 
   const lines: string[] = [];
-  if (resolver.options.generateJsDoc !== false) {
+  if (resolver.options.generateJsDoc === true) {
     lines.push(renderQueryJsDocs({ resolver, endpoint, mode: "infiniteQuery", tag }));
   }
   lines.push(

@@ -48,7 +48,7 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   // Zod options
   compileSchemas: false,
   lazySchemas: false,
-  generateJsDoc: true,
+  generateJsDoc: false,
   schemaSuffix: SCHEMA_SUFFIX,
   enumSuffix: ENUM_SUFFIX,
   modelsInCommon: false,

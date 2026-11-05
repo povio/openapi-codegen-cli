@@ -3,6 +3,16 @@ import { describe, expect, it } from "vitest";
 import { resolveConfig } from "@/generators/core/resolveConfig";
 
 describe("resolveConfig", () => {
+  it("omits JSDoc by default and honors file and CLI overrides", () => {
+    expect(resolveConfig({ params: {} }).generateJsDoc).toBe(false);
+    expect(resolveConfig({ fileConfig: { generateJsDoc: true }, params: {} }).generateJsDoc).toBe(true);
+    expect(resolveConfig({ fileConfig: { generateJsDoc: true }, params: { generateJsDoc: false } }).generateJsDoc).toBe(
+      false,
+    );
+    expect(resolveConfig({ fileConfig: { generateJsDoc: false }, params: { generateJsDoc: true } }).generateJsDoc).toBe(
+      true,
+    );
+  });
   it("disables compilation by default and honors file and CLI overrides", () => {
     expect(resolveConfig({ params: {} }).compileSchemas).toBe(false);
     expect(resolveConfig({ fileConfig: { compileSchemas: true }, params: {} }).compileSchemas).toBe(true);

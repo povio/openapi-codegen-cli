@@ -34,7 +34,7 @@ function makeEndpointWithDomainError(
   };
 }
 
-const stubResolver = { options: {} } as never;
+const stubResolver = { options: { generateJsDoc: true } } as never;
 
 describe("generateDomainErrors", () => {
   it("omits descriptions when JSDoc is disabled", () => {

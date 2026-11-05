@@ -5,7 +5,7 @@ interface ZodGenerateOptions {
   compileSchemas?: boolean;
   /** Build namespace model schemas on first access instead of at import. Requires tsNamespaces. */
   lazySchemas?: boolean;
-  /** Emit JSDoc comments in generated code. Defaults to true. */
+  /** Emit JSDoc comments in generated code. Defaults to false. */
   generateJsDoc?: boolean;
   schemaSuffix: string;
   enumSuffix: string;

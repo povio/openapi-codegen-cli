@@ -77,7 +77,7 @@ export function generateModels({ resolver, data, tag }: GenerateTypeParams) {
   }
 
   for (const [name, zodSchema] of Object.entries(zodSchemasData)) {
-    if (resolver.options.generateJsDoc !== false) {
+    if (resolver.options.generateJsDoc === true) {
       lines.push(renderModelJsDocs({ name, zodSchema, tag, resolver }));
     }
     const inferredTypeName = getZodSchemaInferedTypeName(name, resolver.options);
@@ -134,7 +134,7 @@ function renderLazyModels({
     const schemaCode =
       resolver.options.compileSchemas && !zodSchema.isCircular ? `z.compile(${zodSchema.code})` : zodSchema.code;
     lines.push(`const ${name}${typeAnnotation} = once(() => ${callLazySchemaReferences(schemaCode, schemaNames)});`);
-    if (resolver.options.generateJsDoc !== false) {
+    if (resolver.options.generateJsDoc === true) {
       members.push(...indent(renderModelJsDocs({ name, zodSchema, tag, resolver }).split("\n")));
     }
     members.push(...renderLazyMember(name, `${name}()`));
@@ -375,7 +375,7 @@ function renderModelJsDocs({
   tag: string;
   resolver: GenerateTypeParams["resolver"];
 }) {
-  if (resolver.options.generateJsDoc === false) return "";
+  if (resolver.options.generateJsDoc !== true) return "";
   const lines = [`/** `, ` * ${name} `, ` * @type { ${getZodSchemaType(zodSchema)} }`];
 
   const description = getZodSchemaDescription(zodSchema);

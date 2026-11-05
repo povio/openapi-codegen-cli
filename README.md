@@ -40,7 +40,7 @@ export default {
 
 ## JSDoc generation
 
-Set `generateJsDoc: false` in your generator configuration or pass `--no-generateJsDoc` to omit generated JSDoc comments while keeping schemas, inferred types, and runtime behavior. Defaults to `true` and applies to both TypeScript and native generation. Combine with `modelsOnly: true` if you only want model files.
+JSDoc comments are omitted by default while schemas, inferred types, and runtime behavior are preserved. Set `generateJsDoc: true` in your generator configuration or pass `--generateJsDoc` to include comments. This applies to both TypeScript and native generation. Combine with `modelsOnly: true` if you only want model files.
 
 ## Lazy schemas
 
@@ -131,7 +131,7 @@ bunx openapi-codegen generate --config my-config.ts
   --tsPath                            (Requires `--importPath` to be 'ts') Typescript import path (default: '@/data')
   --removeOperationPrefixEndingWith   Remove operation name prefixes that end with the specified string (default: 'Controller_')
   --compileSchemas                    Eagerly compile non-recursive Zod schemas (default: false)
-  --generateJsDoc                     Emit JSDoc comments (default: true; disable with --no-generateJsDoc)
+  --generateJsDoc                     Emit JSDoc comments (default: false; enable with --generateJsDoc)
   --lazySchemas                       Build namespace model schemas on first access instead of at import; requires `--tsNamespaces` (default: false)
   --extractEnums                      Extract enums into separate Zod schemas (default: true)
   --modelsInCommon                    Keep all schema declarations in defaultTag models and emit per-module proxy exports (default: false)

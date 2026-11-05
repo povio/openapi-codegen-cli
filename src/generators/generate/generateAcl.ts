@@ -202,7 +202,7 @@ function renderAbilityFunction({
         ? `\`${getQueryName(endpoint)}\` query or \`${getQueryName(endpoint, true)}\` mutation`
         : `\`${getQueryName(endpoint)}\` query`
       : `\`${getQueryName(endpoint)}\` mutation`;
-  if (resolver.options.generateJsDoc !== false) {
+  if (resolver.options.generateJsDoc === true) {
     lines.push("/**");
     lines.push(
       ` * Use for ${abilityQuery} ability. ${hasConditions ? "For global ability, omit the object parameter." : ""}${getAbilityDescription(endpoint) ? "" : ""}`,

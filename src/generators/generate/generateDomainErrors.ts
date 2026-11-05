@@ -61,7 +61,7 @@ export function generateDomainErrors({
 
     const entries = sortedCodes
       .map(({ code, name, description }) => {
-        const comment = resolver.options.generateJsDoc !== false && description ? `  /** ${description} */\n  ` : "  ";
+        const comment = resolver.options.generateJsDoc === true && description ? `  /** ${description} */\n  ` : "  ";
         const key = name ?? (typeof code === "string" ? code : `ERROR_${code}`);
         if (!VALID_IDENTIFIER.test(key)) {
           throw new Error(
