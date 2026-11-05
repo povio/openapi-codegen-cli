@@ -44,7 +44,7 @@ describe("renderer naming parity", () => {
         },
       },
     } as unknown as OpenAPIV3.Document;
-    const options = resolveConfig({ params: {}, fileConfig: { modelsInCommon: true } });
+    const options = resolveConfig({ params: {}, fileConfig: { modelsInCommon: true, acl: false, checkAcl: false } });
     const expected = generateCodeFromOpenAPIDoc(document, options);
     expect(expected.some(({ content }) => content.includes("z.tuple([z.string(), z.string()])"))).toBe(true);
     expect(generateFilesFromNativeOpenAPI(JSON.stringify(document), false, options)).toEqual(expected);
