@@ -12,6 +12,41 @@ import { getNativeBindings } from "@/native/native-bindings";
 import { generateModels } from "./generateModels";
 
 describe("generateModels", () => {
+  test.each([false, true])("can omit JSDoc while preserving schemas (lazy: %s)", (lazySchemas) => {
+    const doc = {
+      openapi: "3.0.3",
+      info: { title: "Docs", version: "1.0.0" },
+      paths: {},
+      components: {
+        schemas: {
+          Pet: {
+            type: "object",
+            description: "A pet",
+            properties: { name: { type: "string", description: "Pet name" } },
+          },
+        },
+      },
+    } as OpenAPIV3.Document;
+    const render = (generateJsDoc: boolean) => {
+      const options = {
+        ...DEFAULT_GENERATE_OPTIONS,
+        generateJsDoc,
+        lazySchemas,
+        splitByTags: false,
+        excludeRedundantZodSchemas: false,
+      };
+      const { resolver, data } = getDataFromOpenAPIDoc(doc, options);
+      return generateModels({ resolver, data, tag: options.defaultTag })!;
+    };
+    const documented = render(true);
+    const plain = render(false);
+    expect(documented).toContain("@description A pet");
+    expect(plain).not.toContain("/**");
+    expect(plain).toContain("PetSchema");
+    expect(plain).toContain("export type Pet =");
+    expect(plain.replace(/\s/g, "")).toBe(documented.replace(/\/\*\*[\s\S]*?\*\//g, "").replace(/\s/g, ""));
+  });
+
   test("adds explicit Zod object annotations to mutually recursive schemas", () => {
     const doc = {
       openapi: "3.0.3",

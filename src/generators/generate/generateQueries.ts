@@ -559,6 +559,7 @@ function renderQueryJsDocs({
   mode: "query" | "mutation" | "infiniteQuery";
   tag: string;
 }) {
+  if (resolver.options.generateJsDoc === false) return "";
   const lines: string[] = ["/** "];
 
   if (mode === "infiniteQuery") {

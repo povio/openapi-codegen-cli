@@ -371,6 +371,7 @@ function renderModelJsDocs({
   tag: string;
   resolver: GenerateTypeParams["resolver"];
 }) {
+  if (resolver.options.generateJsDoc === false) return "";
   const lines = [`/** `, ` * ${name} `, ` * @type { ${getZodSchemaType(zodSchema)} }`];
 
   const description = getZodSchemaDescription(zodSchema);

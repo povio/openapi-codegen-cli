@@ -562,6 +562,7 @@ fn render_common_schema_lines(
         generated_objects,
         enum_objects,
         property_ref_names,
+        options.generate_js_doc,
     );
     let type_name = remove_suffix(name, suffix);
     let is_circular = circular_schemas.iter().any(|schema| schema == name);
@@ -600,6 +601,7 @@ fn render_schema_docs<'a>(
     generated_objects: &'a Map<String, Value>,
     enum_objects: &'a HashMap<String, Value>,
     property_ref_names: &HashMap<&str, String>,
+    generate_js_doc: bool,
 ) -> (Vec<String>, Option<&'a Value>) {
     let schema_object = generated_objects
         .get(name)
@@ -610,6 +612,9 @@ fn render_schema_docs<'a>(
                 .and_then(|reference| resolve_document_ref(document, reference))
         })
         .or_else(|| enum_objects.get(code));
+    if !generate_js_doc {
+        return (Vec::new(), schema_object);
+    }
     let mut lines = vec!["/** ".into(), format!(" * {name} ")];
     let schema_type = if code.starts_with("z.enum(") {
         "enum"
@@ -746,6 +751,7 @@ fn render_lazy_schema_parts(
         generated_objects,
         enum_objects,
         property_ref_names,
+        options.generate_js_doc,
     );
     let type_name = remove_suffix(name, suffix);
     let is_circular = circular_schemas.iter().any(|schema| schema == name);
@@ -2313,7 +2319,7 @@ pub fn render_shared(endpoints: &[Value], options: &GenerateOptions) -> Map<Stri
         "queryModules".into(),
         Value::String(render_query_modules(endpoints, options)),
     );
-    if let Some(content) = render_domain_errors(endpoints) {
+    if let Some(content) = render_domain_errors(endpoints, options) {
         rendered.insert("domainErrors".into(), Value::String(content));
     }
     if let Some(content) = render_app_acl(endpoints) {
@@ -2443,7 +2449,7 @@ fn render_app_acl(endpoints: &[Value]) -> Option<String> {
     Some(lines.join("\n"))
 }
 
-fn render_domain_errors(endpoints: &[Value]) -> Option<String> {
+fn render_domain_errors(endpoints: &[Value], options: &GenerateOptions) -> Option<String> {
     let mut domains: HashMap<String, Vec<(Value, String, Option<String>)>> = HashMap::default();
     for endpoint in endpoints {
         for error in endpoint
@@ -2503,6 +2509,7 @@ fn render_domain_errors(endpoints: &[Value]) -> Option<String> {
             .into_iter()
             .map(|(code, key, description)| {
                 let prefix = description
+                    .filter(|_| options.generate_js_doc)
                     .map(|description| format!("  /** {description} */\n  "))
                     .unwrap_or_else(|| "  ".into());
                 format!("{prefix}{key}: {}", value_text(&code))
@@ -2703,37 +2710,39 @@ fn render_ability(
     } else {
         format!("`{query_name}` mutation")
     };
-    lines.push("/**".into());
-    lines.push(format!(
-        " * Use for {ability_query} ability. {}",
-        if has_conditions {
-            "For global ability, omit the object parameter."
-        } else {
-            ""
-        }
-    ));
-    if let Some(description) = endpoint
-        .pointer("/acl/0/description")
-        .and_then(Value::as_str)
-    {
-        lines.push(format!(" * @description {description}"));
-    }
-    for condition in &conditions {
-        let name = condition
-            .get("name")
-            .and_then(Value::as_str)
-            .unwrap_or_default();
-        let info = condition
-            .get("info")
-            .and_then(Value::as_str)
-            .unwrap_or_default();
+    if options.generate_js_doc {
+        lines.push("/**".into());
         lines.push(format!(
-            " * @param {{ {} }} object.{name} {name} from {info}",
-            condition_type(condition, models_namespace, options)
+            " * Use for {ability_query} ability. {}",
+            if has_conditions {
+                "For global ability, omit the object parameter."
+            } else {
+                ""
+            }
         ));
+        if let Some(description) = endpoint
+            .pointer("/acl/0/description")
+            .and_then(Value::as_str)
+        {
+            lines.push(format!(" * @description {description}"));
+        }
+        for condition in &conditions {
+            let name = condition
+                .get("name")
+                .and_then(Value::as_str)
+                .unwrap_or_default();
+            let info = condition
+                .get("info")
+                .and_then(Value::as_str)
+                .unwrap_or_default();
+            lines.push(format!(
+                " * @param {{ {} }} object.{name} {name} from {info}",
+                condition_type(condition, models_namespace, options)
+            ));
+        }
+        lines.push(format!(" * @returns {{ AbilityTuple }} An ability tuple indicating the user's ability to use {ability_query}"));
+        lines.push(" */".into());
     }
-    lines.push(format!(" * @returns {{ AbilityTuple }} An ability tuple indicating the user's ability to use {ability_query}"));
-    lines.push(" */".into());
     lines.push(format!("export const {ability_name} = ("));
     if has_conditions {
         let object = conditions
@@ -3737,6 +3746,9 @@ fn render_query_docs(
     models_namespace: &str,
     infinite: bool,
 ) {
+    if !options.generate_js_doc {
+        return;
+    }
     let (_, cap) = query_names(endpoint);
     lines.push("/** ".into());
     lines.push(if infinite {
@@ -4305,6 +4317,9 @@ fn render_mutation_docs(
     options: &GenerateOptions,
     models_namespace: &str,
 ) {
+    if !options.generate_js_doc {
+        return;
+    }
     let (_, cap) = query_names(endpoint);
     let mutation_cap = if endpoint.get("method").and_then(Value::as_str) == Some("get") {
         format!("{cap}Mutation")

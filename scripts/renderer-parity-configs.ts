@@ -90,6 +90,7 @@ export const optionCases = {
   })),
   abilityContextImportPath: [{ acl: true, abilityContextImportPath: "@test/ability-context" }],
   aclCheckImportPath: [{ acl: true, aclCheckImportPath: "@test/acl" }],
+  generateJsDoc: bool("generateJsDoc"),
   builderConfigs: bool("builderConfigs"),
   filterParamName: [{ builderConfigs: true, filterParamName: "filters" }],
   dataResponseParamNames: [{ builderConfigs: true, dataResponseParamNames: ["results"] }],

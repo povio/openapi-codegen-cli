@@ -34,9 +34,15 @@ function makeEndpointWithDomainError(
   };
 }
 
-const stubResolver = {} as never;
+const stubResolver = { options: {} } as never;
 
 describe("generateDomainErrors", () => {
+  it("omits descriptions when JSDoc is disabled", () => {
+    const data = makeData([[makeEndpointWithDomainError("rocket", 1, "Launch failed")]]);
+    const result = generateDomainErrors({ resolver: { options: { generateJsDoc: false } } as never, data })!;
+    expect(result).not.toContain("/**");
+    expect(result).toContain("ERROR_1: 1");
+  });
   it("returns undefined when no domain errors exist", () => {
     const data = makeData([[{ errors: [{ status: 400, zodSchema: "z.void()" }] }]]);
     expect(generateDomainErrors({ resolver: stubResolver, data })).toBeUndefined();
