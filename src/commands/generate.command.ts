@@ -58,6 +58,9 @@ class GenerateOptions implements GenerateParams {
   @YargOption({ envAlias: "lazySchemas", type: "boolean" })
   lazySchemas?: boolean;
 
+  @YargOption({ envAlias: "generateJsDoc", type: "boolean" })
+  generateJsDoc?: boolean;
+
   @YargOption({ envAlias: "extractEnums", type: "boolean" })
   extractEnums?: boolean;
 
