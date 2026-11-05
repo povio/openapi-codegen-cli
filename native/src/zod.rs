@@ -286,6 +286,42 @@ impl<'a> ZodCompiler<'a> {
             .and_then(Value::as_str)
             .map(str::to_ascii_lowercase);
         if schema_type.as_deref() == Some("array") {
+            if let Some(items) = object.get("items").and_then(Value::as_array) {
+                let required = object
+                    .get("minItems")
+                    .and_then(Value::as_u64)
+                    .unwrap_or(0) as usize;
+                let item_meta = Meta {
+                    required: true,
+                    parent_partial: false,
+                };
+                let members = items
+                    .iter()
+                    .enumerate()
+                    .map(|(index, item)| {
+                        let code = self.compile(item, item_meta, tag, root_ref, stack)?;
+                        Ok(format!(
+                            "{code}{}{}",
+                            chain(item, item_meta, self.options),
+                            if index >= required { ".optional()" } else { "" }
+                        ))
+                    })
+                    .collect::<Result<Vec<_>, String>>()?;
+                let rest = match object.get("additionalItems") {
+                    Some(Value::Bool(false)) => String::new(),
+                    Some(value @ Value::Object(_)) => format!(
+                        ".rest({}{})",
+                        self.compile(value, item_meta, tag, root_ref, stack)?,
+                        chain(value, item_meta, self.options)
+                    ),
+                    _ => ".rest(z.any())".into(),
+                };
+                return Ok(format!(
+                    "z.tuple([{}]){rest}{}",
+                    members.join(", "),
+                    if self.options.all_readonly { ".readonly()" } else { "" }
+                ));
+            }
             let item = if let Some(items) = object.get("items") {
                 let code = self.compile(
                     items,
@@ -685,14 +721,22 @@ fn chain(schema: &Value, meta: Meta, options: &GenerateOptions) -> String {
                 .and_then(Value::as_u64)
                 .filter(|value| *value > 0)
             {
-                chains.push(format!("min({value})"));
+                chains.push(if schema.get("items").is_some_and(Value::is_array) {
+                    format!("refine((value) => value.length >= {value})")
+                } else {
+                    format!("min({value})")
+                });
             }
             if let Some(value) = schema
                 .get("maxItems")
                 .and_then(Value::as_u64)
                 .filter(|value| *value > 0)
             {
-                chains.push(format!("max({value})"));
+                chains.push(if schema.get("items").is_some_and(Value::is_array) {
+                    format!("refine((value) => value.length <= {value})")
+                } else {
+                    format!("max({value})")
+                });
             }
         }
         _ => {}
