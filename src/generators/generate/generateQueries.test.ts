@@ -167,6 +167,23 @@ const openApiDoc = {
 } as OpenAPIV3.Document;
 
 describe("generateQueries workspaceContext", () => {
+  it("omits JSDoc without leaving extra blank lines", () => {
+    const render = (generateJsDoc: boolean) =>
+      generateCodeFromOpenAPIDoc(openApiDoc, {
+        ...DEFAULT_GENERATE_OPTIONS,
+        generateJsDoc,
+        output: "test-output",
+      }).filter((file) => file.fileName.endsWith(".queries.ts"));
+    const documented = render(true);
+    const plain = render(false);
+    expect(plain.length).toBeGreaterThan(0);
+    expect(plain).toEqual(
+      documented.map((file) => ({
+        ...file,
+        content: file.content.replace(/^[ \t]*\/\*\*[\s\S]*?\*\/\n/gm, ""),
+      })),
+    );
+  });
   it("passes runtime allowInvalidResponseData config through generated GET query hooks", () => {
     const files = generateCodeFromOpenAPIDoc(openApiDoc, {
       ...DEFAULT_GENERATE_OPTIONS,

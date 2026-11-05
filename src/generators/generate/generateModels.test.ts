@@ -42,6 +42,7 @@ describe("generateModels", () => {
     const plain = render(false);
     expect(documented).toContain("@description A pet");
     expect(plain).not.toContain("/**");
+    expect(plain).toBe(documented.replace(/^[ \t]*\/\*\*[\s\S]*?\*\/\n/gm, ""));
     expect(plain).toContain("PetSchema");
     expect(plain).toContain("export type Pet =");
     expect(plain.replace(/\s/g, "")).toBe(documented.replace(/\/\*\*[\s\S]*?\*\//g, "").replace(/\s/g, ""));

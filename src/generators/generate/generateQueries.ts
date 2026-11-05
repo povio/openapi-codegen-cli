@@ -946,7 +946,9 @@ function renderQuery({
   const queryOptionsArgs = `${resolvedEndpointArgs ? `{ ${resolvedEndpointArgs} }, ` : ""}${requestConfig}`;
 
   const lines: string[] = [];
-  lines.push(renderQueryJsDocs({ resolver, endpoint, mode: "query", tag }));
+  if (resolver.options.generateJsDoc !== false) {
+    lines.push(renderQueryJsDocs({ resolver, endpoint, mode: "query", tag }));
+  }
   lines.push(
     `export const ${getQueryName(endpoint)} = <TData>(${endpointParams ? `{ ${endpointArgs} }: { ${endpointParams} }, ` : ""}options?: AppQueryOptions<typeof ${inlineEndpoints ? getEndpointName(endpoint) : getImportedEndpointName(endpoint, resolver.options)}, TData>${hasAxiosRequestConfig ? `, ${AXIOS_REQUEST_CONFIG_NAME}?: ${getRequestConfigTypeName(resolver.options.restClient)}` : ""}) => {`,
   );
@@ -1061,7 +1063,9 @@ function renderMutation({
     : `, { ${mutationVariablesType} }`;
 
   const lines: string[] = [];
-  lines.push(renderQueryJsDocs({ resolver, endpoint, mode: "mutation", tag }));
+  if (resolver.options.generateJsDoc !== false) {
+    lines.push(renderQueryJsDocs({ resolver, endpoint, mode: "mutation", tag }));
+  }
   lines.push(
     `export const ${getQueryName(endpoint, true)} = (${pathParamFirstArg}options?: AppMutationOptions<typeof ${endpointFunction}${mutationOptionsTypeArg}>${hasMutationEffects ? ` & ${MUTATION_EFFECTS.optionsType}` : ""}${hasAxiosRequestConfig ? `, ${AXIOS_REQUEST_CONFIG_NAME}?: ${getRequestConfigTypeName(resolver.options.restClient)}` : ""}) => {`,
   );
@@ -1257,7 +1261,9 @@ function renderInfiniteQuery({
   const hasQueryFnOverride = hasAclCheck;
 
   const lines: string[] = [];
-  lines.push(renderQueryJsDocs({ resolver, endpoint, mode: "infiniteQuery", tag }));
+  if (resolver.options.generateJsDoc !== false) {
+    lines.push(renderQueryJsDocs({ resolver, endpoint, mode: "infiniteQuery", tag }));
+  }
   lines.push(
     `export const ${getInfiniteQueryName(endpoint)} = <TData>(${endpointParams ? `{ ${endpointArgsWithoutPage} }: { ${endpointParams} }, ` : ""}options?: AppInfiniteQueryOptions<typeof ${inlineEndpoints ? getEndpointName(endpoint) : getImportedEndpointName(endpoint, resolver.options)}, TData>${hasAxiosRequestConfig ? `, ${AXIOS_REQUEST_CONFIG_NAME}?: ${getRequestConfigTypeName(resolver.options.restClient)}` : ""}) => {`,
   );
