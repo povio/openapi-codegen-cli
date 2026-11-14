@@ -671,10 +671,12 @@ fn chain(schema: &Value, meta: Meta, options: &GenerateOptions) -> String {
                 chains.push(format!("max({value})"));
             }
             if let Some(pattern) = schema.get("pattern").and_then(Value::as_str) {
-                chains.push(format!(
-                    "regex(/{}/)",
-                    escape_pattern(pattern.trim_matches('/'))
-                ));
+                let pattern = if pattern.starts_with('/') && pattern.ends_with('/') {
+                    &pattern[1..pattern.len().saturating_sub(1).max(1)]
+                } else {
+                    pattern
+                };
+                chains.push(format!("regex(/{}/)", escape_pattern(pattern)));
             }
         }
         Some("number" | "integer") if schema.get("enum").is_none() => {
@@ -897,11 +899,20 @@ fn quote_property(value: &str) -> String {
     }
 }
 fn escape_pattern(value: &str) -> String {
-    value
-        .replace('\t', "\\t")
-        .replace('\n', "\\n")
-        .replace('\r', "\\r")
-        .replace('/', "\\/")
+    let mut result = String::with_capacity(value.len());
+    let mut escaped = false;
+    for character in value.chars() {
+        match character {
+            '\t' => result.push_str("\\t"),
+            '\n' => result.push_str("\\n"),
+            '\r' => result.push_str("\\r"),
+            '/' if !escaped => result.push_str("\\/"),
+            _ => result.push(character),
+        }
+        // Only an odd number of consecutive backslashes escapes the next slash.
+        escaped = character == '\\' && !escaped;
+    }
+    result
 }
 
 #[derive(Default)]

@@ -77,7 +77,10 @@ export function escapeControlCharacters(str: string): string {
       if (dec <= 0xff) return `\\x${`00${hex}`.slice(-2)}`;
       return `\\u${`0000${hex}`.slice(-4)}`;
     })
-    .replace(/\//g, "\\/");
+    // A slash is already escaped only after an odd number of backslashes.
+    .replace(/(\\*)\//g, (_match, backslashes: string) =>
+      backslashes.length % 2 === 0 ? `${backslashes}\\/` : `${backslashes}/`,
+    );
 }
 
 export const toBoolean = (value: undefined | string | boolean, defaultValue: boolean) => {
