@@ -9,6 +9,7 @@ import { resolveConfig } from "@/generators/core/resolveConfig";
 import { generateCodeFromOpenAPIDoc } from "@/generators/generateCodeFromOpenAPIDoc";
 import { GenerateOptions } from "@/generators/types/options";
 import {
+  callLazySchemaReferences,
   getCircularSchemaDeclaration,
   getCodeSchemaReferences,
   isZodObjectCode,
@@ -115,6 +116,20 @@ describe("generated model code scanning", () => {
       typeAnnotation: "z.ZodType<Example>",
       code: "z.lazy(() => z.union([z.string(), z.array(ExampleSchema)]))",
     });
+    const readonlyObject = "z.object({ next: z.lazy(() => ExampleSchema) }).partial().readonly()";
+    expect(getCircularSchemaDeclaration(readonlyObject, "Example")).toEqual({
+      typeAnnotation: "z.ZodReadonly<z.ZodObject<z.ZodRawShape>> & z.ZodType<Example>",
+      code: readonlyObject,
+    });
+  });
+
+  test("spread references are not member accesses", () => {
+    expect(callLazySchemaReferences("z.object({ ...PetSchema.shape, a: x.PetSchema })", new Set(["PetSchema"]))).toBe(
+      "z.object({ ...PetSchema().shape, a: x.PetSchema })",
+    );
+    expect(stripModelNamespaceReferences("z.object({ ...CommonModels.PetSchema.unwrap().shape })", "Models")).toBe(
+      "z.object({ ...PetSchema.unwrap().shape })",
+    );
   });
 });
 
@@ -126,6 +141,9 @@ describe("generated models of test/renderer-regressions.yaml", () => {
     { name: "lazy schemas", options: { lazySchemas: true }, namespaced: true },
     { name: "models in modules", options: { modelsInModules: true }, namespaced: true },
     { name: "no namespaces", options: { tsNamespaces: false }, namespaced: false },
+    { name: "readonly", options: { allReadonly: true }, namespaced: true },
+    { name: "readonly lazy schemas", options: { allReadonly: true, lazySchemas: true }, namespaced: true },
+    { name: "lazy models in modules", options: { modelsInModules: true, lazySchemas: true }, namespaced: true },
   ])("typecheck, load and validate with $name", async ({ options, namespaced }) => {
     const source = await readFile("test/renderer-regressions.yaml", "utf8");
     const imports = namespaced
@@ -133,10 +151,10 @@ describe("generated models of test/renderer-regressions.yaml", () => {
          import { RulesModels } from "./rules/rules.models";
          import { LiteralsModels } from "./literals/literals.models";
          const { RefreshProvider400ErrorResponseSchema } = TrackingModels;
-         const { RuleNodeSchema, RuleDtoSchema } = RulesModels;
+         const { RuleNodeSchema, RuleDtoSchema, RuleGraphDtoSchema } = RulesModels;
          const { LiteralsDtoSchema } = LiteralsModels;`
       : `import { RefreshProvider400ErrorResponseSchema } from "./tracking/tracking.models";
-         import { RuleNodeSchema, RuleDtoSchema } from "./rules/rules.models";
+         import { RuleNodeSchema, RuleDtoSchema, RuleGraphDtoSchema } from "./rules/rules.models";
          import { LiteralsDtoSchema } from "./literals/literals.models";`;
     const output = await verifyGeneratedModels(
       source,
@@ -161,6 +179,23 @@ describe("generated models of test/renderer-regressions.yaml", () => {
         assert(LiteralsDtoSchema.safeParse({ ...literals, named }).success, JSON.stringify(named));
       for (const named of [["a"], ["abc", "x"]])
         assert(!LiteralsDtoSchema.safeParse({ ...literals, named }).success, JSON.stringify(named));
+      // Recursive additional properties, recursive allOf and nullable object type arrays.
+      const graph = {
+        scopes: { label: "root", child: { grandchild: {} } },
+        // Merged allOf members keep the order of their properties.
+        chain: { next: { name: "b" }, name: "a" },
+        link: { next: null },
+        named: { next: { name: "b" }, name: "a", id: "n" },
+      };
+      assert(JSON.stringify(RuleGraphDtoSchema.parse(graph)) === JSON.stringify(graph), "graph data");
+      assert(RuleGraphDtoSchema.safeParse({ link: null }).success, "nullable link");
+      for (const value of [
+        { scopes: { child: 1 } },
+        { chain: { next: { name: 1 } } },
+        { link: { next: 1 } },
+        { named: { name: "a" } },
+      ])
+        assert(!RuleGraphDtoSchema.safeParse(value).success, JSON.stringify(value));
       console.log("ok");`,
     );
     expect(output.trim()).toBe("ok");
@@ -401,6 +436,166 @@ describe("explicit types of circular schemas", () => {
       assert(M.PairSchema.safeParse({ open: [] }).success, "optional tuple member");
       assert(!M.PairSchema.safeParse({ closed: ["a", {}, "extra"] }).success, "closed tuple");
       for (const value of ["a", ["a", { id: "s" }]]) assert(M.UnionSchema.safeParse(value).success, JSON.stringify(value));
+      console.log("ok");`,
+    );
+    expect(output.trim()).toBe("ok");
+  });
+});
+
+describe("recursive members, readonly allOf and nullable type arrays", () => {
+  const ref = (name: string) => ({ $ref: `#/components/schemas/${name}` });
+  const document = {
+    openapi: "3.1.0",
+    info: { title: "Recursive members", version: "1" },
+    paths: {
+      "/examples": {
+        get: {
+          operationId: "getExamples",
+          tags: ["Examples"],
+          responses: {
+            "200": {
+              description: "OK",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: Object.fromEntries(
+                      ["Catchall", "CatchallUnion", "AllOf", "TypeArray", "Child", "Plain", "Multi", "NullOnly"].map(
+                        (name) => [name, ref(name)],
+                      ),
+                    ),
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      // Node is used by two tags, so allOf members reference it in another models namespace.
+      "/nodes": {
+        get: {
+          operationId: "getNode",
+          tags: ["Others"],
+          responses: { "200": { description: "OK", content: { "application/json": { schema: ref("Node") } } } },
+        },
+      },
+    },
+    components: {
+      schemas: {
+        // Recursive additional properties
+        Catchall: { type: "object", additionalProperties: ref("Catchall") },
+        CatchallUnion: {
+          type: "object",
+          properties: { id: { type: "string" } },
+          additionalProperties: { oneOf: [{ type: "string" }, { type: "array", items: ref("CatchallUnion") }] },
+        },
+        // Recursive allOf of inline objects
+        AllOf: {
+          allOf: [
+            { type: "object", properties: { next: ref("AllOf") } },
+            { type: "object", properties: { name: { type: "string" } } },
+          ],
+        },
+        // Nullable object type array
+        TypeArray: { type: ["object", "null"], properties: { next: ref("TypeArray") } },
+        Node: { type: "object", properties: { children: { type: "array", items: ref("Node") } } },
+        // allOf of referenced (circular, cross-namespace) and inline members
+        Child: {
+          allOf: [
+            ref("Node"),
+            ref("Plain"),
+            { type: "object", required: ["extra"], properties: { extra: { type: "string" } } },
+          ],
+        },
+        Plain: {
+          allOf: [
+            { type: "object", properties: { x: { type: "string" } } },
+            { type: "object", properties: { y: { type: "integer" } } },
+          ],
+        },
+        Multi: { type: ["string", "integer", "null"] },
+        NullOnly: { type: ["null"] },
+      },
+    },
+  };
+
+  test.each<Partial<GenerateOptions>>([
+    {},
+    { lazySchemas: true },
+    { allReadonly: true },
+    { allReadonly: true, lazySchemas: true },
+    { modelsInModules: true },
+    { modelsInModules: true, lazySchemas: true },
+    { modelsInModules: true, allReadonly: true, lazySchemas: true },
+    { tsNamespaces: false },
+    { tsNamespaces: false, allReadonly: true },
+  ])("typecheck and validate with %j", async (options) => {
+    const namespaced = options.tsNamespaces !== false;
+    const imports = namespaced
+      ? `import { ExamplesModels as M } from "./examples/examples.models";`
+      : `import * as M from "./examples/examples.models";`;
+    const output = await verifyGeneratedModels(
+      JSON.stringify(document),
+      options,
+      `${imports}
+      ${assert}
+      const schemas = M as unknown as Record<string, { safeParse: (value: unknown) => { success: boolean; data?: unknown } }>;
+      const valid: [string, unknown][] = [
+        ["CatchallSchema", {}],
+        ["CatchallSchema", { a: {} }],
+        ["CatchallSchema", { a: { b: { c: {} } } }],
+        ["CatchallUnionSchema", { id: "x", k: "s", l: [{ m: "n" }] }],
+        ["AllOfSchema", { name: "ok", next: { name: "child" } }],
+        ["TypeArraySchema", null],
+        ["TypeArraySchema", { next: null }],
+        ["TypeArraySchema", { next: { next: {} } }],
+        ["ChildSchema", { extra: "e", x: "x", y: 1, children: [{ children: [] }] }],
+        ["MultiSchema", null],
+        ["MultiSchema", "s"],
+        ["MultiSchema", 1],
+        ["NullOnlySchema", null],
+      ];
+      const invalid: [string, unknown][] = [
+        ["CatchallSchema", { a: 1 }],
+        ["CatchallSchema", { a: { b: 1 } }],
+        ["CatchallUnionSchema", { k: 1 }],
+        ["CatchallUnionSchema", { l: [{ m: 1 }] }],
+        ["AllOfSchema", { name: 3 }],
+        ["AllOfSchema", { next: { name: 3 } }],
+        ["TypeArraySchema", 5],
+        ["TypeArraySchema", { next: 5 }],
+        ["ChildSchema", { x: "x" }],
+        ["ChildSchema", { extra: "e", y: "1" }],
+        ["ChildSchema", { extra: "e", children: [{ children: 1 }] }],
+        ["MultiSchema", true],
+        ["NullOnlySchema", {}],
+      ];
+      const sameJson = (a: unknown, b: unknown): boolean =>
+        a !== null && b !== null && typeof a === "object" && typeof b === "object"
+          ? Object.keys(a).length === Object.keys(b).length &&
+            Object.entries(a).every(([key, value]) => sameJson(value, (b as Record<string, unknown>)[key]))
+          : a === b;
+      for (const [name, value] of valid) {
+        const result = schemas[name]!.safeParse(value);
+        assert(result.success, name + " " + JSON.stringify(value));
+        // Parsing keeps the data (nothing is stripped).
+        assert(sameJson(result.data, value), name + " data " + JSON.stringify(result.data));
+      }
+      for (const [name, value] of invalid) assert(!schemas[name]!.safeParse(value).success, name + " " + JSON.stringify(value));
+      ${
+        options.allReadonly
+          ? `assert(Object.isFrozen(M.AllOfSchema.parse({ name: "n" })), "readonly allOf");
+             assert(Object.isFrozen(M.ChildSchema.parse({ extra: "e" })), "readonly referenced allOf");`
+          : ""
+      }
+      ${
+        namespaced
+          ? `const nullable: M.TypeArray = null;
+             const nested: M.TypeArray = { next: null };
+             const catchall: M.CatchallUnion = { id: "x", other: [{ id: "y" }] };
+             assert(M.TypeArraySchema.parse(nested) !== undefined && nullable === null && catchall.id === "x", "types");`
+          : ""
+      }
       console.log("ok");`,
     );
     expect(output.trim()).toBe("ok");

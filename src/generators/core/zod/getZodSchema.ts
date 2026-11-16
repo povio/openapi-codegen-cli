@@ -113,6 +113,24 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag }: Get
   }
 
   const schemaType = schema.type ? (schema.type.toLowerCase() as NonNullable<typeof schema.type>) : undefined;
+  // Whether a member schema of this object (property or additional properties) references the
+  // schema being declared, so it must be deferred with `z.lazy` to avoid reading the declaration
+  // while it is initialized.
+  const parentRef = getParentRef(inheritedMeta);
+  const isCircularMember = (
+    memberSchema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject,
+    memberZodSchema: ZodSchema,
+  ) => {
+    if (!parentRef) {
+      return false;
+    }
+    const refs = [
+      ...(isReferenceObject(memberSchema) ? [memberSchema.$ref] : []),
+      ...getSchemaRefs(memberZodSchema, { skipObjectSchema: true }),
+    ];
+    return refs.some((ref) => resolver.dependencyGraph.deepDependencyGraph[ref]?.has(parentRef));
+  };
+
   if (schemaType === "object" || schema.properties || schema.additionalProperties) {
     const hasRequiredArray = schema.required && schema.required.length > 0;
     const isPartial = resolver.options.withImplicitRequiredProps
@@ -151,17 +169,7 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag }: Get
             options: resolver.options,
           });
 
-        let isCircular = false;
-        const parentRef = getParentRef(inheritedMeta);
-        if (parentRef) {
-          const refs = [
-            ...(isReferenceObject(propSchema) ? [propSchema.$ref] : []),
-            ...getSchemaRefs(zodSchema, { skipObjectSchema: true }),
-          ];
-          isCircular = refs.some((ref) => resolver.dependencyGraph.deepDependencyGraph[ref]?.has(parentRef));
-        }
-
-        return [prop, propZodSchema, isCircular];
+        return [prop, propZodSchema, isCircularMember(propSchema, zodSchema)];
       });
 
       properties = `{ ${propsMap
@@ -175,15 +183,21 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag }: Get
 
     let additionalPropsSchema = "";
     if (schema.additionalProperties) {
-      const additionalPropsZodSchema =
-        typeof schema.additionalProperties === "object" && Object.keys(schema.additionalProperties).length > 0
-          ? getZodSchema({ ...params, schema: schema.additionalProperties }).getCodeString(tag, resolver.options) +
-            getZodChain({
-              schema: schema.additionalProperties as OpenAPIV3.SchemaObject,
-              meta: { ...meta, isRequired: true },
-              options: resolver.options,
-            })
-          : UNKNOWN_SCHEMA;
+      let additionalPropsZodSchema: string = UNKNOWN_SCHEMA;
+      if (typeof schema.additionalProperties === "object" && Object.keys(schema.additionalProperties).length > 0) {
+        const additionalProperties = schema.additionalProperties;
+        const additionalZodSchema = getZodSchema({ ...params, schema: additionalProperties });
+        additionalPropsZodSchema =
+          additionalZodSchema.getCodeString(tag, resolver.options) +
+          getZodChain({
+            schema: additionalProperties as OpenAPIV3.SchemaObject,
+            meta: { ...meta, isRequired: true },
+            options: resolver.options,
+          });
+        if (isCircularMember(additionalProperties, additionalZodSchema)) {
+          additionalPropsZodSchema = `z.lazy(() => ${additionalPropsZodSchema})`;
+        }
+      }
       additionalPropsSchema = `.catchall(${additionalPropsZodSchema})`;
     }
 
@@ -298,13 +312,17 @@ function getArrayZodSchema({ schema, zodSchema, resolver, meta, tag }: GetPartia
     return getZodSchema({ schema: { ...schema, type: schema.type[0]! }, resolver, meta, tag });
   }
 
-  return zodSchema.assign(
-    `z.union([${schema.type
-      .map((prop) =>
-        getZodSchema({ schema: { ...schema, type: prop }, resolver, meta, tag }).getCodeString(tag, resolver.options),
-      )
-      .join(", ")}])`,
+  // A `null` member makes the schema of the other members nullable (`type: ["object", "null"]`);
+  // its other keywords (`properties`, `items`, ...) only describe the non-null members.
+  const types = schema.type.filter((type) => (type as string) !== "null");
+  const nullable = types.length < schema.type.length ? ".nullable()" : "";
+  if (types.length === 0) {
+    return zodSchema.assign("z.null()");
+  }
+  const codes = types.map((type) =>
+    getZodSchema({ schema: { ...schema, type }, resolver, meta, tag }).getCodeString(tag, resolver.options),
   );
+  return zodSchema.assign(`${codes.length === 1 ? codes[0] : `z.union([${codes.join(", ")}])`}${nullable}`);
 }
 
 function getAnyOfZodSchema({ schema, zodSchema, resolver, meta, tag }: GetPartialZodSchemaParams) {
@@ -350,10 +368,28 @@ function getAllOfZodSchema({ schema, zodSchema, resolver, meta, tag }: GetPartia
   const first = types.at(0)!;
   const rest = types
     .slice(1)
-    .map((type) => `...${type.getCodeString(tag, resolver.options)}.shape`)
+    .map((type) => `...${getObjectShapeCode(type.getCodeString(tag, resolver.options), resolver.options.allReadonly)}`)
     .join(", ");
+  const readonly = resolver.options.allReadonly ? ".readonly()" : "";
 
-  return zodSchema.assign(`z.object({ ...${first.getCodeString(tag, resolver.options)}.shape, ${rest} })`);
+  return zodSchema.assign(
+    `z.object({ ...${getObjectShapeCode(first.getCodeString(tag, resolver.options), resolver.options.allReadonly)}, ${rest} })${readonly}`,
+  );
+}
+
+const READONLY_SUFFIX = ".readonly()";
+
+/**
+ * The `shape` of an allOf member object schema. With `allReadonly` object schemas are wrapped in
+ * `.readonly()`, which has no `shape`: inline members are merged before being made readonly, and
+ * referenced members are unwrapped. The merged object is made readonly instead.
+ * Mirrored by `object_shape_code` in native/src/zod.rs.
+ */
+function getObjectShapeCode(code: string, allReadonly: boolean | undefined) {
+  if (!allReadonly) {
+    return `${code}.shape`;
+  }
+  return code.endsWith(READONLY_SUFFIX) ? `${code.slice(0, -READONLY_SUFFIX.length)}.shape` : `${code}.unwrap().shape`;
 }
 
 function getPrimitiveZodSchema({ schema, zodSchema, resolver, meta, tag }: GetPartialZodSchemaParams) {

@@ -220,6 +220,16 @@ function renderSchemaType(
     return schema.enum.map((value) => JSON.stringify(value)).join(" | ");
   }
 
+  // Type arrays (OpenAPI 3.1) are a union of their types; `null` makes the schema nullable.
+  if (Array.isArray(schema.type)) {
+    const types = (schema.type as string[]).filter((type) => type !== "null");
+    const parts = types.map((type) => renderSchemaType({ ...schema, type } as OpenAPIV3.SchemaObject, resolver, tag));
+    if (types.length < schema.type.length) {
+      parts.push("null");
+    }
+    return parts.map((part) => (parts.length > 1 && /[|&]/.test(part) ? `(${part})` : part)).join(" | ");
+  }
+
   if (schema.type === "array") {
     const tuple = getTupleSchemaParts(schema);
     if (tuple) {
@@ -265,7 +275,8 @@ function renderSchemaType(
         : schema.required?.length
           ? schema.required.includes(name)
           : options.withImplicitRequiredProps;
-      const resolved = isReferenceObject(property) ? resolver.getSchemaByRef(property.$ref) : property;
+      // `resolveObject` is also implemented by the native-extraction resolver (hybrid rendering).
+      const resolved = resolver.resolveObject<OpenAPIV3.SchemaObject | undefined>(property);
       const hasDefault = options.withDefaultValues !== false && resolved?.default !== undefined;
       const isNullable =
         Boolean(resolved?.nullable) || (options.replaceOptionalWithNullish && (isPartial || !isRequired));
@@ -274,15 +285,22 @@ function renderSchemaType(
       const outputType = isNullable && propertyType !== "null" ? `${propertyType} | null` : propertyType;
       return `${wrapWithQuotesIfNeeded(name)}${optional}: ${outputType}`;
     });
+    let indexType: string | undefined;
     if (schema.additionalProperties) {
       const valueType =
         typeof schema.additionalProperties === "object"
           ? addNullable(schema.additionalProperties, renderSchemaType(schema.additionalProperties, resolver, tag))
           : "unknown";
-      properties.push(`[key: string]: ${valueType}`);
+      indexType = `{ [key: string]: ${valueType} }`;
     }
-    const objectType = `{ ${properties.join("; ")} }`;
-    return options.allReadonly ? `Readonly<${objectType}>` : objectType;
+    // Like zod's catchall output, properties and the index signature are intersected, so property
+    // types need not be assignable to the additional properties type. Each part is made readonly
+    // on its own: `Readonly<A & B>` of a recursive type would circularly reference itself.
+    const readonly = (type: string) => (options.allReadonly ? `Readonly<${type}>` : type);
+    if (indexType && properties.length > 0) {
+      return `${readonly(`{ ${properties.join("; ")} }`)} & ${readonly(indexType)}`;
+    }
+    return readonly(indexType ?? `{ ${properties.join("; ")} }`);
   }
 
   switch (schema.type) {
