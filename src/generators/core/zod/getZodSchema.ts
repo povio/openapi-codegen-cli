@@ -131,6 +131,11 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag }: Get
     return refs.some((ref) => resolver.dependencyGraph.deepDependencyGraph[ref]?.has(parentRef));
   };
 
+  // An explicit `null` type ignores object keywords (`properties`, ...), which do not apply to null.
+  if ((schemaType as unknown) === "null") {
+    return zodSchema.assign("z.null()");
+  }
+
   if (schemaType === "object" || schema.properties || schema.additionalProperties) {
     const hasRequiredArray = schema.required && schema.required.length > 0;
     const isPartial = resolver.options.withImplicitRequiredProps
@@ -209,10 +214,6 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag }: Get
 
   if ((schemaType as unknown) === "any") {
     return zodSchema.assign(UNKNOWN_SCHEMA);
-  }
-
-  if ((schemaType as unknown) === "null") {
-    return zodSchema.assign("z.null()");
   }
 
   if (!schemaType) {
@@ -308,17 +309,16 @@ function getArrayZodSchema({ schema, zodSchema, resolver, meta, tag }: GetPartia
     return;
   }
 
-  if (schema.type.length === 1) {
-    return getZodSchema({ schema: { ...schema, type: schema.type[0]! }, resolver, meta, tag });
-  }
-
   // A `null` member makes the schema of the other members nullable (`type: ["object", "null"]`);
-  // its other keywords (`properties`, `items`, ...) only describe the non-null members.
+  // its other keywords (`properties`, `items`, ...) only describe the non-null members, so a
+  // null-only type array (`type: ["null"]`) is `z.null()` whatever keywords it has.
   const types = schema.type.filter((type) => (type as string) !== "null");
   const nullable = types.length < schema.type.length ? ".nullable()" : "";
   if (types.length === 0) {
     return zodSchema.assign("z.null()");
   }
+  // The code is assigned to this schema (not the single-type variant), so naming by complexity
+  // sees the type array, like native/src/endpoints.rs.
   const codes = types.map((type) =>
     getZodSchema({ schema: { ...schema, type }, resolver, meta, tag }).getCodeString(tag, resolver.options),
   );

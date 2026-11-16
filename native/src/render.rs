@@ -1275,6 +1275,12 @@ fn render_schema_type(schema: &Value, context: &SchemaTypeContext) -> String {
         };
     }
 
+    // Like zod.rs, an explicit scalar type wins over object keywords: when a type array such as
+    // `["object", "string", "null"]` is expanded, the `string` member keeps `properties`.
+    if let Some(scalar_type) = render_scalar_schema_type(schema) {
+        return scalar_type;
+    }
+
     if schema.get("type").and_then(Value::as_str) == Some("object")
         || schema.get("properties").is_some()
         || schema.get("additionalProperties").is_some()
@@ -1365,16 +1371,18 @@ fn render_schema_type(schema: &Value, context: &SchemaTypeContext) -> String {
         };
     }
 
-    match schema.get("type").and_then(Value::as_str) {
-        Some("string") if schema.get("format").and_then(Value::as_str) == Some("binary") => {
-            "Blob".into()
-        }
-        Some("string") => "string".into(),
-        Some("number" | "integer") => "number".into(),
-        Some("boolean") => "boolean".into(),
-        Some("null") => "null".into(),
-        _ => "unknown".into(),
-    }
+    "unknown".into()
+}
+
+fn render_scalar_schema_type(schema: &Value) -> Option<String> {
+    Some(match schema.get("type").and_then(Value::as_str)? {
+        "string" if schema.get("format").and_then(Value::as_str) == Some("binary") => "Blob".into(),
+        "string" => "string".into(),
+        "number" | "integer" => "number".into(),
+        "boolean" => "boolean".into(),
+        "null" => "null".into(),
+        _ => return None,
+    })
 }
 
 /// A referenced schema's type as seen from the models file being rendered. The schema code
@@ -1567,7 +1575,8 @@ fn collect_property_docs(
     properties: &mut IndexMap<String, (String, String)>,
     property_ref_names: &PropertyRefNames,
 ) {
-    if schema.get("type").and_then(Value::as_str) == Some("array") {
+    // Like `iterateSchema`, every member of a type array is traversed.
+    if crate::zod::has_schema_type(schema, "array") {
         if let Some(items) = schema
             .get("items")
             .filter(|items| items.get("$ref").is_none())
@@ -2545,17 +2554,34 @@ pub fn with_resolved_parameter_types(endpoints: &[Value], document: &Value) -> O
     Some(endpoints)
 }
 
+/// `getInlineParameterTsType`: the TS type of an inline (unnamed) parameter schema by its OpenAPI
+/// `type`; a type array (`["string", "null"]`) is the union of its members' types.
 fn primitive_parameter_type(parameter: &Value) -> String {
+    fn single_type(schema_type: Option<&str>) -> &'static str {
+        match schema_type {
+            Some("number" | "integer") => "number",
+            Some("boolean") => "boolean",
+            Some("array") => "unknown[]",
+            Some("object") => "Record<string, unknown>",
+            Some("null") => "null",
+            _ => "string",
+        }
+    }
     match parameter
         .get(RESOLVED_SCHEMA_TYPE)
         .or_else(|| parameter.pointer("/parameterObject/schema/type"))
-        .and_then(Value::as_str)
     {
-        Some("number" | "integer") => "number".into(),
-        Some("boolean") => "boolean".into(),
-        Some("array") => "unknown[]".into(),
-        Some("object") => "Record<string, unknown>".into(),
-        _ => "string".into(),
+        Some(Value::Array(types)) if !types.is_empty() => {
+            let mut result: Vec<&str> = Vec::new();
+            for schema_type in types {
+                let ts_type = single_type(schema_type.as_str());
+                if !result.contains(&ts_type) {
+                    result.push(ts_type);
+                }
+            }
+            result.join(" | ")
+        }
+        schema_type => single_type(schema_type.and_then(Value::as_str)).into(),
     }
 }
 

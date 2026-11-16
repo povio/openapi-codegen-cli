@@ -267,6 +267,13 @@ function renderSchemaType(
     return options.allReadonly ? `ReadonlyArray<${itemType}>` : `Array<${itemType}>`;
   }
 
+  // Like getZodSchema, an explicit scalar type wins over object keywords: when a type array such as
+  // `["object", "string", "null"]` is expanded, the `string` member keeps `properties`.
+  const scalarType = renderScalarSchemaType(schema);
+  if (scalarType) {
+    return scalarType;
+  }
+
   if (schema.type === "object" || schema.properties || schema.additionalProperties) {
     const isPartial = !options.withImplicitRequiredProps && Boolean(schema.properties) && !schema.required?.length;
     const properties = Object.entries(schema.properties ?? {}).map(([name, property]) => {
@@ -303,7 +310,11 @@ function renderSchemaType(
     return readonly(indexType ?? `{ ${properties.join("; ")} }`);
   }
 
-  switch (schema.type) {
+  return "unknown";
+}
+
+function renderScalarSchemaType(schema: OpenAPIV3.SchemaObject): string | undefined {
+  switch (schema.type as string | undefined) {
     case "string":
       return schema.format === "binary" ? "Blob" : "string";
     case "number":
@@ -311,8 +322,10 @@ function renderSchemaType(
       return "number";
     case "boolean":
       return "boolean";
+    case "null":
+      return "null";
     default:
-      return (schema.type as string | undefined) === "null" ? "null" : "unknown";
+      return undefined;
   }
 }
 

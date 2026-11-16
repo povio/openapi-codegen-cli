@@ -1,7 +1,7 @@
 import { OpenAPIV3 } from "openapi-types";
 
 import { COMPOSITE_KEYWORDS } from "@/generators/const/openapi.const";
-import { getTupleSchemaParts, isReferenceObject } from "@/generators/utils/openapi-schema.utils";
+import { getTupleSchemaParts, hasSchemaType, isReferenceObject } from "@/generators/utils/openapi-schema.utils";
 
 export type OnSchemaCallbackData<TData> = { data?: TData } & (
   | { type: "reference"; schema: OpenAPIV3.ReferenceObject }
@@ -68,7 +68,8 @@ export function iterateSchema<TData>(
     iterateSchema(schemaObj.additionalProperties as OpenAPIV3.SchemaObject, options);
   }
 
-  if (schemaObj.type === "array") {
+  // Every member of a type array (`type: ["array", "string", "null"]`) is traversed.
+  if (hasSchemaType(schemaObj, "array")) {
     const tuple = getTupleSchemaParts(schemaObj);
     const arrayObjs = tuple
       ? [...tuple.items, ...(typeof tuple.rest === "object" ? [tuple.rest] : [])]

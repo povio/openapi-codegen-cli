@@ -14,6 +14,15 @@ export function isArraySchemaObject(schema: OpenAPIV3.SchemaObject): schema is O
   return schema.type === "array";
 }
 
+/**
+ * Whether `type` permits `type`, also for OpenAPI 3.1 type arrays (`type: ["array", "null"]`).
+ * Mirrored by `has_schema_type` in native/src/zod.rs.
+ */
+export function hasSchemaType(schema: OpenAPIV3.SchemaObject, type: string): boolean {
+  const schemaType = schema.type as unknown;
+  return Array.isArray(schemaType) ? schemaType.includes(type) : schemaType === type;
+}
+
 type SchemaOrRef = OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject;
 
 /** Array keywords from JSON Schema that OpenAPI 3.0 types do not describe. */

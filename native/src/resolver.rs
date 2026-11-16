@@ -339,7 +339,8 @@ fn collect_ordered_refs(value: &Value, refs: &mut Vec<String>, seen: &mut HashSe
     {
         collect_ordered_refs(additional, refs, seen);
     }
-    if object.get("type").and_then(Value::as_str) == Some("array") {
+    // Every member of a type array (`type: ["array", "string", "null"]`) is traversed.
+    if crate::zod::object_has_schema_type(object, "array") {
         for items in crate::zod::array_item_schemas(object) {
             collect_ordered_refs(items, refs, seen);
         }

@@ -715,7 +715,7 @@ impl<'a> EndpointExtractor<'a> {
         let actual = self.resolve(schema).unwrap_or(schema);
         let root_optional_object = matches!(location, "query" | "header")
             && !required
-            && (actual.get("type").and_then(Value::as_str) == Some("object")
+            && (crate::zod::has_schema_type(actual, "object")
                 || actual
                     .get("properties")
                     .and_then(Value::as_object)
@@ -961,7 +961,7 @@ fn collect_compiled_reference_order(
             {
                 collect_compiled_reference_order(child, refs, seen);
             }
-            if object.get("type").and_then(Value::as_str) == Some("array") {
+            if crate::zod::object_has_schema_type(object, "array") {
                 for child in crate::zod::array_item_schemas(object) {
                     collect_compiled_reference_order(child, refs, seen);
                 }
@@ -1066,10 +1066,11 @@ fn schema_complexity(current: u32, schema: Option<&Value>) -> u32 {
                 .map(|item| schema_complexity(0, Some(item)))
                 .sum::<u32>();
     }
-    if !truthy("type") {
+    let schema_type = schema.get("type").and_then(Value::as_str);
+    // Object keywords do not apply to `null` (see zod.rs).
+    if !truthy("type") || schema_type == Some("null") {
         return current;
     }
-    let schema_type = schema.get("type").and_then(Value::as_str);
     if let Some("string" | "number" | "integer" | "boolean") = schema_type {
         if truthy("enum") {
             return current
