@@ -202,22 +202,24 @@ function renderAbilityFunction({
         ? `\`${getQueryName(endpoint)}\` query or \`${getQueryName(endpoint, true)}\` mutation`
         : `\`${getQueryName(endpoint)}\` query`
       : `\`${getQueryName(endpoint)}\` mutation`;
-  lines.push("/**");
-  lines.push(
-    ` * Use for ${abilityQuery} ability. ${hasConditions ? "For global ability, omit the object parameter." : ""}${getAbilityDescription(endpoint) ? "" : ""}`,
-  );
-  if (getAbilityDescription(endpoint)) {
-    lines.push(` * @description ${getAbilityDescription(endpoint)}`);
-  }
-  if (hasConditions) {
-    for (const propertyType of abilityConditionsTypes) {
-      lines.push(
-        ` * @param { ${renderConditionType(resolver, endpoint, propertyType)} } object.${propertyType.name} ${propertyType.name} from ${propertyType.info}`,
-      );
+  if (resolver.options.generateJsDoc === true) {
+    lines.push("/**");
+    lines.push(
+      ` * Use for ${abilityQuery} ability. ${hasConditions ? "For global ability, omit the object parameter." : ""}${getAbilityDescription(endpoint) ? "" : ""}`,
+    );
+    if (getAbilityDescription(endpoint)) {
+      lines.push(` * @description ${getAbilityDescription(endpoint)}`);
     }
+    if (hasConditions) {
+      for (const propertyType of abilityConditionsTypes) {
+        lines.push(
+          ` * @param { ${renderConditionType(resolver, endpoint, propertyType)} } object.${propertyType.name} ${propertyType.name} from ${propertyType.info}`,
+        );
+      }
+    }
+    lines.push(` * @returns { AbilityTuple } An ability tuple indicating the user's ability to use ${abilityQuery}`);
+    lines.push(" */");
   }
-  lines.push(` * @returns { AbilityTuple } An ability tuple indicating the user's ability to use ${abilityQuery}`);
-  lines.push(" */");
   lines.push(`export const ${getAbilityFunctionName(endpoint)} = (`);
   if (hasConditions) {
     lines.push(

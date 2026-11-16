@@ -8,6 +8,47 @@ import { resolveConfig } from "@/generators/core/resolveConfig";
 import { generateFilesFromNativeOpenAPI } from "./generateFilesFromNativeOpenAPI";
 
 describe("renderer naming parity", () => {
+  test("supports draft-07 tuple arrays in response schemas", () => {
+    const document = {
+      openapi: "3.0.3",
+      info: { title: "Tuple response", version: "1" },
+      paths: {
+        "/rules": {
+          get: {
+            operationId: "getRules",
+            responses: {
+              "200": {
+                description: "OK",
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      required: ["aclRules"],
+                      properties: {
+                        aclRules: {
+                          type: "array",
+                          items: {
+                            type: "array",
+                            minItems: 2,
+                            maxItems: 2,
+                            items: [{ type: "string" }, { type: "string" }],
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    } as unknown as OpenAPIV3.Document;
+    const options = resolveConfig({ params: {}, fileConfig: { modelsInCommon: true, acl: false, checkAcl: false } });
+    const expected = generateCodeFromOpenAPIDoc(document, options);
+    expect(expected.some(({ content }) => content.includes("z.tuple([z.string(), z.string()])"))).toBe(true);
+    expect(generateFilesFromNativeOpenAPI(JSON.stringify(document), false, options)).toEqual(expected);
+  });
   test("keeps controller names when multiple operations reduce to a reserved word", () => {
     const document: OpenAPIV3.Document = {
       openapi: "3.0.3",

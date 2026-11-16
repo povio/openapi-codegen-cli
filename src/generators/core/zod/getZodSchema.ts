@@ -78,6 +78,25 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag }: Get
   const readonly = resolver.options.allReadonly ? ".readonly()" : "";
 
   if (isArraySchemaObject(schema)) {
+    if (Array.isArray(schema.items)) {
+      const tuple = schema as OpenAPIV3.ArraySchemaObject & { additionalItems?: boolean | OpenAPIV3.SchemaObject };
+      const items = schema.items.map((item, index) => {
+        const code = getZodSchema({ ...params, schema: item }).getCodeString(tag, resolver.options);
+        const chain = getZodChain({ schema: item, meta: { ...meta, isRequired: true }, options: resolver.options });
+        return code + chain + (index >= (schema.minItems ?? 0) ? ".optional()" : "");
+      });
+      const restSchema =
+        typeof tuple.additionalItems === "object"
+          ? getZodSchema({ ...params, schema: tuple.additionalItems }).getCodeString(tag, resolver.options) +
+            getZodChain({
+              schema: tuple.additionalItems,
+              meta: { ...meta, isRequired: true },
+              options: resolver.options,
+            })
+          : ANY_SCHEMA;
+      const rest = tuple.additionalItems === false ? "" : `.rest(${restSchema})`;
+      return zodSchema.assign(`z.tuple([${items.join(", ")}])${rest}${readonly}`);
+    }
     if (schema.items) {
       return zodSchema.assign(
         `z.array(${getZodSchema({ ...params, schema: schema.items }).getCodeString(tag, resolver.options)}${getZodChain(

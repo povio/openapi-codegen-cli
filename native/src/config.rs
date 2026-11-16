@@ -36,6 +36,8 @@ pub struct GenerateOptions {
     pub compile_schemas: bool,
     #[serde(default)]
     pub lazy_schemas: bool,
+    #[serde(default)]
+    pub generate_js_doc: bool,
     #[serde(default = "default_true")]
     pub split_by_tags: bool,
     #[serde(default = "default_tag")]

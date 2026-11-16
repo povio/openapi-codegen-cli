@@ -335,6 +335,42 @@ impl<'a> ZodCompiler<'a> {
             .and_then(Value::as_str)
             .map(str::to_ascii_lowercase);
         if schema_type.as_deref() == Some("array") {
+            if let Some(items) = object.get("items").and_then(Value::as_array) {
+                let required = object
+                    .get("minItems")
+                    .and_then(Value::as_u64)
+                    .unwrap_or(0) as usize;
+                let item_meta = Meta {
+                    required: true,
+                    parent_partial: false,
+                };
+                let members = items
+                    .iter()
+                    .enumerate()
+                    .map(|(index, item)| {
+                        let code = self.compile(item, item_meta, tag, root_ref, stack)?;
+                        Ok(format!(
+                            "{code}{}{}",
+                            chain(item, item_meta, self.options),
+                            if index >= required { ".optional()" } else { "" }
+                        ))
+                    })
+                    .collect::<Result<Vec<_>, String>>()?;
+                let rest = match object.get("additionalItems") {
+                    Some(Value::Bool(false)) => String::new(),
+                    Some(value @ Value::Object(_)) => format!(
+                        ".rest({}{})",
+                        self.compile(value, item_meta, tag, root_ref, stack)?,
+                        chain(value, item_meta, self.options)
+                    ),
+                    _ => ".rest(z.any())".into(),
+                };
+                return Ok(format!(
+                    "z.tuple([{}]){rest}{}",
+                    members.join(", "),
+                    if self.options.all_readonly { ".readonly()" } else { "" }
+                ));
+            }
             let item = if let Some(items) = object.get("items") {
                 let code = self.compile(
                     items,
@@ -684,10 +720,12 @@ fn chain(schema: &Value, meta: Meta, options: &GenerateOptions) -> String {
                 chains.push(format!("max({value})"));
             }
             if let Some(pattern) = schema.get("pattern").and_then(Value::as_str) {
-                chains.push(format!(
-                    "regex(/{}/)",
-                    escape_pattern(pattern.trim_matches('/'))
-                ));
+                let pattern = if pattern.starts_with('/') && pattern.ends_with('/') {
+                    &pattern[1..pattern.len().saturating_sub(1).max(1)]
+                } else {
+                    pattern
+                };
+                chains.push(format!("regex(/{}/)", escape_pattern(pattern)));
             }
         }
         Some("number" | "integer") if schema.get("enum").is_none() => {
@@ -734,14 +772,22 @@ fn chain(schema: &Value, meta: Meta, options: &GenerateOptions) -> String {
                 .and_then(Value::as_u64)
                 .filter(|value| *value > 0)
             {
-                chains.push(format!("min({value})"));
+                chains.push(if schema.get("items").is_some_and(Value::is_array) {
+                    format!("refine((value) => value.length >= {value})")
+                } else {
+                    format!("min({value})")
+                });
             }
             if let Some(value) = schema
                 .get("maxItems")
                 .and_then(Value::as_u64)
                 .filter(|value| *value > 0)
             {
-                chains.push(format!("max({value})"));
+                chains.push(if schema.get("items").is_some_and(Value::is_array) {
+                    format!("refine((value) => value.length <= {value})")
+                } else {
+                    format!("max({value})")
+                });
             }
         }
         _ => {}
@@ -902,11 +948,20 @@ fn quote_property(value: &str) -> String {
     }
 }
 fn escape_pattern(value: &str) -> String {
-    value
-        .replace('\t', "\\t")
-        .replace('\n', "\\n")
-        .replace('\r', "\\r")
-        .replace('/', "\\/")
+    let mut result = String::with_capacity(value.len());
+    let mut escaped = false;
+    for character in value.chars() {
+        match character {
+            '\t' => result.push_str("\\t"),
+            '\n' => result.push_str("\\n"),
+            '\r' => result.push_str("\\r"),
+            '/' if !escaped => result.push_str("\\/"),
+            _ => result.push(character),
+        }
+        // Only an odd number of consecutive backslashes escapes the next slash.
+        escaped = character == '\\' && !escaped;
+    }
+    result
 }
 
 #[derive(Default)]

@@ -162,13 +162,14 @@ function getZodChainableNumberValidations(schema: OpenAPIV3.SchemaObject) {
 
 function getZodChainableArrayValidations(schema: OpenAPIV3.SchemaObject) {
   const validations: string[] = [];
+  const tuple = Array.isArray((schema as OpenAPIV3.ArraySchemaObject).items);
 
   if (schema.minItems) {
-    validations.push(`min(${schema.minItems})`);
+    validations.push(tuple ? `refine((value) => value.length >= ${schema.minItems})` : `min(${schema.minItems})`);
   }
 
   if (schema.maxItems) {
-    validations.push(`max(${schema.maxItems})`);
+    validations.push(tuple ? `refine((value) => value.length <= ${schema.maxItems})` : `max(${schema.maxItems})`);
   }
 
   return validations.join(".");

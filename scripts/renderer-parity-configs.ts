@@ -91,6 +91,7 @@ export const optionCases = {
   })),
   abilityContextImportPath: [{ acl: true, abilityContextImportPath: "@test/ability-context" }],
   aclCheckImportPath: [{ acl: true, aclCheckImportPath: "@test/acl" }],
+  generateJsDoc: bool("generateJsDoc"),
 } satisfies Record<OptionKey, readonly Partial<GenerateOptions>[]>;
 
 export const lifecycleOptions = [
