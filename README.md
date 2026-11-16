@@ -662,3 +662,5 @@ Use package subpaths for runtime imports. Pure `import type` imports may use the
 
 For example: `import { AuthContext, AuthGuard } from "@povio/openapi-codegen-cli/auth"`.
 Custom application helpers should import error helpers from `/errors`, `AbilityContext` from `/acl`, and mutation effects from `/query`.
+
+`AbilityContext.Provider` accepts an optional `resolveAction` (CASL's `resolveAction` option) to expand action aliases when the ability is built, for example `resolveAction={createAliasResolver({ modify: ["read", "update"] })}`. Pass a stable function, since a new one rebuilds the ability.

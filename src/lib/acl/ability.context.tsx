@@ -1,6 +1,6 @@
 import { type PropsWithChildren, createContext, useMemo } from "react";
 
-import { AbilityBuilder, type Ability, type RawRuleOf, createMongoAbility } from "@casl/ability";
+import { AbilityBuilder, type Ability, type AbilityOptionsOf, type RawRuleOf, createMongoAbility } from "@casl/ability";
 import { type PackRule, unpackRules } from "@casl/ability/extra";
 import { AbilityProvider, useAbility as useCaslAbility } from "@casl/react";
 
@@ -18,13 +18,19 @@ export namespace AbilityContext {
 
   interface ProviderProps {
     user?: { aclRules?: PackRule<RawRuleOf<AppAbility>>[] } | null;
+    /**
+     * Maps an action to the actions it implies (CASL `resolveAction`), e.g. aliases such as
+     * `manage` -> `create`, `read`, `update`, `delete`. Pass a stable reference: a new function
+     * rebuilds the ability.
+     */
+    resolveAction?: AbilityOptionsOf<AppAbility>["resolveAction"];
   }
 
-  export const Provider = ({ children }: PropsWithChildren<ProviderProps>) => {
+  export const Provider = ({ children, resolveAction }: PropsWithChildren<ProviderProps>) => {
     const { user } = AuthContext.useAuth<{ aclRules: PackRule<RawRuleOf<AppAbility>>[] }>();
     const ability = useMemo(() => {
       if (!user || !("aclRules" in user)) {
-        return initialAppAbility;
+        return resolveAction ? createAppAbilityBuilder().build({ resolveAction }) : initialAppAbility;
       }
 
       const { can, build } = createAppAbilityBuilder();
@@ -33,8 +39,8 @@ export namespace AbilityContext {
       rules.forEach(({ action, subject, conditions }) => {
         can(action, subject, conditions);
       });
-      return build();
-    }, [user]);
+      return build(resolveAction ? { resolveAction } : undefined);
+    }, [user, resolveAction]);
 
     return (
       <Context.Provider value={ability}>
