@@ -186,7 +186,7 @@
   },
   "engines": {
     "bun": ">= 1.4.4",
-    "node": ">= 18"
+    "node": ">= 22"
   },
   "packageManager": "bun@1.4.4"
 }

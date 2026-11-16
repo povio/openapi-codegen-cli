@@ -14,6 +14,18 @@ Use this tool to generate code (Zod schemas, TypeScript types, API definitions, 
 
 The tool partially leverages code from [openapi-zod-client](https://github.com/astahmer/openapi-zod-client) repository.
 
+## Migrating to v4
+
+v4 contains breaking changes. Regenerate your clients after upgrading and check the following:
+
+- **Runtime requirements.** Node.js 22 or newer (or Bun 1.4.4 or newer) is required. Node 18 and 20 are no longer supported.
+- **Native renderer by default.** The CLI, Vite plugin and Metro plugin use the bundled Rust renderer when a native binary for the platform is available, and fall back to the TypeScript renderer otherwise. Output is byte-identical between the two. Set `OPENAPI_CODEGEN_NATIVE=0` to force the TypeScript renderer.
+- **Builder configs removed.** The `builderConfigs` option (`--builderConfigs`) and the related `filterParamName`, `dataResponseParamNames`, `dynamicInputsImportPath` and `dynamicColumnsImportPath` options were removed, along with the generated `*.configs.ts` files. Remove these options from your configuration; a typed configuration that still sets them no longer compiles. There is no replacement in the generator, so keep any builder configuration you still need in application code.
+- **No `any` in generated schemas.** Free-form values (`additionalProperties: true`, arrays without `items`, untyped schemas) are generated as `z.unknown()` instead of `z.any()`, so their inferred type is `unknown`. Narrow these values before use.
+- **Typed invalidation maps.** See [Typed invalidation maps](#typed-invalidation-maps). `InvalidationMap` now takes the query module enum and its mutations instead of the previous three type parameters.
+- **CASL 7.** ACL output targets CASL 7 (see the note above).
+- **New options.** `includeSchemas`, `lazySchemas` and `generateJsDoc` (JSDoc generation is off by default) were added.
+
 ## Setup
 
 ```bash
