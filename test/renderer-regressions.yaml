@@ -257,6 +257,80 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/UploadDto" }
+  # A `$ref` to a simple component (complexity below 2) is inlined as that component's code, so a
+  # binary response is a blob download; a `$ref` to an enum stays a reference.
+  /exports/{exportId}/file:
+    get:
+      operationId: ExportsController_download
+      tags: [Exports]
+      parameters:
+        - { name: exportId, in: path, required: true, schema: { $ref: "#/components/schemas/ExportId" } }
+      responses:
+        "200":
+          description: File
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ExportFile" }
+        "404":
+          description: Missing
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ExportMessage" }
+  /exports/{exportId}/name:
+    put:
+      operationId: ExportsController_rename
+      tags: [Exports]
+      parameters:
+        - { name: exportId, in: path, required: true, schema: { $ref: "#/components/schemas/ExportId" } }
+        - { name: label, in: query, schema: { $ref: "#/components/schemas/ExportMessage" } }
+        - { name: copies, in: query, required: true, schema: { $ref: "#/components/schemas/ExportCount" } }
+        - { name: status, in: query, schema: { $ref: "#/components/schemas/ExportStatus" } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ExportMessage" }
+      responses:
+        "200":
+          description: Renamed
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ExportMessage" }
+  /exports/count:
+    post:
+      operationId: ExportsController_count
+      tags: [Exports]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ExportCount" }
+      responses:
+        "200":
+          description: Count
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ExportCount" }
+  /exports/status:
+    get:
+      operationId: ExportsController_status
+      tags: [Exports]
+      parameters:
+        - { name: status, in: query, required: true, schema: { $ref: "#/components/schemas/ExportStatus" } }
+      responses:
+        "200":
+          description: Status
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ExportStatus" }
+    post:
+      operationId: ExportsController_setStatus
+      tags: [Exports]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ExportStatus" }
+      responses:
+        "204": { description: Updated }
 components:
   schemas:
     ProviderNameEnum:
@@ -391,6 +465,11 @@ components:
       type: object
       properties:
         fileName: { type: string }
+    ExportFile: { type: string, format: binary }
+    ExportId: { type: string, format: uuid }
+    ExportMessage: { type: string, minLength: 2, description: A message }
+    ExportCount: { type: integer, minimum: 0 }
+    ExportStatus: { type: string, enum: [queued, done] }
     # No operation uses these; `includeSchemas: [ReportPayloadDto]` generates both.
     ReportPayloadDto:
       type: object
