@@ -205,6 +205,18 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/IncomingMessageDto" }
+  # A recursive union is typed `z.ZodType` and wrapped in `z.lazy` as a whole, so it can be built
+  # before its own binding is initialized. Enum values that look like model references stay intact.
+  /rules/tree:
+    get:
+      operationId: RulesController_tree
+      tags: [Rules]
+      responses:
+        "200":
+          description: Rule tree
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RuleDto" }
   # Recursive properties use `z.lazy`; `additionalProperties: false` adds no index signature.
   /folders/tree:
     get:
@@ -334,6 +346,17 @@ components:
       type: object
       properties:
         status: { $ref: "#/components/schemas/MessageStatusBEnum" }
+    RuleNode:
+      oneOf:
+        - { type: string }
+        - { type: array, items: { $ref: "#/components/schemas/RuleNode" } }
+    RuleDto:
+      type: object
+      required: [node, kind]
+      properties:
+        node: { $ref: "#/components/schemas/RuleNode" }
+        kind: { type: string, enum: ["RulesModels.RuleNodeSchema", "CommonModels.StatusEnumSchema", plain] }
+        pattern: { type: string, pattern: "^CommonModels\\.x$" }
     FolderTreeDto:
       type: object
       required: [id, folders]

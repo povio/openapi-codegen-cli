@@ -239,24 +239,35 @@ fn render_local_models(
                 }
             }
             imports.clear();
-            let namespace_prefixes = schema_owners
-                .values()
-                .filter_map(Value::as_str)
-                .map(|owner| {
-                    let suffix = options
-                        .configs
-                        .get("models")
-                        .map(|config| config.namespace_suffix.as_str())
-                        .unwrap_or("Models");
-                    format!("{}{suffix}.", capitalize(owner))
-                })
-                .collect::<HashSet<_>>();
+            let namespace_suffix = options
+                .configs
+                .get("models")
+                .map(|config| config.namespace_suffix.as_str())
+                .unwrap_or("Models");
             for value in tag_schemas.values_mut() {
                 let Value::String(code) = value else {
                     continue;
                 };
-                for prefix in &namespace_prefixes {
-                    *code = code.replace(prefix, "");
+                *code = strip_model_namespace_references(code, namespace_suffix);
+            }
+        } else {
+            // Generated schemas can reference schemas the dependency graph does not record (e.g. an
+            // inline enum extracted to a shared enum owned by another tag), so the emitted code is
+            // the final source of truth for which models need to be imported.
+            for code in tag_schemas.values().filter_map(Value::as_str) {
+                for name in code_schema_references(code, |name| schemas.contains_key(name)) {
+                    if tag_schemas.contains_key(&name) {
+                        continue;
+                    }
+                    let Some(owner) = schema_owners.get(&name).and_then(Value::as_str) else {
+                        continue;
+                    };
+                    if owner != tag {
+                        let names = imports.entry(owner.to_string()).or_default();
+                        if !names.contains(&name) {
+                            names.push(name);
+                        }
+                    }
                 }
             }
         }
@@ -597,8 +608,9 @@ fn render_common_schema_lines(
                 render_schema_type(schema, suffix, options)
             ));
         }
+        let (type_annotation, schema_code) = circular_schema_declaration(code, &type_name);
         lines.push(format!(
-            "export const {name}: z.ZodObject<z.ZodRawShape> & z.ZodType<{type_name}> = {code};"
+            "export const {name}: {type_annotation} = {schema_code};"
         ));
     } else {
         let schema_code = if options.compile_schemas {
@@ -779,15 +791,14 @@ fn render_lazy_schema_parts(
     );
     let type_name = remove_suffix(name, suffix);
     let is_circular = circular_schemas.iter().any(|schema| schema == name);
-    let type_annotation = if is_circular {
-        format!(": () => z.ZodObject<z.ZodRawShape> & z.ZodType<{namespace}.{type_name}>")
+    let (type_annotation, schema_code) = if is_circular {
+        let (annotation, code) =
+            circular_schema_declaration(code, &format!("{namespace}.{type_name}"));
+        (format!(": () => {annotation}"), code)
+    } else if options.compile_schemas {
+        (String::new(), format!("z.compile({code})"))
     } else {
-        String::new()
-    };
-    let schema_code = if options.compile_schemas && !is_circular {
-        format!("z.compile({code})")
-    } else {
-        code.to_string()
+        (String::new(), code.to_string())
     };
     let mut factories = vec![format!(
         "const {name}{type_annotation} = once(() => {});",
@@ -864,9 +875,25 @@ fn find_regex_end(chars: &[char], start: usize) -> usize {
     chars.len()
 }
 
-/// Rewrites bare references to sibling schemas (`PetSchema`) into factory calls (`PetSchema()`).
-/// Member accesses (`CommonModels.PetSchema`, `.enum`), object keys and literal values are left alone.
-fn call_lazy_schema_references(code: &str, schema_names: &HashSet<&str>) -> String {
+struct CodeIdentifier<'a> {
+    identifier: &'a str,
+    /// The identifier follows a `.` (`CommonModels.PetSchema`, `.enum`).
+    is_member_access: bool,
+    /// The identifier is an object key (`{ PetSchema: ... }`).
+    is_object_key: bool,
+    /// The first character after the identifier.
+    next_char: Option<char>,
+}
+
+/// Walks generated schema code and rewrites its identifiers through `replace`, which returns the
+/// replacement text and whether to consume the character following the identifier. String,
+/// template and regex literals are copied unchanged, so literal data (enum values, defaults,
+/// patterns) is never mistaken for a symbol reference. Mirrors `rewriteCodeIdentifiers` in
+/// src/generators/utils/generate/generate.lazy.utils.ts.
+fn rewrite_code_identifiers(
+    code: &str,
+    mut replace: impl FnMut(&CodeIdentifier) -> (String, bool),
+) -> String {
     let chars: Vec<char> = code.chars().collect();
     let mut output = String::with_capacity(code.len());
     let mut index = 0;
@@ -890,22 +917,174 @@ fn call_lazy_schema_references(code: &str, schema_names: &HashSet<&str>) -> Stri
                 end += 1;
             }
             let identifier: String = chars[index..end].iter().collect();
-            let is_member_access = output.ends_with('.');
-            let is_object_key = chars[end..]
-                .iter()
-                .find(|next| !next.is_whitespace())
-                .is_some_and(|next| *next == ':');
-            output.push_str(&identifier);
-            if schema_names.contains(identifier.as_str()) && !is_member_access && !is_object_key {
-                output.push_str("()");
-            }
-            index = end;
+            let (text, consume_next_char) = replace(&CodeIdentifier {
+                identifier: &identifier,
+                is_member_access: output.ends_with('.'),
+                is_object_key: chars[end..]
+                    .iter()
+                    .find(|next| !next.is_whitespace())
+                    .is_some_and(|next| *next == ':'),
+                next_char: chars.get(end).copied(),
+            });
+            output.push_str(&text);
+            index = if consume_next_char { end + 1 } else { end };
             continue;
         }
         output.push(ch);
         index += 1;
     }
     output
+}
+
+/// Rewrites bare references to sibling schemas (`PetSchema`) into factory calls (`PetSchema()`).
+/// Member accesses (`CommonModels.PetSchema`, `.enum`), object keys and literal values are left alone.
+fn call_lazy_schema_references(code: &str, schema_names: &HashSet<&str>) -> String {
+    rewrite_code_identifiers(code, |token| {
+        let call = schema_names.contains(token.identifier)
+            && !token.is_member_access
+            && !token.is_object_key;
+        (
+            if call {
+                format!("{}()", token.identifier)
+            } else {
+                token.identifier.to_string()
+            },
+            false,
+        )
+    })
+}
+
+fn is_model_namespace(identifier: &str, namespace_suffix: &str) -> bool {
+    identifier.len() > namespace_suffix.len()
+        && identifier.ends_with(namespace_suffix)
+        && identifier.starts_with(|ch: char| ch.is_ascii_uppercase())
+}
+
+/// Removes model namespace qualifiers (`CommonModels.PetSchema` -> `PetSchema`) from symbol
+/// references, leaving literal values untouched. Used when every referenced model is emitted into
+/// the module itself (`modelsInModules`).
+fn strip_model_namespace_references(code: &str, namespace_suffix: &str) -> String {
+    rewrite_code_identifiers(code, |token| {
+        if !token.is_member_access
+            && !token.is_object_key
+            && token.next_char == Some('.')
+            && is_model_namespace(token.identifier, namespace_suffix)
+        {
+            (String::new(), true)
+        } else {
+            (token.identifier.to_string(), false)
+        }
+    })
+}
+
+/// Schema names a piece of generated code refers to, bare (`PetSchema`) or namespace qualified
+/// (`CommonModels.PetSchema`), in order of first appearance. Literals and object keys are ignored.
+fn code_schema_references(code: &str, is_schema_name: impl Fn(&str) -> bool) -> Vec<String> {
+    let mut references: Vec<String> = Vec::new();
+    rewrite_code_identifiers(code, |token| {
+        if !token.is_object_key
+            && is_schema_name(token.identifier)
+            && !references
+                .iter()
+                .any(|existing| existing == token.identifier)
+        {
+            references.push(token.identifier.to_string());
+        }
+        (token.identifier.to_string(), false)
+    });
+    references
+}
+
+const OBJECT_PRESERVING_METHODS: [&str; 7] = [
+    "partial",
+    "required",
+    "catchall",
+    "strict",
+    "strip",
+    "passthrough",
+    "extend",
+];
+
+/// Index just past the `)` that closes the call opened at `open_index`.
+fn find_call_end(chars: &[char], open_index: usize) -> Option<usize> {
+    let mut depth = 0usize;
+    let mut index = open_index;
+    while index < chars.len() {
+        let ch = chars[index];
+        if ch == '"' || ch == '\'' || ch == '`' {
+            index = find_literal_end(chars, index, ch);
+            continue;
+        }
+        if ch == '/'
+            && chars[..index]
+                .iter()
+                .collect::<String>()
+                .trim_end()
+                .ends_with(".regex(")
+        {
+            index = find_regex_end(chars, index);
+            continue;
+        }
+        match ch {
+            '(' | '[' | '{' => depth += 1,
+            ')' | ']' | '}' => {
+                depth = depth.saturating_sub(1);
+                if depth == 0 {
+                    return Some(index + 1);
+                }
+            }
+            _ => {}
+        }
+        index += 1;
+    }
+    None
+}
+
+/// Whether generated schema code evaluates to a `z.ZodObject`: a `z.object(...)` call followed
+/// only by methods that return an object schema again (`.partial()`, `.catchall(...)`, ...).
+fn is_zod_object_code(code: &str) -> bool {
+    const PREFIX: &str = "z.object(";
+    if !code.starts_with(PREFIX) {
+        return false;
+    }
+    let chars: Vec<char> = code.chars().collect();
+    let mut index = find_call_end(&chars, PREFIX.len() - 1);
+    while let Some(position) = index.filter(|position| *position < chars.len()) {
+        if chars[position] != '.' {
+            return false;
+        }
+        let name_end = chars[position + 1..]
+            .iter()
+            .position(|ch| !ch.is_ascii_alphabetic())
+            .map_or(chars.len(), |offset| position + 1 + offset);
+        let method: String = chars[position + 1..name_end].iter().collect();
+        if method.is_empty()
+            || chars.get(name_end) != Some(&'(')
+            || !OBJECT_PRESERVING_METHODS.contains(&method.as_str())
+        {
+            return false;
+        }
+        index = find_call_end(&chars, name_end);
+    }
+    index == Some(chars.len())
+}
+
+/// Circular schemas need an explicit type annotation and must not read their own binding while it
+/// is being initialized. Object schemas already defer recursive properties with `z.lazy`, so they
+/// keep their `ZodObject` type; any other schema (unions, arrays, intersections, ...) is wrapped in
+/// `z.lazy` as a whole and typed as a plain `ZodType`. Returns `(type annotation, code)`.
+fn circular_schema_declaration(code: &str, type_name: &str) -> (String, String) {
+    if is_zod_object_code(code) {
+        (
+            format!("z.ZodObject<z.ZodRawShape> & z.ZodType<{type_name}>"),
+            code.to_string(),
+        )
+    } else {
+        (
+            format!("z.ZodType<{type_name}>"),
+            format!("z.lazy(() => {code})"),
+        )
+    }
 }
 
 fn render_schema_type(schema: &Value, suffix: &str, options: &GenerateOptions) -> String {
@@ -4753,5 +4932,50 @@ const escapedRegex = z.string().regex(/\/[/]EmailAdminModels.BaseLogLevelEnumSch
         assert!(actual.contains(r"const escapedRegex = z.string().regex(/\/[/]EmailAdminModels.BaseLogLevelEnumSchema/);"));
         assert!(!actual.contains("import { EmailAdminModels }"));
         assert!(actual.contains("import { CommonModels }"));
+    }
+}
+
+#[cfg(test)]
+mod model_code_tests {
+    use super::*;
+
+    #[test]
+    fn strips_namespace_references_but_not_literals() {
+        let code = r#"z.object({ a: CommonModels.PetSchema, b: z.enum(["ExamplesModels.ExampleSchema", 'CommonModels.x']), c: z.string().regex(/^CommonModels\.x$/).default(`CommonModels.y`), CommonModels: z.string(), d: z.lazy(() => PetsModels.PetSchema.nullable()) })"#;
+        assert_eq!(
+            strip_model_namespace_references(code, "Models"),
+            r#"z.object({ a: PetSchema, b: z.enum(["ExamplesModels.ExampleSchema", 'CommonModels.x']), c: z.string().regex(/^CommonModels\.x$/).default(`CommonModels.y`), CommonModels: z.string(), d: z.lazy(() => PetSchema.nullable()) })"#
+        );
+    }
+
+    #[test]
+    fn collects_qualified_and_bare_schema_references() {
+        let code = r#"z.object({ PetSchema: CommonModels.StatusEnumSchema, b: TagSchema, c: z.enum(["OwnerSchema"]), d: CommonModels.StatusEnumSchema })"#;
+        let names = ["PetSchema", "StatusEnumSchema", "TagSchema", "OwnerSchema"];
+        assert_eq!(
+            code_schema_references(code, |name| names.contains(&name)),
+            vec!["StatusEnumSchema".to_string(), "TagSchema".to_string()]
+        );
+    }
+
+    #[test]
+    fn detects_object_schema_code() {
+        assert!(is_zod_object_code("z.object({ a: z.string() })"));
+        assert!(is_zod_object_code(
+            r#"z.object({ a: z.string().regex(/\)/) }).partial().catchall(z.string())"#
+        ));
+        assert!(!is_zod_object_code(
+            "z.object({ a: z.string() }).readonly()"
+        ));
+        assert!(!is_zod_object_code("z.object({}).nullable()"));
+        assert!(!is_zod_object_code("z.union([z.object({}), z.string()])"));
+        assert!(!is_zod_object_code("z.object({}).or(z.string())"));
+        let (annotation, code) =
+            circular_schema_declaration("z.union([z.string(), z.array(ExampleSchema)])", "Example");
+        assert_eq!(annotation, "z.ZodType<Example>");
+        assert_eq!(
+            code,
+            "z.lazy(() => z.union([z.string(), z.array(ExampleSchema)]))"
+        );
     }
 }
