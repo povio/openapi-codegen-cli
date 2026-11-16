@@ -1,6 +1,7 @@
 import { OpenAPIV3 } from "openapi-types";
 
 import { GenerateOptions } from "@/generators/types/options";
+import { getTupleSchemaParts } from "@/generators/utils/openapi-schema.utils";
 import { escapeControlCharacters, unwrapQuotesIfNeeded } from "@/generators/utils/openapi.utils";
 
 import { ZodSchemaMetaData } from "./ZodSchema.class";
@@ -162,7 +163,7 @@ function getZodChainableNumberValidations(schema: OpenAPIV3.SchemaObject) {
 
 function getZodChainableArrayValidations(schema: OpenAPIV3.SchemaObject) {
   const validations: string[] = [];
-  const tuple = Array.isArray((schema as OpenAPIV3.ArraySchemaObject).items);
+  const tuple = getTupleSchemaParts(schema) !== undefined;
 
   if (schema.minItems) {
     validations.push(tuple ? `refine((value) => value.length >= ${schema.minItems})` : `min(${schema.minItems})`);

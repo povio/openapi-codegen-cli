@@ -245,6 +245,22 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/UploadDto" }
+  # Literal and documentation text from the spec is escaped identically by both renderers: string
+  # enum values become escaped string literals and `*/` in descriptions does not end the JSDoc.
+  # OpenAPI 3.1 `prefixItems` tuples (closed with `items: false`, or with a rest schema) and
+  # free-form values render as tuples and `z.unknown()`.
+  /literals:
+    get:
+      operationId: LiteralsController_get
+      tags: [Literals]
+      summary: "Literal */ summary"
+      description: "Escapes */ in docs"
+      responses:
+        "200":
+          description: "Literal */ response"
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LiteralsDto" }
 components:
   schemas:
     ProviderNameEnum:
@@ -383,3 +399,27 @@ components:
       properties:
         label: { type: string }
         amount: { type: number }
+    LiteralsDto:
+      type: object
+      description: "Close */ accidentally"
+      required: [pair, quirk]
+      properties:
+        pair:
+          type: array
+          prefixItems: [{ type: string }, { type: integer }]
+          items: false
+          minItems: 2
+        tagged:
+          type: array
+          prefixItems: [{ $ref: "#/components/schemas/LiteralItemDto" }]
+          items: { type: boolean }
+        quirk:
+          type: string
+          description: "Odd */ values"
+          enum: ["a\"b", "c\\d", "line\nbreak", "普通"]
+        untyped: { type: array }
+        anything: { type: object, additionalProperties: true }
+    LiteralItemDto:
+      type: object
+      properties:
+        label: { type: string, description: "Item */ label" }

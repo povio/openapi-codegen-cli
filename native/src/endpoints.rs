@@ -785,7 +785,7 @@ impl<'a> EndpointExtractor<'a> {
                 enum_names
                     .iter()
                     .filter_map(Value::as_str)
-                    .map(|value| format!("\"{value}\""))
+                    .map(crate::zod::string_literal)
                     .collect::<Vec<_>>()
                     .join(", ")
             );
@@ -922,7 +922,7 @@ fn collect_compiled_reference_order(
                 collect_compiled_reference_order(child, refs, seen);
             }
             if object.get("type").and_then(Value::as_str) == Some("array") {
-                if let Some(child) = object.get("items") {
+                for child in crate::zod::array_item_schemas(object) {
                     collect_compiled_reference_order(child, refs, seen);
                 }
             }
@@ -1014,7 +1014,17 @@ fn complexity(schema: &Value) -> u32 {
         Some("string" | "number" | "integer" | "boolean") => {
             1 + u32::from(schema.get("enum").is_some())
         }
-        Some("array") => 1 + schema.get("items").map(complexity).unwrap_or(0),
+        Some("array") => {
+            1 + schema
+                .as_object()
+                .map(|object| {
+                    crate::zod::array_item_schemas(object)
+                        .into_iter()
+                        .map(complexity)
+                        .sum()
+                })
+                .unwrap_or(0)
+        }
         Some("object") => {
             2 + schema
                 .get("properties")

@@ -18,6 +18,7 @@ import { isEnumZodSchema, isNamedZodSchema } from "@/generators/utils/zod-schema
 import { getUniqueArray } from "@/generators/utils/array.utils";
 import { isReferenceObject } from "@/generators/utils/openapi-schema.utils";
 import { wrapWithQuotesIfNeeded } from "@/generators/utils/openapi.utils";
+import { escapeJsDocText } from "@/generators/utils/string.utils";
 
 export function generateModels({ resolver, data, tag }: GenerateTypeParams) {
   const nativeContent = (
@@ -390,6 +391,5 @@ function renderModelJsDocs({
     }
   }
 
-  lines.push(" */");
-  return lines.join("\n");
+  return [...lines.map(escapeJsDocText), " */"].join("\n");
 }

@@ -639,7 +639,7 @@ fn render_schema_docs<'a>(
     if !generate_js_doc {
         return (Vec::new(), schema_object);
     }
-    let mut lines = vec!["/** ".into(), format!(" * {name} ")];
+    let mut lines: Vec<String> = vec!["/** ".into(), format!(" * {name} ")];
     let schema_type = if code.starts_with("z.enum(") {
         "enum"
     } else {
@@ -666,6 +666,7 @@ fn render_schema_docs<'a>(
             ));
         }
     }
+    escape_js_doc_lines(&mut lines[..]);
     lines.push(" */".into());
     (lines, schema_object)
 }
@@ -1067,6 +1068,19 @@ impl PropertyRefNames<'_> {
             }
             _ => type_name.clone(),
         })
+    }
+}
+
+/// Keeps documentation text from closing the surrounding block comment early: `*\/` instead of `*/`.
+fn escape_js_doc(text: &str) -> String {
+    text.replace("*/", "*\\/")
+}
+
+fn escape_js_doc_lines(lines: &mut [String]) {
+    for line in lines {
+        if line.contains("*/") {
+            *line = escape_js_doc(line);
+        }
     }
 }
 
@@ -2686,7 +2700,7 @@ fn render_domain_errors(endpoints: &[Value], options: &GenerateOptions) -> Optio
             .map(|(code, key, description)| {
                 let prefix = description
                     .filter(|_| options.generate_js_doc)
-                    .map(|description| format!("  /** {description} */\n  "))
+                    .map(|description| format!("  /** {} */\n  ", escape_js_doc(&description)))
                     .unwrap_or_else(|| "  ".into());
                 format!("{prefix}{key}: {}", value_text(&code))
             })
@@ -2887,6 +2901,7 @@ fn render_ability(
         format!("`{query_name}` mutation")
     };
     if options.generate_js_doc {
+        let doc_start = lines.len();
         lines.push("/**".into());
         lines.push(format!(
             " * Use for {ability_query} ability. {}",
@@ -2917,6 +2932,7 @@ fn render_ability(
             ));
         }
         lines.push(format!(" * @returns {{ AbilityTuple }} An ability tuple indicating the user's ability to use {ability_query}"));
+        escape_js_doc_lines(&mut lines[doc_start..]);
         lines.push(" */".into());
     }
     lines.push(format!("export const {ability_name} = ("));
@@ -4031,6 +4047,7 @@ fn render_query_docs(
         return;
     }
     let (_, cap) = query_names(endpoint);
+    let doc_start = lines.len();
     lines.push("/** ".into());
     lines.push(if infinite {
         format!(" * Infinite query `use{cap}Infinite")
@@ -4127,6 +4144,7 @@ fn render_query_docs(
         .collect::<Vec<_>>()
         .join(", ");
     lines.push(format!(" * @statusCodes [{statuses}]"));
+    escape_js_doc_lines(&mut lines[doc_start..]);
     lines.push(" */".into());
 }
 
@@ -4606,6 +4624,7 @@ fn render_mutation_docs(
     } else {
         cap.clone()
     };
+    let doc_start = lines.len();
     lines.push("/** ".into());
     lines.push(format!(
         " * Mutation `use{mutation_cap}`{}",
@@ -4701,6 +4720,7 @@ fn render_mutation_docs(
         .collect::<Vec<_>>()
         .join(", ");
     lines.push(format!(" * @statusCodes [{statuses}]"));
+    escape_js_doc_lines(&mut lines[doc_start..]);
     lines.push(" */".into());
 }
 

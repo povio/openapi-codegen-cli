@@ -66,7 +66,7 @@ import { getNamespaceName } from "@/generators/utils/namespace.utils";
 import { isSchemaObject } from "@/generators/utils/openapi-schema.utils";
 import { isParamMediaTypeAllowed } from "@/generators/utils/openapi.utils";
 import { getDestructuredVariables, isInfiniteQuery, isMutation, isQuery } from "@/generators/utils/query.utils";
-import { capitalize } from "@/generators/utils/string.utils";
+import { capitalize, escapeJsDocText } from "@/generators/utils/string.utils";
 import { getEndpointTag, shouldInlineEndpointsForTag } from "@/generators/utils/tag.utils";
 import { isNamedZodSchema } from "@/generators/utils/zod-schema.utils";
 import { invalidVariableNameCharactersToCamel } from "@/generators/utils/js.utils";
@@ -624,8 +624,7 @@ function renderQueryJsDocs({
   }
 
   lines.push(` * @statusCodes [${endpoint.responseStatusCodes.join(", ")}]`);
-  lines.push(" */");
-  return lines.join("\n");
+  return [...lines.map(escapeJsDocText), " */"].join("\n");
 }
 
 function renderQueryKeys({
