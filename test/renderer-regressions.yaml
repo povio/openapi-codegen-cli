@@ -520,6 +520,21 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/FeedItemPageDto" }
+  # `ExportDto.order` is a string with a stray `items` (an object with an inline enum). Like
+  # `iterateSchema`, only array schemas have their items followed: the unreferenced
+  # `AuditQueryDto.order` enum with the same values is not imported into (or, with
+  # `modelsInModules`, emitted in) the Payments models.
+  /payments/exports:
+    post:
+      operationId: PaymentsController_export
+      tags: [Payments]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ExportDto" }
+      responses:
+        "201": { description: Exported }
 components:
   schemas:
     FeedItemPageDto:
@@ -536,6 +551,24 @@ components:
       properties:
         nextCursor: { $ref: "#/components/schemas/FeedCursor" }
     FeedCursor: { type: string, nullable: true }
+    ExportDto:
+      type: object
+      properties:
+        order:
+          type: string
+          nullable: true
+          items:
+            type: object
+            required: [property, direction]
+            properties:
+              property: { type: string }
+              direction: { type: string, enum: [asc, desc] }
+        # Number constraints print like JavaScript numbers (`0.000001`, `1e-7`), not `1e-6`.
+        quantity: { type: number, multipleOf: 0.000001, maximum: 1000000000000, exclusiveMinimum: true, minimum: 0.0000001 }
+    AuditQueryDto:
+      type: object
+      properties:
+        order: { type: string, enum: [asc, desc] }
     ProviderNameEnum:
       type: string
       enum: [alpha, beta, gamma]
