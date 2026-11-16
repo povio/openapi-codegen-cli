@@ -213,7 +213,8 @@ export function renderMediaUploadMutationBody({
     `const uploadInstructions = await ${endpointFunction}(${resolvedEndpointArgs}${hasAxiosRequestConfig ? `${resolvedEndpointArgs ? ", " : ""}${AXIOS_REQUEST_CONFIG_NAME}` : ""});`,
     "",
     "if (file && uploadInstructions.url) {",
-    `  const method = (uploadInstructions.method?.toLowerCase() ?? "put") as "put" | "post";`,
+    // The response schema may not declare `method`; default to PUT.
+    '  const method = ("method" in uploadInstructions && typeof uploadInstructions.method === "string" ? uploadInstructions.method.toLowerCase() : "put") as "put" | "post";',
     "  let dataToSend: File | FormData = file;",
     '  if (method === "post") {',
     "    dataToSend = new FormData();",

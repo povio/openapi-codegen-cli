@@ -331,21 +331,26 @@ import { OpenApiQueryConfig } from "@povio/openapi-codegen-cli/query";
 
 ### Typed invalidation maps
 
-With `mutationEffects` (the default), `queryModules.ts` exports `QueryModuleMutations` (for each module, the `data` and `variables` of its mutation hooks) and registers it globally, so `InvalidationMap<QueryModule>` types each module's callback from the spec:
+With `mutationEffects` (the default), `queryModules.ts` exports `QueryModuleMutations` (for each module, the `data` and `variables` of its mutation hooks) and `QueryModuleInvalidationMap`, an alias for `InvalidationMap<QueryModule, QueryModuleMutations>` that types each module's callback from the spec:
 
 ```ts
-import type { InvalidationMap } from "@povio/openapi-codegen-cli/query";
-import { QueryModule } from "@/data/queryModules";
+import { QueryModule, type QueryModuleInvalidationMap } from "@/data/queryModules";
 
-export const invalidationMap: InvalidationMap<QueryModule> = {
+export const invalidationMap: QueryModuleInvalidationMap = {
   // `data` is any of the module's mutation responses; variables that only some
   // of its mutations take (here `id`) are optional.
   [QueryModule.Items]: (data, { officeId, id }) => [["items", officeId, id]],
 };
 ```
 
-The registration is global, so a program with several generated clients should pass the mutations explicitly
-instead: `InvalidationMap<QueryModule, QueryModuleMutations>`.
+The types are exported per client rather than registered globally, so several generated clients can be used in one
+program; import each client's `QueryModuleInvalidationMap` from its own `queryModules.ts`.
+`InvalidationMap<QueryModule>` (without mutation types) is still accepted, but its callbacks receive `unknown`.
+
+Migrating from earlier v4 release candidates: generated code no longer augments the global
+`OpenApiCodegenQueryModules` / `OpenApiCodegenQueryModuleMutations` interfaces, and `RegisteredQueryModule` is
+removed. Replace a bare `InvalidationMap` or `InvalidationMap<QueryModule>` with the generated
+`QueryModuleInvalidationMap`.
 
 ### Runtime response validation
 

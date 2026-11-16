@@ -9,7 +9,6 @@ export type {
   MutationEffectsOf,
   MutationEffectsTypes,
   QueryModule,
-  RegisteredQueryModule,
 } from "./lib/config/queryConfig.context";
 export { OpenApiWorkspaceContext, useWorkspaceContext } from "./lib/config/workspace.context";
 export { configureTranslations, ns, resources } from "./lib/config/i18n";

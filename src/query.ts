@@ -11,5 +11,4 @@ export type {
   MutationEffectsOf,
   MutationEffectsTypes,
   QueryModule,
-  RegisteredQueryModule,
 } from "./lib/config/queryConfig.context";
