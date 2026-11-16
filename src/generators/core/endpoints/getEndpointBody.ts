@@ -38,7 +38,7 @@ export function getEndpointBody({
   const zodSchema = resolveEndpointZodSchema({
     resolver,
     schema,
-    meta: { isRequired: requestBodyObj.required ?? true },
+    meta: { isRequired: requestBodyObj.required ?? false },
     tag,
     fallbackName: getBodyZodSchemaName(getZodSchemaOperationName(operationName, isUniqueOperationName, tag)),
     composeBeforeResolve: false,

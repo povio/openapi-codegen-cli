@@ -367,6 +367,8 @@ pub fn compile_data(source: String, yaml: bool, options_json: String) -> Result<
         schema_owners.insert(name.clone(), Value::String(owner));
     }
     let render_started = std::time::Instant::now();
+    let typed_endpoints = render::with_resolved_parameter_types(&endpoints, &document);
+    let render_endpoints = typed_endpoints.as_deref().unwrap_or(&endpoints);
     let (rendered_models, rendered_endpoints, rendered_queries, rendered_acl, rendered_shared) =
         std::thread::scope(|scope| {
             let models = scope.spawn(|| {
@@ -385,12 +387,18 @@ pub fn compile_data(source: String, yaml: bool, options_json: String) -> Result<
                 )
             });
             let rendered_endpoints = scope.spawn(|| {
-                render::render_endpoints(&endpoints, &ordered_schemas, &schema_owners, &options)
+                render::render_endpoints(
+                    render_endpoints,
+                    &ordered_schemas,
+                    &schema_owners,
+                    &options,
+                )
             });
             let queries =
-                scope.spawn(|| render::render_queries(&endpoints, &schema_owners, &options));
-            let acl = scope.spawn(|| render::render_acl(&endpoints, &schema_owners, &options));
-            let shared = scope.spawn(|| render::render_shared(&endpoints, &options));
+                scope.spawn(|| render::render_queries(render_endpoints, &schema_owners, &options));
+            let acl =
+                scope.spawn(|| render::render_acl(render_endpoints, &schema_owners, &options));
+            let shared = scope.spawn(|| render::render_shared(render_endpoints, &options));
             (
                 models.join().unwrap(),
                 rendered_endpoints.join().unwrap(),

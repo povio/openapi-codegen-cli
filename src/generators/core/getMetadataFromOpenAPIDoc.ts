@@ -7,6 +7,7 @@ import { GenerateOptions } from "@/generators/types/options";
 import { getQueryName } from "@/generators/utils/generate/generate.query.utils";
 import { getTagImportPath } from "@/generators/utils/generate/generate.utils";
 import { invalidVariableNameCharactersToCamel } from "@/generators/utils/js.utils";
+import { isEndpointParameterRequired } from "@/generators/utils/endpoint.utils";
 import { getNamespaceName } from "@/generators/utils/namespace.utils";
 import { isMediaTypeAllowed, isParamMediaTypeAllowed } from "@/generators/utils/openapi.utils";
 import { isMutation, isQuery } from "@/generators/utils/query.utils";
@@ -87,7 +88,7 @@ function getQueryMetadataParams({
 
       return {
         name: invalidVariableNameCharactersToCamel(param.name),
-        isRequired: param.parameterObject?.required ?? true,
+        isRequired: isEndpointParameterRequired(param),
         ...tsTypeInfo,
         ...tsMetaType,
         paramType: param.type,

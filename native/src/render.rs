@@ -653,12 +653,12 @@ fn render_schema_docs<'a>(
     }
     let mut lines: Vec<String> = vec!["/** ".into(), format!(" * {name} ")];
     let schema_type = if code.starts_with("z.enum(") {
-        "enum"
+        "enum".to_string()
     } else {
         schema_object
-            .and_then(|schema| schema.get("type"))
-            .and_then(Value::as_str)
-            .unwrap_or("object")
+            .and_then(|schema| js_doc_schema_type(schema.get("type")))
+            .filter(|schema_type| !schema_type.is_empty())
+            .unwrap_or_else(|| "object".into())
     };
     lines.push(format!(" * @type {{ {schema_type} }}"));
     if let Some(schema) = schema_object {
@@ -1472,6 +1472,35 @@ fn collect_property_docs(
     }
 }
 
+/// `getJsDocSchemaType`: the JSDoc type of an OpenAPI `type`; OpenAPI 3.1 type arrays read as a
+/// union, e.g. `string | null`.
+fn js_doc_schema_type(schema_type: Option<&Value>) -> Option<String> {
+    match schema_type? {
+        Value::String(schema_type) => Some(schema_type.clone()),
+        Value::Array(types) if !types.is_empty() => Some(
+            types
+                .iter()
+                // `Array.prototype.join` renders `null` as an empty string.
+                .map(|value| match value {
+                    Value::Null => String::new(),
+                    value => display_js_value(value),
+                })
+                .collect::<Vec<_>>()
+                .join(" | "),
+        ),
+        _ => None,
+    }
+}
+
+/// `getJsDocArrayType`
+fn js_doc_array_type(item_type: &str) -> String {
+    if item_type.contains(" | ") {
+        format!("({item_type})[]")
+    } else {
+        format!("{item_type}[]")
+    }
+}
+
 fn property_doc_type(
     document: &Value,
     schema: &Value,
@@ -1481,23 +1510,17 @@ fn property_doc_type(
         return property_ref_type(reference, property_ref_names);
     }
     if schema.get("type").and_then(Value::as_str) == Some("array") {
-        let item_type = schema
-            .get("items")
-            .and_then(|items| {
-                if let Some(reference) = items.get("$ref").and_then(Value::as_str) {
-                    Some(property_ref_type(reference, property_ref_names))
-                } else {
-                    Some(
-                        items
-                            .get("type")
-                            .and_then(Value::as_str)
-                            .unwrap_or("unknown")
-                            .to_string(),
-                    )
+        return match schema.get("items") {
+            Some(items) => match items.get("$ref").and_then(Value::as_str) {
+                Some(reference) => {
+                    format!("{}[]", property_ref_type(reference, property_ref_names))
                 }
-            })
-            .unwrap_or_else(|| "unknown".into());
-        return format!("{item_type}[]");
+                None => js_doc_array_type(
+                    &js_doc_schema_type(items.get("type")).unwrap_or_else(|| "unknown".into()),
+                ),
+            },
+            None => "unknown[]".into(),
+        };
     }
     for keyword in ["allOf", "anyOf", "oneOf"] {
         if let Some(first) = schema
@@ -1508,11 +1531,7 @@ fn property_doc_type(
             return property_doc_type(document, first, property_ref_names);
         }
     }
-    schema
-        .get("type")
-        .and_then(Value::as_str)
-        .unwrap_or("unknown")
-        .to_string()
+    js_doc_schema_type(schema.get("type")).unwrap_or_else(|| "unknown".into())
 }
 
 fn property_ref_type(reference: &str, property_ref_names: &PropertyRefNames) -> String {
@@ -2220,12 +2239,17 @@ fn function_params<'a>(
                 .get("zodSchema")
                 .and_then(Value::as_str)
                 .unwrap_or_default();
-            let required = parameter
-                .get("parameterObject")
-                .or_else(|| parameter.get("bodyObject"))
-                .and_then(|object| object.get("required"))
-                .and_then(Value::as_bool)
-                .unwrap_or(true);
+            // `isEndpointParameterRequired`: a request body is optional unless `required: true`.
+            let required = if let Some(body) = parameter.get("bodyObject") {
+                body.get("required")
+                    .and_then(Value::as_bool)
+                    .unwrap_or(false)
+            } else {
+                parameter
+                    .pointer("/parameterObject/required")
+                    .and_then(Value::as_bool)
+                    .unwrap_or(true)
+            };
             let ty = if is_named_schema(schema) {
                 let name = remove_suffix(schema, &options.schema_suffix);
                 if model_namespace.is_empty() {
@@ -2261,9 +2285,50 @@ fn function_params<'a>(
     result
 }
 
+/// Render-only key holding the OpenAPI type of a parameter's `$ref` schema target.
+const RESOLVED_SCHEMA_TYPE: &str = "x-resolvedSchemaType";
+
+/// Copies of `endpoints` for rendering in which each parameter whose schema is a `$ref` records its
+/// target's type, so a parameter inlining a simple component is typed like an inline schema (the
+/// renderers do not see the document). `None` when no parameter uses a `$ref` schema.
+pub fn with_resolved_parameter_types(endpoints: &[Value], document: &Value) -> Option<Vec<Value>> {
+    let has_reference = |endpoint: &Value| {
+        endpoint
+            .get("parameters")
+            .and_then(Value::as_array)
+            .is_some_and(|parameters| {
+                parameters
+                    .iter()
+                    .any(|parameter| parameter.pointer("/parameterObject/schema/$ref").is_some())
+            })
+    };
+    if !endpoints.iter().any(has_reference) {
+        return None;
+    }
+    let mut endpoints = endpoints.to_vec();
+    for parameter in endpoints
+        .iter_mut()
+        .filter_map(|endpoint| endpoint.get_mut("parameters"))
+        .filter_map(Value::as_array_mut)
+        .flatten()
+    {
+        let schema_type = parameter
+            .pointer("/parameterObject/schema/$ref")
+            .and_then(Value::as_str)
+            .and_then(|reference| resolve_document_ref(document, reference))
+            .and_then(|schema| schema.get("type"))
+            .cloned();
+        if let (Some(schema_type), Some(object)) = (schema_type, parameter.as_object_mut()) {
+            object.insert(RESOLVED_SCHEMA_TYPE.into(), schema_type);
+        }
+    }
+    Some(endpoints)
+}
+
 fn primitive_parameter_type(parameter: &Value) -> String {
     match parameter
-        .pointer("/parameterObject/schema/type")
+        .get(RESOLVED_SCHEMA_TYPE)
+        .or_else(|| parameter.pointer("/parameterObject/schema/type"))
         .and_then(Value::as_str)
     {
         Some("number" | "integer") => "number".into(),

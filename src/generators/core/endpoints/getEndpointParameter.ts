@@ -18,6 +18,7 @@ import {
   getEnumZodSchemaName,
   getParamZodSchemaName,
   getZodSchemaOperationName,
+  isNamedZodSchema,
 } from "@/generators/utils/zod-schema.utils";
 
 export function getEndpointParameter({
@@ -111,13 +112,19 @@ export function getEndpointParameter({
     options: resolver.options,
   });
 
-  const zodSchemaName = resolveZodSchemaName({
+  const resolvedZodSchemaName = resolveZodSchemaName({
     schema: schemaObject,
     zodSchema: zodSchema.assign(zodSchema.getCodeString(tag) + zodChain),
     fallbackName,
     resolver,
     tag,
   });
+  // A `$ref` to a simple component is inlined as the component's bare code; keep the
+  // component's validations and the parameter's presence by appending the chain.
+  const zodSchemaName =
+    zodSchema.ref && !isNamedZodSchema(resolvedZodSchemaName)
+      ? resolvedZodSchemaName + zodChain
+      : resolvedZodSchemaName;
 
   return {
     name: paramObj.in === "path" ? pathParamToVariableName(paramObj.name) : paramObj.name,
