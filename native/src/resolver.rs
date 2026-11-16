@@ -340,7 +340,7 @@ fn collect_ordered_refs(value: &Value, refs: &mut Vec<String>, seen: &mut HashSe
         collect_ordered_refs(additional, refs, seen);
     }
     if object.get("type").and_then(Value::as_str) == Some("array") {
-        if let Some(items) = object.get("items") {
+        for items in crate::zod::array_item_schemas(object) {
             collect_ordered_refs(items, refs, seen);
         }
     }

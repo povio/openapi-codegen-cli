@@ -16,7 +16,7 @@ import {
 } from "@/generators/utils/generate/generate.acl.utils";
 import { getInfiniteQueryName, getQueryName } from "@/generators/utils/generate/generate.query.utils";
 import { getNamespaceName } from "@/generators/utils/namespace.utils";
-import { capitalize } from "@/generators/utils/string.utils";
+import { capitalize, escapeJsDocText } from "@/generators/utils/string.utils";
 import { getEndpointTag } from "@/generators/utils/tag.utils";
 
 export function generateAcl({ resolver, data, tag }: GenerateTypeParams) {
@@ -203,6 +203,7 @@ function renderAbilityFunction({
         : `\`${getQueryName(endpoint)}\` query`
       : `\`${getQueryName(endpoint)}\` mutation`;
   if (resolver.options.generateJsDoc === true) {
+    const docStart = lines.length;
     lines.push("/**");
     lines.push(
       ` * Use for ${abilityQuery} ability. ${hasConditions ? "For global ability, omit the object parameter." : ""}${getAbilityDescription(endpoint) ? "" : ""}`,
@@ -218,6 +219,7 @@ function renderAbilityFunction({
       }
     }
     lines.push(` * @returns { AbilityTuple } An ability tuple indicating the user's ability to use ${abilityQuery}`);
+    lines.splice(docStart, lines.length - docStart, ...lines.slice(docStart).map(escapeJsDocText));
     lines.push(" */");
   }
   lines.push(`export const ${getAbilityFunctionName(endpoint)} = (`);

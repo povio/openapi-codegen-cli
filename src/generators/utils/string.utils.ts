@@ -67,3 +67,6 @@ export const isString = (str: string | undefined): str is string => str !== unde
 
 /** Removes spaces and tabs at the end of every line (formatters such as `bun fmt` keep them in comments). */
 export const trimTrailingWhitespace = (text: string) => text.replace(/[ \t]+$/gm, "");
+
+/** Keeps documentation text from ending the surrounding block comment early (a star-slash becomes star-backslash-slash). */
+export const escapeJsDocText = (text: string) => text.replaceAll("*/", "*\\/");

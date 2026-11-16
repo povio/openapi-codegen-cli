@@ -1,6 +1,6 @@
 import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
 import { GenerateData } from "@/generators/types/generate";
-import { capitalize } from "@/generators/utils/string.utils";
+import { capitalize, escapeJsDocText } from "@/generators/utils/string.utils";
 
 function domainToPascalCase(domain: string): string {
   return domain.split(/[-_]/).map(capitalize).join("");
@@ -61,7 +61,10 @@ export function generateDomainErrors({
 
     const entries = sortedCodes
       .map(({ code, name, description }) => {
-        const comment = resolver.options.generateJsDoc === true && description ? `  /** ${description} */\n  ` : "  ";
+        const comment =
+          resolver.options.generateJsDoc === true && description
+            ? `  /** ${escapeJsDocText(description)} */\n  `
+            : "  ";
         const key = name ?? (typeof code === "string" ? code : `ERROR_${code}`);
         if (!VALID_IDENTIFIER.test(key)) {
           throw new Error(

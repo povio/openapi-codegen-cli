@@ -1,7 +1,7 @@
 import { OpenAPIV3 } from "openapi-types";
 
 import {
-  ANY_SCHEMA,
+  UNKNOWN_SCHEMA,
   BLOB_SCHEMA,
   DATETIME_SCHEMA,
   EMAIL_SCHEMA,
@@ -16,6 +16,7 @@ import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
 import { GenerateType } from "@/generators/types/generate";
 import { getNamespaceName } from "@/generators/utils/namespace.utils";
 import {
+  getTupleSchemaParts,
   inferRequiredSchema,
   isArraySchemaObject,
   isReferenceObject,
@@ -78,26 +79,30 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag }: Get
   const readonly = resolver.options.allReadonly ? ".readonly()" : "";
 
   if (isArraySchemaObject(schema)) {
-    if (Array.isArray(schema.items)) {
-      const tuple = schema as OpenAPIV3.ArraySchemaObject & { additionalItems?: boolean | OpenAPIV3.SchemaObject };
-      const items = schema.items.map((item, index) => {
+    const tuple = getTupleSchemaParts(schema);
+    if (tuple) {
+      const items = tuple.items.map((item, index) => {
         const code = getZodSchema({ ...params, schema: item }).getCodeString(tag, resolver.options);
-        const chain = getZodChain({ schema: item, meta: { ...meta, isRequired: true }, options: resolver.options });
+        const chain = getZodChain({
+          schema: item as OpenAPIV3.SchemaObject,
+          meta: { ...meta, isRequired: true },
+          options: resolver.options,
+        });
         return code + chain + (index >= (schema.minItems ?? 0) ? ".optional()" : "");
       });
       const restSchema =
-        typeof tuple.additionalItems === "object"
-          ? getZodSchema({ ...params, schema: tuple.additionalItems }).getCodeString(tag, resolver.options) +
+        typeof tuple.rest === "object"
+          ? getZodSchema({ ...params, schema: tuple.rest }).getCodeString(tag, resolver.options) +
             getZodChain({
-              schema: tuple.additionalItems,
+              schema: tuple.rest as OpenAPIV3.SchemaObject,
               meta: { ...meta, isRequired: true },
               options: resolver.options,
             })
-          : ANY_SCHEMA;
-      const rest = tuple.additionalItems === false ? "" : `.rest(${restSchema})`;
+          : UNKNOWN_SCHEMA;
+      const rest = tuple.rest === false ? "" : `.rest(${restSchema})`;
       return zodSchema.assign(`z.tuple([${items.join(", ")}])${rest}${readonly}`);
     }
-    if (schema.items) {
+    if (schema.items && typeof schema.items === "object") {
       return zodSchema.assign(
         `z.array(${getZodSchema({ ...params, schema: schema.items }).getCodeString(tag, resolver.options)}${getZodChain(
           {
@@ -109,7 +114,7 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag }: Get
       );
     }
 
-    return zodSchema.assign(`z.array(${ANY_SCHEMA})${readonly}`);
+    return zodSchema.assign(`z.array(${UNKNOWN_SCHEMA})${readonly}`);
   }
 
   const schemaType = schema.type ? (schema.type.toLowerCase() as NonNullable<typeof schema.type>) : undefined;
@@ -183,7 +188,7 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag }: Get
               meta: { ...meta, isRequired: true },
               options: resolver.options,
             })
-          : ANY_SCHEMA;
+          : UNKNOWN_SCHEMA;
       additionalPropsSchema = `.catchall(${additionalPropsZodSchema})`;
     }
 
@@ -194,7 +199,7 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag }: Get
   }
 
   if ((schemaType as unknown) === "any") {
-    return zodSchema.assign(ANY_SCHEMA);
+    return zodSchema.assign(UNKNOWN_SCHEMA);
   }
 
   if ((schemaType as unknown) === "null") {
@@ -443,9 +448,14 @@ function getEnumZodSchema({ resolver, schema, zodSchema, meta, tag }: GetPartial
 
 export function getEnumZodSchemaCode(schema: OpenAPIV3.SchemaObject) {
   const values = schema.enum?.filter((value) => value !== null) ?? [];
-  return `${ENUM_SCHEMA}([${values.map((value) => `"${value}"`).join(", ")}])`;
+  return `${ENUM_SCHEMA}([${values.map(toStringLiteral).join(", ")}])`;
 }
 
 export function getEnumZodSchemaCodeFromEnumNames(enumNames: string[]) {
-  return `${ENUM_SCHEMA}([${enumNames.map((value) => `"${value}"`).join(", ")}])`;
+  return `${ENUM_SCHEMA}([${enumNames.map(toStringLiteral).join(", ")}])`;
+}
+
+/** A double-quoted, escaped TypeScript string literal of the value's text (matches the native renderer). */
+function toStringLiteral(value: unknown) {
+  return JSON.stringify(typeof value === "string" ? value : String(value));
 }

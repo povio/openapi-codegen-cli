@@ -335,11 +335,8 @@ impl<'a> ZodCompiler<'a> {
             .and_then(Value::as_str)
             .map(str::to_ascii_lowercase);
         if schema_type.as_deref() == Some("array") {
-            if let Some(items) = object.get("items").and_then(Value::as_array) {
-                let required = object
-                    .get("minItems")
-                    .and_then(Value::as_u64)
-                    .unwrap_or(0) as usize;
+            if let Some((items, rest)) = tuple_parts(object) {
+                let required = object.get("minItems").and_then(Value::as_u64).unwrap_or(0) as usize;
                 let item_meta = Meta {
                     required: true,
                     parent_partial: false,
@@ -356,22 +353,26 @@ impl<'a> ZodCompiler<'a> {
                         ))
                     })
                     .collect::<Result<Vec<_>, String>>()?;
-                let rest = match object.get("additionalItems") {
+                let rest = match rest {
                     Some(Value::Bool(false)) => String::new(),
                     Some(value @ Value::Object(_)) => format!(
                         ".rest({}{})",
                         self.compile(value, item_meta, tag, root_ref, stack)?,
                         chain(value, item_meta, self.options)
                     ),
-                    _ => ".rest(z.any())".into(),
+                    _ => ".rest(z.unknown())".into(),
                 };
                 return Ok(format!(
                     "z.tuple([{}]){rest}{}",
                     members.join(", "),
-                    if self.options.all_readonly { ".readonly()" } else { "" }
+                    if self.options.all_readonly {
+                        ".readonly()"
+                    } else {
+                        ""
+                    }
                 ));
             }
-            let item = if let Some(items) = object.get("items") {
+            let item = if let Some(items) = object.get("items").filter(|items| items.is_object()) {
                 let code = self.compile(
                     items,
                     Meta {
@@ -394,7 +395,7 @@ impl<'a> ZodCompiler<'a> {
                     )
                 )
             } else {
-                "z.any()".into()
+                "z.unknown()".into()
             };
             return Ok(format!(
                 "z.array({item}){}",
@@ -412,7 +413,7 @@ impl<'a> ZodCompiler<'a> {
             return self.compile_object(object, meta, tag, root_ref, stack);
         }
         if schema_type.as_deref() == Some("any") {
-            return Ok("z.any()".into());
+            return Ok("z.unknown()".into());
         }
         if schema_type.as_deref() == Some("null") {
             return Ok("z.null()".into());
@@ -592,7 +593,7 @@ impl<'a> ZodCompiler<'a> {
                 format!(".catchall({code})")
             }
             Some(value) if value.as_bool() == Some(true) || value.as_object().is_some() => {
-                ".catchall(z.any())".into()
+                ".catchall(z.unknown())".into()
             }
             _ => String::new(),
         };
@@ -772,7 +773,7 @@ fn chain(schema: &Value, meta: Meta, options: &GenerateOptions) -> String {
                 .and_then(Value::as_u64)
                 .filter(|value| *value > 0)
             {
-                chains.push(if schema.get("items").is_some_and(Value::is_array) {
+                chains.push(if is_tuple(schema) {
                     format!("refine((value) => value.length >= {value})")
                 } else {
                     format!("min({value})")
@@ -783,7 +784,7 @@ fn chain(schema: &Value, meta: Meta, options: &GenerateOptions) -> String {
                 .and_then(Value::as_u64)
                 .filter(|value| *value > 0)
             {
-                chains.push(if schema.get("items").is_some_and(Value::is_array) {
+                chains.push(if is_tuple(schema) {
                     format!("refine((value) => value.length <= {value})")
                 } else {
                     format!("max({value})")
@@ -846,18 +847,58 @@ pub(crate) fn enum_code(schema: &Value) -> Option<String> {
     let values = values
         .iter()
         .filter(|value| !value.is_null())
-        .map(|value| {
-            format!(
-                "\"{}\"",
-                value
-                    .as_str()
-                    .map(str::to_string)
-                    .unwrap_or_else(|| value.to_string())
-            )
+        .map(|value| match value.as_str() {
+            Some(text) => string_literal(text),
+            None => string_literal(&value.to_string()),
         })
         .collect::<Vec<String>>()
         .join(", ");
     Some(format!("z.enum([{values}])"))
+}
+
+/// A double-quoted, escaped TypeScript string literal; byte-identical to JavaScript's `JSON.stringify`.
+pub(crate) fn string_literal(value: &str) -> String {
+    serde_json::to_string(value).unwrap_or_else(|_| "\"\"".into())
+}
+
+/// Positional array items and the schema for the elements after them, mirroring the TypeScript
+/// `getTupleSchemaParts`: OpenAPI 3.1 `prefixItems` (rest from `items`), the older `items: [...]`
+/// form (rest from `additionalItems`), or `items: false` (an empty tuple). A missing rest allows
+/// unknown elements; `false` closes the tuple.
+pub(crate) fn tuple_parts(schema: &Map<String, Value>) -> Option<(&[Value], Option<&Value>)> {
+    if let Some(items) = schema.get("prefixItems").and_then(Value::as_array) {
+        let rest = schema.get("items").filter(|rest| !rest.is_array());
+        return Some((items.as_slice(), rest));
+    }
+    if let Some(items) = schema.get("items").and_then(Value::as_array) {
+        return Some((items.as_slice(), schema.get("additionalItems")));
+    }
+    if schema.get("items") == Some(&Value::Bool(false)) {
+        return Some((&[], Some(&Value::Bool(false))));
+    }
+    None
+}
+
+/// The element schemas of an array, in the order the TypeScript `iterateSchema` visits them:
+/// tuple members and then a rest schema, or the single `items` schema.
+pub(crate) fn array_item_schemas(schema: &Map<String, Value>) -> Vec<&Value> {
+    match tuple_parts(schema) {
+        Some((items, rest)) => items
+            .iter()
+            .chain(rest.filter(|rest| rest.is_object()))
+            .collect(),
+        None => schema.get("items").into_iter().collect(),
+    }
+}
+
+pub(crate) fn is_tuple_object(schema: &Map<String, Value>) -> bool {
+    tuple_parts(schema).is_some()
+}
+
+fn is_tuple(schema: &Value) -> bool {
+    schema
+        .as_object()
+        .is_some_and(|object| tuple_parts(object).is_some())
 }
 pub(crate) fn schema_name(name: &str, suffix: &str) -> String {
     let normalized = normalize_name(name);
@@ -1285,7 +1326,7 @@ fn collect_inline_enum_candidates(
         collect_inline_enum_candidates(additional, segments, tags, candidates);
     }
     if object.get("type").and_then(Value::as_str) == Some("array") {
-        if let Some(item) = object.get("items") {
+        for item in array_item_schemas(object) {
             add_enum_candidate(item, segments, tags, candidates);
             collect_inline_enum_candidates(item, segments, tags, candidates);
         }
