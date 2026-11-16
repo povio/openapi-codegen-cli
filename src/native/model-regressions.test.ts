@@ -264,3 +264,124 @@ describe("circular schemas", () => {
     },
   );
 });
+
+describe("explicit types of circular schemas", () => {
+  const ref = (name: string) => ({ $ref: `#/components/schemas/${name}` });
+  const document = {
+    openapi: "3.0.3",
+    info: { title: "Circular types", version: "1" },
+    paths: {
+      "/examples": {
+        get: {
+          operationId: "getExamples",
+          tags: ["Examples"],
+          responses: {
+            "200": {
+              description: "OK",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: Object.fromEntries(
+                      ["Tree", "PlainNullable", "Defaults", "RequiredDefaults", "Linked", "Union"].map((name) => [
+                        name,
+                        ref(name),
+                      ]),
+                    ),
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      "/shared": {
+        get: {
+          operationId: "getShared",
+          tags: ["Others"],
+          responses: {
+            "200": { description: "OK", content: { "application/json": { schema: ref("Shared") } } },
+          },
+        },
+      },
+    },
+    components: {
+      schemas: {
+        // Used by two tags, so owned by the common models file.
+        Shared: { type: "object", properties: { id: { type: "string" } } },
+        Linked: {
+          type: "object",
+          properties: {
+            shared: ref("Shared"),
+            next: ref("Linked"),
+            tags: { type: "array", items: { type: "string" } },
+          },
+        },
+        Tree: { type: "object", nullable: true, properties: { label: { type: "string" }, next: ref("Tree") } },
+        PlainNullable: { type: "object", nullable: true, properties: { label: { type: "string" } } },
+        Defaults: { type: "object", properties: { code: { type: "string", default: "x" }, self: ref("Defaults") } },
+        RequiredDefaults: {
+          type: "object",
+          required: ["name"],
+          properties: {
+            name: { type: "string" },
+            code: { type: "string", default: "x" },
+            count: { type: "integer", default: 1, nullable: true },
+            self: ref("RequiredDefaults"),
+          },
+        },
+        Union: { oneOf: [{ type: "string" }, { type: "array", items: ref("Union") }, ref("Shared")] },
+      },
+    },
+  };
+
+  const typeAssertions = (readonly: boolean) => `
+    type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? true : false;
+    const expectType = <T extends true>(value: T) => value;
+    // Cross-namespace references are qualified.
+    expectType<Equal<NonNullable<M.Linked["shared"]>, CommonModels.Shared>>(true);
+    // \`.partial()\` makes a property with a default optional; a required object's default is always set.
+    expectType<Equal<M.Defaults["code"], string | undefined>>(true);
+    expectType<Equal<M.RequiredDefaults["code"], string>>(true);
+    expectType<Equal<M.RequiredDefaults["count"], number | null>>(true);
+    // A nullable component is only nullable where it is referenced, like non-circular components.
+    expectType<Equal<null extends M.Tree ? true : false, false>>(true);
+    expectType<Equal<null extends M.PlainNullable ? true : false, false>>(true);
+    expectType<Equal<M.Tree["next"], M.Tree | null | undefined>>(true);
+    expectType<Equal<M.Linked["tags"], ${readonly ? "readonly string[]" : "string[]"} | undefined>>(true);
+    expectType<Equal<M.Union, string | ${readonly ? "readonly M.Union[]" : "M.Union[]"} | CommonModels.Shared>>(true);
+  `;
+
+  test.each<Partial<GenerateOptions>>([
+    {},
+    { allReadonly: true },
+    { lazySchemas: true },
+    { tsNamespaces: false },
+    { modelsInModules: true },
+  ])("typecheck and validate with %j", async (options) => {
+    const namespaced = options.tsNamespaces !== false;
+    const imports = !namespaced
+      ? `import * as M from "./examples/examples.models";`
+      : options.modelsInModules
+        ? `import { ExamplesModels as M, ExamplesModels as CommonModels } from "./examples/examples.models";`
+        : `import { ExamplesModels as M } from "./examples/examples.models";
+           import { CommonModels } from "./common/common.models";`;
+    const output = await verifyGeneratedModels(
+      JSON.stringify(document),
+      options,
+      `${imports}
+      ${assert}
+      ${namespaced ? typeAssertions(Boolean(options.allReadonly)) : ""}
+      assert(M.TreeSchema.safeParse({ label: "a", next: { label: "b", next: null } }).success, "tree");
+      assert(!M.TreeSchema.safeParse(null).success, "circular nullable component itself");
+      assert(!M.PlainNullableSchema.safeParse(null).success, "nullable component itself");
+      assert(M.${namespaced ? "GetResponseSchema" : "GetExamplesResponseSchema"}.safeParse({ Tree: null, PlainNullable: null }).success, "nullable references");
+      assert(M.LinkedSchema.safeParse({ shared: { id: "s" }, next: { tags: ["t"] } }).success, "linked");
+      assert(!M.LinkedSchema.safeParse({ shared: { id: 1 } }).success, "linked shared");
+      assert(M.RequiredDefaultsSchema.parse({ name: "n" }).code === "x", "default");
+      for (const value of ["a", ["a", { id: "s" }]]) assert(M.UnionSchema.safeParse(value).success, JSON.stringify(value));
+      console.log("ok");`,
+    );
+    expect(output.trim()).toBe("ok");
+  });
+});

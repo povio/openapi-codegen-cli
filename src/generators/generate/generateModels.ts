@@ -103,7 +103,7 @@ export function generateModels({ resolver, data, tag }: GenerateTypeParams) {
     }
     const inferredTypeName = getZodSchemaInferedTypeName(name, resolver.options);
     if (zodSchema.isCircular && zodSchema.schemaObj) {
-      lines.push(`export type ${inferredTypeName} = ${renderSchemaType(zodSchema.schemaObj, resolver)};`);
+      lines.push(`export type ${inferredTypeName} = ${renderSchemaType(zodSchema.schemaObj, resolver, tag)};`);
     }
     if (zodSchema.isCircular) {
       const circular = getCircularSchemaDeclaration(zodSchema.code, inferredTypeName);
@@ -167,7 +167,7 @@ function renderLazyModels({
     }
     members.push(...renderLazyMember(name, `${name}()`));
     if (zodSchema.isCircular && zodSchema.schemaObj) {
-      types.push(`  export type ${inferredTypeName} = ${renderSchemaType(zodSchema.schemaObj, resolver)};`);
+      types.push(`  export type ${inferredTypeName} = ${renderSchemaType(zodSchema.schemaObj, resolver, tag)};`);
     } else {
       types.push(`  export type ${inferredTypeName} = z.infer<typeof ${namespace}.${name}>;`);
     }
@@ -192,68 +192,100 @@ function indent(lines: string[]) {
   return lines.map((line) => `  ${line}`);
 }
 
+// Explicit types of circular schemas (which cannot be inferred) describe the output type of the
+// generated zod schema, so they follow the zod generation rules: a schema's own `nullable`, defaults
+// and optionality are applied by the chain where it is used (object properties, array items,
+// additional properties), never on the schema itself, matching `z.infer` of non-circular schemas.
+// Mirrored by `render_schema_type` in native/src/render.rs.
 function renderSchemaType(
   schema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject,
   resolver: GenerateTypeParams["resolver"],
+  tag: string,
 ): string {
+  const { options } = resolver;
   if (isReferenceObject(schema)) {
-    const schemaName = resolver.getZodSchemaNameByRef(schema.$ref);
-    return schemaName ? getZodSchemaInferedTypeName(schemaName, resolver.options) : "unknown";
+    return renderReferenceType(schema.$ref, resolver, tag);
   }
 
   const composite = schema.allOf ?? schema.oneOf ?? schema.anyOf;
   if (composite?.length) {
     const separator = schema.allOf ? " & " : " | ";
-    return addNullable(schema, composite.map((part) => renderSchemaType(part, resolver)).join(separator));
+    const parts = composite.map((part) => renderSchemaType(part, resolver, tag));
+    return parts.map((part) => (parts.length > 1 && /[|&]/.test(part) ? `(${part})` : part)).join(separator);
   }
 
   if (schema.enum?.length) {
-    return addNullable(schema, schema.enum.map((value) => JSON.stringify(value)).join(" | "));
+    return schema.enum.map((value) => JSON.stringify(value)).join(" | ");
   }
 
   if (schema.type === "array") {
-    const itemType = schema.items ? renderSchemaType(schema.items, resolver) : "unknown";
-    return addNullable(schema, `Array<${itemType}>`);
+    const itemType = schema.items
+      ? addNullable(schema.items, renderSchemaType(schema.items, resolver, tag))
+      : "unknown";
+    return options.allReadonly ? `ReadonlyArray<${itemType}>` : `Array<${itemType}>`;
   }
 
   if (schema.type === "object" || schema.properties || schema.additionalProperties) {
+    const isPartial = !options.withImplicitRequiredProps && Boolean(schema.properties) && !schema.required?.length;
     const properties = Object.entries(schema.properties ?? {}).map(([name, property]) => {
-      const isRequired = resolver.options.withImplicitRequiredProps || schema.required?.includes(name);
-      const hasDefault = !isReferenceObject(property) && property.default !== undefined;
-      const optional = isRequired || hasDefault ? "" : "?";
-      const propertyType = renderSchemaType(property, resolver);
-      const outputType =
-        resolver.options.replaceOptionalWithNullish && optional && (isReferenceObject(property) || !property.nullable)
-          ? `${propertyType} | null`
-          : propertyType;
+      const isRequired = isPartial
+        ? true
+        : schema.required?.length
+          ? schema.required.includes(name)
+          : options.withImplicitRequiredProps;
+      const resolved = isReferenceObject(property) ? resolver.getSchemaByRef(property.$ref) : property;
+      const hasDefault = options.withDefaultValues !== false && resolved?.default !== undefined;
+      const isNullable =
+        Boolean(resolved?.nullable) || (options.replaceOptionalWithNullish && (isPartial || !isRequired));
+      const optional = isPartial || (!isRequired && !hasDefault) ? "?" : "";
+      const propertyType = renderSchemaType(property, resolver, tag);
+      const outputType = isNullable && propertyType !== "null" ? `${propertyType} | null` : propertyType;
       return `${wrapWithQuotesIfNeeded(name)}${optional}: ${outputType}`;
     });
     if (schema.additionalProperties) {
       const valueType =
         typeof schema.additionalProperties === "object"
-          ? renderSchemaType(schema.additionalProperties, resolver)
+          ? addNullable(schema.additionalProperties, renderSchemaType(schema.additionalProperties, resolver, tag))
           : "unknown";
       properties.push(`[key: string]: ${valueType}`);
     }
-    return addNullable(schema, `{ ${properties.join("; ")} }`);
+    const objectType = `{ ${properties.join("; ")} }`;
+    return options.allReadonly ? `Readonly<${objectType}>` : objectType;
   }
 
-  const primitiveType = schema.type;
-  const type =
-    primitiveType === "string"
-      ? "string"
-      : primitiveType === "number" || primitiveType === "integer"
-        ? "number"
-        : primitiveType === "boolean"
-          ? "boolean"
-          : primitiveType === "null"
-            ? "null"
-            : "unknown";
-  return addNullable(schema, type);
+  switch (schema.type) {
+    case "string":
+      return schema.format === "binary" ? "Blob" : "string";
+    case "number":
+    case "integer":
+      return "number";
+    case "boolean":
+      return "boolean";
+    default:
+      return (schema.type as string | undefined) === "null" ? "null" : "unknown";
+  }
 }
 
-function addNullable(schema: OpenAPIV3.SchemaObject, type: string) {
-  return schema.nullable && type !== "null" ? `${type} | null` : type;
+// A referenced schema's type as seen from `tag`'s models file. The schema code references the same
+// model, so its namespace (or, without namespaces, its schema) is already imported.
+function renderReferenceType(ref: string, resolver: GenerateTypeParams["resolver"], tag: string) {
+  const schemaName = resolver.getZodSchemaNameByRef(ref);
+  const typeName = getZodSchemaInferedTypeName(schemaName, resolver.options);
+  if (resolver.options.modelsInModules) {
+    return typeName;
+  }
+  const owner = resolver.getTagByZodSchemaName(schemaName);
+  if (owner === tag) {
+    return typeName;
+  }
+  return resolver.options.tsNamespaces
+    ? `${getNamespaceName({ type: GenerateType.Models, tag: owner, options: resolver.options })}.${typeName}`
+    : `z.infer<typeof ${schemaName}>`;
+}
+
+// Nullability added by the zod chain of an (unresolved) array item or additional properties schema.
+function addNullable(schema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject, type: string) {
+  return !isReferenceObject(schema) && schema.nullable && type !== "null" ? `${type} | null` : type;
 }
 
 function renderModelsProxy({ resolver, data, tag }: GenerateTypeParams) {
