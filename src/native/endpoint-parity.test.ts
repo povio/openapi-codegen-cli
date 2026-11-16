@@ -16,6 +16,8 @@ const root = process.cwd();
 const check = `
 import { ExportsApi } from "./data/exports/exports.api";
 import { ExportsQueries } from "./data/exports/exports.queries";
+import { RulesApi } from "./data/rules/rules.api";
+import { RulesQueries } from "./data/rules/rules.queries";
 const { note, search, rename } = ExportsApi;
 const { useNote, useSearch } = ExportsQueries;
 
@@ -38,6 +40,10 @@ export const useHooks = () => {
   mutation.mutate({ exportId: "id", copies: 1, data: { text: "t" } });
   useSearch().mutate({ limit: 1 });
 };
+
+// Null-only bodies and parameters are typed \`null\`.
+export const reset = () => RulesApi.reset(null, null, null);
+export const useReset = () => RulesQueries.useReset().mutate({ data: null, scope: null, force: null });
 `;
 
 async function typecheck(output: string, files: { fileName: string; content: string }[], checkCode = check) {
@@ -114,6 +120,12 @@ describe("endpoints of test/renderer-regressions.yaml", () => {
           " * @property { string | null } text\n * @property { (string | null)[] } tags\n",
         );
 
+        // Null-only bodies and parameters are typed `null`.
+        const rulesModels = tsNamespaces ? "RulesModels." : "";
+        expect(content("rules/rules.api.ts")).toContain(
+          `export const reset = (data: ${rulesModels}ResetBody, scope: ${rulesModels}ResetScopeParam, force: null, ) => {`,
+        );
+
         // A referenced tuple's `minItems` is validated at the response; only its name is imported.
         const literalsApi = content("literals/literals.api.ts");
         expect(literalsApi).toContain(
@@ -126,6 +138,117 @@ describe("endpoints of test/renderer-regressions.yaml", () => {
           const result = await typecheck(output, expected);
           expect(result.status, `${result.stdout}\n${result.stderr}`).toBe(0);
         }
+      } finally {
+        await rm(output, { recursive: true, force: true });
+      }
+    },
+    60_000,
+  );
+});
+
+describe("null and multi-type parameters and bodies", () => {
+  const json = (schema: object) => ({ content: { "application/json": { schema } } });
+  const document = {
+    openapi: "3.1.0",
+    info: { title: "Null endpoints", version: "1" },
+    paths: {
+      "/null": {
+        post: {
+          operationId: "updateNull",
+          tags: ["Examples"],
+          parameters: [
+            { in: "query", name: "filter", required: true, schema: { type: ["null"] } },
+            // Inline (unnamed) parameter schemas are typed by their `type`.
+            { in: "query", name: "plain", required: true, schema: { type: "null" } },
+            { in: "query", name: "list", required: false, schema: { type: "array" } },
+            { in: "header", name: "x-test", required: false, schema: { type: ["string", "null"] } },
+          ],
+          requestBody: { required: true, ...json({ type: ["null"] }) },
+          responses: { "200": { description: "OK", ...json({ type: ["null"] }) } },
+        },
+      },
+      "/multi": {
+        post: {
+          operationId: "updateMulti",
+          tags: ["Examples"],
+          parameters: [
+            { in: "query", name: "search", required: true, schema: { type: ["string", "null"] } },
+            {
+              in: "query",
+              name: "filter",
+              required: false,
+              schema: { type: ["object", "null"], properties: { a: { type: "string" } } },
+            },
+          ],
+          requestBody: { required: true, ...json({ type: ["string", "integer", "null"] }) },
+          responses: { "200": { description: "OK", ...json({ type: ["string", "null"] }) } },
+        },
+      },
+    },
+  };
+
+  test.each<Record<string, unknown>>([
+    {},
+    { lazySchemas: true },
+    { restClient: "native" },
+    { restClient: "native", lazySchemas: true },
+  ])(
+    "render identically, typecheck and validate with %j",
+    async (variant) => {
+      const output = await mkdtemp(join(tmpdir(), "null-endpoint-parity-"));
+      try {
+        const options = {
+          ...DEFAULT_GENERATE_OPTIONS,
+          output: join(output, "data"),
+          importPath: "relative" as const,
+          ...variant,
+        };
+        const expected = generateCodeFromOpenAPIDoc(
+          structuredClone(document) as unknown as Parameters<typeof generateCodeFromOpenAPIDoc>[0],
+          options,
+        );
+        const actual = generateFilesFromNativeOpenAPI(JSON.stringify(document), false, options);
+        expect(actual).toEqual(expected);
+
+        const api = expected.find(({ fileName }) => fileName.endsWith("examples/examples.api.ts"))!.content;
+        expect(api).toContain(
+          "export const updateNull = (data: ExamplesModels.UpdateNullBody, filter: ExamplesModels.UpdateNullFilterParam, plain: null, list?: unknown[], xTest?: ExamplesModels.UpdateNullXTestParam, ) => {",
+        );
+
+        const result = await typecheck(
+          output,
+          expected,
+          `import { ExamplesApi } from "./data/examples/examples.api";
+          import { ExamplesQueries } from "./data/examples/examples.queries";
+          import { ExamplesModels } from "./data/examples/examples.models";
+          const assert = (condition: boolean, message: string) => { if (!condition) throw new Error(message); };
+          export const nulls = () => ExamplesApi.updateNull(null, null, null, [], null);
+          // @ts-expect-error -- the body is null
+          export const stringBody = () => ExamplesApi.updateNull("x", null, null);
+          export const multi = () => [ExamplesApi.updateMulti(null, null), ExamplesApi.updateMulti(1, "s", { a: "a" })];
+          // @ts-expect-error -- the body is a string, an integer or null
+          export const booleanBody = () => ExamplesApi.updateMulti(true, null);
+          export const useHooks = () => {
+            ExamplesQueries.useUpdateNull().mutate({ data: null, filter: null, plain: null });
+            ExamplesQueries.useUpdateMulti().mutate({ data: "s", search: null, filter: null });
+          };
+          const parses: [{ safeParse: (value: unknown) => { success: boolean } }, unknown, boolean][] = [
+            [ExamplesModels.UpdateNullBodySchema, null, true],
+            [ExamplesModels.UpdateNullBodySchema, "x", false],
+            [ExamplesModels.UpdateNullResponseSchema, null, true],
+            [ExamplesModels.UpdateMultiBodySchema, 1, true],
+            [ExamplesModels.UpdateMultiBodySchema, null, true],
+            [ExamplesModels.UpdateMultiBodySchema, true, false],
+            [ExamplesModels.UpdateMultiFilterParamSchema, null, true],
+            [ExamplesModels.UpdateMultiFilterParamSchema, { a: 1 }, false],
+          ];
+          for (const [schema, value, success] of parses) assert(schema.safeParse(value).success === success, JSON.stringify(value));
+          console.log("ok");
+          `,
+        );
+        expect(result.status, `${result.stdout}\n${result.stderr}`).toBe(0);
+        const run = spawnSync("bun", ["check.ts"], { cwd: output, encoding: "utf8" });
+        expect(run.stdout.trim(), run.stderr).toBe("ok");
       } finally {
         await rm(output, { recursive: true, force: true });
       }

@@ -7,7 +7,7 @@ import { getEnumZodSchemaCodeFromEnumNames, getZodSchema } from "@/generators/co
 import { resolveZodSchemaName } from "@/generators/core/zod/resolveZodSchemaName";
 import { EndpointParameter } from "@/generators/types/endpoint";
 import { ParameterObject } from "@/generators/types/openapi";
-import { isSchemaObject } from "@/generators/utils/openapi-schema.utils";
+import { hasSchemaType, isSchemaObject } from "@/generators/utils/openapi-schema.utils";
 import {
   isParamMediaTypeAllowed,
   getParameterEnumNames,
@@ -104,7 +104,8 @@ export function getEndpointParameter({
     (paramObj.in === "query" || paramObj.in === "header") &&
     !paramObj.required &&
     isSchemaObject(schemaObject) &&
-    (schemaObject.type === "object" || (!!schemaObject.properties && Object.keys(schemaObject.properties).length > 0));
+    (hasSchemaType(schemaObject, "object") ||
+      (!!schemaObject.properties && Object.keys(schemaObject.properties).length > 0));
 
   const zodChain = getZodChain({
     schema: schemaObject,

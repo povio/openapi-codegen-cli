@@ -186,14 +186,22 @@ describe("generated models of test/renderer-regressions.yaml", () => {
         chain: { next: { name: "b" }, name: "a" },
         link: { next: null },
         named: { next: { name: "b" }, name: "a", id: "n" },
+        variants: ["a", null, ["b", []]],
+        text: { next: "leaf" },
+        none: null,
       };
       assert(JSON.stringify(RuleGraphDtoSchema.parse(graph)) === JSON.stringify(graph), "graph data");
       assert(RuleGraphDtoSchema.safeParse({ link: null }).success, "nullable link");
+      for (const value of [{ variants: null }, { variants: "leaf" }, { text: null }, { text: { next: { next: null } } }])
+        assert(RuleGraphDtoSchema.safeParse(value).success, JSON.stringify(value));
       for (const value of [
         { scopes: { child: 1 } },
         { chain: { next: { name: 1 } } },
         { link: { next: 1 } },
         { named: { name: "a" } },
+        { variants: ["a", 1] },
+        { text: { next: 1 } },
+        { none: {} },
       ])
         assert(!RuleGraphDtoSchema.safeParse(value).success, JSON.stringify(value));
       console.log("ok");`,
@@ -594,6 +602,127 @@ describe("recursive members, readonly allOf and nullable type arrays", () => {
              const nested: M.TypeArray = { next: null };
              const catchall: M.CatchallUnion = { id: "x", other: [{ id: "y" }] };
              assert(M.TypeArraySchema.parse(nested) !== undefined && nullable === null && catchall.id === "x", "types");`
+          : ""
+      }
+      console.log("ok");`,
+    );
+    expect(output.trim()).toBe("ok");
+  });
+});
+
+describe("recursion and null in type arrays", () => {
+  const ref = (name: string) => ({ $ref: `#/components/schemas/${name}` });
+  const names = [
+    "ArrayStringNull",
+    "ObjectStringNull",
+    "MapStringNull",
+    "CycleList",
+    "NullOnlyProperties",
+    "NullWithProperties",
+    "StatusHolder",
+  ];
+  const document = {
+    openapi: "3.1.0",
+    info: { title: "Type arrays", version: "1" },
+    paths: {
+      "/examples": {
+        get: {
+          operationId: "getExamples",
+          tags: ["Examples"],
+          responses: {
+            "200": {
+              description: "OK",
+              content: {
+                "application/json": {
+                  schema: { type: "object", properties: Object.fromEntries(names.map((name) => [name, ref(name)])) },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    components: {
+      schemas: {
+        // Every member of a type array is traversed for references, so these recurse lazily, and their
+        // explicit types include each member (`string` too where `properties` are present).
+        ArrayStringNull: { type: ["array", "string", "null"], items: ref("ArrayStringNull") },
+        ObjectStringNull: { type: ["object", "string", "null"], properties: { next: ref("ObjectStringNull") } },
+        MapStringNull: { type: ["object", "string", "null"], additionalProperties: ref("MapStringNull") },
+        CycleList: { type: ["array", "null"], items: ref("CycleNode") },
+        CycleNode: { type: "object", properties: { name: { type: "string" }, children: ref("CycleList") } },
+        // Object keywords do not apply to `null`: only null is valid.
+        NullOnlyProperties: { type: ["null"], properties: { name: { type: "string" } } },
+        NullWithProperties: { type: "null", properties: { name: { type: "string" } } },
+        StatusHolder: { type: "object", properties: { state: { type: ["string", "null"], enum: ["a", "b", null] } } },
+      },
+    },
+  };
+
+  test.each<Partial<GenerateOptions>>([
+    {},
+    { lazySchemas: true },
+    { allReadonly: true },
+    { allReadonly: true, lazySchemas: true },
+    { modelsInModules: true },
+    { modelsInModules: true, lazySchemas: true },
+    { modelsInModules: true, allReadonly: true },
+    { modelsInCommon: true },
+    { tsNamespaces: false },
+    { tsNamespaces: false, allReadonly: true },
+  ])("typecheck and validate with %j", async (options) => {
+    const namespaced = options.tsNamespaces !== false;
+    const imports = namespaced
+      ? `import { ExamplesModels as M } from "./examples/examples.models";`
+      : `import * as M from "./examples/examples.models";`;
+    const output = await verifyGeneratedModels(
+      JSON.stringify(document),
+      options,
+      `${imports}
+      ${assert}
+      const schemas = M as unknown as Record<string, { safeParse: (value: unknown) => { success: boolean } }>;
+      const valid: [string, unknown][] = [
+        ["ArrayStringNullSchema", null],
+        ["ArrayStringNullSchema", "leaf"],
+        ["ArrayStringNullSchema", ["leaf", null, ["deeper", []]]],
+        ["ObjectStringNullSchema", null],
+        ["ObjectStringNullSchema", "leaf"],
+        ["ObjectStringNullSchema", { next: "leaf" }],
+        ["ObjectStringNullSchema", { next: { next: null } }],
+        ["MapStringNullSchema", "leaf"],
+        ["MapStringNullSchema", { a: null, b: { c: "d" } }],
+        ["CycleListSchema", null],
+        ["CycleListSchema", [{ name: "a", children: [{ children: null }] }]],
+        ["NullOnlyPropertiesSchema", null],
+        ["NullWithPropertiesSchema", null],
+        ["StatusHolderSchema", { state: null }],
+        ["StatusHolderSchema", { state: "a" }],
+      ];
+      const invalid: [string, unknown][] = [
+        ["ArrayStringNullSchema", 2],
+        ["ArrayStringNullSchema", ["leaf", 2]],
+        ["ObjectStringNullSchema", 3],
+        ["ObjectStringNullSchema", { next: 3 }],
+        ["MapStringNullSchema", { a: 1 }],
+        ["CycleListSchema", [{ children: [{ name: 1 }] }]],
+        ["NullOnlyPropertiesSchema", {}],
+        ["NullOnlyPropertiesSchema", { name: "x" }],
+        ["NullWithPropertiesSchema", {}],
+        ["StatusHolderSchema", { state: "c" }],
+      ];
+      for (const [name, value] of valid) assert(schemas[name]!.safeParse(value).success, name + " " + JSON.stringify(value));
+      for (const [name, value] of invalid) assert(!schemas[name]!.safeParse(value).success, name + " " + JSON.stringify(value));
+      ${
+        namespaced
+          ? `const list: M.ArrayStringNull = ["leaf", null, ["deeper"]];
+             const object: M.ObjectStringNull = { next: "leaf" };
+             const string: M.ObjectStringNull = "leaf";
+             const map: M.MapStringNull = { a: "b", c: { d: null } };
+             const cycle: M.CycleList = [{ children: null }];
+             const nullOnly: M.NullOnlyProperties = null;
+             // @ts-expect-error -- only null is valid
+             const notNull: M.NullOnlyProperties = {};
+             assert([list, object, string, map, cycle, notNull].every((value) => value !== undefined) && nullOnly === null, "types");`
           : ""
       }
       console.log("ok");`,

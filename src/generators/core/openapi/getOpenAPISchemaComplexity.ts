@@ -60,7 +60,8 @@ export function getOpenAPISchemaComplexity(
     );
   }
 
-  if (!schema.type) {
+  // Object keywords do not apply to `null` (see getZodSchema).
+  if (!schema.type || (schema.type as string) === "null") {
     return current;
   }
 

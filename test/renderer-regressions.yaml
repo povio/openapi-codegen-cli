@@ -228,6 +228,26 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/RuleGraphDto" }
+  # Null-only (`type: ["null"]`) bodies and parameters are named `z.null()` schemas and typed `null`;
+  # inline `type: "null"` parameters are typed `null` too.
+  /rules/reset:
+    put:
+      operationId: RulesController_reset
+      tags: [Rules]
+      parameters:
+        - { name: scope, in: query, required: true, schema: { type: ["null"] } }
+        - { name: force, in: query, required: true, schema: { type: "null" } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: ["null"] }
+      responses:
+        "200":
+          description: Reset
+          content:
+            application/json:
+              schema: { type: ["null"] }
   # Recursive properties use `z.lazy`; `additionalProperties: false` adds no index signature.
   /folders/tree:
     get:
@@ -516,6 +536,20 @@ components:
         chain: { $ref: "#/components/schemas/RuleChainDto" }
         link: { $ref: "#/components/schemas/RuleLinkDto" }
         named: { $ref: "#/components/schemas/NamedRuleChainDto" }
+        variants: { $ref: "#/components/schemas/RuleVariantDto" }
+        text: { $ref: "#/components/schemas/RuleTextDto" }
+        # Object keywords do not apply to `null`: only null is valid.
+        none: { type: ["null"], properties: { name: { type: string } } }
+    # Every member of a type array is traversed, so recursion through `items` of
+    # `[array, string, "null"]` is deferred with `z.lazy` and explicitly typed.
+    RuleVariantDto:
+      type: [array, string, "null"]
+      items: { $ref: "#/components/schemas/RuleVariantDto" }
+    # The explicit type includes `string` although `properties` are present.
+    RuleTextDto:
+      type: [object, string, "null"]
+      properties:
+        next: { $ref: "#/components/schemas/RuleTextDto" }
     # Recursive additional properties are deferred with `z.lazy`.
     RuleScopeMap:
       type: object

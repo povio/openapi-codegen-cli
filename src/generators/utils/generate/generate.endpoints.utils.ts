@@ -9,11 +9,9 @@ import { invalidVariableNameCharactersToCamel, isValidPropertyName } from "@/gen
 import { isEndpointParameterRequired } from "@/generators/utils/endpoint.utils";
 import { getNamespaceName } from "@/generators/utils/namespace.utils";
 import { isSchemaObject } from "@/generators/utils/openapi-schema.utils";
-import { isPrimitiveType } from "@/generators/utils/openapi.utils";
 import { isQuery } from "@/generators/utils/query.utils";
 import { decapitalize, snakeToCamel } from "@/generators/utils/string.utils";
 import { getEndpointTag } from "@/generators/utils/tag.utils";
-import { primitiveTypeToTsType } from "@/generators/utils/ts.utils";
 import { isNamedZodSchema } from "@/generators/utils/zod-schema.utils";
 
 import { getImportedZodSchemaInferedTypeName } from "./generate.zod.utils";
@@ -66,6 +64,36 @@ export const getEndpointPath = (endpoint: Endpoint) => {
   return endpointPath;
 };
 
+/**
+ * The TS type of an inline (unnamed) parameter schema by its OpenAPI `type`; a type array
+ * (`["string", "null"]`) is the union of its members' types.
+ * Mirrored by `primitive_parameter_type` in native/src/render.rs.
+ */
+function getInlineParameterTsType(schemaType: unknown): string {
+  const getSingleType = (type: unknown) => {
+    switch (type) {
+      case "number":
+      case "integer":
+        return "number";
+      case "boolean":
+        return "boolean";
+      case "array":
+        return "unknown[]";
+      case "object":
+        return "Record<string, unknown>";
+      case "null":
+        return "null";
+      default:
+        return "string";
+    }
+  };
+  if (Array.isArray(schemaType)) {
+    const types = [...new Set(schemaType.map(getSingleType))];
+    return types.length > 0 ? types.join(" | ") : "string";
+  }
+  return getSingleType(schemaType);
+}
+
 export function mapEndpointParamsToFunctionParams(
   resolver: SchemaResolver,
   endpoint: Endpoint,
@@ -90,10 +118,7 @@ export function mapEndpointParamsToFunctionParams(
     } else if (param.parameterObject?.schema) {
       // A `$ref` to a simple component is inlined, so type it by the component's schema.
       const schema = resolver.resolveObject(param.parameterObject.schema);
-      const openApiSchemaType = isSchemaObject(schema) ? (schema as OpenAPIV3.SchemaObject).type : undefined;
-      if (openApiSchemaType && isPrimitiveType(openApiSchemaType)) {
-        type = primitiveTypeToTsType(openApiSchemaType);
-      }
+      type = getInlineParameterTsType(isSchemaObject(schema) ? (schema as OpenAPIV3.SchemaObject).type : undefined);
     }
 
     return {

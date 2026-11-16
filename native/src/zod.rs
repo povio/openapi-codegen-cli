@@ -285,14 +285,10 @@ impl<'a> ZodCompiler<'a> {
             .as_object()
             .ok_or_else(|| "Schema must be an object".to_string())?;
         if let Some(types) = object.get("type").and_then(Value::as_array) {
-            if types.len() == 1 {
-                let mut variant = object.clone();
-                variant.insert("type".into(), types[0].clone());
-                return self.compile(&Value::Object(variant), meta, tag, root_ref, stack);
-            }
             // A `null` member makes the schema of the other members nullable (`type: ["object",
             // "null"]`); its other keywords (`properties`, `items`, ...) only describe the
-            // non-null members.
+            // non-null members, so a null-only type array (`type: ["null"]`) is `z.null()`
+            // whatever keywords it has.
             let non_null = types
                 .iter()
                 .filter(|schema_type| schema_type.as_str() != Some("null"))
@@ -429,6 +425,11 @@ impl<'a> ZodCompiler<'a> {
                 }
             ));
         }
+        // An explicit `null` type ignores object keywords (`properties`, ...), which do not apply
+        // to null.
+        if schema_type.as_deref() == Some("null") {
+            return Ok("z.null()".into());
+        }
         if schema_type.as_deref() == Some("object")
             || object.contains_key("properties")
             || object.contains_key("additionalProperties")
@@ -437,9 +438,6 @@ impl<'a> ZodCompiler<'a> {
         }
         if schema_type.as_deref() == Some("any") {
             return Ok("z.unknown()".into());
-        }
-        if schema_type.as_deref() == Some("null") {
-            return Ok("z.null()".into());
         }
         if schema_type.is_none() {
             return Ok("z.unknown()".into());
@@ -957,6 +955,24 @@ pub(crate) fn array_item_schemas(schema: &Map<String, Value>) -> Vec<&Value> {
     }
 }
 
+/// `hasSchemaType`: whether `type` permits `schema_type`, also for OpenAPI 3.1 type arrays
+/// (`type: ["array", "null"]`).
+pub(crate) fn has_schema_type(schema: &Value, schema_type: &str) -> bool {
+    schema
+        .as_object()
+        .is_some_and(|object| object_has_schema_type(object, schema_type))
+}
+
+pub(crate) fn object_has_schema_type(object: &Map<String, Value>, schema_type: &str) -> bool {
+    match object.get("type") {
+        Some(Value::String(value)) => value == schema_type,
+        Some(Value::Array(types)) => types
+            .iter()
+            .any(|value| value.as_str() == Some(schema_type)),
+        _ => false,
+    }
+}
+
 pub(crate) fn is_tuple_object(schema: &Map<String, Value>) -> bool {
     tuple_parts(schema).is_some()
 }
@@ -1391,7 +1407,7 @@ fn collect_inline_enum_candidates(
         add_enum_candidate(additional, segments, tags, candidates);
         collect_inline_enum_candidates(additional, segments, tags, candidates);
     }
-    if object.get("type").and_then(Value::as_str) == Some("array") {
+    if object_has_schema_type(object, "array") {
         for item in array_item_schemas(object) {
             add_enum_candidate(item, segments, tags, candidates);
             collect_inline_enum_candidates(item, segments, tags, candidates);
