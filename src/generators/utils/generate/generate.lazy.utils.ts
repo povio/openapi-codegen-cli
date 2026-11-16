@@ -86,7 +86,8 @@ export function rewriteCodeIdentifiers(
       while (end < code.length && isIdentifierChar(code[end]!)) end += 1;
       const { text, consumeNextChar } = replace({
         identifier: code.slice(index, end),
-        isMemberAccess: output.endsWith("."),
+        // A spread (`...PetSchema.shape`) is not a member access.
+        isMemberAccess: output.endsWith(".") && !output.endsWith("..."),
         isObjectKey: code.slice(end).trimStart().startsWith(":"),
         nextChar: code[end],
       });
@@ -192,12 +193,19 @@ export function isZodObjectCode(code: string) {
 
 /**
  * Circular schemas need an explicit type annotation and must not read their own binding while
- * it is being initialized. Object schemas already defer recursive properties with `z.lazy`, so
- * they keep their `ZodObject` type; any other schema (unions, arrays, intersections, ...) is
- * wrapped in `z.lazy` as a whole and typed as a plain `ZodType`.
+ * it is being initialized. Object schemas already defer recursive members with `z.lazy`, so
+ * they keep their `ZodObject` type (`ZodReadonly<ZodObject>` with `allReadonly`, so that allOf
+ * members can unwrap it); any other schema (unions, arrays, intersections, ...) is wrapped in
+ * `z.lazy` as a whole and typed as a plain `ZodType`.
  */
 export function getCircularSchemaDeclaration(code: string, typeName: string) {
-  return isZodObjectCode(code)
-    ? { typeAnnotation: `z.ZodObject<z.ZodRawShape> & z.ZodType<${typeName}>`, code }
-    : { typeAnnotation: `z.ZodType<${typeName}>`, code: `z.lazy(() => ${code})` };
+  if (isZodObjectCode(code)) {
+    return { typeAnnotation: `z.ZodObject<z.ZodRawShape> & z.ZodType<${typeName}>`, code };
+  }
+  if (code.endsWith(READONLY_SUFFIX) && isZodObjectCode(code.slice(0, -READONLY_SUFFIX.length))) {
+    return { typeAnnotation: `z.ZodReadonly<z.ZodObject<z.ZodRawShape>> & z.ZodType<${typeName}>`, code };
+  }
+  return { typeAnnotation: `z.ZodType<${typeName}>`, code: `z.lazy(() => ${code})` };
 }
+
+const READONLY_SUFFIX = ".readonly()";

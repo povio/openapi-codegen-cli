@@ -936,7 +936,8 @@ fn rewrite_code_identifiers(
             let identifier: String = chars[index..end].iter().collect();
             let (text, consume_next_char) = replace(&CodeIdentifier {
                 identifier: &identifier,
-                is_member_access: output.ends_with('.'),
+                // A spread (`...PetSchema.shape`) is not a member access.
+                is_member_access: output.ends_with('.') && !output.ends_with("..."),
                 is_object_key: chars[end..]
                     .iter()
                     .find(|next| !next.is_whitespace())
@@ -1087,13 +1088,22 @@ fn is_zod_object_code(code: &str) -> bool {
 }
 
 /// Circular schemas need an explicit type annotation and must not read their own binding while it
-/// is being initialized. Object schemas already defer recursive properties with `z.lazy`, so they
-/// keep their `ZodObject` type; any other schema (unions, arrays, intersections, ...) is wrapped in
-/// `z.lazy` as a whole and typed as a plain `ZodType`. Returns `(type annotation, code)`.
+/// is being initialized. Object schemas already defer recursive members with `z.lazy`, so they
+/// keep their `ZodObject` type (`ZodReadonly<ZodObject>` with `allReadonly`, so that allOf members
+/// can unwrap it); any other schema (unions, arrays, intersections, ...) is wrapped in `z.lazy` as a
+/// whole and typed as a plain `ZodType`. Returns `(type annotation, code)`.
 fn circular_schema_declaration(code: &str, type_name: &str) -> (String, String) {
     if is_zod_object_code(code) {
         (
             format!("z.ZodObject<z.ZodRawShape> & z.ZodType<{type_name}>"),
+            code.to_string(),
+        )
+    } else if code
+        .strip_suffix(".readonly()")
+        .is_some_and(is_zod_object_code)
+    {
+        (
+            format!("z.ZodReadonly<z.ZodObject<z.ZodRawShape>> & z.ZodType<{type_name}>"),
             code.to_string(),
         )
     } else {
@@ -1155,6 +1165,34 @@ fn render_schema_type(schema: &Value, context: &SchemaTypeContext) -> String {
         return values
             .iter()
             .map(Value::to_string)
+            .collect::<Vec<_>>()
+            .join(" | ");
+    }
+
+    // Type arrays (OpenAPI 3.1) are a union of their types; `null` makes the schema nullable.
+    if let Some(types) = schema.get("type").and_then(Value::as_array) {
+        let mut parts = types
+            .iter()
+            .filter(|schema_type| schema_type.as_str() != Some("null"))
+            .map(|schema_type| {
+                let mut variant = schema.as_object().cloned().unwrap_or_default();
+                variant.insert("type".into(), schema_type.clone());
+                render_schema_type(&Value::Object(variant), context)
+            })
+            .collect::<Vec<_>>();
+        if parts.len() < types.len() {
+            parts.push("null".into());
+        }
+        let multiple = parts.len() > 1;
+        return parts
+            .into_iter()
+            .map(|part| {
+                if multiple && part.contains(['|', '&']) {
+                    format!("({part})")
+                } else {
+                    part
+                }
+            })
             .collect::<Vec<_>>()
             .join(" | ");
     }
@@ -1244,7 +1282,7 @@ fn render_schema_type(schema: &Value, context: &SchemaTypeContext) -> String {
         let is_partial = !options.with_implicit_required_props
             && schema.get("properties").is_some()
             && required.is_none();
-        let mut properties = schema
+        let properties = schema
             .get("properties")
             .and_then(Value::as_object)
             .into_iter()
@@ -1290,22 +1328,36 @@ fn render_schema_type(schema: &Value, context: &SchemaTypeContext) -> String {
             })
             .collect::<Vec<_>>();
         // Like JavaScript's truthiness check, `false` and `null` add no index signature.
-        if let Some(additional) = schema
+        let index_type = schema
             .get("additionalProperties")
             .filter(|additional| !matches!(additional, Value::Bool(false) | Value::Null))
-        {
-            let value_type = if additional.is_object() {
-                add_nullable_type(additional, render_schema_type(additional, context))
+            .map(|additional| {
+                let value_type = if additional.is_object() {
+                    add_nullable_type(additional, render_schema_type(additional, context))
+                } else {
+                    "unknown".into()
+                };
+                format!("{{ [key: string]: {value_type} }}")
+            });
+        // Like zod's catchall output, properties and the index signature are intersected, so
+        // property types need not be assignable to the additional properties type. Each part is
+        // made readonly on its own: `Readonly<A & B>` of a recursive type would circularly
+        // reference itself.
+        let readonly = |object_type: String| {
+            if options.all_readonly {
+                format!("Readonly<{object_type}>")
             } else {
-                "unknown".into()
-            };
-            properties.push(format!("[key: string]: {value_type}"));
-        }
-        let object_type = format!("{{ {} }}", properties.join("; "));
-        return if options.all_readonly {
-            format!("Readonly<{object_type}>")
-        } else {
-            object_type
+                object_type
+            }
+        };
+        return match index_type {
+            Some(index_type) if !properties.is_empty() => format!(
+                "{} & {}",
+                readonly(format!("{{ {} }}", properties.join("; "))),
+                readonly(index_type)
+            ),
+            Some(index_type) => readonly(index_type),
+            None => readonly(format!("{{ {} }}", properties.join("; "))),
         };
     }
 
@@ -5221,6 +5273,30 @@ mod model_code_tests {
         assert_eq!(
             code,
             "z.lazy(() => z.union([z.string(), z.array(ExampleSchema)]))"
+        );
+        let readonly_object =
+            "z.object({ next: z.lazy(() => ExampleSchema) }).partial().readonly()";
+        let (annotation, code) = circular_schema_declaration(readonly_object, "Example");
+        assert_eq!(
+            annotation,
+            "z.ZodReadonly<z.ZodObject<z.ZodRawShape>> & z.ZodType<Example>"
+        );
+        assert_eq!(code, readonly_object);
+    }
+
+    #[test]
+    fn spread_references_are_not_member_accesses() {
+        let names = HashSet::from_iter(["PetSchema"]);
+        assert_eq!(
+            call_lazy_schema_references("z.object({ ...PetSchema.shape, a: x.PetSchema })", &names),
+            "z.object({ ...PetSchema().shape, a: x.PetSchema })"
+        );
+        assert_eq!(
+            strip_model_namespace_references(
+                "z.object({ ...CommonModels.PetSchema.unwrap().shape })",
+                "Models"
+            ),
+            "z.object({ ...PetSchema.unwrap().shape })"
         );
     }
 }

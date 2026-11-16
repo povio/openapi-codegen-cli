@@ -285,17 +285,38 @@ impl<'a> ZodCompiler<'a> {
             .as_object()
             .ok_or_else(|| "Schema must be an object".to_string())?;
         if let Some(types) = object.get("type").and_then(Value::as_array) {
-            let mut compiled = Vec::with_capacity(types.len());
-            for schema_type in types {
+            if types.len() == 1 {
                 let mut variant = object.clone();
-                variant.insert("type".into(), schema_type.clone());
+                variant.insert("type".into(), types[0].clone());
+                return self.compile(&Value::Object(variant), meta, tag, root_ref, stack);
+            }
+            // A `null` member makes the schema of the other members nullable (`type: ["object",
+            // "null"]`); its other keywords (`properties`, `items`, ...) only describe the
+            // non-null members.
+            let non_null = types
+                .iter()
+                .filter(|schema_type| schema_type.as_str() != Some("null"))
+                .collect::<Vec<_>>();
+            if non_null.is_empty() {
+                return Ok("z.null()".into());
+            }
+            let mut compiled = Vec::with_capacity(non_null.len());
+            for schema_type in &non_null {
+                let mut variant = object.clone();
+                variant.insert("type".into(), (*schema_type).clone());
                 compiled.push(self.compile(&Value::Object(variant), meta, tag, root_ref, stack)?);
             }
-            return Ok(if compiled.len() == 1 {
+            let code = if compiled.len() == 1 {
                 compiled.remove(0)
             } else {
                 format!("z.union([{}])", compiled.join(", "))
-            });
+            };
+            let nullable = if non_null.len() < types.len() {
+                ".nullable()"
+            } else {
+                ""
+            };
+            return Ok(format!("{code}{nullable}"));
         }
         for keyword in ["oneOf", "anyOf"] {
             if let Some(items) = object.get(keyword).and_then(Value::as_array) {
@@ -548,10 +569,7 @@ impl<'a> ZodCompiler<'a> {
                 let actual = self.resolve_schema(property).unwrap_or(property);
                 code.push_str(&chain(actual, property_meta, self.options));
                 let property_name = quote_property(name);
-                let circular = root_ref.is_some_and(|root| {
-                    (!stack.is_empty() || self.circular_getters.contains(root))
-                        && schema_reaches(property, root, self.resolver)
-                });
+                let circular = self.is_circular_member(property, root_ref, stack);
                 rendered.push(if circular {
                     format!("{property_name}: z.lazy(() => {code})")
                 } else {
@@ -590,7 +608,11 @@ impl<'a> ZodCompiler<'a> {
                     },
                     self.options,
                 ));
-                format!(".catchall({code})")
+                if self.is_circular_member(&value, root_ref, stack) {
+                    format!(".catchall(z.lazy(() => {code}))")
+                } else {
+                    format!(".catchall({code})")
+                }
             }
             Some(value) if value.as_bool() == Some(true) || value.as_object().is_some() => {
                 ".catchall(z.unknown())".into()
@@ -605,6 +627,16 @@ impl<'a> ZodCompiler<'a> {
                 ""
             }
         ))
+    }
+
+    /// Whether an object member schema (property or additional properties) references the schema
+    /// being declared, so it must be deferred with `z.lazy` to avoid reading the declaration while
+    /// it is initialized.
+    fn is_circular_member(&self, member: &Value, root_ref: Option<&str>, stack: &[String]) -> bool {
+        root_ref.is_some_and(|root| {
+            (!stack.is_empty() || self.circular_getters.contains(root))
+                && schema_reaches(member, root, self.resolver)
+        })
     }
 
     fn compile_all_of(
@@ -663,13 +695,18 @@ impl<'a> ZodCompiler<'a> {
         let Some(first) = compiled.first() else {
             return Ok("z.object({})".into());
         };
+        let all_readonly = self.options.all_readonly;
         let rest = compiled
             .iter()
             .skip(1)
-            .map(|code| format!("...{code}.shape"))
+            .map(|code| format!("...{}", object_shape_code(code, all_readonly)))
             .collect::<Vec<_>>()
             .join(", ");
-        Ok(format!("z.object({{ ...{first}.shape, {rest} }})"))
+        Ok(format!(
+            "z.object({{ ...{}, {rest} }}){}",
+            object_shape_code(first, all_readonly),
+            if all_readonly { ".readonly()" } else { "" }
+        ))
     }
 
     fn resolve_schema<'b>(&'b self, schema: &'b Value) -> Option<&'b Value> {
@@ -707,6 +744,20 @@ impl<'a> ZodCompiler<'a> {
         } else {
             self.options.default_tag.clone()
         }
+    }
+}
+
+/// The `shape` of an allOf member object schema. With `allReadonly` object schemas are wrapped in
+/// `.readonly()`, which has no `shape`: inline members are merged before being made readonly, and
+/// referenced members are unwrapped. The merged object is made readonly instead. Mirrors
+/// `getObjectShapeCode` in src/generators/core/zod/getZodSchema.ts.
+fn object_shape_code(code: &str, all_readonly: bool) -> String {
+    if !all_readonly {
+        return format!("{code}.shape");
+    }
+    match code.strip_suffix(".readonly()") {
+        Some(object) => format!("{object}.shape"),
+        None => format!("{code}.unwrap().shape"),
     }
 }
 

@@ -217,6 +217,17 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/RuleDto" }
+  # Recursive additional properties and allOf members, and nullable object type arrays.
+  /rules/graph:
+    get:
+      operationId: RulesController_graph
+      tags: [Rules]
+      responses:
+        "200":
+          description: Rule graph
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RuleGraphDto" }
   # Recursive properties use `z.lazy`; `additionalProperties: false` adds no index signature.
   /folders/tree:
     get:
@@ -486,6 +497,41 @@ components:
         node: { $ref: "#/components/schemas/RuleNode" }
         kind: { type: string, enum: ["RulesModels.RuleNodeSchema", "CommonModels.StatusEnumSchema", plain] }
         pattern: { type: string, pattern: "^CommonModels\\.x$" }
+    RuleGraphDto:
+      type: object
+      properties:
+        scopes: { $ref: "#/components/schemas/RuleScopeMap" }
+        chain: { $ref: "#/components/schemas/RuleChainDto" }
+        link: { $ref: "#/components/schemas/RuleLinkDto" }
+        named: { $ref: "#/components/schemas/NamedRuleChainDto" }
+    # Recursive additional properties are deferred with `z.lazy`.
+    RuleScopeMap:
+      type: object
+      properties:
+        label: { type: string }
+      additionalProperties: { $ref: "#/components/schemas/RuleScopeMap" }
+    # allOf members are merged before `.readonly()` (allReadonly).
+    RuleChainDto:
+      allOf:
+        - type: object
+          properties:
+            next: { $ref: "#/components/schemas/RuleChainDto" }
+        - type: object
+          properties:
+            name: { type: string }
+    # `type: [object, "null"]` is a nullable object, including where it recurses.
+    RuleLinkDto:
+      type: [object, "null"]
+      properties:
+        next: { $ref: "#/components/schemas/RuleLinkDto" }
+    # A referenced circular allOf member is unwrapped (allReadonly) before reading its shape.
+    NamedRuleChainDto:
+      allOf:
+        - { $ref: "#/components/schemas/RuleChainDto" }
+        - type: object
+          required: [id]
+          properties:
+            id: { type: string }
     FolderTreeDto:
       type: object
       required: [id, folders]
