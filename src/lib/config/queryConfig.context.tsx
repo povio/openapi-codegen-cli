@@ -61,34 +61,14 @@ type InvalidationMapFuncFor<T> = InvalidationMapFunc<
   MergedMutationVariables<T extends MutationEffectsTypes ? T["variables"] : never>
 >;
 
-declare global {
-  /**
-   * Mutation types per module. The generated `queryModules.ts` extends it with `QueryModuleMutations`, so
-   * `InvalidationMap<QueryModule>` types its callbacks from the spec. Global, because interfaces re-exported
-   * from bundled declaration chunks can't be augmented through the package's entry points.
-   */
-  // oxlint-disable-next-line typescript/no-empty-interface, typescript/no-empty-object-type -- extended by generated code
-  interface OpenApiCodegenQueryModuleMutations {}
-
-  /** The generated `QueryModule` enum, registered by `queryModules.ts` as `{ queryModule: QueryModule }`. */
-  // oxlint-disable-next-line typescript/no-empty-interface, typescript/no-empty-object-type -- extended by generated code
-  interface OpenApiCodegenQueryModules {}
-}
-
-/** The generated `QueryModule` enum once `queryModules.ts` registers it, else any module key. */
-export type RegisteredQueryModule = OpenApiCodegenQueryModules extends {
-  queryModule: infer TModule extends QueryModule;
-}
-  ? TModule
-  : QueryModule;
-
 /**
- * Query keys to invalidate after a module's mutations. Without type arguments it is keyed by the generated
- * `QueryModule` and typed by its `QueryModuleMutations`, so a bare `InvalidationMap` is typed from the spec.
+ * Query keys to invalidate after a module's mutations. `TMutations` types each module's callback; the generated
+ * `queryModules.ts` exports `QueryModuleInvalidationMap`, i.e. `InvalidationMap<QueryModule, QueryModuleMutations>`.
+ * Modules without mutation types get `unknown` callback arguments.
  */
 export type InvalidationMap<
-  TQueryModule extends QueryModule = RegisteredQueryModule,
-  TMutations extends { [K in TQueryModule]?: MutationEffectsTypes } = OpenApiCodegenQueryModuleMutations,
+  TQueryModule extends QueryModule = QueryModule,
+  TMutations extends { [K in TQueryModule]?: MutationEffectsTypes } = Record<never, never>,
 > = {
   [K in TQueryModule]?: K extends keyof TMutations ? InvalidationMapFuncFor<TMutations[K]> : InvalidationMapFunc;
 };

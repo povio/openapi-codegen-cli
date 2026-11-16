@@ -26,25 +26,24 @@ export function generateQueryModules({ resolver, data }: Omit<GenerateTypeParams
     });
   });
 
-  // Each module's mutation `data` and `variables`, for `InvalidationMap<QueryModule, QueryModuleMutations>`.
+  // Each module's mutation `data` and `variables`, for `QueryModuleInvalidationMap`.
   const mutationModules = modules.filter((module) => module.mutationHooks.length > 0);
   const lines: string[] = [];
-  if (mutationModules.length > 0) {
-    lines.push(`import type { MutationEffectsOf } from "${getQueryTypesImportPath(resolver.options)}";`);
-    for (const module of mutationModules) {
-      const from = `${getImportPath(resolver.options, true)}${getTagImportPath({
-        type: GenerateType.Queries,
-        tag: module.tag,
-        options: resolver.options,
-      })}`;
-      lines.push(
-        resolver.options.tsNamespaces
-          ? `import type { ${module.namespace} } from "${from}";`
-          : `import type * as ${module.namespace} from "${from}";`,
-      );
-    }
-    lines.push("");
+  const queryTypes = mutationModules.length > 0 ? "InvalidationMap, MutationEffectsOf" : "InvalidationMap";
+  lines.push(`import type { ${queryTypes} } from "${getQueryTypesImportPath(resolver.options)}";`);
+  for (const module of mutationModules) {
+    const from = `${getImportPath(resolver.options, true)}${getTagImportPath({
+      type: GenerateType.Queries,
+      tag: module.tag,
+      options: resolver.options,
+    })}`;
+    lines.push(
+      resolver.options.tsNamespaces
+        ? `import type { ${module.namespace} } from "${from}";`
+        : `import type * as ${module.namespace} from "${from}";`,
+    );
   }
+  lines.push("");
   lines.push("export const enum QueryModule {");
   for (const module of modules) {
     lines.push(`   ${module.tag} = "${module.namespace}",`);
@@ -58,10 +57,7 @@ export function generateQueryModules({ resolver, data }: Omit<GenerateTypeParams
   }
   lines.push("}");
   lines.push("");
-  // Registers the types globally, so a bare `InvalidationMap` is keyed and typed by this client.
-  lines.push("declare global {");
-  lines.push("   interface OpenApiCodegenQueryModules { queryModule: QueryModule }");
-  lines.push("   interface OpenApiCodegenQueryModuleMutations extends QueryModuleMutations {}");
-  lines.push("}");
+  // Per-client rather than a global registration, so several generated clients can share one program.
+  lines.push("export type QueryModuleInvalidationMap = InvalidationMap<QueryModule, QueryModuleMutations>;");
   return lines.join("\n");
 }

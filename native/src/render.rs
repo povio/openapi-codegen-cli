@@ -2471,27 +2471,30 @@ fn render_query_modules(endpoints: &[Value], options: &GenerateOptions) -> Strin
         .filter(|(_, hooks)| !hooks.is_empty())
         .collect::<Vec<_>>();
     let mut lines = Vec::new();
-    if !mutation_tags.is_empty() {
-        lines.push(format!(
-            "import type {{ MutationEffectsOf }} from \"{}\";",
-            query_types_import_path(options)
-        ));
-        let queries_suffix = output_suffix(options, "queries", "queries");
-        for (tag, _) in &mutation_tags {
-            let namespace = format!("{}{suffix}", capitalize(tag));
-            let file = decapitalize(tag);
-            let from = format!(
-                "{}{file}/{file}.{queries_suffix}",
-                root_import_root(options)
-            );
-            lines.push(if options.ts_namespaces {
-                format!("import type {{ {namespace} }} from \"{from}\";")
-            } else {
-                format!("import type * as {namespace} from \"{from}\";")
-            });
-        }
-        lines.push(String::new());
+    let query_types = if mutation_tags.is_empty() {
+        "InvalidationMap"
+    } else {
+        "InvalidationMap, MutationEffectsOf"
+    };
+    lines.push(format!(
+        "import type {{ {query_types} }} from \"{}\";",
+        query_types_import_path(options)
+    ));
+    let queries_suffix = output_suffix(options, "queries", "queries");
+    for (tag, _) in &mutation_tags {
+        let namespace = format!("{}{suffix}", capitalize(tag));
+        let file = decapitalize(tag);
+        let from = format!(
+            "{}{file}/{file}.{queries_suffix}",
+            root_import_root(options)
+        );
+        lines.push(if options.ts_namespaces {
+            format!("import type {{ {namespace} }} from \"{from}\";")
+        } else {
+            format!("import type * as {namespace} from \"{from}\";")
+        });
     }
+    lines.push(String::new());
     lines.push("export const enum QueryModule {".to_string());
     for tag in tags.keys() {
         lines.push(format!("   {tag} = \"{}{suffix}\",", capitalize(tag)));
@@ -2512,13 +2515,11 @@ fn render_query_modules(endpoints: &[Value], options: &GenerateOptions) -> Strin
     }
     lines.push("}".into());
     lines.push(String::new());
-    // Registers the types globally, so a bare `InvalidationMap` is keyed and typed by this client.
-    lines.push("declare global {".into());
-    lines.push("   interface OpenApiCodegenQueryModules { queryModule: QueryModule }".into());
+    // Per-client rather than a global registration, so several generated clients can share one program.
     lines.push(
-        "   interface OpenApiCodegenQueryModuleMutations extends QueryModuleMutations {}".into(),
+        "export type QueryModuleInvalidationMap = InvalidationMap<QueryModule, QueryModuleMutations>;"
+            .into(),
     );
-    lines.push("}".into());
     lines.join("\n")
 }
 
@@ -4488,7 +4489,8 @@ fn render_media_upload_body(
     lines.push("      ".into());
     lines.push("      if (file && uploadInstructions.url) {".into());
     lines.push(
-        "        const method = (uploadInstructions.method?.toLowerCase() ?? \"put\") as \"put\" | \"post\";"
+        // The response schema may not declare `method`; default to PUT.
+        "        const method = (\"method\" in uploadInstructions && typeof uploadInstructions.method === \"string\" ? uploadInstructions.method.toLowerCase() : \"put\") as \"put\" | \"post\";"
             .into(),
     );
     lines.push("        let dataToSend: File | FormData = file;".into());
