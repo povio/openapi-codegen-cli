@@ -15,8 +15,14 @@ export interface UploadProgress {
   total: number;
 }
 
+/**
+ * Per-request headers. Besides any `HeadersInit`, a plain object may carry `undefined`/`null`
+ * values (omitted, e.g. absent optional header parameters) and numbers/booleans (stringified).
+ */
+export type TransportRequestHeaders = HeadersInit | Record<string, string | number | boolean | null | undefined>;
+
 export interface TransportRequestConfig<IsRawRes extends boolean = false> {
-  headers?: HeadersInit;
+  headers?: TransportRequestHeaders;
   params?: Record<string, unknown>;
   signal?: AbortSignal;
   timeout?: number;

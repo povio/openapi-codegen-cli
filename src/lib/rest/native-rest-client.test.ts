@@ -166,4 +166,40 @@ describe("NativeRestClient", () => {
       response: { status: 404, data: { code: "NOT_FOUND", message: "Missing" } },
     });
   });
+  it("omits undefined/null header values and stringifies numbers and booleans", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 204 }));
+    const client = new NativeRestClient({
+      config: { baseURL: "https://api.example.com", headers: { "x-default": "1" }, fetch: fetchMock },
+    });
+    const apiKey: string | undefined = undefined;
+
+    await client.delete({ resSchema: z.void() }, "/pet/1", undefined, {
+      headers: { api_key: apiKey, "x-null": null, "x-count": 3, "x-flag": false, "x-default": undefined },
+      params: { status: undefined, name: null, page: 0 },
+    });
+
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const headers = init.headers as Headers;
+    expect(url).toBe("https://api.example.com/pet/1?page=0");
+    expect(headers.has("api_key")).toBe(false);
+    expect(headers.has("x-null")).toBe(false);
+    expect(headers.get("x-count")).toBe("3");
+    expect(headers.get("x-flag")).toBe("false");
+    // An omitted per-request header does not clear a client default.
+    expect(headers.get("x-default")).toBe("1");
+    expect([...headers.values()]).not.toContain("undefined");
+  });
+
+  it("omits undefined header values in uploads", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 204 }));
+    const client = new NativeRestClient({ config: { fetch: fetchMock } });
+
+    await client.upload("https://uploads.example.com/file", new Blob(["data"]), {
+      headers: { "content-type": "text/plain", "x-missing": undefined },
+    });
+
+    const headers = (fetchMock.mock.calls[0]?.[1] as RequestInit).headers as Headers;
+    expect(headers.get("content-type")).toBe("text/plain");
+    expect(headers.has("x-missing")).toBe(false);
+  });
 });
