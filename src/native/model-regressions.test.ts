@@ -131,10 +131,13 @@ describe("generated models of test/renderer-regressions.yaml", () => {
     const imports = namespaced
       ? `import { TrackingModels } from "./tracking/tracking.models";
          import { RulesModels } from "./rules/rules.models";
+         import { LiteralsModels } from "./literals/literals.models";
          const { RefreshProvider400ErrorResponseSchema } = TrackingModels;
-         const { RuleNodeSchema, RuleDtoSchema } = RulesModels;`
+         const { RuleNodeSchema, RuleDtoSchema } = RulesModels;
+         const { LiteralsDtoSchema } = LiteralsModels;`
       : `import { RefreshProvider400ErrorResponseSchema } from "./tracking/tracking.models";
-         import { RuleNodeSchema, RuleDtoSchema } from "./rules/rules.models";`;
+         import { RuleNodeSchema, RuleDtoSchema } from "./rules/rules.models";
+         import { LiteralsDtoSchema } from "./literals/literals.models";`;
     const output = await verifyGeneratedModels(
       source,
       options,
@@ -152,6 +155,12 @@ describe("generated models of test/renderer-regressions.yaml", () => {
       for (const kind of ["RuleNodeSchema", "StatusEnumSchema"])
         assert(!RuleDtoSchema.safeParse({ node: "a", kind }).success, kind);
       assert(!RuleDtoSchema.safeParse({ node: "a", kind: "plain", pattern: "x" }).success, "pattern");
+      // Referenced tuple members and rest apply the referenced schema's validation and nullability.
+      const literals = { pair: ["a", 1], quirk: "普通" };
+      for (const named of [["abc"], [null], ["abc", null, "defg"]])
+        assert(LiteralsDtoSchema.safeParse({ ...literals, named }).success, JSON.stringify(named));
+      for (const named of [["a"], ["abc", "x"]])
+        assert(!LiteralsDtoSchema.safeParse({ ...literals, named }).success, JSON.stringify(named));
       console.log("ok");`,
     );
     expect(output.trim()).toBe("ok");

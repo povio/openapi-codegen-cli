@@ -386,6 +386,18 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/LiteralsDto" }
+  # A referenced tuple with `minItems` is validated at the response (`LiteralTupleDtoSchema.refine(...)`);
+  # imports and model proxies use only the schema name.
+  /literals/tuple:
+    get:
+      operationId: LiteralsController_tuple
+      tags: [Literals]
+      responses:
+        "200":
+          description: Tuple
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LiteralTupleDto" }
 components:
   schemas:
     ProviderNameEnum:
@@ -560,6 +572,11 @@ components:
           type: array
           prefixItems: [{ $ref: "#/components/schemas/LiteralItemDto" }]
           items: { type: boolean }
+        # Referenced tuple members and rest get the referenced schema's validation and nullability.
+        named:
+          type: array
+          prefixItems: [{ $ref: "#/components/schemas/LiteralNameDto" }]
+          items: { $ref: "#/components/schemas/LiteralNameDto" }
         quirk:
           type: string
           description: "Odd */ values"
@@ -570,3 +587,9 @@ components:
       type: object
       properties:
         label: { type: string, description: "Item */ label" }
+    LiteralNameDto: { type: string, minLength: 3, nullable: true }
+    LiteralTupleDto:
+      type: array
+      prefixItems: [{ type: string }]
+      items: { type: number }
+      minItems: 3

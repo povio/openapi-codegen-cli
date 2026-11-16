@@ -81,24 +81,19 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag }: Get
   if (isArraySchemaObject(schema)) {
     const tuple = getTupleSchemaParts(schema);
     if (tuple) {
-      const items = tuple.items.map((item, index) => {
-        const code = getZodSchema({ ...params, schema: item }).getCodeString(tag, resolver.options);
-        const chain = getZodChain({
-          schema: item as OpenAPIV3.SchemaObject,
+      // Like object properties, a referenced member gets the referenced schema's chain
+      // (validation, nullability, default): the exported component schema omits its own chain.
+      const getMemberSchema = (member: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject) =>
+        getZodSchema({ ...params, schema: member }).getCodeString(tag, resolver.options) +
+        getZodChain({
+          schema: getTupleMemberSchemaObject(member, resolver),
           meta: { ...meta, isRequired: true },
           options: resolver.options,
         });
-        return code + chain + (index >= (schema.minItems ?? 0) ? ".optional()" : "");
-      });
-      const restSchema =
-        typeof tuple.rest === "object"
-          ? getZodSchema({ ...params, schema: tuple.rest }).getCodeString(tag, resolver.options) +
-            getZodChain({
-              schema: tuple.rest as OpenAPIV3.SchemaObject,
-              meta: { ...meta, isRequired: true },
-              options: resolver.options,
-            })
-          : UNKNOWN_SCHEMA;
+      const items = tuple.items.map(
+        (item, index) => getMemberSchema(item) + (index >= (schema.minItems ?? 0) ? ".optional()" : ""),
+      );
+      const restSchema = typeof tuple.rest === "object" ? getMemberSchema(tuple.rest) : UNKNOWN_SCHEMA;
       const rest = tuple.rest === false ? "" : `.rest(${restSchema})`;
       return zodSchema.assign(`z.tuple([${items.join(", ")}])${rest}${readonly}`);
     }
@@ -211,6 +206,21 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag }: Get
   }
 
   throw new Error(`Unsupported schema type: ${schemaType}`);
+}
+
+/** The schema a tuple member's chain is built from: the referenced schema for a `$ref` member. */
+export function getTupleMemberSchemaObject(
+  member: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject,
+  resolver: SchemaResolver,
+): OpenAPIV3.SchemaObject {
+  if (!isReferenceObject(member)) {
+    return member;
+  }
+  const resolved = resolver.getSchemaByRef(member.$ref);
+  if (!resolved) {
+    throw new Error(`Schema ${member.$ref} not found`);
+  }
+  return resolved;
 }
 
 type GetPartialZodSchemaParams = GetZodSchemaParams & { zodSchema: ZodSchema };

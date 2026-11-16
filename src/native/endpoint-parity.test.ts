@@ -40,12 +40,12 @@ export const useHooks = () => {
 };
 `;
 
-async function typecheck(output: string, files: { fileName: string; content: string }[]) {
+async function typecheck(output: string, files: { fileName: string; content: string }[], checkCode = check) {
   for (const file of files) {
     await mkdir(dirname(file.fileName), { recursive: true });
     await writeFile(file.fileName, file.content);
   }
-  await writeFile(join(output, "check.ts"), check);
+  await writeFile(join(output, "check.ts"), checkCode);
   await symlink(join(root, "node_modules"), join(output, "node_modules"), "dir");
   await writeFile(
     join(output, "tsconfig.json"),
@@ -114,11 +114,121 @@ describe("endpoints of test/renderer-regressions.yaml", () => {
           " * @property { string | null } text\n * @property { (string | null)[] } tags\n",
         );
 
+        // A referenced tuple's `minItems` is validated at the response; only its name is imported.
+        const literalsApi = content("literals/literals.api.ts");
+        expect(literalsApi).toContain(
+          `{ resSchema: ${tsNamespaces ? "LiteralsModels." : ""}LiteralTupleDtoSchema.refine((value) => value.length >= 3) }`,
+        );
+        expect(literalsApi).not.toMatch(/import [^\n]*\.refine/);
+
         // Without namespaces the fixture's `status` query parameter shadows the `status` endpoint.
         if (tsNamespaces) {
           const result = await typecheck(output, expected);
           expect(result.status, `${result.stdout}\n${result.stderr}`).toBe(0);
         }
+      } finally {
+        await rm(output, { recursive: true, force: true });
+      }
+    },
+    60_000,
+  );
+});
+
+describe("tuple responses and members", () => {
+  const ref = (name: string) => ({ $ref: `#/components/schemas/${name}` });
+  const respond = (operationId: string, tag: string, schema: object) => ({
+    get: {
+      operationId,
+      tags: [tag],
+      responses: { "200": { description: "OK", content: { "application/json": { schema } } } },
+    },
+  });
+  const document = {
+    openapi: "3.1.0",
+    info: { title: "Tuples", version: "1" },
+    paths: {
+      // A tuple with `minItems` is responded with as `TupleMinRestSchema.refine(...)`: only the schema
+      // name is imported, and it is shared by two tags (owned by the common models).
+      "/tuple": respond("getTuple", "Tuples", ref("TupleMinRest")),
+      "/other-tuple": respond("getOtherTuple", "Others", ref("TupleMinRest")),
+      "/pair": respond("getPair", "Tuples", ref("TuplePair")),
+      "/tree": respond("getTree", "Tuples", ref("TupleTree")),
+    },
+    components: {
+      schemas: {
+        TupleMinRest: { type: "array", prefixItems: [{ type: "string" }], items: { type: "number" }, minItems: 3 },
+        // Referenced tuple members and rest apply the referenced schema's validation and nullability.
+        TuplePair: {
+          type: "object",
+          properties: {
+            pair: { type: "array", prefixItems: [ref("TupleName")], items: false },
+            list: { type: "array", prefixItems: [ref("TupleName")], items: ref("TupleName"), minItems: 1 },
+          },
+        },
+        TupleName: { type: "string", minLength: 3, nullable: true },
+        TupleTree: { type: "array", minItems: 1, prefixItems: [{ type: "string" }, ref("TupleTree")], items: false },
+      },
+    },
+  };
+
+  const imports = (options: { tsNamespaces?: boolean }) =>
+    options.tsNamespaces === false
+      ? `import { TuplePairSchema, TupleTreeSchema } from "./data/tuples/tuples.models";`
+      : `import { TuplesModels } from "./data/tuples/tuples.models";
+         const { TuplePairSchema, TupleTreeSchema } = TuplesModels;`;
+
+  test.each<Record<string, boolean>>([
+    {},
+    { tsNamespaces: false },
+    { lazySchemas: true },
+    { allReadonly: true },
+    { allReadonly: true, lazySchemas: true },
+    { modelsInCommon: true },
+    { modelsInCommon: true, lazySchemas: true },
+    { modelsInCommon: true, tsNamespaces: false },
+    { modelsInModules: true },
+    { modelsInModules: true, lazySchemas: true },
+  ])(
+    "render identically, typecheck, load and validate with %j",
+    async (variant) => {
+      const output = await mkdtemp(join(tmpdir(), "tuple-parity-"));
+      try {
+        const options = {
+          ...DEFAULT_GENERATE_OPTIONS,
+          output: join(output, "data"),
+          importPath: "relative" as const,
+          ...variant,
+        };
+        const expected = generateCodeFromOpenAPIDoc(
+          structuredClone(document) as unknown as Parameters<typeof generateCodeFromOpenAPIDoc>[0],
+          options,
+        );
+        const actual = generateFilesFromNativeOpenAPI(JSON.stringify(document), false, options);
+        expect(actual).toEqual(expected);
+
+        const api = expected.find(({ fileName }) => fileName.endsWith("tuples/tuples.api.ts"))!.content;
+        expect(api).not.toMatch(/import [^\n]*\.refine/);
+
+        const result = await typecheck(
+          output,
+          expected,
+          `${imports(variant)}
+          const assert = (condition: boolean, message: string) => { if (!condition) throw new Error(message); };
+          // Loading the endpoints resolves every model import, including the common model proxies.
+          await import("./data/tuples/tuples.api");
+          await import("./data/others/others.api");
+          for (const value of [{ pair: ["abc"] }, { pair: [null] }, { list: ["abc", null, "defg"] }, { list: [null] }])
+            assert(TuplePairSchema.safeParse(value).success, JSON.stringify(value));
+          for (const value of [{ pair: ["a"] }, { pair: ["abc", "def"] }, { list: ["abc", "x"] }, { list: [] }])
+            assert(!TuplePairSchema.safeParse(value).success, JSON.stringify(value));
+          for (const value of [["a"], ["a", ["b", ["c"]]]]) assert(TupleTreeSchema.safeParse(value).success, JSON.stringify(value));
+          for (const value of [[], [1], ["a", [2]]]) assert(!TupleTreeSchema.safeParse(value).success, JSON.stringify(value));
+          console.log("ok");
+          `,
+        );
+        expect(result.status, `${result.stdout}\n${result.stderr}`).toBe(0);
+        const run = spawnSync("bun", ["check.ts"], { cwd: output, encoding: "utf8" });
+        expect(run.stdout.trim(), run.stderr).toBe("ok");
       } finally {
         await rm(output, { recursive: true, force: true });
       }

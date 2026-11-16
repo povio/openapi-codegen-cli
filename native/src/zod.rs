@@ -341,25 +341,27 @@ impl<'a> ZodCompiler<'a> {
                     required: true,
                     parent_partial: false,
                 };
+                // Like object properties, a referenced member gets the referenced schema's chain
+                // (validation, nullability, default): the exported component omits its own chain.
+                let mut member = |item: &Value| -> Result<String, String> {
+                    let code = self.compile(item, item_meta, tag, root_ref, stack)?;
+                    let actual = self.tuple_member_schema(item)?;
+                    Ok(format!("{code}{}", chain(actual, item_meta, self.options)))
+                };
                 let members = items
                     .iter()
                     .enumerate()
                     .map(|(index, item)| {
-                        let code = self.compile(item, item_meta, tag, root_ref, stack)?;
                         Ok(format!(
-                            "{code}{}{}",
-                            chain(item, item_meta, self.options),
+                            "{}{}",
+                            member(item)?,
                             if index >= required { ".optional()" } else { "" }
                         ))
                     })
                     .collect::<Result<Vec<_>, String>>()?;
                 let rest = match rest {
                     Some(Value::Bool(false)) => String::new(),
-                    Some(value @ Value::Object(_)) => format!(
-                        ".rest({}{})",
-                        self.compile(value, item_meta, tag, root_ref, stack)?,
-                        chain(value, item_meta, self.options)
-                    ),
+                    Some(value @ Value::Object(_)) => format!(".rest({})", member(value)?),
                     _ => ".rest(z.unknown())".into(),
                 };
                 return Ok(format!(
@@ -670,6 +672,19 @@ impl<'a> ZodCompiler<'a> {
             .collect::<Vec<_>>()
             .join(", ");
         Ok(format!("z.object({{ ...{first}.shape, {rest} }})"))
+    }
+
+    /// The schema a tuple member's chain is built from: the referenced schema for a `$ref` member
+    /// (`getTupleMemberSchemaObject`).
+    fn tuple_member_schema<'b>(&'b self, member: &'b Value) -> Result<&'b Value, String> {
+        let Some(reference) = member.get("$ref").and_then(Value::as_str) else {
+            return Ok(member);
+        };
+        let reference = autocorrect_ref(reference);
+        reference
+            .strip_prefix('#')
+            .and_then(|pointer| self.document.pointer(pointer))
+            .ok_or_else(|| format!("Schema {reference} not found"))
     }
 
     fn resolve_schema<'b>(&'b self, schema: &'b Value) -> Option<&'b Value> {

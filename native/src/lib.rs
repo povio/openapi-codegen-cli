@@ -307,6 +307,8 @@ pub fn compile_data(source: String, yaml: bool, options_json: String) -> Result<
                 }),
         );
         for name in direct {
+            // Drop a use-site validation chain (`ExampleSchema.min(3)`) from referenced schemas.
+            let name = render::base_schema_name(name);
             if ordered_schemas.contains_key(name) {
                 usage_tags
                     .entry(name.to_string())

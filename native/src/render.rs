@@ -1162,15 +1162,19 @@ fn render_schema_type(schema: &Value, context: &SchemaTypeContext) -> String {
     if schema.get("type").and_then(Value::as_str) == Some("array") {
         if let Some((items, rest)) = schema.as_object().and_then(crate::zod::tuple_parts) {
             let required = schema.get("minItems").and_then(Value::as_u64).unwrap_or(0) as usize;
-            let item_types = items
-                .iter()
-                .map(|item| add_nullable_type(item, render_schema_type(item, context)))
-                .collect::<Vec<_>>();
+            // Tuple members are chained with the referenced schema's nullability (see zod.rs).
+            let member_type = |member: &Value| {
+                let resolved = member
+                    .get("$ref")
+                    .and_then(Value::as_str)
+                    .and_then(|reference| resolve_document_ref(context.document, reference))
+                    .unwrap_or(member);
+                add_nullable_type(resolved, render_schema_type(member, context))
+            };
+            let item_types = items.iter().map(member_type).collect::<Vec<_>>();
             let rest_type = match rest {
                 Some(Value::Bool(false)) => None,
-                Some(rest @ Value::Object(_)) => {
-                    Some(add_nullable_type(rest, render_schema_type(rest, context)))
-                }
+                Some(rest @ Value::Object(_)) => Some(member_type(rest)),
                 _ => Some("unknown".to_string()),
             };
             // zod's readonly output keeps the tuple shape only when the first member is required;
@@ -1874,8 +1878,13 @@ fn enqueue(
     seen: &mut HashSet<String>,
     queue: &mut VecDeque<String>,
 ) {
-    if name.starts_with("z.") || name.starts_with("ZodExtended.") || !seen.insert(name.to_string())
-    {
+    if !is_named_schema(name) {
+        return;
+    }
+    // A referenced schema can carry its use-site validation chain (`ExampleSchema.min(3)`);
+    // only the schema identifier names a model.
+    let name = base_schema_name(name);
+    if !seen.insert(name.to_string()) {
         return;
     }
     used.push(name.to_string());
@@ -2176,18 +2185,19 @@ fn render_endpoint_module(
             let mut imports: IndexMap<String, Vec<String>> = IndexMap::default();
             for schema in &used_schemas {
                 if is_named_schema(schema) {
+                    let schema = base_schema_name(schema);
                     // Like JavaScript, shared models are imported through the module's own proxy.
                     let owner = if options.models_in_modules || options.models_in_common {
                         tag
                     } else {
                         schema_owners
-                            .get(*schema)
+                            .get(schema)
                             .and_then(Value::as_str)
                             .unwrap_or(tag)
                     };
                     let bindings = imports.entry(owner.to_string()).or_default();
-                    if !bindings.iter().any(|binding| binding == *schema) {
-                        bindings.push((*schema).to_string());
+                    if !bindings.iter().any(|binding| binding == schema) {
+                        bindings.push(schema.to_string());
                     }
                 }
             }
@@ -2663,6 +2673,12 @@ fn imported_schema(schema: &str, model_namespace: &str) -> String {
 
 fn is_named_schema(schema: &str) -> bool {
     !schema.starts_with("z.") && !schema.starts_with("ZodExtended.")
+}
+
+/// The schema identifier of a named schema expression, without a use-site validation chain
+/// (`ExampleSchema.refine(...)` -> `ExampleSchema`), like JavaScript's `split(".")[0]`.
+pub(crate) fn base_schema_name(schema: &str) -> &str {
+    schema.split('.').next().unwrap_or(schema)
 }
 
 fn endpoint_name(value: &str) -> String {
@@ -3980,7 +3996,7 @@ fn resolve_model_namespace_owners(
         .filter(|_| has_local);
     let mut owner_order = IndexSet::default();
     for schema in schema_order.iter().filter(|schema| is_named_schema(schema)) {
-        owner_order.insert(owners.get(schema).unwrap_or(tag));
+        owner_order.insert(owners.get(base_schema_name(schema)).unwrap_or(tag));
     }
     let rank = |owner: &str| owner_order.get_index_of(owner).unwrap_or(usize::MAX);
     let suffix = output_suffix(options, "models", "models");
