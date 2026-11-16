@@ -167,6 +167,15 @@ fn render_local_models(
             }
         }
     }
+    // With `modelsInModules` the dependencies are copied into the module (not imported) in the
+    // order they are found, as the TypeScript renderer appends them, so they are not grouped by owner.
+    let import_group = |owner: &str| {
+        if options.models_in_modules {
+            String::new()
+        } else {
+            owner.to_string()
+        }
+    };
     for (tag, mut tag_schemas) in by_tag {
         let mut imports: IndexMap<String, Vec<String>> = IndexMap::default();
         for schema_name in tag_schemas.keys() {
@@ -181,7 +190,7 @@ fn render_local_models(
                         continue;
                     };
                     if owner != tag {
-                        let names = imports.entry(owner.to_string()).or_default();
+                        let names = imports.entry(import_group(owner)).or_default();
                         if !names.iter().any(|existing| existing == name) {
                             names.push(name.to_string());
                         }
@@ -201,7 +210,7 @@ fn render_local_models(
                             continue;
                         };
                         if owner != tag {
-                            let names = imports.entry(owner.to_string()).or_default();
+                            let names = imports.entry(import_group(owner)).or_default();
                             if !names.iter().any(|existing| existing == name) {
                                 names.push(name.to_string());
                             }
@@ -225,6 +234,7 @@ fn render_local_models(
                     schema_refs,
                     dependencies,
                     &name_by_ref,
+                    &import_group,
                     &mut imports,
                     &mut visited,
                 );
@@ -338,6 +348,7 @@ fn append_local_model_dependency<'a>(
     schema_refs: &Map<String, Value>,
     dependencies: &IndexMap<String, Vec<String>>,
     name_by_ref: &HashMap<&'a str, &'a str>,
+    import_group: &dyn Fn(&str) -> String,
     imports: &mut IndexMap<String, Vec<String>>,
     visited: &mut HashSet<String>,
 ) {
@@ -346,7 +357,7 @@ fn append_local_model_dependency<'a>(
     }
     if let Some(owner) = schema_owners.get(name).and_then(Value::as_str) {
         if owner != tag && schemas.contains_key(name) {
-            let names = imports.entry(owner.to_string()).or_default();
+            let names = imports.entry(import_group(owner)).or_default();
             if !names.iter().any(|existing| existing == name) {
                 names.push(name.to_string());
             }
@@ -369,6 +380,7 @@ fn append_local_model_dependency<'a>(
             schema_refs,
             dependencies,
             name_by_ref,
+            import_group,
             imports,
             visited,
         );
