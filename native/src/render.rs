@@ -605,7 +605,15 @@ fn render_common_schema_lines(
         if let Some(schema) = schema_object {
             lines.push(format!(
                 "export type {type_name} = {};",
-                render_schema_type(schema, suffix, options)
+                render_schema_type(
+                    schema,
+                    &SchemaTypeContext {
+                        document,
+                        suffix,
+                        options,
+                        ref_names: property_ref_names,
+                    }
+                )
             ));
         }
         let (type_annotation, schema_code) = circular_schema_declaration(code, &type_name);
@@ -814,7 +822,15 @@ fn render_lazy_schema_parts(
     let types = vec![match (is_circular, schema_object) {
         (true, Some(schema)) => format!(
             "  export type {type_name} = {};",
-            render_schema_type(schema, suffix, options)
+            render_schema_type(
+                schema,
+                &SchemaTypeContext {
+                    document,
+                    suffix,
+                    options,
+                    ref_names: property_ref_names,
+                }
+            )
         ),
         _ => format!("  export type {type_name} = z.infer<typeof {namespace}.{name}>;"),
     }];
@@ -1088,10 +1104,22 @@ fn circular_schema_declaration(code: &str, type_name: &str) -> (String, String) 
     }
 }
 
-fn render_schema_type(schema: &Value, suffix: &str, options: &GenerateOptions) -> String {
+struct SchemaTypeContext<'a> {
+    document: &'a Value,
+    suffix: &'a str,
+    options: &'a GenerateOptions,
+    ref_names: &'a PropertyRefNames<'a>,
+}
+
+/// Explicit types of circular schemas (which cannot be inferred) describe the output type of the
+/// generated zod schema, so they follow the zod generation rules: a schema's own `nullable`,
+/// defaults and optionality are applied by the chain where it is used (object properties, array
+/// items, additional properties), never on the schema itself, matching `z.infer` of non-circular
+/// schemas. Mirrors `renderSchemaType` in src/generators/generate/generateModels.ts.
+fn render_schema_type(schema: &Value, context: &SchemaTypeContext) -> String {
+    let options = context.options;
     if let Some(reference) = schema.get("$ref").and_then(Value::as_str) {
-        let name = reference.rsplit('/').next().unwrap_or("unknown");
-        return remove_suffix(&crate::zod::schema_name(name, suffix), suffix);
+        return render_reference_type(reference, context);
     }
 
     for (key, separator) in [("allOf", " & "), ("oneOf", " | "), ("anyOf", " | ")] {
@@ -1102,10 +1130,20 @@ fn render_schema_type(schema: &Value, suffix: &str, options: &GenerateOptions) -
         {
             let rendered = parts
                 .iter()
-                .map(|part| render_schema_type(part, suffix, options))
+                .map(|part| render_schema_type(part, context))
+                .collect::<Vec<_>>();
+            let multiple = rendered.len() > 1;
+            return rendered
+                .into_iter()
+                .map(|part| {
+                    if multiple && part.contains(['|', '&']) {
+                        format!("({part})")
+                    } else {
+                        part
+                    }
+                })
                 .collect::<Vec<_>>()
                 .join(separator);
-            return add_nullable_type(schema, rendered);
         }
     }
 
@@ -1114,44 +1152,64 @@ fn render_schema_type(schema: &Value, suffix: &str, options: &GenerateOptions) -
         .and_then(Value::as_array)
         .filter(|values| !values.is_empty())
     {
-        let rendered = values
+        return values
             .iter()
             .map(Value::to_string)
             .collect::<Vec<_>>()
             .join(" | ");
-        return add_nullable_type(schema, rendered);
     }
 
     if schema.get("type").and_then(Value::as_str) == Some("array") {
         let item_type = schema
             .get("items")
-            .map(|items| render_schema_type(items, suffix, options))
+            .map(|items| add_nullable_type(items, render_schema_type(items, context)))
             .unwrap_or_else(|| "unknown".into());
-        return add_nullable_type(schema, format!("Array<{item_type}>"));
+        return if options.all_readonly {
+            format!("ReadonlyArray<{item_type}>")
+        } else {
+            format!("Array<{item_type}>")
+        };
     }
 
     if schema.get("type").and_then(Value::as_str) == Some("object")
         || schema.get("properties").is_some()
         || schema.get("additionalProperties").is_some()
     {
-        let required = schema.get("required").and_then(Value::as_array);
+        let required = schema
+            .get("required")
+            .and_then(Value::as_array)
+            .filter(|required| !required.is_empty());
+        let is_partial = !options.with_implicit_required_props
+            && schema.get("properties").is_some()
+            && required.is_none();
         let mut properties = schema
             .get("properties")
             .and_then(Value::as_object)
             .into_iter()
             .flatten()
             .map(|(name, property)| {
-                let is_required = options.with_implicit_required_props
-                    || required.is_some_and(|required| {
-                        required.iter().any(|value| value.as_str() == Some(name))
-                    })
-                    || property.get("default").is_some();
-                let optional = if is_required { "" } else { "?" };
-                let mut property_type = render_schema_type(property, suffix, options);
-                if options.replace_optional_with_nullish
-                    && !is_required
-                    && property.get("nullable").and_then(Value::as_bool) != Some(true)
-                {
+                let is_required = if is_partial {
+                    true
+                } else if let Some(required) = required {
+                    required.iter().any(|value| value.as_str() == Some(name))
+                } else {
+                    options.with_implicit_required_props
+                };
+                let resolved = property
+                    .get("$ref")
+                    .and_then(Value::as_str)
+                    .and_then(|reference| resolve_document_ref(context.document, reference))
+                    .unwrap_or(property);
+                let has_default = options.with_default_values && resolved.get("default").is_some();
+                let is_nullable = resolved.get("nullable").and_then(Value::as_bool) == Some(true)
+                    || (options.replace_optional_with_nullish && (is_partial || !is_required));
+                let optional = if is_partial || (!is_required && !has_default) {
+                    "?"
+                } else {
+                    ""
+                };
+                let mut property_type = render_schema_type(property, context);
+                if is_nullable && property_type != "null" {
                     property_type.push_str(" | null");
                 }
                 let property_name = if name
@@ -1175,25 +1233,63 @@ fn render_schema_type(schema: &Value, suffix: &str, options: &GenerateOptions) -
             .filter(|additional| !matches!(additional, Value::Bool(false) | Value::Null))
         {
             let value_type = if additional.is_object() {
-                render_schema_type(additional, suffix, options)
+                add_nullable_type(additional, render_schema_type(additional, context))
             } else {
                 "unknown".into()
             };
             properties.push(format!("[key: string]: {value_type}"));
         }
-        return add_nullable_type(schema, format!("{{ {} }}", properties.join("; ")));
+        let object_type = format!("{{ {} }}", properties.join("; "));
+        return if options.all_readonly {
+            format!("Readonly<{object_type}>")
+        } else {
+            object_type
+        };
     }
 
-    let primitive = match schema.get("type").and_then(Value::as_str) {
-        Some("string") => "string",
-        Some("number" | "integer") => "number",
-        Some("boolean") => "boolean",
-        Some("null") => "null",
-        _ => "unknown",
-    };
-    add_nullable_type(schema, primitive.into())
+    match schema.get("type").and_then(Value::as_str) {
+        Some("string") if schema.get("format").and_then(Value::as_str) == Some("binary") => {
+            "Blob".into()
+        }
+        Some("string") => "string".into(),
+        Some("number" | "integer") => "number".into(),
+        Some("boolean") => "boolean".into(),
+        Some("null") => "null".into(),
+        _ => "unknown".into(),
+    }
 }
 
+/// A referenced schema's type as seen from the models file being rendered. The schema code
+/// references the same model, so its namespace (or, without namespaces, its schema) is imported.
+fn render_reference_type(reference: &str, context: &SchemaTypeContext) -> String {
+    let name = reference.rsplit('/').next().unwrap_or("unknown");
+    let schema_name = crate::zod::schema_name(name, context.suffix);
+    let type_name = remove_suffix(&schema_name, context.suffix);
+    if context.options.models_in_modules {
+        return type_name;
+    }
+    let ref_names = context.ref_names;
+    match ref_names
+        .refs
+        .get(reference)
+        .and_then(|(_, owner)| owner.as_deref())
+    {
+        Some(owner) if owner != ref_names.namespace_tag => {
+            if ref_names.ts_namespaces {
+                format!(
+                    "{}{}.{type_name}",
+                    capitalize(owner),
+                    ref_names.namespace_suffix
+                )
+            } else {
+                format!("z.infer<typeof {schema_name}>")
+            }
+        }
+        _ => type_name,
+    }
+}
+
+/// Nullability added by the zod chain of an (unresolved) array item or additional properties schema.
 fn add_nullable_type(schema: &Value, rendered: String) -> String {
     if schema.get("nullable").and_then(Value::as_bool) == Some(true) && rendered != "null" {
         format!("{rendered} | null")
