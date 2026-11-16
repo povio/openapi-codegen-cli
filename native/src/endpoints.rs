@@ -580,10 +580,11 @@ impl<'a> EndpointExtractor<'a> {
             return Ok(None);
         };
         self.register_reference_schema(schema, &indexed.tag)?;
+        // OpenAPI: `requestBody.required` defaults to `false`.
         let required = body_obj
             .get("required")
             .and_then(Value::as_bool)
-            .unwrap_or(true);
+            .unwrap_or(false);
         let dependencies = self.register_inline_dependencies(schema, &indexed.tag)?;
         let (code, chain) =
             self.compiler
@@ -741,6 +742,13 @@ impl<'a> EndpointExtractor<'a> {
             Some(&fallback),
             &indexed.tag,
         )?;
+        // A `$ref` to a simple component is inlined as the component's bare code; keep the
+        // component's validations and the parameter's presence by appending the chain.
+        let zod = if naming.get("$ref").is_some() && !is_named(&zod) {
+            format!("{zod}{effective_chain}")
+        } else {
+            zod
+        };
         if naming.get("$ref").is_none() && complexity(actual) >= COMPLEXITY_THRESHOLD {
             self.set_generated_schema(zod.clone(), composed_code, &indexed.tag);
             self.set_generated_object(&zod, actual);

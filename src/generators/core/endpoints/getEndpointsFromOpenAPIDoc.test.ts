@@ -1325,7 +1325,7 @@ describe("getEndpointsFromOpenAPIDoc", () => {
           {
             description: undefined,
             name: "data",
-            zodSchema: "z.instanceof(Blob)",
+            zodSchema: "z.instanceof(Blob).optional()",
             type: "Body",
             bodyObject: {
               content: {

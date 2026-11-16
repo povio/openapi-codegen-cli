@@ -66,7 +66,19 @@ export const getImportedZodSchemaInferedTypeName = (
 };
 
 export function getZodSchemaType(data: GenerateZodSchemaData) {
-  return data.isEnum ? "enum" : (data.schemaObj?.type ?? "object");
+  return data.isEnum ? "enum" : getJsDocSchemaType(data.schemaObj?.type) || "object";
+}
+
+/** The JSDoc type of an OpenAPI `type`; OpenAPI 3.1 type arrays read as a union, e.g. `string | null`. */
+function getJsDocSchemaType(type: unknown): string | undefined {
+  if (Array.isArray(type)) {
+    return type.length > 0 ? type.join(" | ") : undefined;
+  }
+  return typeof type === "string" ? type : undefined;
+}
+
+function getJsDocArrayType(itemType: string) {
+  return `${itemType.includes(" | ") ? `(${itemType})` : itemType}[]`;
 }
 
 export function getZodSchemaDescription(data: GenerateZodSchemaData) {
@@ -83,7 +95,7 @@ function getType(resolver: SchemaResolver, schemaObj: OpenAPIV3.SchemaObject | O
   }
   if (isArraySchemaObject(schemaObj)) {
     if (!isReferenceObject(schemaObj.items)) {
-      return `${schemaObj.items?.type ?? "unknown"}[]`;
+      return getJsDocArrayType(getJsDocSchemaType(schemaObj.items?.type) ?? "unknown");
     }
     const zodSchemaName = resolver.getZodSchemaNameByRef(schemaObj.items.$ref);
     return zodSchemaName ? `${getImportedZodSchemaInferedTypeName(resolver, zodSchemaName, tag)}[]` : undefined;
@@ -94,7 +106,7 @@ function getType(resolver: SchemaResolver, schemaObj: OpenAPIV3.SchemaObject | O
       return getType(resolver, schemaObjs[0], tag);
     }
   }
-  return schemaObj.type;
+  return getJsDocSchemaType(schemaObj.type);
 }
 
 export function getZodSchemaPropertyDescriptions(resolver: SchemaResolver, data: GenerateZodSchemaData, tag: string) {

@@ -6,6 +6,7 @@ import { Endpoint } from "@/generators/types/endpoint";
 import { GenerateType } from "@/generators/types/generate";
 import { GenerateOptions } from "@/generators/types/options";
 import { invalidVariableNameCharactersToCamel, isValidPropertyName } from "@/generators/utils/js.utils";
+import { isEndpointParameterRequired } from "@/generators/utils/endpoint.utils";
 import { getNamespaceName } from "@/generators/utils/namespace.utils";
 import { isSchemaObject } from "@/generators/utils/openapi-schema.utils";
 import { isPrimitiveType } from "@/generators/utils/openapi.utils";
@@ -86,8 +87,10 @@ export function mapEndpointParamsToFunctionParams(
     let type = "string";
     if (isNamedZodSchema(param.zodSchema)) {
       type = getImportedZodSchemaInferedTypeName(resolver, param.zodSchema, undefined, options?.modelNamespaceTag);
-    } else if (param.parameterObject?.schema && isSchemaObject(param.parameterObject.schema)) {
-      const openApiSchemaType = (param.parameterObject?.schema as OpenAPIV3.SchemaObject)?.type;
+    } else if (param.parameterObject?.schema) {
+      // A `$ref` to a simple component is inlined, so type it by the component's schema.
+      const schema = resolver.resolveObject(param.parameterObject.schema);
+      const openApiSchemaType = isSchemaObject(schema) ? (schema as OpenAPIV3.SchemaObject).type : undefined;
       if (openApiSchemaType && isPrimitiveType(openApiSchemaType)) {
         type = primitiveTypeToTsType(openApiSchemaType);
       }
@@ -97,7 +100,7 @@ export function mapEndpointParamsToFunctionParams(
       name: invalidVariableNameCharactersToCamel(param.name),
       type,
       paramType: param.type,
-      required: param.parameterObject?.required ?? true,
+      required: isEndpointParameterRequired(param),
       parameterObject: param.parameterObject,
       bodyObject: param.bodyObject,
     };
