@@ -5,7 +5,13 @@ import { getZodSchemaRefs } from "@/generators/core/zod/getZodSchemaRefs";
 import { Endpoint } from "@/generators/types/endpoint";
 import { GenerateType, GenerateTypeParams, GenerateZodSchemaData, Import } from "@/generators/types/generate";
 import { getModelsImports, getImportPath } from "@/generators/utils/generate/generate.imports.utils";
-import { callLazySchemaReferences, ONCE_HELPER_LINES } from "@/generators/utils/generate/generate.lazy.utils";
+import {
+  callLazySchemaReferences,
+  getCircularSchemaDeclaration,
+  getCodeSchemaReferences,
+  ONCE_HELPER_LINES,
+  stripModelNamespaceReferences,
+} from "@/generators/utils/generate/generate.lazy.utils";
 import { getTagImportPath } from "@/generators/utils/generate/generate.utils";
 import {
   getZodSchemaDescription,
@@ -43,6 +49,19 @@ export function generateModels({ resolver, data, tag }: GenerateTypeParams) {
       }
     }
   }
+  // Generated schemas can reference schemas the dependency graph does not record (e.g. an inline
+  // enum extracted to a shared enum owned by another tag), so the emitted code is the final source
+  // of truth for which models need to be imported.
+  if (!resolver.options.modelsInModules) {
+    const knownSchemaNames = new Set(Array.from(data.values()).flatMap((tagData) => Object.keys(tagData.zodSchemas)));
+    for (const code of Object.values(zodSchemas)) {
+      for (const ref of getCodeSchemaReferences(code, knownSchemaNames)) {
+        if (!zodSchemas[ref] && resolver.getTagByZodSchemaName(ref) !== tag) {
+          refZodSchemas.push(ref);
+        }
+      }
+    }
+  }
 
   const modelsImports = getModelsImports({
     resolver,
@@ -54,7 +73,9 @@ export function generateModels({ resolver, data, tag }: GenerateTypeParams) {
   for (const [key, code] of Object.entries(zodSchemas)) {
     const schemaRef = resolver.getRefByZodSchemaName(key);
     zodSchemasData[key] = {
-      code: resolver.options.modelsInModules ? code.replace(/\b[A-Z][A-Za-z0-9]*Models\./g, "") : code,
+      code: resolver.options.modelsInModules
+        ? stripModelNamespaceReferences(code, resolver.options.configs[GenerateType.Models].namespaceSuffix)
+        : code,
       isCircular: schemaRef ? resolver.isSchemaCircular(schemaRef) : false,
       isEnum: isEnumZodSchema(code),
       schemaObj: resolver.getZodSchemaObj(key),
@@ -84,10 +105,13 @@ export function generateModels({ resolver, data, tag }: GenerateTypeParams) {
     if (zodSchema.isCircular && zodSchema.schemaObj) {
       lines.push(`export type ${inferredTypeName} = ${renderSchemaType(zodSchema.schemaObj, resolver)};`);
     }
-    const typeAnnotation = zodSchema.isCircular ? `: z.ZodObject<z.ZodRawShape> & z.ZodType<${inferredTypeName}>` : "";
-    const schemaCode =
-      resolver.options.compileSchemas && !zodSchema.isCircular ? `z.compile(${zodSchema.code})` : zodSchema.code;
-    lines.push(`export const ${name}${typeAnnotation} = ${schemaCode};`);
+    if (zodSchema.isCircular) {
+      const circular = getCircularSchemaDeclaration(zodSchema.code, inferredTypeName);
+      lines.push(`export const ${name}: ${circular.typeAnnotation} = ${circular.code};`);
+    } else {
+      const schemaCode = resolver.options.compileSchemas ? `z.compile(${zodSchema.code})` : zodSchema.code;
+      lines.push(`export const ${name} = ${schemaCode};`);
+    }
     if (!zodSchema.isCircular) {
       lines.push(`export type ${inferredTypeName} = z.infer<typeof ${name}>;`);
     }
@@ -128,11 +152,15 @@ function renderLazyModels({
 
   for (const [name, zodSchema] of Object.entries(zodSchemasData)) {
     const inferredTypeName = getZodSchemaInferedTypeName(name, resolver.options);
-    const typeAnnotation = zodSchema.isCircular
-      ? `: () => z.ZodObject<z.ZodRawShape> & z.ZodType<${namespace}.${inferredTypeName}>`
-      : "";
-    const schemaCode =
-      resolver.options.compileSchemas && !zodSchema.isCircular ? `z.compile(${zodSchema.code})` : zodSchema.code;
+    const circular = zodSchema.isCircular
+      ? getCircularSchemaDeclaration(zodSchema.code, `${namespace}.${inferredTypeName}`)
+      : undefined;
+    const typeAnnotation = circular ? `: () => ${circular.typeAnnotation}` : "";
+    const schemaCode = circular
+      ? circular.code
+      : resolver.options.compileSchemas
+        ? `z.compile(${zodSchema.code})`
+        : zodSchema.code;
     lines.push(`const ${name}${typeAnnotation} = once(() => ${callLazySchemaReferences(schemaCode, schemaNames)});`);
     if (resolver.options.generateJsDoc === true) {
       members.push(...indent(renderModelJsDocs({ name, zodSchema, tag, resolver }).split("\n")));
