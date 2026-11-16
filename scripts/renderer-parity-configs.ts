@@ -137,3 +137,12 @@ for (const restClient of ["axios", "native"] as const)
         options: { modelsInCommon: true, restClient, importPath, standalone, axiosRequestConfig: true },
       });
     }
+// Readonly schemas with every model layout, including unsplit output (hybrid native rendering).
+for (const splitByTags of [false, true])
+  for (const modelsInModules of [false, true])
+    for (const lazySchemas of [false, true]) {
+      parityScenarios.push({
+        name: `readonly-${splitByTags ? "split" : "unsplit"}-${modelsInModules ? "modules" : "default"}-${lazySchemas ? "lazy" : "eager"}`,
+        options: { tsNamespaces: true, allReadonly: true, splitByTags, modelsInModules, lazySchemas },
+      });
+    }

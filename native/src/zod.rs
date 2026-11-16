@@ -364,9 +364,18 @@ impl<'a> ZodCompiler<'a> {
                 };
                 // Like object properties, a referenced member gets the referenced schema's chain
                 // (validation, nullability, default): the exported component omits its own chain.
+                // Recursive members are deferred with `z.lazy`, like object properties.
                 let mut member = |item: &Value| -> Result<String, String> {
                     let code = self.compile(item, item_meta, tag, root_ref, stack)?;
                     let actual = self.tuple_member_schema(item)?;
+                    // The chain is applied to the deferred member: checks clone a `z.lazy` schema,
+                    // and a clone created inside the declaration's own getter would recreate the
+                    // declaration endlessly.
+                    let code = if self.is_circular_member(item, root_ref, stack) {
+                        format!("z.lazy(() => {code})")
+                    } else {
+                        code
+                    };
                     Ok(format!("{code}{}", chain(actual, item_meta, self.options)))
                 };
                 let members = items
@@ -631,9 +640,9 @@ impl<'a> ZodCompiler<'a> {
         ))
     }
 
-    /// Whether an object member schema (property or additional properties) references the schema
-    /// being declared, so it must be deferred with `z.lazy` to avoid reading the declaration while
-    /// it is initialized.
+    /// Whether an object member schema (property or additional properties) or a tuple member
+    /// references the schema being declared, so it must be deferred with `z.lazy` to avoid reading
+    /// the declaration while it is initialized.
     fn is_circular_member(&self, member: &Value, root_ref: Option<&str>, stack: &[String]) -> bool {
         root_ref.is_some_and(|root| {
             (!stack.is_empty() || self.circular_getters.contains(root))
@@ -834,12 +843,15 @@ fn chain(schema: &Value, meta: Meta, options: &GenerateOptions) -> String {
             }
         }
         Some("array") => {
+            // Tuples have no `min`/`max`; neither do arrays wrapped in `.readonly()` (`allReadonly`),
+            // so their length checks are refinements. Mirrors `getZodChainableArrayValidations`.
+            let refine = is_tuple(schema) || options.all_readonly;
             if let Some(value) = schema
                 .get("minItems")
                 .and_then(Value::as_u64)
                 .filter(|value| *value > 0)
             {
-                chains.push(if is_tuple(schema) {
+                chains.push(if refine {
                     format!("refine((value) => value.length >= {value})")
                 } else {
                     format!("min({value})")
@@ -850,7 +862,7 @@ fn chain(schema: &Value, meta: Meta, options: &GenerateOptions) -> String {
                 .and_then(Value::as_u64)
                 .filter(|value| *value > 0)
             {
-                chains.push(if is_tuple(schema) {
+                chains.push(if refine {
                     format!("refine((value) => value.length <= {value})")
                 } else {
                     format!("max({value})")

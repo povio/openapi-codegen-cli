@@ -2,13 +2,19 @@ import { spawnSync } from "node:child_process";
 import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { describe, expect, test } from "vitest";
+import { afterEach, describe, expect, test, vi } from "vitest";
 import { parse } from "yaml";
 
 import { DEFAULT_GENERATE_OPTIONS } from "@/generators/const/options.const";
 import { generateCodeFromOpenAPIDoc } from "@/generators/generateCodeFromOpenAPIDoc";
 
 import { generateFilesFromNativeOpenAPI } from "./generateFilesFromNativeOpenAPI";
+import { getNativeBindings } from "./native-bindings";
+
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.unstubAllEnvs();
+});
 
 const root = process.cwd();
 
@@ -153,6 +159,8 @@ describe("tuple responses and members", () => {
       "/other-tuple": respond("getOtherTuple", "Others", ref("TupleMinRest")),
       "/pair": respond("getPair", "Tuples", ref("TuplePair")),
       "/tree": respond("getTree", "Tuples", ref("TupleTree")),
+      // With `allReadonly` the referenced array is `.readonly()`: length checks are refinements.
+      "/list": respond("getList", "Tuples", ref("TupleList")),
     },
     components: {
       schemas: {
@@ -163,19 +171,24 @@ describe("tuple responses and members", () => {
           properties: {
             pair: { type: "array", prefixItems: [ref("TupleName")], items: false },
             list: { type: "array", prefixItems: [ref("TupleName")], items: ref("TupleName"), minItems: 1 },
+            lists: { type: "array", prefixItems: [ref("TupleList")], items: ref("TupleList"), minItems: 1 },
+            plain: ref("TupleList"),
           },
         },
+        TupleList: { type: "array", items: { type: "string" }, minItems: 2, maxItems: 3, nullable: true },
         TupleName: { type: "string", minLength: 3, nullable: true },
         TupleTree: { type: "array", minItems: 1, prefixItems: [{ type: "string" }, ref("TupleTree")], items: false },
       },
     },
   };
 
-  const imports = (options: { tsNamespaces?: boolean }) =>
-    options.tsNamespaces === false
-      ? `import { TuplePairSchema, TupleTreeSchema } from "./data/tuples/tuples.models";`
-      : `import { TuplesModels } from "./data/tuples/tuples.models";
-         const { TuplePairSchema, TupleTreeSchema } = TuplesModels;`;
+  const imports = (options: { tsNamespaces?: boolean; splitByTags?: boolean }) => {
+    const tag = options.splitByTags === false ? "common" : "tuples";
+    return options.tsNamespaces === false
+      ? `import { TuplePairSchema, TupleTreeSchema } from "./data/${tag}/${tag}.models";`
+      : `import { ${tag === "common" ? "CommonModels" : "TuplesModels"} as M } from "./data/${tag}/${tag}.models";
+         const { TuplePairSchema, TupleTreeSchema } = M;`;
+  };
 
   test.each<Record<string, boolean>>([
     {},
@@ -188,6 +201,16 @@ describe("tuple responses and members", () => {
     { modelsInCommon: true, tsNamespaces: false },
     { modelsInModules: true },
     { modelsInModules: true, lazySchemas: true },
+    { allReadonly: true, modelsInModules: true },
+    { allReadonly: true, modelsInModules: true, lazySchemas: true },
+    { allReadonly: true, modelsInCommon: true },
+    { allReadonly: true, tsNamespaces: false },
+    // Unsplit output is rendered from native extraction by the TypeScript generators (hybrid).
+    { splitByTags: false },
+    { splitByTags: false, lazySchemas: true },
+    { splitByTags: false, allReadonly: true },
+    { splitByTags: false, allReadonly: true, lazySchemas: true },
+    { splitByTags: false, allReadonly: true, modelsInModules: true, lazySchemas: true },
   ])(
     "render identically, typecheck, load and validate with %j",
     async (variant) => {
@@ -203,10 +226,27 @@ describe("tuple responses and members", () => {
           structuredClone(document) as unknown as Parameters<typeof generateCodeFromOpenAPIDoc>[0],
           options,
         );
-        const actual = generateFilesFromNativeOpenAPI(JSON.stringify(document), false, options);
+        const source = JSON.stringify(document);
+        let actual;
+        if (variant.splitByTags === false) {
+          vi.stubEnv("OPENAPI_CODEGEN_NATIVE", "1");
+          vi.stubEnv("OPENAPI_CODEGEN_REQUIRE_FULL_NATIVE", "0");
+          expect(generateFilesFromNativeOpenAPI(source, false, options)).toBeUndefined();
+          const compileData = vi.spyOn(getNativeBindings(), "compileData");
+          actual = generateCodeFromOpenAPIDoc(JSON.parse(source), options, undefined, { source, yaml: false });
+          expect(compileData).toHaveBeenCalled();
+        } else {
+          actual = generateFilesFromNativeOpenAPI(source, false, options);
+        }
         expect(actual).toEqual(expected);
 
-        const api = expected.find(({ fileName }) => fileName.endsWith("tuples/tuples.api.ts"))!.content;
+        const tag = variant.splitByTags === false ? "common" : "tuples";
+        const api = expected.find(({ fileName }) => fileName.endsWith(`${tag}/${tag}.api.ts`))!.content;
+        expect(api).toContain(
+          variant.allReadonly
+            ? "ListSchema.refine((value) => value.length >= 2).refine((value) => value.length <= 3).nullable() }"
+            : "ListSchema.min(2).max(3).nullable() }",
+        );
         expect(api).not.toMatch(/import [^\n]*\.refine/);
 
         const result = await typecheck(
@@ -215,10 +255,19 @@ describe("tuple responses and members", () => {
           `${imports(variant)}
           const assert = (condition: boolean, message: string) => { if (!condition) throw new Error(message); };
           // Loading the endpoints resolves every model import, including the common model proxies.
-          await import("./data/tuples/tuples.api");
-          await import("./data/others/others.api");
+          ${
+            variant.splitByTags === false
+              ? `const api = await import("./data/common/common.api");`
+              : `const api = await import("./data/tuples/tuples.api");
+                 await import("./data/others/others.api");`
+          }
+          assert(Object.keys(api).length > 0, "endpoints");
           for (const value of [{ pair: ["abc"] }, { pair: [null] }, { list: ["abc", null, "defg"] }, { list: [null] }])
             assert(TuplePairSchema.safeParse(value).success, JSON.stringify(value));
+          for (const value of [{ lists: [["a", "b"], null] }, { plain: ["a", "b", "c"] }, { plain: null }])
+            assert(TuplePairSchema.safeParse(value).success, JSON.stringify(value));
+          for (const value of [{ lists: [["a"]] }, { lists: [["a", "b", "c", "d"]] }, { plain: ["a"] }])
+            assert(!TuplePairSchema.safeParse(value).success, JSON.stringify(value));
           for (const value of [{ pair: ["a"] }, { pair: ["abc", "def"] }, { list: ["abc", "x"] }, { list: [] }])
             assert(!TuplePairSchema.safeParse(value).success, JSON.stringify(value));
           for (const value of [["a"], ["a", ["b", ["c"]]]]) assert(TupleTreeSchema.safeParse(value).success, JSON.stringify(value));

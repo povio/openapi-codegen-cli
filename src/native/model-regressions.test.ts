@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { afterEach, describe, expect, test, vi } from "vitest";
 import { execFileSync } from "node:child_process";
 import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import os from "node:os";
@@ -16,11 +16,18 @@ import {
   stripModelNamespaceReferences,
 } from "@/generators/utils/generate/generate.lazy.utils";
 import { generateFilesFromNativeOpenAPI } from "./generateFilesFromNativeOpenAPI";
+import { getNativeBindings } from "./native-bindings";
 
 const TSRS = path.join(process.cwd(), "node_modules/.bin/tsrs");
 
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.unstubAllEnvs();
+});
+
 // Generates models with both renderers, requires identical output, then typechecks the generated
 // models with `tsrs` and runs `check` (TypeScript importing from `./<tag>/<tag>.models`) with Bun.
+// With `splitByTags: false` the native side is the hybrid route (native extraction, TS rendering).
 async function verifyGeneratedModels(source: string, fileConfig: Partial<GenerateOptions>, check: string) {
   const directory = await mkdtemp(path.join(os.tmpdir(), "model-regressions-"));
   try {
@@ -39,8 +46,26 @@ async function verifyGeneratedModels(source: string, fileConfig: Partial<Generat
     const models = (files: { fileName: string; content: string }[]) =>
       Object.fromEntries(files.filter((f) => f.fileName.endsWith(".models.ts")).map((f) => [f.fileName, f.content]));
     const expected = models(generateCodeFromOpenAPIDoc(document, options));
-    const native = generateFilesFromNativeOpenAPI(JSON.stringify(document), false, options);
-    expect(native).toBeDefined();
+    const nativeSource = JSON.stringify(document);
+    let native: { fileName: string; content: string }[] | undefined;
+    if (options.splitByTags) {
+      native = generateFilesFromNativeOpenAPI(nativeSource, false, options);
+      expect(native).toBeDefined();
+    } else {
+      // Unsplit output is not rendered fully natively: the production route renders the natively
+      // extracted data with the TypeScript generators (hybrid rendering, with the native resolver).
+      vi.stubEnv("OPENAPI_CODEGEN_NATIVE", "1");
+      vi.stubEnv("OPENAPI_CODEGEN_REQUIRE_FULL_NATIVE", "0");
+      expect(generateFilesFromNativeOpenAPI(nativeSource, false, options)).toBeUndefined();
+      const compileData = vi.spyOn(getNativeBindings(), "compileData");
+      native = generateCodeFromOpenAPIDoc(JSON.parse(nativeSource), options, undefined, {
+        source: nativeSource,
+        yaml: false,
+      });
+      expect(compileData).toHaveBeenCalled();
+      compileData.mockRestore();
+      vi.unstubAllEnvs();
+    }
     expect(models(native!)).toEqual(expected);
 
     await symlink(path.join(process.cwd(), "node_modules"), path.join(directory, "node_modules"), "dir");
@@ -600,4 +625,138 @@ describe("recursive members, readonly allOf and nullable type arrays", () => {
     );
     expect(output.trim()).toBe("ok");
   });
+});
+
+describe("referenced array chains and recursive tuples", () => {
+  const ref = (name: string) => ({ $ref: `#/components/schemas/${name}` });
+  const document = {
+    openapi: "3.1.0",
+    info: { title: "Tuple chains", version: "1" },
+    paths: {
+      "/examples": {
+        get: {
+          operationId: "getExamples",
+          tags: ["Examples"],
+          responses: {
+            "200": {
+              description: "OK",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: Object.fromEntries(
+                      ["Example", "Tree", "Forest", "Node"].map((name) => [name, ref(name)]),
+                    ),
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      "/list": {
+        get: {
+          operationId: "getList",
+          tags: ["Examples"],
+          responses: { "200": { description: "OK", content: { "application/json": { schema: ref("List") } } } },
+        },
+      },
+    },
+    components: {
+      schemas: {
+        // With `allReadonly` a referenced array is `.readonly()`, which has no `min`/`max`.
+        Example: {
+          type: "object",
+          properties: {
+            list: ref("List"),
+            lists: { type: "array", minItems: 1, prefixItems: [ref("List")], items: ref("List") },
+            pair: { type: "array", prefixItems: [ref("List")], items: false },
+            tree: ref("Tree"),
+          },
+        },
+        List: {
+          type: "array",
+          items: { type: "string" },
+          minItems: 2,
+          maxItems: 3,
+          nullable: true,
+          default: ["a", "b"],
+          description: "a list",
+        },
+        // Recursive tuples: a refined self member, and recursion through the rest.
+        Tree: { type: "array", minItems: 1, prefixItems: [{ type: "string" }, ref("Tree")], items: false },
+        Forest: { type: "array", prefixItems: [ref("Tree")], items: ref("Forest") },
+        // Recursion through an object property and tuple members.
+        Node: {
+          type: "object",
+          properties: {
+            name: { type: "string" },
+            edge: { type: "array", minItems: 2, prefixItems: [ref("Node"), ref("Node")], items: false },
+          },
+        },
+      },
+    },
+  };
+
+  // allReadonly × lazySchemas × modelsInModules × splitByTags (unsplit output is the hybrid route).
+  const variants: Partial<GenerateOptions>[] = [];
+  for (const splitByTags of [true, false])
+    for (const modelsInModules of [false, true])
+      for (const lazySchemas of [false, true])
+        for (const allReadonly of [false, true])
+          variants.push({ splitByTags, modelsInModules, lazySchemas, allReadonly });
+  variants.push({ tsNamespaces: false }, { tsNamespaces: false, allReadonly: true });
+
+  test.each(variants)(
+    "typecheck and validate with %j",
+    async (options) => {
+      const file = options.splitByTags === false ? "./common/common.models" : "./examples/examples.models";
+      const imports =
+        options.tsNamespaces === false
+          ? `import * as M from "${file}";`
+          : `import { ${options.splitByTags === false ? "CommonModels" : "ExamplesModels"} as M } from "${file}";`;
+      const output = await verifyGeneratedModels(
+        JSON.stringify(document),
+        options,
+        `${imports}
+        ${assert}
+        type Schema = { safeParse: (value: unknown) => { success: boolean } };
+        const valid: [Schema, unknown][] = [
+          [M.ExampleSchema, { list: ["a", "b"] }],
+          [M.ExampleSchema, { list: null }],
+          [M.ExampleSchema, { lists: [["a", "b"], null, ["a", "b", "c"]] }],
+          [M.ExampleSchema, { lists: [null] }],
+          [M.ExampleSchema, { pair: [["a", "b"]] }],
+          [M.ExampleSchema, { tree: ["a", ["b"]] }],
+          [M.TreeSchema, ["a"]],
+          [M.TreeSchema, ["a", ["b", ["c"]]]],
+          [M.ForestSchema, [["a"], [["b", ["c"]]]]],
+          [M.ForestSchema, []],
+          [M.NodeSchema, { name: "a", edge: [{}, { edge: [{}, {}] }] }],
+        ];
+        const invalid: [Schema, unknown][] = [
+          [M.ExampleSchema, { list: ["a"] }],
+          [M.ExampleSchema, { list: ["a", "b", "c", "d"] }],
+          [M.ExampleSchema, { lists: [["a"]] }],
+          [M.ExampleSchema, { pair: [["a"]] }],
+          [M.ExampleSchema, { pair: [["a", "b"], ["c", "d"]] }],
+          [M.ExampleSchema, { tree: [] }],
+          [M.ExampleSchema, { tree: ["a", []] }],
+          [M.TreeSchema, [1]],
+          [M.ForestSchema, [["a", [1]]]],
+          [M.NodeSchema, { edge: [{}] }],
+          [M.NodeSchema, { edge: [{}, { name: 1 }] }],
+        ];
+        for (const [schema, value] of valid) assert(schema.safeParse(value).success, JSON.stringify(value));
+        for (const [schema, value] of invalid) assert(!schema.safeParse(value).success, JSON.stringify(value));
+        // A referenced component's default applies where it is referenced (also to a missing member).
+        const parsed = M.ExampleSchema.parse({ lists: [] });
+        assert(JSON.stringify(parsed) === JSON.stringify({ list: ["a", "b"], lists: [["a", "b"]] }), JSON.stringify(parsed));
+        ${options.allReadonly ? `assert(Object.isFrozen(parsed.lists), "readonly tuple");` : ""}
+        console.log("ok");`,
+      );
+      expect(output.trim()).toBe("ok");
+    },
+    60_000,
+  );
 });

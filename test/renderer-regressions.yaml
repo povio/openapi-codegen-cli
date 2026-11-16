@@ -409,6 +409,18 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/LiteralTupleDto" }
+  # With `allReadonly` a referenced array is `.readonly()` and has no `min`/`max`: its length checks
+  # are refinements at the response, properties and tuple members.
+  /literals/list:
+    get:
+      operationId: LiteralsController_list
+      tags: [Literals]
+      responses:
+        "200":
+          description: List
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LiteralListDto" }
 components:
   schemas:
     ProviderNameEnum:
@@ -627,6 +639,13 @@ components:
           type: string
           description: "Odd */ values"
           enum: ["a\"b", "c\\d", "line\nbreak", "普通"]
+        list: { $ref: "#/components/schemas/LiteralListDto" }
+        lists:
+          type: array
+          minItems: 1
+          prefixItems: [{ $ref: "#/components/schemas/LiteralListDto" }]
+          items: { $ref: "#/components/schemas/LiteralListDto" }
+        tree: { $ref: "#/components/schemas/LiteralTreeDto" }
         untyped: { type: array }
         anything: { type: object, additionalProperties: true }
     LiteralItemDto:
@@ -639,3 +658,18 @@ components:
       prefixItems: [{ type: string }]
       items: { type: number }
       minItems: 3
+    LiteralListDto:
+      type: array
+      items: { type: string }
+      minItems: 2
+      maxItems: 3
+      nullable: true
+      default: [a, b]
+      description: A list
+    # A recursive tuple gets an explicit circular type, also when rendered from native extraction
+    # (`splitByTags: false`).
+    LiteralTreeDto:
+      type: array
+      minItems: 1
+      prefixItems: [{ type: string }, { $ref: "#/components/schemas/LiteralTreeDto" }]
+      items: false
