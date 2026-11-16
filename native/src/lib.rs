@@ -192,10 +192,16 @@ pub fn compile_data(source: String, yaml: bool, options_json: String) -> Result<
             schema_refs.insert(zod_name, Value::String(reference));
         }
     }
-    for (name, tag) in compiler.extracted_schema_tags() {
-        schema_owners.insert(name, Value::String(tag));
+    let extracted_tags = compiler.extracted_schema_tags();
+    for (name, tag) in &extracted_tags {
+        schema_owners.insert(name.clone(), Value::String(tag.clone()));
     }
     for (name, tags) in generated.tags {
+        // The TypeScript resolver looks extracted enums up by name before anything else, so an
+        // extracted enum keeps its tag even when a component schema renders under the same name.
+        if extracted_tags.contains_key(&name) {
+            continue;
+        }
         let tag = if tags.len() == 1 {
             tags.into_iter()
                 .next()
@@ -343,7 +349,6 @@ pub fn compile_data(source: String, yaml: bool, options_json: String) -> Result<
     }
     // Like the TypeScript renderer, extracted enums keep the owner their component usages gave them,
     // and with `modelsInModules` go to the modules of all those usages.
-    let extracted_tags = compiler.extracted_schema_tags();
     if options.models_in_modules {
         for (name, tags) in compiler.extracted_schema_usage_tags() {
             let tags = if tags.is_empty() {

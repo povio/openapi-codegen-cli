@@ -750,6 +750,19 @@ impl<'a> ZodCompiler<'a> {
         if !self.options.split_by_tags || self.options.models_in_common {
             return self.options.default_tag.clone();
         }
+        // The TypeScript resolver looks extracted enums up by name first, so a component whose
+        // schema name collides with an extracted enum takes that enum's tag.
+        let name = schema_name(
+            reference.rsplit('/').next().unwrap_or_default(),
+            &self.options.schema_suffix,
+        );
+        if let Some((_, tag)) = self
+            .extracted_enums
+            .values()
+            .find(|(extracted, _)| *extracted == name)
+        {
+            return tag.clone();
+        }
         let mut tags = self
             .resolver
             .schema_tags
@@ -805,39 +818,41 @@ fn chain(schema: &Value, meta: Meta, options: &GenerateOptions) -> String {
         Some("number" | "integer") if schema.get("enum").is_none() => {
             if let Some(value) = schema.get("minimum") {
                 chains.push(format!(
-                    "{}({value})",
+                    "{}({})",
                     if schema.get("exclusiveMinimum").and_then(Value::as_bool) == Some(true) {
                         "gt"
                     } else {
                         "gte"
-                    }
+                    },
+                    js_number(value)
                 ));
             } else if let Some(value) = schema
                 .get("exclusiveMinimum")
                 .filter(|value| value.is_number())
             {
-                chains.push(format!("gt({value})"));
+                chains.push(format!("gt({})", js_number(value)));
             }
             if let Some(value) = schema.get("maximum") {
                 chains.push(format!(
-                    "{}({value})",
+                    "{}({})",
                     if schema.get("exclusiveMaximum").and_then(Value::as_bool) == Some(true) {
                         "lt"
                     } else {
                         "lte"
-                    }
+                    },
+                    js_number(value)
                 ));
             } else if let Some(value) = schema
                 .get("exclusiveMaximum")
                 .filter(|value| value.is_number())
             {
-                chains.push(format!("lt({value})"));
+                chains.push(format!("lt({})", js_number(value)));
             }
             if let Some(value) = schema
                 .get("multipleOf")
                 .filter(|value| value.as_f64() != Some(0.0))
             {
-                chains.push(format!("multipleOf({value})"));
+                chains.push(format!("multipleOf({})", js_number(value)));
             }
         }
         Some("array") => {
@@ -967,6 +982,20 @@ pub(crate) fn array_item_schemas(schema: &Map<String, Value>) -> Vec<&Value> {
     }
 }
 
+/// Whether `key` is an array keyword (`items`, `prefixItems`, `additionalItems`) on a schema whose
+/// declared `type` does not permit arrays. The TypeScript `iterateSchema` only follows array members
+/// when `hasSchemaType(schema, "array")`, so generic JSON walkers skip such stray keywords. Objects
+/// without a string (or string array) `type` are left alone, since a walker cannot tell a schema
+/// from e.g. a `properties` map with a property named `items`.
+pub(crate) fn is_stray_array_keyword(object: &Map<String, Value>, key: &str) -> bool {
+    matches!(key, "items" | "prefixItems" | "additionalItems")
+        && matches!(
+            object.get("type"),
+            Some(Value::String(_)) | Some(Value::Array(_))
+        )
+        && !object_has_schema_type(object, "array")
+}
+
 /// `hasSchemaType`: whether `type` permits `schema_type`, also for OpenAPI 3.1 type arrays
 /// (`type: ["array", "null"]`).
 pub(crate) fn has_schema_type(schema: &Value, schema_type: &str) -> bool {
@@ -1061,6 +1090,47 @@ fn has_multiple_all_of(value: &Value) -> bool {
         .and_then(Value::as_array)
         .is_some_and(|items| items.len() > 1)
 }
+/// A JSON number as JavaScript's `Number.prototype.toString` prints it (`0.000001`, `1e-7`,
+/// `1e+21`), which the TypeScript generator interpolates into validation chains.
+pub(crate) fn js_number(value: &Value) -> String {
+    let Some(number) = value.as_number() else {
+        return value.to_string();
+    };
+    if number.is_i64() || number.is_u64() {
+        return number.to_string();
+    }
+    let Some(float) = number.as_f64().filter(|float| float.is_finite()) else {
+        return number.to_string();
+    };
+    if float == 0.0 {
+        return "0".into();
+    }
+    let sign = if float < 0.0 { "-" } else { "" };
+    // `{:e}` prints the shortest round-tripping digits, e.g. `1.5e-7`.
+    let scientific = format!("{:e}", float.abs());
+    let (mantissa, exponent) = scientific.split_once('e').unwrap_or((&scientific, "0"));
+    let digits = mantissa.replace('.', "");
+    let k = digits.len() as i32;
+    let n = exponent.parse::<i32>().unwrap_or(0) + 1;
+    let body = if k <= n && n <= 21 {
+        format!("{digits}{}", "0".repeat((n - k) as usize))
+    } else if 0 < n && n <= 21 {
+        format!("{}.{}", &digits[..n as usize], &digits[n as usize..])
+    } else if -6 < n && n <= 0 {
+        format!("0.{}{digits}", "0".repeat((-n) as usize))
+    } else {
+        let exponent = n - 1;
+        let exponent_sign = if exponent < 0 { "-" } else { "+" };
+        let mantissa = if k == 1 {
+            digits.clone()
+        } else {
+            format!("{}.{}", &digits[..1], &digits[1..])
+        };
+        format!("{mantissa}e{exponent_sign}{}", exponent.abs())
+    };
+    format!("{sign}{body}")
+}
+
 fn js_scalar(value: &Value) -> String {
     if let Some(value) = value.as_str() {
         value.trim_matches('"').to_string()
@@ -1530,8 +1600,10 @@ fn collect_schema_refs(value: &Value, refs: &mut HashSet<String>) {
             if let Some(reference) = object.get("$ref").and_then(Value::as_str) {
                 refs.insert(autocorrect_ref(reference));
             }
-            for child in object.values() {
-                collect_schema_refs(child, refs);
+            for (key, child) in object {
+                if !is_stray_array_keyword(object, key) {
+                    collect_schema_refs(child, refs);
+                }
             }
         }
         Value::Array(array) => {
@@ -1553,4 +1625,51 @@ fn schema_reaches(schema: &Value, root: &str, resolver: &Resolver<'_>) -> bool {
                 .get(reference)
                 .is_some_and(|dependencies| dependencies.contains(root))
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{is_stray_array_keyword, js_number};
+    use serde_json::json;
+
+    #[test]
+    fn formats_numbers_like_javascript() {
+        for (value, expected) in [
+            (json!(0.000001), "0.000001"),
+            (json!(0.0000001), "1e-7"),
+            (json!(1.5e-7), "1.5e-7"),
+            (json!(0.1), "0.1"),
+            (json!(-2.5), "-2.5"),
+            (json!(100.0), "100"),
+            (json!(1e21), "1e+21"),
+            (json!(1.25e22), "1.25e+22"),
+            (json!(123456789012345680000.0), "123456789012345680000"),
+            (json!(42), "42"),
+            (json!(-9007199254740991_i64), "-9007199254740991"),
+        ] {
+            assert_eq!(js_number(&value), expected, "{value}");
+        }
+    }
+
+    #[test]
+    fn detects_stray_array_keywords() {
+        let stray = json!({ "type": "string", "items": {} });
+        let array = json!({ "type": ["array", "null"], "items": {} });
+        let untyped = json!({ "items": {} });
+        let properties_map = json!({ "type": { "type": "string" }, "items": {} });
+        assert!(is_stray_array_keyword(stray.as_object().unwrap(), "items"));
+        assert!(!is_stray_array_keyword(
+            stray.as_object().unwrap(),
+            "properties"
+        ));
+        assert!(!is_stray_array_keyword(array.as_object().unwrap(), "items"));
+        assert!(!is_stray_array_keyword(
+            untyped.as_object().unwrap(),
+            "items"
+        ));
+        assert!(!is_stray_array_keyword(
+            properties_map.as_object().unwrap(),
+            "items"
+        ));
+    }
 }

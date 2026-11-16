@@ -191,8 +191,10 @@ fn collect_ordered_dependencies(
         if extract_enums {
             let mut inline_values = HashSet::default();
             if let Some(object) = schema.as_object() {
-                for value in object.values() {
-                    collect_inline_enum_values(value, &mut inline_values);
+                for (key, value) in object {
+                    if !crate::zod::is_stray_array_keyword(object, key) {
+                        collect_inline_enum_values(value, &mut inline_values);
+                    }
                 }
             }
             if !inline_values.is_empty() {
@@ -232,8 +234,10 @@ fn collect_inline_enum_values(value: &Value, values: &mut HashSet<String>) {
             if let Some(code) = crate::zod::enum_code(value) {
                 values.insert(code);
             }
-            for value in object.values() {
-                collect_inline_enum_values(value, values);
+            for (key, value) in object {
+                if !crate::zod::is_stray_array_keyword(object, key) {
+                    collect_inline_enum_values(value, values);
+                }
             }
         }
         _ => {}
@@ -402,8 +406,10 @@ fn collect_duplicate_enum_tags(
                     }
                 }
             }
-            for child in object.values() {
-                collect_duplicate_enum_tags(child, enum_ref_by_code, tags, additions);
+            for (key, child) in object {
+                if !crate::zod::is_stray_array_keyword(object, key) {
+                    collect_duplicate_enum_tags(child, enum_ref_by_code, tags, additions);
+                }
             }
         }
         Value::Array(array) => {
@@ -704,8 +710,10 @@ fn collect_operation_schema_refs(
                 }
                 return;
             }
-            for child in object.values() {
-                collect_operation_schema_refs(document, child, refs, visited_components);
+            for (key, child) in object {
+                if !crate::zod::is_stray_array_keyword(object, key) {
+                    collect_operation_schema_refs(document, child, refs, visited_components);
+                }
             }
         }
         Value::Array(array) => {

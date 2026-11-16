@@ -320,8 +320,9 @@ fn collect_inline_enum_codes(value: &Value, codes: &mut Vec<String>) {
                     }
                 }
                 object
-                    .values()
-                    .for_each(|value| collect_inline_enum_codes(value, codes));
+                    .iter()
+                    .filter(|(key, _)| !crate::zod::is_stray_array_keyword(object, key))
+                    .for_each(|(_, value)| collect_inline_enum_codes(value, codes));
             }
         }
         _ => {}
@@ -1514,8 +1515,9 @@ fn collect_enum_objects(value: &Value, enums: &mut HashMap<String, Value>) {
                 }
             }
             object
-                .values()
-                .for_each(|value| collect_enum_objects(value, enums));
+                .iter()
+                .filter(|(key, _)| !crate::zod::is_stray_array_keyword(object, key))
+                .for_each(|(_, value)| collect_enum_objects(value, enums));
         }
         _ => {}
     }
