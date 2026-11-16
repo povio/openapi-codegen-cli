@@ -14,8 +14,19 @@ import type {
   RestTransportInterceptor,
   TransportErrorContext,
   TransportFetch,
+  TransportRequestHeaders,
   TransportResponse,
 } from "./rest-transport.types";
+
+/** Builds `Headers`, omitting `undefined`/`null` values and stringifying numbers/booleans. */
+function toHeaders(init?: TransportRequestHeaders): Headers {
+  if (!init || init instanceof Headers || Array.isArray(init)) return new Headers(init);
+  const headers = new Headers();
+  for (const [key, value] of Object.entries(init)) {
+    if (value != null) headers.set(key, String(value));
+  }
+  return headers;
+}
 
 type NativeResult<T, IsRawRes extends boolean> = IsRawRes extends true ? NativeResponse<T> : T;
 
@@ -114,7 +125,7 @@ export class NativeRestClient implements RestTransport {
       return;
     }
     await this.execute(
-      { url, method: method.toUpperCase(), body: data, headers: new Headers(config.headers), signal: config.signal },
+      { url, method: method.toUpperCase(), body: data, headers: toHeaders(config.headers), signal: config.signal },
       config,
       false,
     );
@@ -130,7 +141,7 @@ export class NativeRestClient implements RestTransport {
     const errorStack = new Error().stack;
     try {
       const headers = new Headers(this.headers);
-      new Headers(config.headers).forEach((value, key) => headers.set(key, value));
+      toHeaders(config.headers).forEach((value, key) => headers.set(key, value));
       let body: BodyInit | undefined;
       if (data != null) {
         if (data instanceof FormData || data instanceof Blob || typeof data === "string") body = data;
@@ -270,7 +281,7 @@ export class NativeRestClient implements RestTransport {
     return new Promise<void>((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       xhr.open(method.toUpperCase(), url);
-      new Headers(config.headers).forEach((value, key) => xhr.setRequestHeader(key, value));
+      toHeaders(config.headers).forEach((value, key) => xhr.setRequestHeader(key, value));
       if (config.timeout) xhr.timeout = config.timeout;
       xhr.upload.onprogress = ({ loaded, total }) => config.onUploadProgress?.({ loaded, total });
       xhr.onload = () =>
