@@ -396,8 +396,9 @@ pub fn compile_data(source: String, yaml: bool, options_json: String) -> Result<
                     &options,
                 )
             });
-            let queries =
-                scope.spawn(|| render::render_queries(render_endpoints, &schema_owners, &options));
+            let queries = scope.spawn(|| {
+                render::render_queries(render_endpoints, &document, &schema_owners, &options)
+            });
             let acl =
                 scope.spawn(|| render::render_acl(render_endpoints, &schema_owners, &options));
             let shared = scope.spawn(|| render::render_shared(render_endpoints, &options));

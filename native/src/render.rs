@@ -2468,17 +2468,7 @@ fn function_params<'a>(
                 .get("zodSchema")
                 .and_then(Value::as_str)
                 .unwrap_or_default();
-            // `isEndpointParameterRequired`: a request body is optional unless `required: true`.
-            let required = if let Some(body) = parameter.get("bodyObject") {
-                body.get("required")
-                    .and_then(Value::as_bool)
-                    .unwrap_or(false)
-            } else {
-                parameter
-                    .pointer("/parameterObject/required")
-                    .and_then(Value::as_bool)
-                    .unwrap_or(true)
-            };
+            let required = is_parameter_required(parameter);
             let ty = if is_named_schema(schema) {
                 let name = remove_suffix(schema, &options.schema_suffix);
                 if model_namespace.is_empty() {
@@ -2512,6 +2502,20 @@ fn function_params<'a>(
     };
     result.sort_by_key(|param| (!param.required, kind_rank(param.kind)));
     result
+}
+
+/// `isEndpointParameterRequired`: a request body is optional unless `required: true`.
+fn is_parameter_required(parameter: &Value) -> bool {
+    if let Some(body) = parameter.get("bodyObject") {
+        body.get("required")
+            .and_then(Value::as_bool)
+            .unwrap_or(false)
+    } else {
+        parameter
+            .pointer("/parameterObject/required")
+            .and_then(Value::as_bool)
+            .unwrap_or(true)
+    }
 }
 
 /// Render-only key holding the OpenAPI type of a parameter's `$ref` schema target.
@@ -2843,6 +2847,7 @@ fn render_path(path: &str) -> String {
 
 pub fn render_queries(
     endpoints: &[Value],
+    document: &Value,
     schema_owners: &Map<String, Value>,
     options: &GenerateOptions,
 ) -> Map<String, Value> {
@@ -2850,6 +2855,8 @@ pub fn render_queries(
     if !options.split_by_tags || options.inline_endpoints || !options.workspace_context.is_empty() {
         return rendered;
     }
+    let annotated = with_cursor_pagination(endpoints, document, options);
+    let endpoints = annotated.as_deref().unwrap_or(endpoints);
     let mut by_tag: IndexMap<String, Vec<&Value>> = IndexMap::default();
     for endpoint in endpoints {
         let tag = endpoint
@@ -3660,8 +3667,19 @@ fn render_query_module(
     if !queries.is_empty() {
         query_types.push("type AppQueryOptions".to_string());
     }
-    if options.infinite_queries && !infinite.is_empty() {
+    if options.infinite_queries
+        && infinite
+            .iter()
+            .any(|endpoint| !is_cursor_paginated(endpoint))
+    {
         query_types.push("type AppInfiniteQueryOptions".into());
+    }
+    if options.infinite_queries
+        && infinite
+            .iter()
+            .any(|endpoint| is_cursor_paginated(endpoint))
+    {
+        query_types.push("type AppCursorInfiniteQueryOptions".into());
     }
     if !mutations.is_empty() {
         query_types.push("type AppMutationOptions".into());
@@ -4185,15 +4203,202 @@ fn import_root(options: &GenerateOptions) -> String {
 
 fn is_infinite(endpoint: &Value, options: &GenerateOptions) -> bool {
     let page = &options.infinite_query_param_names.page;
+    is_cursor_paginated(endpoint)
+        || endpoint
+            .get("parameters")
+            .and_then(Value::as_array)
+            .is_some_and(|parameters| {
+                parameters.iter().any(|param| {
+                    param.get("name").and_then(Value::as_str) == Some(page)
+                        && param.get("type").and_then(Value::as_str) == Some("Query")
+                })
+            })
+}
+
+/// Render-only key marking a cursor paginated GET endpoint (`isCursorPaginatedGetEndpoint`).
+const CURSOR_PAGINATED: &str = "x-cursorPaginated";
+/// `CURSOR_INFINITE_QUERY_KEY`: last query key element of cursor paginated infinite queries.
+const CURSOR_INFINITE_QUERY_KEY: &str = "cursor-v1";
+const CURSOR_PAGE_PARAM_TYPE: &str = "string | undefined";
+
+fn is_cursor_paginated(endpoint: &Value) -> bool {
     endpoint
-        .get("parameters")
-        .and_then(Value::as_array)
-        .is_some_and(|parameters| {
-            parameters.iter().any(|param| {
-                param.get("name").and_then(Value::as_str) == Some(page)
-                    && param.get("type").and_then(Value::as_str) == Some("Query")
+        .get(CURSOR_PAGINATED)
+        .and_then(Value::as_bool)
+        .unwrap_or(false)
+}
+
+fn page_param_type(endpoint: &Value) -> &'static str {
+    if is_cursor_paginated(endpoint) {
+        CURSOR_PAGE_PARAM_TYPE
+    } else {
+        "number"
+    }
+}
+
+/// Copies of `endpoints` in which cursor paginated GET endpoints are marked with
+/// `CURSOR_PAGINATED`. `None` when infinite queries are off or no endpoint is cursor paginated.
+fn with_cursor_pagination(
+    endpoints: &[Value],
+    document: &Value,
+    options: &GenerateOptions,
+) -> Option<Vec<Value>> {
+    if !options.infinite_queries {
+        return None;
+    }
+    let marked: Vec<bool> = endpoints
+        .iter()
+        .map(|endpoint| detect_cursor_paginated(endpoint, document, options))
+        .collect();
+    if !marked.contains(&true) {
+        return None;
+    }
+    let mut endpoints = endpoints.to_vec();
+    for (endpoint, marked) in endpoints.iter_mut().zip(marked) {
+        if let (true, Some(object)) = (marked, endpoint.as_object_mut()) {
+            object.insert(CURSOR_PAGINATED.into(), Value::Bool(true));
+        }
+    }
+    Some(endpoints)
+}
+
+/// `isCursorPaginatedGetEndpoint`: a GET endpoint with an optional string query parameter named
+/// `infiniteQueryParamNames.cursor` and a response schema with a string property named
+/// `infiniteQueryResponseParamNames.nextCursor` (directly or through `allOf`).
+fn detect_cursor_paginated(endpoint: &Value, document: &Value, options: &GenerateOptions) -> bool {
+    let cursor = options.infinite_query_param_names.cursor.as_str();
+    let next_cursor = options
+        .infinite_query_response_param_names
+        .next_cursor
+        .as_str();
+    if cursor.is_empty()
+        || next_cursor.is_empty()
+        || endpoint.get("method").and_then(Value::as_str) != Some("get")
+    {
+        return false;
+    }
+    let find_query_parameter = |name: &str| {
+        endpoint
+            .get("parameters")
+            .and_then(Value::as_array)
+            .into_iter()
+            .flatten()
+            .find(|parameter| {
+                parameter.get("name").and_then(Value::as_str) == Some(name)
+                    && parameter.get("type").and_then(Value::as_str) == Some("Query")
+            })
+    };
+    let Some(parameter) = find_query_parameter(cursor) else {
+        return false;
+    };
+    let schema = parameter
+        .get("zodSchema")
+        .and_then(Value::as_str)
+        .unwrap_or_default();
+    // The first page is requested without a cursor (and a page-number parameter is left unset).
+    if is_parameter_required(parameter)
+        || is_named_schema(schema)
+        || primitive_parameter_type(parameter) != "string"
+    {
+        return false;
+    }
+    if find_query_parameter(&options.infinite_query_param_names.page)
+        .is_some_and(is_parameter_required)
+    {
+        return false;
+    }
+    endpoint
+        .pointer("/responseObject/content")
+        .and_then(Value::as_object)
+        .is_some_and(|content| {
+            content.values().any(|media| {
+                media
+                    .get("schema")
+                    .is_some_and(|schema| has_string_property(document, schema, next_cursor, 0))
             })
         })
+}
+
+fn resolve_schema<'a>(document: &'a Value, schema: &'a Value) -> Option<&'a Value> {
+    let mut resolved = Some(schema);
+    let mut depth = 0;
+    while let Some(reference) = resolved
+        .and_then(|value| value.get("$ref"))
+        .and_then(Value::as_str)
+    {
+        if depth >= 32 {
+            break;
+        }
+        resolved = resolve_document_ref(document, reference);
+        depth += 1;
+    }
+    resolved.filter(|value| value.is_object() && value.get("$ref").is_none())
+}
+
+fn has_string_property(document: &Value, schema: &Value, name: &str, depth: usize) -> bool {
+    let Some(resolved) = resolve_schema(document, schema) else {
+        return false;
+    };
+    if depth > 32 {
+        return false;
+    }
+    if let Some(property) = resolved
+        .get("properties")
+        .and_then(|properties| properties.get(name))
+    {
+        return is_string_schema(document, property, 0);
+    }
+    resolved
+        .get("allOf")
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+        .any(|member| has_string_property(document, member, name, depth + 1))
+}
+
+/// A string schema, optionally nullable (`nullable`, a `"null"` type or a `null` union member).
+fn is_string_schema(document: &Value, schema: &Value, depth: usize) -> bool {
+    let Some(resolved) = resolve_schema(document, schema) else {
+        return false;
+    };
+    if depth > 32 {
+        return false;
+    }
+    match resolved.get("type") {
+        Some(Value::String(schema_type)) => return schema_type == "string",
+        Some(Value::Array(types)) => {
+            return types.iter().any(|item| item == "string")
+                && types.iter().all(|item| item == "string" || item == "null");
+        }
+        Some(_) => return false,
+        None => {}
+    }
+    let Some(members) = resolved
+        .get("anyOf")
+        .or_else(|| resolved.get("oneOf"))
+        .and_then(Value::as_array)
+        .filter(|members| !members.is_empty())
+    else {
+        return false;
+    };
+    let is_null = |member: &Value| {
+        resolve_schema(document, member)
+            .and_then(|member| member.get("type"))
+            .and_then(Value::as_str)
+            == Some("null")
+    };
+    members
+        .iter()
+        .all(|member| is_null(member) || is_string_schema(document, member, depth + 1))
+        && members.iter().any(|member| !is_null(member))
+}
+
+fn is_valid_identifier(name: &str) -> bool {
+    let mut chars = name.chars();
+    chars
+        .next()
+        .is_some_and(|first| first.is_ascii_alphabetic() || first == '_' || first == '$')
+        && chars.all(|ch| ch.is_ascii_alphanumeric() || ch == '_' || ch == '$')
 }
 
 fn render_query_keys(
@@ -4223,14 +4428,21 @@ fn render_query_keys(
         ));
         if options.infinite_queries && is_infinite(endpoint, options) {
             let params = query_function_params(endpoint, options, models_namespace, true, true);
+            let mut args = render_arg_list(&params);
+            if is_cursor_paginated(endpoint) {
+                args = if args.is_empty() {
+                    format!("\"{CURSOR_INFINITE_QUERY_KEY}\"")
+                } else {
+                    format!("{args}, \"{CURSOR_INFINITE_QUERY_KEY}\"")
+                };
+            }
             lines.push(format!(
-                "    {name}Infinite: ({}) => [...keys.all, \"{}\", \"infinite\", {}] as const,",
+                "    {name}Infinite: ({}) => [...keys.all, \"{}\", \"infinite\", {args}] as const,",
                 render_param_list(&params),
                 endpoint
                     .get("path")
                     .and_then(Value::as_str)
                     .unwrap_or_default(),
-                render_arg_list(&params)
             ));
         }
     }
@@ -4244,10 +4456,14 @@ fn query_function_params<'a>(
     exclude_page: bool,
     path_required_only: bool,
 ) -> Vec<FunctionParam<'a>> {
+    let cursor = is_cursor_paginated(endpoint);
     function_params(endpoint, options, models_namespace)
         .into_iter()
         .filter_map(|mut param| {
-            if exclude_page && param.name == options.infinite_query_param_names.page {
+            if exclude_page
+                && (param.name == options.infinite_query_param_names.page
+                    || (cursor && param.name == options.infinite_query_param_names.cursor))
+            {
                 return None;
             }
             if path_required_only && param.kind != "Path" {
@@ -4322,12 +4538,16 @@ fn render_query_options_native(
         "  queryKey: keys.{api_operation}{}({args}),",
         if infinite { "Infinite" } else { "" }
     ));
+    let cursor = is_cursor_paginated(endpoint);
     let endpoint_args = if infinite {
         let full = query_function_params(endpoint, options, models_namespace, false, false);
+        let names = &options.infinite_query_param_names;
         full.iter()
             .map(|param| {
-                if param.name == options.infinite_query_param_names.page {
+                if cursor && param.name == names.cursor {
                     "pageParam".to_string()
+                } else if param.name == names.page {
+                    if cursor { "undefined" } else { "pageParam" }.to_string()
                 } else {
                     param.name.clone()
                 }
@@ -4338,7 +4558,26 @@ fn render_query_options_native(
         args.clone()
     };
     if infinite {
-        lines.push(format!("  queryFn: ({{ pageParam, signal }}: {{ pageParam: number; signal: AbortSignal }}) => {api_namespace}.{api_operation}({endpoint_args}, {{ ...config, signal }}),"));
+        lines.push(format!("  queryFn: ({{ pageParam, signal }}: {{ pageParam: {}; signal: AbortSignal }}) => {api_namespace}.{api_operation}({endpoint_args}, {{ ...config, signal }}),", page_param_type(endpoint)));
+    }
+    if infinite && cursor {
+        let next_cursor = &options.infinite_query_response_param_names.next_cursor;
+        let (binding, variable) = if is_valid_identifier(next_cursor) {
+            (next_cursor.clone(), next_cursor.as_str())
+        } else {
+            (
+                format!(
+                    "{}: nextCursor",
+                    serde_json::to_string(next_cursor).unwrap_or_default()
+                ),
+                "nextCursor",
+            )
+        };
+        lines.push(format!(
+            "  initialPageParam: undefined as {CURSOR_PAGE_PARAM_TYPE},"
+        ));
+        lines.push(format!("  getNextPageParam: ({{ {binding} }}: Awaited<ReturnType<typeof {api_namespace}.{api_operation}>>) => {variable} ?? undefined,"));
+    } else if infinite {
         lines.push("  initialPageParam: 1,".into());
         let names = &options.infinite_query_response_param_names;
         lines.push(format!("  getNextPageParam: ({{ {}, {}, {}: limitParam }}: Awaited<ReturnType<typeof {api_namespace}.{api_operation}>> & Partial<Record<\"{}\" | \"{}\" | \"{}\", number | null>>) => {{", names.page, names.total_items, names.limit, names.page, names.total_items, names.limit));
@@ -4375,7 +4614,9 @@ fn render_query_hook_native(
     let args = render_arg_list(&params);
     render_query_docs(lines, endpoint, options, models_namespace, infinite);
     let hook = format!("use{cap}{}", if infinite { "Infinite" } else { "" });
-    let option_type = if infinite {
+    let option_type = if infinite && is_cursor_paginated(endpoint) {
+        "AppCursorInfiniteQueryOptions"
+    } else if infinite {
         "AppInfiniteQueryOptions"
     } else {
         "AppQueryOptions"
@@ -4421,7 +4662,11 @@ fn render_query_hook_native(
         lines.push(format!(
             "    queryFn: async ({{ {}signal }}: {{ {}signal: AbortSignal }}) => {{",
             if infinite { "pageParam, " } else { "" },
-            if infinite { "pageParam: number; " } else { "" }
+            if infinite {
+                format!("pageParam: {}; ", page_param_type(endpoint))
+            } else {
+                String::new()
+            }
         ));
         lines.push(format!(
             "{}checkAcl({acl_namespace}.canUse{cap}({}));",
@@ -4599,7 +4844,9 @@ fn render_query_docs(
             parameter_description(param.source)
         ));
     }
-    lines.push(if infinite {
+    lines.push(if infinite && is_cursor_paginated(endpoint) {
+        " * @param { AppCursorInfiniteQueryOptions } options Infinite query options".into()
+    } else if infinite {
         " * @param { AppInfiniteQueryOptions } options Infinite query options".into()
     } else {
         " * @param { AppQueryOptions } options Query options".into()
@@ -5340,5 +5587,161 @@ mod model_code_tests {
             ),
             "z.object({ ...PetSchema.unwrap().shape })"
         );
+    }
+}
+
+#[cfg(test)]
+mod cursor_pagination_tests {
+    use super::*;
+    use serde_json::json;
+
+    fn options(extra: Value) -> GenerateOptions {
+        let mut base = json!({ "infiniteQueries": true });
+        base.as_object_mut()
+            .unwrap()
+            .extend(extra.as_object().unwrap().clone());
+        serde_json::from_value(base).unwrap()
+    }
+
+    fn query(name: &str, schema: Value) -> Value {
+        json!({
+            "name": name,
+            "type": "Query",
+            "zodSchema": "z.string()",
+            "parameterObject": { "name": name, "in": "query", "required": false, "schema": schema },
+        })
+    }
+
+    fn endpoint(parameters: Vec<Value>, response: Value) -> Value {
+        json!({
+            "method": "get",
+            "path": "/items",
+            "operationName": "list",
+            "parameters": parameters,
+            "responseObject": { "content": { "application/json": { "schema": response } } },
+        })
+    }
+
+    fn page_response(next_cursor: Value) -> Value {
+        json!({ "type": "object", "properties": { "items": { "type": "array" }, "nextCursor": next_cursor } })
+    }
+
+    #[test]
+    fn detects_string_cursor_with_next_cursor_response() {
+        let document = json!({ "components": { "schemas": {
+            "Page": page_response(json!({ "type": "string", "nullable": true })),
+            "Cursor": { "type": ["string", "null"] },
+            "Wrapped": { "allOf": [{ "$ref": "#/components/schemas/Base" }, { "type": "object" }] },
+            "Base": page_response(json!({ "$ref": "#/components/schemas/Cursor" })),
+        } } });
+        let options = options(json!({}));
+        let cursor = query("cursor", json!({ "type": "string" }));
+        for response in [
+            json!({ "$ref": "#/components/schemas/Page" }),
+            json!({ "$ref": "#/components/schemas/Wrapped" }),
+            page_response(json!({ "anyOf": [{ "type": "string" }, { "type": "null" }] })),
+        ] {
+            assert!(detect_cursor_paginated(
+                &endpoint(vec![cursor.clone()], response),
+                &document,
+                &options
+            ));
+        }
+    }
+
+    #[test]
+    fn rejects_endpoints_that_cannot_be_typed_as_cursor_paginated() {
+        let document = json!({});
+        let options = options(json!({}));
+        let cursor = query("cursor", json!({ "type": "string" }));
+        let string = page_response(json!({ "type": "string" }));
+        // No next cursor, a non-string next cursor, a non-string cursor, or a non-GET endpoint.
+        assert!(!detect_cursor_paginated(
+            &endpoint(
+                vec![cursor.clone()],
+                json!({ "type": "object", "properties": {} })
+            ),
+            &document,
+            &options
+        ));
+        assert!(!detect_cursor_paginated(
+            &endpoint(
+                vec![cursor.clone()],
+                page_response(json!({ "type": "integer" }))
+            ),
+            &document,
+            &options
+        ));
+        assert!(!detect_cursor_paginated(
+            &endpoint(
+                vec![query("cursor", json!({ "type": "integer" }))],
+                string.clone()
+            ),
+            &document,
+            &options
+        ));
+        // A required cursor or page parameter cannot be left unset for the first page.
+        let mut required_cursor = cursor.clone();
+        required_cursor["parameterObject"]["required"] = json!(true);
+        assert!(!detect_cursor_paginated(
+            &endpoint(vec![required_cursor], string.clone()),
+            &document,
+            &options
+        ));
+        let mut required_page = query("page", json!({ "type": "integer" }));
+        required_page["parameterObject"]["required"] = json!(true);
+        assert!(!detect_cursor_paginated(
+            &endpoint(vec![required_page, cursor.clone()], string.clone()),
+            &document,
+            &options
+        ));
+        let mut post = endpoint(vec![cursor.clone()], string.clone());
+        post["method"] = json!("post");
+        assert!(!detect_cursor_paginated(&post, &document, &options));
+        // An empty cursor parameter name disables cursor pagination.
+        let disabled = self::options(json!({ "infiniteQueryParamNames": { "cursor": "" } }));
+        assert!(!detect_cursor_paginated(
+            &endpoint(vec![cursor], string),
+            &document,
+            &disabled
+        ));
+    }
+
+    #[test]
+    fn renders_cursor_query_keys_and_options() {
+        let options = options(json!({
+            "infiniteQueryParamNames": { "cursor": "after" },
+            "infiniteQueryResponseParamNames": { "nextCursor": "next-cursor" },
+        }));
+        let response =
+            json!({ "type": "object", "properties": { "next-cursor": { "type": "string" } } });
+        let endpoints = vec![endpoint(
+            vec![
+                query("page", json!({ "type": "integer" })),
+                query("after", json!({ "type": "string" })),
+            ],
+            response,
+        )];
+        let annotated = with_cursor_pagination(&endpoints, &json!({}), &options).unwrap();
+        let endpoint = &annotated[0];
+        assert!(is_cursor_paginated(endpoint) && is_infinite(endpoint, &options));
+        let mut lines = Vec::new();
+        render_query_keys(&mut lines, &[endpoint], &options, "");
+        assert!(lines.contains(
+            &"    listInfinite: () => [...keys.all, \"/items\", \"infinite\", \"cursor-v1\"] as const,"
+                .to_string()
+        ));
+        let mut lines = Vec::new();
+        render_query_options_native(&mut lines, endpoint, &options, "", "ItemsApi", true);
+        let code = lines.join("\n");
+        assert!(code.contains("ItemsApi.list(undefined, pageParam, { ...config, signal })"));
+        assert!(code.contains("pageParam: string | undefined;"));
+        assert!(code.contains("initialPageParam: undefined as string | undefined,"));
+        assert!(code.contains(
+            "getNextPageParam: ({ \"next-cursor\": nextCursor }: Awaited<ReturnType<typeof ItemsApi.list>>) => nextCursor ?? undefined,"
+        ));
+        // Without infinite queries nothing is marked.
+        let off: GenerateOptions = serde_json::from_value(json!({})).unwrap();
+        assert!(with_cursor_pagination(&endpoints, &json!({}), &off).is_none());
     }
 }

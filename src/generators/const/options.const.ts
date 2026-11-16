@@ -75,11 +75,13 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   infiniteQueries: false,
   infiniteQueryParamNames: {
     page: "page",
+    cursor: "cursor",
   },
   infiniteQueryResponseParamNames: {
     page: "page",
     totalItems: "totalItems",
     limit: "limit",
+    nextCursor: "nextCursor",
   },
   // ACL options
   acl: true,

@@ -2,7 +2,7 @@ import { OpenAPIV3 } from "openapi-types";
 
 import { AXIOS_REQUEST_CONFIG_NAME, BODY_PARAMETER_NAME, DEFAULT_HEADERS } from "@/generators/const/endpoints.const";
 import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
-import { Endpoint } from "@/generators/types/endpoint";
+import { Endpoint, EndpointParameter } from "@/generators/types/endpoint";
 import { GenerateType } from "@/generators/types/generate";
 import { GenerateOptions } from "@/generators/types/options";
 import { invalidVariableNameCharactersToCamel, isValidPropertyName } from "@/generators/utils/js.utils";
@@ -94,6 +94,104 @@ function getInlineParameterTsType(schemaType: unknown): string {
   return getSingleType(schemaType);
 }
 
+function getEndpointParamTsType(resolver: SchemaResolver, param: EndpointParameter, modelNamespaceTag?: string) {
+  if (isNamedZodSchema(param.zodSchema)) {
+    return getImportedZodSchemaInferedTypeName(resolver, param.zodSchema, undefined, modelNamespaceTag);
+  }
+  if (param.parameterObject?.schema) {
+    // A `$ref` to a simple component is inlined, so type it by the component's schema.
+    const schema = resolver.resolveObject(param.parameterObject.schema);
+    return getInlineParameterTsType(isSchemaObject(schema) ? (schema as OpenAPIV3.SchemaObject).type : undefined);
+  }
+  return "string";
+}
+
+const cursorPaginationCache = new WeakMap<SchemaResolver, WeakMap<Endpoint, boolean>>();
+
+/**
+ * Whether `endpoint` is a cursor paginated GET endpoint: it has an optional string query parameter named
+ * `infiniteQueryParamNames.cursor`, and a response schema with a string property named
+ * `infiniteQueryResponseParamNames.nextCursor` (directly or through `allOf`), which is the cursor of
+ * the next page. A page-number parameter of the endpoint must be optional too (it is left unset).
+ * Otherwise the pages cannot be typed by their cursor, so the endpoint is not
+ * cursor paginated (it can still be page-number paginated).
+ */
+export function isCursorPaginatedGetEndpoint(resolver: SchemaResolver, endpoint: Endpoint) {
+  let resolverCache = cursorPaginationCache.get(resolver);
+  if (!resolverCache) {
+    resolverCache = new WeakMap();
+    cursorPaginationCache.set(resolver, resolverCache);
+  }
+  let cached = resolverCache.get(endpoint);
+  if (cached === undefined) {
+    cached = computeIsCursorPaginatedGetEndpoint(resolver, endpoint);
+    resolverCache.set(endpoint, cached);
+  }
+  return cached;
+}
+
+export const getCursorParamName = (options: GenerateOptions) => options.infiniteQueryParamNames.cursor ?? "cursor";
+export const getNextCursorResponseParamName = (options: GenerateOptions) =>
+  options.infiniteQueryResponseParamNames.nextCursor ?? "nextCursor";
+
+function computeIsCursorPaginatedGetEndpoint(resolver: SchemaResolver, endpoint: Endpoint) {
+  const cursor = getCursorParamName(resolver.options);
+  const nextCursor = getNextCursorResponseParamName(resolver.options);
+  if (!cursor || !nextCursor || endpoint.method !== OpenAPIV3.HttpMethods.GET) return false;
+  const findQueryParam = (name: string) =>
+    endpoint.parameters.find((param) => param.name === name && param.type === "Query");
+  const cursorParam = findQueryParam(cursor);
+  // The first page is requested without a cursor (and a page-number parameter is left unset).
+  if (
+    !cursorParam ||
+    isEndpointParameterRequired(cursorParam) ||
+    getEndpointParamTsType(resolver, cursorParam) !== "string"
+  ) {
+    return false;
+  }
+  const pageParam = findQueryParam(resolver.options.infiniteQueryParamNames.page);
+  if (pageParam && isEndpointParameterRequired(pageParam)) return false;
+  return Object.values(endpoint.responseObject?.content ?? {}).some(
+    (media) => media.schema !== undefined && hasStringProperty(resolver, media.schema, nextCursor, 0),
+  );
+}
+
+type SchemaOrRef = OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject;
+
+function resolveSchema(resolver: SchemaResolver, schema: SchemaOrRef): OpenAPIV3.SchemaObject | undefined {
+  let resolved: SchemaOrRef | undefined = schema;
+  for (let depth = 0; resolved && "$ref" in resolved && depth < 32; depth++) {
+    resolved = resolver.resolveObject<OpenAPIV3.SchemaObject>(resolved);
+  }
+  return resolved && typeof resolved === "object" && !("$ref" in resolved) ? resolved : undefined;
+}
+
+function hasStringProperty(resolver: SchemaResolver, schema: SchemaOrRef, name: string, depth: number): boolean {
+  const resolved = resolveSchema(resolver, schema);
+  if (!resolved || depth > 32) return false;
+  const property =
+    resolved.properties && Object.hasOwn(resolved.properties, name) ? resolved.properties[name] : undefined;
+  if (property) return isStringSchema(resolver, property, 0);
+  return (resolved.allOf ?? []).some((member) => hasStringProperty(resolver, member, name, depth + 1));
+}
+
+/** A string schema, optionally nullable (`nullable`, a `"null"` type or a `null` union member). */
+function isStringSchema(resolver: SchemaResolver, schema: SchemaOrRef, depth: number): boolean {
+  const resolved = resolveSchema(resolver, schema);
+  if (!resolved || depth > 32) return false;
+  const type = resolved.type as unknown;
+  if (type === "string") return true;
+  if (Array.isArray(type)) return type.includes("string") && type.every((item) => item === "string" || item === "null");
+  if (type !== undefined) return false;
+  const members = resolved.anyOf ?? resolved.oneOf;
+  if (!members || members.length === 0) return false;
+  const isNull = (member: SchemaOrRef) => (resolveSchema(resolver, member)?.type as unknown) === "null";
+  return (
+    members.every((member) => isNull(member) || isStringSchema(resolver, member, depth + 1)) &&
+    members.some((member) => !isNull(member))
+  );
+}
+
 export function mapEndpointParamsToFunctionParams(
   resolver: SchemaResolver,
   endpoint: Endpoint,
@@ -112,18 +210,9 @@ export function mapEndpointParamsToFunctionParams(
   const optionalPathParams = options?.optionalPathParams ? new Set(options.optionalPathParams) : undefined;
 
   const params = endpoint.parameters.map((param) => {
-    let type = "string";
-    if (isNamedZodSchema(param.zodSchema)) {
-      type = getImportedZodSchemaInferedTypeName(resolver, param.zodSchema, undefined, options?.modelNamespaceTag);
-    } else if (param.parameterObject?.schema) {
-      // A `$ref` to a simple component is inlined, so type it by the component's schema.
-      const schema = resolver.resolveObject(param.parameterObject.schema);
-      type = getInlineParameterTsType(isSchemaObject(schema) ? (schema as OpenAPIV3.SchemaObject).type : undefined);
-    }
-
     return {
       name: invalidVariableNameCharactersToCamel(param.name),
-      type,
+      type: getEndpointParamTsType(resolver, param, options?.modelNamespaceTag),
       paramType: param.type,
       required: isEndpointParameterRequired(param),
       parameterObject: param.parameterObject,
@@ -142,6 +231,20 @@ export function mapEndpointParamsToFunctionParams(
     });
   }
 
+  // Cursor paginated infinite queries pass the page cursor as the cursor parameter and leave a
+  // page-number parameter of the same endpoint unset.
+  const cursor =
+    (options?.excludePageParam || options?.replacePageParam) && isCursorPaginatedGetEndpoint(resolver, endpoint)
+      ? getCursorParamName(resolver.options)
+      : undefined;
+  const getPageParamReplacement = (name: string) => {
+    if (cursor) {
+      if (name === cursor) return "pageParam";
+      return name === resolver.options.infiniteQueryParamNames.page ? "undefined" : name;
+    }
+    return name === resolver.options.infiniteQueryParamNames.page ? "pageParam" : name;
+  };
+
   return params
     .toSorted((a, b) => {
       if (a.required === b.required) {
@@ -153,16 +256,14 @@ export function mapEndpointParamsToFunctionParams(
     .filter(
       (param) =>
         (!options?.excludeBodyParam || param.name !== BODY_PARAMETER_NAME) &&
-        (!options?.excludePageParam || param.name !== resolver.options.infiniteQueryParamNames.page) &&
+        (!options?.excludePageParam ||
+          (param.name !== resolver.options.infiniteQueryParamNames.page && (!cursor || param.name !== cursor))) &&
         (!options?.includeOnlyRequiredParams || param.required) &&
         (!options?.excludePathParams || param.paramType !== "Path"),
     )
     .map((param) => ({
       ...param,
-      name:
-        options?.replacePageParam && param.name === resolver.options.infiniteQueryParamNames.page
-          ? "pageParam"
-          : param.name,
+      name: options?.replacePageParam ? getPageParamReplacement(param.name) : param.name,
       required:
         param.paramType === "Path" && optionalPathParams?.has(param.name)
           ? false

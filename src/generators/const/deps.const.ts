@@ -9,6 +9,7 @@ export const DOMAIN_ERRORS_FILE: GenerateFile = { fileName: "domain-errors", ext
 export const QUERY_OPTIONS_TYPES = {
   query: "AppQueryOptions",
   infiniteQuery: "AppInfiniteQueryOptions",
+  cursorInfiniteQuery: "AppCursorInfiniteQueryOptions",
   mutation: "AppMutationOptions",
 };
 

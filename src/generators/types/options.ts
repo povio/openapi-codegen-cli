@@ -45,12 +45,20 @@ interface QueriesGenerateOptions {
 interface InfiniteQueriesGenerateOptions {
   infiniteQueries?: boolean;
   infiniteQueryParamNames: {
+    /** Query parameter of page-number paginated GET endpoints. */
     page: string;
+    /**
+     * String query parameter of cursor paginated GET endpoints (default: "cursor"); takes precedence over `page`.
+     * Set to an empty string to disable cursor pagination.
+     */
+    cursor?: string;
   };
   infiniteQueryResponseParamNames: {
     page: string;
     totalItems: string;
     limit: string;
+    /** String response field holding the cursor of the next page of cursor paginated endpoints (default: "nextCursor"). */
+    nextCursor?: string;
   };
 }
 

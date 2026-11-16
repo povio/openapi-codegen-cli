@@ -12,11 +12,10 @@ export const isEndpointParameterRequired = (param: Pick<EndpointParameter, "para
 
 export const isGetEndpoint = (endpoint: Endpoint) => endpoint.method === OpenAPIV3.HttpMethods.GET;
 
+/** A page-number paginated GET endpoint (see `isCursorPaginatedGetEndpoint` for cursor pagination). */
 export const isPaginatedGetEndpoint = (endpoint: Endpoint, options: GenerateOptions) =>
   isGetEndpoint(endpoint) &&
-  Object.values(options.infiniteQueryParamNames).every((infiniteQueryParam) =>
-    endpoint.parameters.some((param) => param.name === infiniteQueryParam && param.type === "Query"),
-  );
+  endpoint.parameters.some((param) => param.name === options.infiniteQueryParamNames.page && param.type === "Query");
 
 export const isReadAllEndpoint = (endpoint: ExtendedEndpoint, options: GenerateOptions) =>
   endpoint.method === OpenAPIV3.HttpMethods.GET &&

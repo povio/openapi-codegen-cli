@@ -441,8 +441,101 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/LiteralListDto" }
+  # Cursor pagination: a GET with a string `cursor` query parameter whose response has a string
+  # `nextCursor` gets a cursor infinite query, which wins over the `page` parameter (passed as
+  # `undefined`). The next cursor may come through `allOf` and nullable references.
+  /feed/items:
+    get:
+      operationId: FeedController_listItems
+      tags: [Feed]
+      parameters:
+        - { name: page, in: query, required: false, schema: { type: integer } }
+        - { name: cursor, in: query, required: false, schema: { type: string } }
+        - { name: limit, in: query, required: false, schema: { type: integer } }
+      responses:
+        "200":
+          description: Items page
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FeedItemPageDto" }
+  /feed/threads/{threadId}/messages:
+    get:
+      operationId: FeedController_listMessages
+      tags: [Feed]
+      parameters:
+        - { name: threadId, in: path, required: true, schema: { type: string } }
+        - { name: cursor, in: query, required: false, schema: { type: string } }
+      responses:
+        "200":
+          description: Messages page
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: "#/components/schemas/FeedCursorPageDto" }
+                  - type: object
+                    properties: { messages: { type: array, items: { type: string } } }
+  # A cursor parameter without a next cursor in the response (a totals endpoint) is not paginated.
+  /feed/totals:
+    get:
+      operationId: FeedController_totals
+      tags: [Feed]
+      parameters:
+        - { name: cursor, in: query, required: false, schema: { type: string } }
+        - { name: limit, in: query, required: false, schema: { type: integer } }
+      responses:
+        "200":
+          description: Totals
+          content:
+            application/json:
+              schema: { type: object, properties: { total: { type: integer } } }
+  # Custom cursor names (`infiniteQueryParamNames.cursor: after`, `nextCursor: next`), and a page
+  # endpoint in the same module keeps page-number pagination.
+  /feed/events:
+    get:
+      operationId: FeedController_listEvents
+      tags: [Feed]
+      parameters:
+        - { name: after, in: query, required: false, schema: { type: string } }
+      responses:
+        "200":
+          description: Events page
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  events: { type: array, items: { type: string } }
+                  next: { type: ["string", "null"] }
+  /feed/archive:
+    get:
+      operationId: FeedController_listArchive
+      tags: [Feed]
+      parameters:
+        - { name: page, in: query, required: false, schema: { type: integer } }
+        - { name: limit, in: query, required: false, schema: { type: integer } }
+      responses:
+        "200":
+          description: Archive page
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FeedItemPageDto" }
 components:
   schemas:
+    FeedItemPageDto:
+      type: object
+      required: [items]
+      properties:
+        items: { type: array, items: { type: string } }
+        page: { type: integer }
+        limit: { type: integer }
+        totalItems: { type: integer }
+        nextCursor: { type: string, nullable: true }
+    FeedCursorPageDto:
+      type: object
+      properties:
+        nextCursor: { $ref: "#/components/schemas/FeedCursor" }
+    FeedCursor: { type: string, nullable: true }
     ProviderNameEnum:
       type: string
       enum: [alpha, beta, gamma]
