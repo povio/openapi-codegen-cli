@@ -54,6 +54,22 @@ test("every namespace and model layout renders fully native", () => {
   }
 });
 
+// Unsplit output renders the natively extracted data with the TypeScript generators, whose
+// resolver calls (circular explicit types, recursive tuples, ...) the native resolver must support.
+test.each([false, true])("unsplit regressions render through the hybrid route (allReadonly=%s)", (allReadonly) => {
+  vi.stubEnv("OPENAPI_CODEGEN_NATIVE", "1");
+  const source = readParityFixture(parityFixtures.find((fixture) => fixture.name === "renderer-regressions")!);
+  for (const lazySchemas of [false, true]) {
+    const scenario = { name: "unsplit", options: { splitByTags: false, tsNamespaces: true, lazySchemas, allReadonly } };
+    const expected = renderParityCase(source, scenario, "js");
+    const actual = renderParityCase(source, scenario, "native");
+    expect(actual.route).toBe("hybrid-native");
+    const contents = (files: typeof actual.files) => Object.fromEntries(files.map((f) => [f.fileName, f.content]));
+    expect(contents(actual.files)).toEqual(contents(expected.files));
+    expect(contents(actual.files)["generated/common/common.models.ts"]).toContain("LiteralTreeDtoSchema");
+  }
+});
+
 test("mutation scope include/exclude examples exercise the selected path mutation", () => {
   const source = readFileSync("test/configuration.yaml", "utf8");
   for (const renderer of ["js", "native"] as const) {

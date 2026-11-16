@@ -78,18 +78,43 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag }: Get
 
   const readonly = resolver.options.allReadonly ? ".readonly()" : "";
 
+  // Whether a member schema of this object (property or additional properties) or tuple references
+  // the schema being declared, so it must be deferred with `z.lazy` to avoid reading the declaration
+  // while it is initialized.
+  const parentRef = getParentRef(inheritedMeta);
+  const isCircularMember = (
+    memberSchema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject,
+    memberZodSchema: ZodSchema,
+  ) => {
+    if (!parentRef) {
+      return false;
+    }
+    const refs = [
+      ...(isReferenceObject(memberSchema) ? [memberSchema.$ref] : []),
+      ...getSchemaRefs(memberZodSchema, { skipObjectSchema: true }),
+    ];
+    return refs.some((ref) => resolver.dependencyGraph.deepDependencyGraph[ref]?.has(parentRef));
+  };
+
   if (isArraySchemaObject(schema)) {
     const tuple = getTupleSchemaParts(schema);
     if (tuple) {
       // Like object properties, a referenced member gets the referenced schema's chain
       // (validation, nullability, default): the exported component schema omits its own chain.
-      const getMemberSchema = (member: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject) =>
-        getZodSchema({ ...params, schema: member }).getCodeString(tag, resolver.options) +
-        getZodChain({
-          schema: getTupleMemberSchemaObject(member, resolver),
-          meta: { ...meta, isRequired: true },
-          options: resolver.options,
-        });
+      const getMemberSchema = (member: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject) => {
+        const memberZodSchema = getZodSchema({ ...params, schema: member });
+        const code = memberZodSchema.getCodeString(tag, resolver.options);
+        // The chain is applied to the deferred member: checks clone a `z.lazy` schema, and a clone
+        // created inside the declaration's own getter would recreate the declaration endlessly.
+        return (
+          (isCircularMember(member, memberZodSchema) ? `z.lazy(() => ${code})` : code) +
+          getZodChain({
+            schema: getTupleMemberSchemaObject(member, resolver),
+            meta: { ...meta, isRequired: true },
+            options: resolver.options,
+          })
+        );
+      };
       const items = tuple.items.map(
         (item, index) => getMemberSchema(item) + (index >= (schema.minItems ?? 0) ? ".optional()" : ""),
       );
@@ -113,24 +138,6 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag }: Get
   }
 
   const schemaType = schema.type ? (schema.type.toLowerCase() as NonNullable<typeof schema.type>) : undefined;
-  // Whether a member schema of this object (property or additional properties) references the
-  // schema being declared, so it must be deferred with `z.lazy` to avoid reading the declaration
-  // while it is initialized.
-  const parentRef = getParentRef(inheritedMeta);
-  const isCircularMember = (
-    memberSchema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject,
-    memberZodSchema: ZodSchema,
-  ) => {
-    if (!parentRef) {
-      return false;
-    }
-    const refs = [
-      ...(isReferenceObject(memberSchema) ? [memberSchema.$ref] : []),
-      ...getSchemaRefs(memberZodSchema, { skipObjectSchema: true }),
-    ];
-    return refs.some((ref) => resolver.dependencyGraph.deepDependencyGraph[ref]?.has(parentRef));
-  };
-
   // An explicit `null` type ignores object keywords (`properties`, ...), which do not apply to null.
   if ((schemaType as unknown) === "null") {
     return zodSchema.assign("z.null()");
@@ -231,7 +238,8 @@ export function getTupleMemberSchemaObject(
   if (!isReferenceObject(member)) {
     return member;
   }
-  const resolved = resolver.getSchemaByRef(member.$ref);
+  // `resolveObject` is also implemented by the native-extraction resolver (hybrid rendering).
+  const resolved = resolver.resolveObject<OpenAPIV3.SchemaObject | undefined>(member);
   if (!resolved) {
     throw new Error(`Schema ${member.$ref} not found`);
   }
