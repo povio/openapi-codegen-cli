@@ -22,7 +22,7 @@ import {
 import { getNamespaceName } from "@/generators/utils/namespace.utils";
 import { isEnumZodSchema, isNamedZodSchema } from "@/generators/utils/zod-schema.utils";
 import { getUniqueArray } from "@/generators/utils/array.utils";
-import { isReferenceObject } from "@/generators/utils/openapi-schema.utils";
+import { getTupleSchemaParts, isReferenceObject } from "@/generators/utils/openapi-schema.utils";
 import { wrapWithQuotesIfNeeded } from "@/generators/utils/openapi.utils";
 import { escapeJsDocText } from "@/generators/utils/string.utils";
 
@@ -220,6 +220,37 @@ function renderSchemaType(
   }
 
   if (schema.type === "array") {
+    const tuple = getTupleSchemaParts(schema);
+    if (tuple) {
+      const required = schema.minItems ?? 0;
+      const itemTypes = tuple.items.map((item) => addNullable(item, renderSchemaType(item, resolver, tag)));
+      const restType =
+        tuple.rest === false
+          ? undefined
+          : typeof tuple.rest === "object"
+            ? addNullable(tuple.rest, renderSchemaType(tuple.rest, resolver, tag))
+            : "unknown";
+      // zod's readonly output keeps the tuple shape only when the first member is required;
+      // otherwise it widens to a readonly array of the member types.
+      if (options.allReadonly && !(itemTypes.length > 0 && required > 0)) {
+        const elementTypes = [
+          ...itemTypes.map((itemType, index) => (index < required ? itemType : `${itemType} | undefined`)),
+          ...(restType ? [restType] : []),
+        ];
+        return `ReadonlyArray<${elementTypes.length ? elementTypes.join(" | ") : "never"}>`;
+      }
+      // Members after `minItems` are optional, matching the generated `.optional()` tuple members.
+      const members = itemTypes.map((itemType, index) => {
+        if (index < required) {
+          return itemType;
+        }
+        return /[|&]/.test(itemType) ? `(${itemType})?` : `${itemType}?`;
+      });
+      if (restType) {
+        members.push(`...${/[|&]/.test(restType) ? `(${restType})` : restType}[]`);
+      }
+      return `${options.allReadonly ? "readonly " : ""}[${members.join(", ")}]`;
+    }
     const itemType = schema.items
       ? addNullable(schema.items, renderSchemaType(schema.items, resolver, tag))
       : "unknown";

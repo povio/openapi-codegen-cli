@@ -283,10 +283,9 @@ describe("explicit types of circular schemas", () => {
                   schema: {
                     type: "object",
                     properties: Object.fromEntries(
-                      ["Tree", "PlainNullable", "Defaults", "RequiredDefaults", "Linked", "Union"].map((name) => [
-                        name,
-                        ref(name),
-                      ]),
+                      ["Tree", "PlainNullable", "Defaults", "RequiredDefaults", "Linked", "Union", "Pair"].map(
+                        (name) => [name, ref(name)],
+                      ),
                     ),
                   },
                 },
@@ -331,6 +330,13 @@ describe("explicit types of circular schemas", () => {
           },
         },
         Union: { oneOf: [{ type: "string" }, { type: "array", items: ref("Union") }, ref("Shared")] },
+        Pair: {
+          type: "object",
+          properties: {
+            closed: { type: "array", minItems: 2, items: [{ type: "string" }, ref("Pair")], additionalItems: false },
+            open: { type: "array", items: [{ type: "integer" }] },
+          },
+        },
       },
     },
   };
@@ -350,6 +356,9 @@ describe("explicit types of circular schemas", () => {
     expectType<Equal<M.Tree["next"], M.Tree | null | undefined>>(true);
     expectType<Equal<M.Linked["tags"], ${readonly ? "readonly string[]" : "string[]"} | undefined>>(true);
     expectType<Equal<M.Union, string | ${readonly ? "readonly M.Union[]" : "M.Union[]"} | CommonModels.Shared>>(true);
+    // Tuples keep their members and rest.
+    expectType<Equal<M.Pair["closed"], ${readonly ? "readonly " : ""}[string, M.Pair] | undefined>>(true);
+    expectType<Equal<M.Pair["open"], ${readonly ? "ReadonlyArray<unknown>" : "[number?, ...unknown[]]"} | undefined>>(true);
   `;
 
   test.each<Partial<GenerateOptions>>([
@@ -379,6 +388,9 @@ describe("explicit types of circular schemas", () => {
       assert(M.LinkedSchema.safeParse({ shared: { id: "s" }, next: { tags: ["t"] } }).success, "linked");
       assert(!M.LinkedSchema.safeParse({ shared: { id: 1 } }).success, "linked shared");
       assert(M.RequiredDefaultsSchema.parse({ name: "n" }).code === "x", "default");
+      assert(M.PairSchema.safeParse({ closed: ["a", { open: [1, "x"] }] }).success, "tuple");
+      assert(M.PairSchema.safeParse({ open: [] }).success, "optional tuple member");
+      assert(!M.PairSchema.safeParse({ closed: ["a", {}, "extra"] }).success, "closed tuple");
       for (const value of ["a", ["a", { id: "s" }]]) assert(M.UnionSchema.safeParse(value).success, JSON.stringify(value));
       console.log("ok");`,
     );

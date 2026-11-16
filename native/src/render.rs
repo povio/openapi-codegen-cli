@@ -1160,6 +1160,68 @@ fn render_schema_type(schema: &Value, context: &SchemaTypeContext) -> String {
     }
 
     if schema.get("type").and_then(Value::as_str) == Some("array") {
+        if let Some((items, rest)) = schema.as_object().and_then(crate::zod::tuple_parts) {
+            let required = schema.get("minItems").and_then(Value::as_u64).unwrap_or(0) as usize;
+            let item_types = items
+                .iter()
+                .map(|item| add_nullable_type(item, render_schema_type(item, context)))
+                .collect::<Vec<_>>();
+            let rest_type = match rest {
+                Some(Value::Bool(false)) => None,
+                Some(rest @ Value::Object(_)) => {
+                    Some(add_nullable_type(rest, render_schema_type(rest, context)))
+                }
+                _ => Some("unknown".to_string()),
+            };
+            // zod's readonly output keeps the tuple shape only when the first member is required;
+            // otherwise it widens to a readonly array of the member types.
+            if options.all_readonly && !(!item_types.is_empty() && required > 0) {
+                let mut element_types = item_types
+                    .iter()
+                    .enumerate()
+                    .map(|(index, item_type)| {
+                        if index < required {
+                            item_type.clone()
+                        } else {
+                            format!("{item_type} | undefined")
+                        }
+                    })
+                    .collect::<Vec<_>>();
+                element_types.extend(rest_type);
+                return if element_types.is_empty() {
+                    "ReadonlyArray<never>".into()
+                } else {
+                    format!("ReadonlyArray<{}>", element_types.join(" | "))
+                };
+            }
+            // Members after `minItems` are optional, matching the generated `.optional()` tuple members.
+            let mut members = item_types
+                .into_iter()
+                .enumerate()
+                .map(|(index, item_type)| {
+                    if index < required {
+                        item_type
+                    } else if item_type.contains('|') || item_type.contains('&') {
+                        format!("({item_type})?")
+                    } else {
+                        format!("{item_type}?")
+                    }
+                })
+                .collect::<Vec<_>>();
+            if let Some(rest_type) = rest_type {
+                if rest_type.contains('|') || rest_type.contains('&') {
+                    members.push(format!("...({rest_type})[]"));
+                } else {
+                    members.push(format!("...{rest_type}[]"));
+                }
+            }
+            let readonly = if options.all_readonly {
+                "readonly "
+            } else {
+                ""
+            };
+            return format!("{readonly}[{}]", members.join(", "));
+        }
         let item_type = schema
             .get("items")
             .map(|items| add_nullable_type(items, render_schema_type(items, context)))
