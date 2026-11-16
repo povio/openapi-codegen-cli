@@ -76,11 +76,20 @@ export const optionCases = {
     mutationScope,
   })),
   infiniteQueries: bool("infiniteQueries"),
-  infiniteQueryParamNames: [{ infiniteQueries: true, infiniteQueryParamNames: { page: "pageIndex" } }],
+  infiniteQueryParamNames: [
+    { infiniteQueries: true, infiniteQueryParamNames: { page: "pageIndex" } },
+    { infiniteQueries: true, infiniteQueryParamNames: { page: "page", cursor: "after" } },
+    { infiniteQueries: true, infiniteQueryParamNames: { page: "page", cursor: "" } },
+  ],
   infiniteQueryResponseParamNames: [
     {
       infiniteQueries: true,
       infiniteQueryResponseParamNames: { page: "pageIndex", totalItems: "count", limit: "pageSize" },
+    },
+    {
+      infiniteQueries: true,
+      infiniteQueryParamNames: { page: "page", cursor: "after" },
+      infiniteQueryResponseParamNames: { page: "page", totalItems: "totalItems", limit: "limit", nextCursor: "next" },
     },
   ],
   acl: bool("acl"),

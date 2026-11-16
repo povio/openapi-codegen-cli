@@ -15,7 +15,12 @@ import {
   NATIVE_RESPONSE_TYPE,
 } from "@/generators/const/endpoints.const";
 import { CONFIG_PACKAGE_IMPORT_PATH, REST_PACKAGE_IMPORT_PATH } from "@/generators/const/package.const";
-import { QUERIES_MODULE_NAME, QUERY_HOOKS, QUERY_IMPORT } from "@/generators/const/queries.const";
+import {
+  CURSOR_INFINITE_QUERY_KEY,
+  QUERIES_MODULE_NAME,
+  QUERY_HOOKS,
+  QUERY_IMPORT,
+} from "@/generators/const/queries.const";
 import { OpenAPIV3 } from "openapi-types";
 
 import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
@@ -32,6 +37,8 @@ import {
   getEndpointConfig,
   getEndpointName,
   getEndpointPath,
+  getNextCursorResponseParamName,
+  isCursorPaginatedGetEndpoint,
   hasEndpointConfig,
   getImportedEndpointName,
   mapEndpointParamsToFunctionParams,
@@ -163,8 +170,13 @@ export function generateQueries(params: GenerateTypeParams) {
     ],
     typeBindings: [
       ...(queryEndpoints.length > 0 ? [QUERY_OPTIONS_TYPES.query] : []),
-      ...(resolver.options.infiniteQueries && infiniteQueryEndpoints.length > 0
+      ...(resolver.options.infiniteQueries &&
+      infiniteQueryEndpoints.some((endpoint) => !isCursorPaginatedGetEndpoint(resolver, endpoint))
         ? [QUERY_OPTIONS_TYPES.infiniteQuery]
+        : []),
+      ...(resolver.options.infiniteQueries &&
+      infiniteQueryEndpoints.some((endpoint) => isCursorPaginatedGetEndpoint(resolver, endpoint))
+        ? [QUERY_OPTIONS_TYPES.cursorInfiniteQuery]
         : []),
       ...(mutationEndpoints.length > 0 ? [QUERY_OPTIONS_TYPES.mutation] : []),
     ],
@@ -603,7 +615,9 @@ function renderQueryJsDocs({
       ` * @param { AppMutationOptions${resolver.options.mutationEffects ? ` & ${MUTATION_EFFECTS.optionsType}` : ""} } options Mutation options`,
     );
   } else {
-    lines.push(" * @param { AppInfiniteQueryOptions } options Infinite query options");
+    lines.push(
+      ` * @param { ${isCursorPaginatedGetEndpoint(resolver, endpoint) ? QUERY_OPTIONS_TYPES.cursorInfiniteQuery : QUERY_OPTIONS_TYPES.infiniteQuery} } options Infinite query options`,
+    );
   }
 
   const withRawResponse = endpoint.mediaDownload && mode !== "infiniteQuery";
@@ -650,20 +664,26 @@ function renderQueryKeys({
         modelNamespaceTag: tag,
       })}) => [...keys.all, "${endpoint.path}", ${renderEndpointArgs(resolver, endpoint, {})}] as const,`,
     );
-    if (resolver.options.infiniteQueries && isInfiniteQuery(endpoint, resolver.options)) {
+    if (resolver.options.infiniteQueries && isInfiniteQuery(resolver, endpoint)) {
       lines.push(
         `    ${getEndpointName(endpoint)}Infinite: (${renderEndpointParams(resolver, endpoint, {
           excludePageParam: true,
           pathParamsRequiredOnly: true,
           modelNamespaceTag: tag,
-        })}) => [...keys.all, "${endpoint.path}", "infinite", ${renderEndpointArgs(resolver, endpoint, {
-          excludePageParam: true,
-        })}] as const,`,
+        })}) => [...keys.all, "${endpoint.path}", "infinite", ${renderInfiniteQueryKeyArgs(resolver, endpoint)}] as const,`,
       );
     }
   }
   lines.push("};");
   return lines.join("\n");
+}
+
+function renderInfiniteQueryKeyArgs(resolver: SchemaResolver, endpoint: Endpoint) {
+  const args = renderEndpointArgs(resolver, endpoint, { excludePageParam: true });
+  if (!isCursorPaginatedGetEndpoint(resolver, endpoint)) {
+    return args;
+  }
+  return `${args ? `${args}, ` : ""}${JSON.stringify(CURSOR_INFINITE_QUERY_KEY)}`;
 }
 
 function renderInlineEndpoints({
@@ -855,8 +875,19 @@ function renderInfiniteQueryOptions({
   lines.push(`  queryKey: keys.${getEndpointName(endpoint)}Infinite(${endpointArgsWithoutPage}),`);
   const requestConfigWithSignal = renderRequestConfigWithSignal(hasRequestConfigParam);
   lines.push(
-    `  queryFn: ({ pageParam, signal }: { pageParam: number; signal: AbortSignal }) => ${endpointFunction}(${endpointArgsWithPage}${hasRequestConfigParam ? `, ${requestConfigWithSignal}` : ""}),`,
+    `  queryFn: ({ pageParam, signal }: { pageParam: ${getPageParamType(resolver, endpoint)}; signal: AbortSignal }) => ${endpointFunction}(${endpointArgsWithPage}${hasRequestConfigParam ? `, ${requestConfigWithSignal}` : ""}),`,
   );
+  if (isCursorPaginatedGetEndpoint(resolver, endpoint)) {
+    const nextCursor = getNextCursorResponseParamName(resolver.options);
+    const nextCursorBinding = isValidIdentifier(nextCursor) ? nextCursor : `${JSON.stringify(nextCursor)}: nextCursor`;
+    const nextCursorVariable = isValidIdentifier(nextCursor) ? nextCursor : "nextCursor";
+    lines.push(`  initialPageParam: undefined as ${CURSOR_PAGE_PARAM_TYPE},`);
+    lines.push(
+      `  getNextPageParam: ({ ${nextCursorBinding} }: Awaited<ReturnType<typeof ${endpointFunction}>>) => ${nextCursorVariable} ?? undefined,`,
+    );
+    lines.push("});");
+    return lines.join("\n");
+  }
   lines.push("  initialPageParam: 1,");
   lines.push(
     `  getNextPageParam: ({ ${resolver.options.infiniteQueryResponseParamNames.page}, ${resolver.options.infiniteQueryResponseParamNames.totalItems}, ${resolver.options.infiniteQueryResponseParamNames.limit}: limitParam }: Awaited<ReturnType<typeof ${endpointFunction}>> & Partial<Record<${JSON.stringify(resolver.options.infiniteQueryResponseParamNames.page)} | ${JSON.stringify(resolver.options.infiniteQueryResponseParamNames.totalItems)} | ${JSON.stringify(resolver.options.infiniteQueryResponseParamNames.limit)}, number | null>>) => {`,
@@ -870,6 +901,13 @@ function renderInfiniteQueryOptions({
   lines.push("});");
   return lines.join("\n");
 }
+
+const CURSOR_PAGE_PARAM_TYPE = "string | undefined";
+
+const getPageParamType = (resolver: SchemaResolver, endpoint: Endpoint) =>
+  isCursorPaginatedGetEndpoint(resolver, endpoint) ? CURSOR_PAGE_PARAM_TYPE : "number";
+
+const isValidIdentifier = (name: string) => /^[A-Za-z_$][\w$]*$/.test(name);
 
 function renderPrefetchQuery({ resolver, endpoint }: { resolver: SchemaResolver; endpoint: Endpoint }) {
   const hasRequestConfigParam = resolver.options.axiosRequestConfig || endpoint.method === "get";
@@ -1183,9 +1221,7 @@ function groupEndpoints(endpoints: Endpoint[], resolver: SchemaResolver) {
   for (const endpoint of endpoints) {
     const query = isQuery(endpoint);
     const mutation = isMutation(endpoint);
-    const infiniteQuery = Boolean(
-      resolver.options.infiniteQueries && query && isInfiniteQuery(endpoint, resolver.options),
-    );
+    const infiniteQuery = Boolean(resolver.options.infiniteQueries && query && isInfiniteQuery(resolver, endpoint));
 
     if (query) {
       queryEndpoints.push(endpoint);
@@ -1266,7 +1302,7 @@ function renderInfiniteQuery({
     lines.push(renderQueryJsDocs({ resolver, endpoint, mode: "infiniteQuery", tag }));
   }
   lines.push(
-    `export const ${getInfiniteQueryName(endpoint)} = <TData>(${endpointParams ? `{ ${endpointArgsWithoutPage} }: { ${endpointParams} }, ` : ""}options?: AppInfiniteQueryOptions<typeof ${inlineEndpoints ? getEndpointName(endpoint) : getImportedEndpointName(endpoint, resolver.options)}, TData>${hasAxiosRequestConfig ? `, ${AXIOS_REQUEST_CONFIG_NAME}?: ${getRequestConfigTypeName(resolver.options.restClient)}` : ""}) => {`,
+    `export const ${getInfiniteQueryName(endpoint)} = <TData>(${endpointParams ? `{ ${endpointArgsWithoutPage} }: { ${endpointParams} }, ` : ""}options?: ${isCursorPaginatedGetEndpoint(resolver, endpoint) ? QUERY_OPTIONS_TYPES.cursorInfiniteQuery : QUERY_OPTIONS_TYPES.infiniteQuery}<typeof ${inlineEndpoints ? getEndpointName(endpoint) : getImportedEndpointName(endpoint, resolver.options)}, TData>${hasAxiosRequestConfig ? `, ${AXIOS_REQUEST_CONFIG_NAME}?: ${getRequestConfigTypeName(resolver.options.restClient)}` : ""}) => {`,
   );
   lines.push("  const queryConfig = OpenApiQueryConfig.useConfig();");
   if (hasAclCheck) {
@@ -1283,7 +1319,9 @@ function renderInfiniteQuery({
   lines.push(`  return ${QUERY_HOOKS.infiniteQuery}({`);
   lines.push(`    ...${queryOptionsName}(${queryOptionsArgs}),`);
   if (hasQueryFnOverride) {
-    lines.push("    queryFn: async ({ pageParam, signal }: { pageParam: number; signal: AbortSignal }) => {");
+    lines.push(
+      `    queryFn: async ({ pageParam, signal }: { pageParam: ${getPageParamType(resolver, endpoint)}; signal: AbortSignal }) => {`,
+    );
     lines.push(renderAclCheckCall(resolver, endpoint, workspaceParamReplacements, "      "));
     lines.push(`      return ${queryOptionsName}(${queryOptionsArgs}).queryFn({ pageParam, signal });`);
     lines.push("    },");

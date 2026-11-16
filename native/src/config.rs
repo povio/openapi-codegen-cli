@@ -11,7 +11,7 @@ pub struct GenerateConfig {
     pub namespace_suffix: String,
 }
 
-#[derive(Clone, Default, Deserialize)]
+#[derive(Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct InfiniteQueryResponseParamNames {
     #[serde(default = "default_page")]
@@ -20,13 +20,39 @@ pub struct InfiniteQueryResponseParamNames {
     pub total_items: String,
     #[serde(default = "default_limit")]
     pub limit: String,
+    /// String response field holding the cursor of the next page of cursor paginated endpoints.
+    #[serde(default = "default_next_cursor")]
+    pub next_cursor: String,
 }
 
-#[derive(Clone, Default, Deserialize)]
+impl Default for InfiniteQueryResponseParamNames {
+    fn default() -> Self {
+        Self {
+            page: default_page(),
+            total_items: default_total_items(),
+            limit: default_limit(),
+            next_cursor: default_next_cursor(),
+        }
+    }
+}
+
+#[derive(Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct InfiniteQueryParamNames {
     #[serde(default = "default_page")]
     pub page: String,
+    /// String query parameter of cursor paginated GET endpoints; empty disables cursor pagination.
+    #[serde(default = "default_cursor")]
+    pub cursor: String,
+}
+
+impl Default for InfiniteQueryParamNames {
+    fn default() -> Self {
+        Self {
+            page: default_page(),
+            cursor: default_cursor(),
+        }
+    }
 }
 
 #[derive(Clone, Deserialize)]
@@ -161,6 +187,12 @@ fn default_total_items() -> String {
 }
 fn default_limit() -> String {
     "limit".into()
+}
+fn default_cursor() -> String {
+    "cursor".into()
+}
+fn default_next_cursor() -> String {
+    "nextCursor".into()
 }
 fn default_query_import_path() -> String {
     "@povio/openapi-codegen-cli/query".into()

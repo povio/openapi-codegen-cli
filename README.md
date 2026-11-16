@@ -26,7 +26,8 @@ v4 contains breaking changes. Regenerate your clients after upgrading and check 
 - **Optional request bodies.** A request body is optional unless the spec sets `requestBody.required: true` (the OpenAPI default is `false`). Such endpoints now take `data?: T` instead of `data: T`, validate it with `.optional()`, and the same applies to the variables of their query and mutation hooks. Because optional parameters follow required ones, `data` moves behind the required path, query and header parameters in the generated endpoint function, so positional calls such as `ExportsApi.note(id, data, count)` become `ExportsApi.note(id, count, data)`. Hook calls, which take an object, are unaffected by the order. Mark bodies your API always expects as `required: true` to keep `data` required.
 - **Inlined `$ref` parameters.** A parameter whose schema is a `$ref` to a simple component (for example `{ type: integer, minimum: 0 }`) is typed and validated like the component: it keeps the component's validations (`.gte(0)`, `.min(2)`, ...) and an integer or number component is typed `number` instead of `string`.
 - **CASL 7.** ACL output targets CASL 7 (see the note above).
-- **New options.** `includeSchemas`, `lazySchemas` and `generateJsDoc` (JSDoc generation is off by default) were added.
+- **Cursor paginated infinite queries.** With `infiniteQueries`, GET endpoints with an optional string `cursor` query parameter and a `nextCursor` response field get cursor infinite queries (see [Infinite queries](#infinite-queries)), even without a `page` parameter. If such an endpoint also has a `page` parameter, its infinite hook, prefetch and `<name>Infinite` query key no longer take `cursor`, its pages are requested by cursor instead of page number, and its hook options are `AppCursorInfiniteQueryOptions`. Infinite query data is typed with its page params (`InfiniteData<T, number>` instead of `InfiniteData<T, unknown>`).
+- **New options.** `includeSchemas`, `lazySchemas`, `generateJsDoc` (JSDoc generation is off by default), `infiniteQueryParamNames.cursor` and `infiniteQueryResponseParamNames.nextCursor` were added.
 
 ## Setup
 
@@ -353,6 +354,30 @@ Migrating from earlier v4 release candidates: generated code no longer augments 
 `OpenApiCodegenQueryModules` / `OpenApiCodegenQueryModuleMutations` interfaces, and `RegisteredQueryModule` is
 removed. Replace a bare `InvalidationMap` or `InvalidationMap<QueryModule>` with the generated
 `QueryModuleInvalidationMap`.
+
+### Infinite queries
+
+With `infiniteQueries: true`, paginated GET endpoints also get `use<Name>Infinite` and `prefetch<Name>Infinite`
+(and a `<name>Infinite` query key). The pagination parameter and response field names are set in the config file:
+
+```ts
+const config: OpenAPICodegenConfig = {
+  infiniteQueries: true,
+  infiniteQueryParamNames: { page: "page", cursor: "cursor" }, // defaults
+  infiniteQueryResponseParamNames: { page: "page", totalItems: "totalItems", limit: "limit", nextCursor: "nextCursor" }, // defaults
+};
+```
+
+- **Page-number pagination.** An endpoint with a `page` query parameter starts at page `1` and requests the next
+  page while `page * limit < totalItems` in the response.
+- **Cursor pagination.** An endpoint with an optional string `cursor` query parameter whose response has a string
+  (optionally nullable) `nextCursor` property, directly or through `allOf`, starts without a cursor and requests the
+  next page with the returned `nextCursor` until it is `null` or missing. Cursor pagination takes precedence over
+  page-number pagination; a `page` parameter of the same endpoint must be optional and is left unset. The hooks take
+  `AppCursorInfiniteQueryOptions` (page params are `string | undefined`), and their query keys end with
+  `"cursor-v1"`. An endpoint whose response has no next cursor field, or whose `cursor` or `page` parameter is
+  required, is not cursor paginated (it is page-number paginated if it has a `page` parameter, otherwise it gets no
+  infinite query). Set `infiniteQueryParamNames.cursor` to `""` to turn cursor pagination off.
 
 ### Runtime response validation
 

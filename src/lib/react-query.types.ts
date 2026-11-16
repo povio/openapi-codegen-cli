@@ -43,9 +43,17 @@ export type AppInfiniteQueryOptions<
   UseInfiniteQueryOptions<
     Awaited<ReturnType<TFunction>>,
     ApplicationException<TErrorCodes>,
-    IsUnknown<TData, InfiniteData<Awaited<ReturnType<TFunction>>>>,
+    IsUnknown<TData, InfiniteData<Awaited<ReturnType<TFunction>>, TPageParam>>,
     TQueryKey,
     TPageParam
   >,
   "queryKey" | "queryFn" | "initialPageParam" | "getNextPageParam"
 >;
+
+/** Options of a generated cursor paginated infinite query hook, whose page param is the page cursor. */
+export type AppCursorInfiniteQueryOptions<
+  TFunction extends Function,
+  TData = InfiniteData<Awaited<ReturnType<TFunction>>, string | undefined>,
+  TErrorCodes = GeneralErrorCodes,
+  TQueryKey extends QueryKey = QueryKey,
+> = AppInfiniteQueryOptions<TFunction, TData, TErrorCodes, TQueryKey, string | undefined>;
