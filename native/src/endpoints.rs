@@ -308,14 +308,16 @@ impl<'a> EndpointExtractor<'a> {
                         self.register_reference_usage(reference, &indexed.tag);
                     }
                     let naming = named.as_ref().unwrap_or(schema);
-                    let resolved = resolve_schema_name(
+                    let resolved = self.resolve_schema_name(
                         naming,
                         schema_object,
                         code.clone(),
                         Some(&fallback),
-                        self.options,
-                    );
-                    if naming.get("$ref").is_none() && complexity(schema_object) >= 2 {
+                        &indexed.tag,
+                    )?;
+                    if naming.get("$ref").is_none()
+                        && complexity(schema_object) >= COMPLEXITY_THRESHOLD
+                    {
                         self.set_generated_schema(resolved.clone(), code, &indexed.tag);
                         self.set_generated_object(&resolved, schema_object);
                         self.set_generated_dependencies(&resolved, dependencies);
@@ -603,8 +605,8 @@ impl<'a> EndpointExtractor<'a> {
         }
         let naming = named.as_ref().unwrap_or(schema);
         let resolved =
-            resolve_schema_name(naming, actual, code.clone(), Some(&fallback), self.options);
-        if naming.get("$ref").is_none() && complexity(actual) >= 2 {
+            self.resolve_schema_name(naming, actual, code.clone(), Some(&fallback), &indexed.tag)?;
+        if naming.get("$ref").is_none() && complexity(actual) >= COMPLEXITY_THRESHOLD {
             self.set_generated_schema(resolved.clone(), code, &indexed.tag);
             self.set_generated_object(&resolved, actual);
             self.set_generated_dependencies(&resolved, dependencies);
@@ -732,14 +734,14 @@ impl<'a> EndpointExtractor<'a> {
             self.register_reference_usage(reference, &indexed.tag);
         }
         let naming = named.as_ref().unwrap_or(schema);
-        let zod = resolve_schema_name(
+        let zod = self.resolve_schema_name(
             naming,
             actual,
             composed_code.clone(),
             Some(&fallback),
-            self.options,
-        );
-        if naming.get("$ref").is_none() && complexity(actual) >= 2 {
+            &indexed.tag,
+        )?;
+        if naming.get("$ref").is_none() && complexity(actual) >= COMPLEXITY_THRESHOLD {
             self.set_generated_schema(zod.clone(), composed_code, &indexed.tag);
             self.set_generated_object(&zod, actual);
             self.set_generated_dependencies(&zod, dependencies);
@@ -812,6 +814,36 @@ impl<'a> EndpointExtractor<'a> {
             .borrow_mut()
             .entry(reference.to_string())
             .or_insert_with(|| tag.to_string());
+    }
+
+    /// The zod schema an endpoint uses, as `resolveZodSchemaName` resolves it: a `$ref` to a simple
+    /// component is inlined as that component's code, any other `$ref` is named by its component, and
+    /// an inline schema is inlined when simple and named by `fallback` otherwise.
+    fn resolve_schema_name(
+        &self,
+        original: &Value,
+        actual: &Value,
+        code: String,
+        fallback: Option<&str>,
+        tag: &str,
+    ) -> Result<String, String> {
+        let suffix = &self.options.schema_suffix;
+        if let Some(reference) = original.get("$ref").and_then(Value::as_str) {
+            if self
+                .resolve(original)
+                .is_some_and(|target| complexity(target) < COMPLEXITY_THRESHOLD)
+            {
+                return Ok(self.compiler.compile_reference_for_tag(reference, tag)?.1);
+            }
+            let name = reference.rsplit('/').next().unwrap_or_default();
+            return Ok(schema_name(name, suffix));
+        }
+        if complexity(actual) < COMPLEXITY_THRESHOLD {
+            return Ok(code);
+        }
+        Ok(fallback
+            .map(|name| schema_name(name, suffix))
+            .unwrap_or(code))
     }
 
     fn register_reference_schema(&self, schema: &Value, tag: &str) -> Result<(), String> {
@@ -974,62 +1006,120 @@ fn naming_schema(compiler: &ZodCompiler, schema: &Value) -> Option<Value> {
         })
 }
 
-fn resolve_schema_name(
-    original: &Value,
-    actual: &Value,
-    code: String,
-    fallback: Option<&str>,
-    options: &GenerateOptions,
-) -> String {
-    if let Some(reference) = original.get("$ref").and_then(Value::as_str) {
-        let name = reference.rsplit('/').next().unwrap_or_default();
-        return schema_name(name, &options.schema_suffix);
-    }
-    if complexity(actual) < 2 {
-        return code;
-    }
-    fallback
-        .map(|name| schema_name(name, &options.schema_suffix))
-        .unwrap_or(code)
-}
+/// Below this complexity an endpoint schema is inlined instead of named (`COMPLEXITY_THRESHOLD`).
+const COMPLEXITY_THRESHOLD: u32 = 2;
+
+/// `getOpenAPISchemaComplexity(0, schema)`.
 fn complexity(schema: &Value) -> u32 {
+    schema_complexity(0, Some(schema))
+}
+
+/// A port of `getOpenAPISchemaComplexity`; JavaScript truthiness decides which branch applies.
+fn schema_complexity(current: u32, schema: Option<&Value>) -> u32 {
+    let Some(schema) = schema.filter(|schema| !schema.is_null()) else {
+        return current;
+    };
+    let truthy = |key: &str| schema.get(key).is_some_and(is_truthy);
     if schema.get("$ref").is_some() {
-        return 2;
+        return current + 2;
     }
     if let Some(types) = schema.get("type").and_then(Value::as_array) {
-        return 3 + types.iter().map(complexity).sum::<u32>();
+        let with_type = |schema_type: &Value| {
+            let mut single = schema.clone();
+            single["type"] = schema_type.clone();
+            single
+        };
+        if types.len() == 1 {
+            return 2 + schema_complexity(current, Some(&with_type(&types[0])));
+        }
+        return current
+            + 2
+            + types
+                .iter()
+                .map(|schema_type| schema_complexity(0, Some(&with_type(schema_type))))
+                .sum::<u32>();
     }
-    for key in ["oneOf", "anyOf", "allOf"] {
-        if let Some(items) = schema.get(key).and_then(Value::as_array) {
-            let composite = if key == "anyOf" { 3 } else { 2 };
-            return composite
-                + if items.len() == 1 {
-                    complexity(&items[0])
-                } else {
-                    items.iter().map(complexity).sum()
-                };
+    for (key, composite) in [("oneOf", 2), ("anyOf", 3), ("allOf", 2)] {
+        if !truthy(key) {
+            continue;
+        }
+        let items = schema
+            .get(key)
+            .and_then(Value::as_array)
+            .map(Vec::as_slice)
+            .unwrap_or_default();
+        if items.len() == 1 {
+            return composite + schema_complexity(current, Some(&items[0]));
+        }
+        return current
+            + composite
+            + items
+                .iter()
+                .map(|item| schema_complexity(0, Some(item)))
+                .sum::<u32>();
+    }
+    if !truthy("type") {
+        return current;
+    }
+    let schema_type = schema.get("type").and_then(Value::as_str);
+    if let Some("string" | "number" | "integer" | "boolean") = schema_type {
+        if truthy("enum") {
+            return current
+                + 1
+                + 1
+                + schema
+                    .get("enum")
+                    .and_then(Value::as_array)
+                    .map(|values| {
+                        values
+                            .iter()
+                            .map(|value| schema_complexity(0, Some(value)))
+                            .sum()
+                    })
+                    .unwrap_or(0);
+        }
+        return current + 1;
+    }
+    if schema_type == Some("array") {
+        return 1 + if truthy("items") {
+            schema_complexity(current, schema.get("items"))
+        } else {
+            current
+        };
+    }
+    let mut current = current;
+    if schema_type == Some("object") || truthy("properties") || truthy("additionalProperties") {
+        if let Some(properties) = schema.get("properties").filter(|value| is_truthy(value)) {
+            current += 2 + properties
+                .as_object()
+                .map(|properties| {
+                    properties
+                        .values()
+                        .map(|property| schema_complexity(0, Some(property)))
+                        .sum()
+                })
+                .unwrap_or(0);
+        } else {
+            current += 1;
+        }
+        match schema.get("additionalProperties") {
+            Some(additional @ Value::Object(_)) => {
+                current += schema_complexity(0, Some(additional));
+            }
+            Some(additional) if is_truthy(additional) => current += 1,
+            _ => {}
         }
     }
-    match schema.get("type").and_then(Value::as_str) {
-        Some("string" | "number" | "integer" | "boolean") => {
-            1 + u32::from(schema.get("enum").is_some())
-        }
-        Some("array") => 1 + schema.get("items").map(complexity).unwrap_or(0),
-        Some("object") => {
-            2 + schema
-                .get("properties")
-                .and_then(Value::as_object)
-                .map(|properties| properties.values().map(complexity).sum())
-                .unwrap_or(0)
-        }
-        _ if schema.get("properties").is_some() => {
-            2 + schema
-                .get("properties")
-                .and_then(Value::as_object)
-                .map(|properties| properties.values().map(complexity).sum())
-                .unwrap_or(0)
-        }
-        _ => 0,
+    current
+}
+
+fn is_truthy(value: &Value) -> bool {
+    match value {
+        Value::Null => false,
+        Value::Bool(value) => *value,
+        Value::Number(number) => number.as_f64().is_some_and(|number| number != 0.0),
+        Value::String(value) => !value.is_empty(),
+        Value::Array(_) | Value::Object(_) => true,
     }
 }
 fn response_schema_name(status: &str, operation: &str, unique: bool, tag: &str) -> String {
