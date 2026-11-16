@@ -1,6 +1,7 @@
 import { OpenAPIV3 } from "openapi-types";
 
 import { ZOD_IMPORT } from "@/generators/const/zod.const";
+import { getTupleMemberSchemaObject } from "@/generators/core/zod/getZodSchema";
 import { getZodSchemaRefs } from "@/generators/core/zod/getZodSchemaRefs";
 import { Endpoint } from "@/generators/types/endpoint";
 import { GenerateType, GenerateTypeParams, GenerateZodSchemaData, Import } from "@/generators/types/generate";
@@ -20,7 +21,7 @@ import {
   getZodSchemaType,
 } from "@/generators/utils/generate/generate.zod.utils";
 import { getNamespaceName } from "@/generators/utils/namespace.utils";
-import { isEnumZodSchema, isNamedZodSchema } from "@/generators/utils/zod-schema.utils";
+import { getBaseZodSchemaName, isEnumZodSchema, isNamedZodSchema } from "@/generators/utils/zod-schema.utils";
 import { getUniqueArray } from "@/generators/utils/array.utils";
 import { getTupleSchemaParts, isReferenceObject } from "@/generators/utils/openapi-schema.utils";
 import { wrapWithQuotesIfNeeded } from "@/generators/utils/openapi.utils";
@@ -223,13 +224,12 @@ function renderSchemaType(
     const tuple = getTupleSchemaParts(schema);
     if (tuple) {
       const required = schema.minItems ?? 0;
-      const itemTypes = tuple.items.map((item) => addNullable(item, renderSchemaType(item, resolver, tag)));
+      // Tuple members are chained with the referenced schema's nullability (see getZodSchema).
+      const renderMemberType = (member: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject) =>
+        addNullable(getTupleMemberSchemaObject(member, resolver), renderSchemaType(member, resolver, tag));
+      const itemTypes = tuple.items.map(renderMemberType);
       const restType =
-        tuple.rest === false
-          ? undefined
-          : typeof tuple.rest === "object"
-            ? addNullable(tuple.rest, renderSchemaType(tuple.rest, resolver, tag))
-            : "unknown";
+        tuple.rest === false ? undefined : typeof tuple.rest === "object" ? renderMemberType(tuple.rest) : "unknown";
       // zod's readonly output keeps the tuple shape only when the first member is required;
       // otherwise it widens to a readonly array of the member types.
       if (options.allReadonly && !(itemTypes.length > 0 && required > 0)) {
@@ -410,8 +410,13 @@ function getUsedSchemaNames({
   const usedSchemaNames = new Set<string>();
   const queue: string[] = [];
 
-  const enqueue = (schemaName?: string) => {
-    if (!schemaName || !isNamedZodSchema(schemaName) || usedSchemaNames.has(schemaName)) {
+  const enqueue = (schemaExpression?: string) => {
+    if (!schemaExpression || !isNamedZodSchema(schemaExpression)) {
+      return;
+    }
+    // A referenced schema can carry its use-site validation chain (`ExampleSchema.min(3)`).
+    const schemaName = getBaseZodSchemaName(schemaExpression);
+    if (usedSchemaNames.has(schemaName)) {
       return;
     }
     usedSchemaNames.add(schemaName);

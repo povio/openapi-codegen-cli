@@ -19,6 +19,12 @@ export const getEnumZodSchemaName = (name: string, enumSuffix: string, schemaSuf
 export const isNamedZodSchema = (schema: string) =>
   ["z.", `${ZOD_EXTENDED.namespace}.`].every((searchString) => !schema.startsWith(searchString));
 
+/**
+ * The schema identifier of a named schema expression without its use-site validation chain
+ * (`ExampleSchema.refine(...)` -> `ExampleSchema`).
+ */
+export const getBaseZodSchemaName = (schema: string) => schema.split(".")[0]!;
+
 export const isEnumZodSchema = (schema: string) => schema.startsWith(ENUM_SCHEMA);
 
 export const getZodSchemaOperationName = (operationName: string, isUniqueOperationName: boolean, tag: string) =>

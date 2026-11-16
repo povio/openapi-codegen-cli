@@ -10,7 +10,7 @@ import { isReferenceObject } from "@/generators/utils/openapi-schema.utils";
 import { getTagImportPath } from "./generate/generate.utils";
 import { getImportedZodSchemaInferedTypeName } from "./generate/generate.zod.utils";
 import { isPrimitiveType } from "./openapi.utils";
-import { isNamedZodSchema } from "./zod-schema.utils";
+import { getBaseZodSchemaName, isNamedZodSchema } from "./zod-schema.utils";
 
 export function primitiveTypeToTsType(type: PrimitiveType): string {
   switch (type) {
@@ -37,7 +37,7 @@ export function getTsTypeBase({
   let tag: string | undefined;
   if (zodSchemaName && isNamedZodSchema(zodSchemaName)) {
     type = getImportedZodSchemaInferedTypeName(resolver, zodSchemaName);
-    tag = resolver.getTagByZodSchemaName(zodSchemaName);
+    tag = resolver.getTagByZodSchemaName(getBaseZodSchemaName(zodSchemaName));
   } else if (schema?.type && isPrimitiveType(schema?.type)) {
     type = primitiveTypeToTsType(schema?.type);
   }
