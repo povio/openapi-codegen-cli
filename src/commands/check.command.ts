@@ -1,52 +1,51 @@
-import type { CommandModule } from "yargs";
-
 import { logBanner } from "@/helpers/cli.helper";
 import { getVersion } from "@/helpers/version.helper";
-import { getBuilder, YargOption } from "@/helpers/yargs.helper";
+import { CliOption, type CliCommand } from "@/helpers/cli-options.helper";
 
-import { check, CheckParams } from "./check";
+import type { CheckParams } from "./check";
 
 class CheckOptions implements CheckParams {
-  @YargOption({ envAlias: "config" })
+  @CliOption({ envAlias: "config" })
   config?: string;
 
-  @YargOption({ envAlias: "input" })
+  @CliOption({ envAlias: "input" })
   input?: string;
 
-  @YargOption({ envAlias: "splitByTags", type: "boolean" })
+  @CliOption({ envAlias: "splitByTags", type: "boolean" })
   splitByTags?: boolean;
 
-  @YargOption({ envAlias: "defaultTag" })
+  @CliOption({ envAlias: "defaultTag" })
   defaultTag?: string;
 
-  @YargOption({ envAlias: "includeTags" })
+  @CliOption({ envAlias: "includeTags" })
   includeTags?: string;
 
-  @YargOption({ envAlias: "excludeTags" })
+  @CliOption({ envAlias: "excludeTags" })
   excludeTags?: string;
 
-  @YargOption({ envAlias: "excludePathRegex" })
+  @CliOption({ envAlias: "excludePathRegex" })
   excludePathRegex?: string;
 
-  @YargOption({ envAlias: "excludeRedundantZodSchemas", type: "boolean" })
+  @CliOption({ envAlias: "excludeRedundantZodSchemas", type: "boolean" })
   excludeRedundantZodSchemas?: boolean;
 
-  @YargOption({ envAlias: "includeSchemas" })
+  @CliOption({ envAlias: "includeSchemas" })
   includeSchemas?: string;
 
-  @YargOption({ envAlias: "verbose", default: false, type: "boolean" })
+  @CliOption({ envAlias: "verbose", default: false, type: "boolean" })
   verbose?: boolean;
 }
 
-export const command: CommandModule = {
+export const command: CliCommand<CheckOptions> = {
   command: "check",
   describe: "Check OpenAPI spec",
-  builder: getBuilder(CheckOptions),
-  handler: async (_argv) => {
-    const argv = (await _argv) as unknown as CheckOptions;
+  options: CheckOptions,
+  handler: async (argv) => {
     if (argv.verbose) {
       logBanner(`OpenAPI CodeGen ${getVersion()}`);
     }
+    // Loaded on demand: checking pulls in the TypeScript generator, which generate skips.
+    const { check } = await import("./check");
     return check(argv);
   },
 };

@@ -121,8 +121,7 @@
     "openapi-types": "^12.1.3",
     "prompt-sync": "^4.2.0",
     "reflect-metadata": "^0.2.2",
-    "yaml": "^2.9.0",
-    "yargs": "^18.0.0"
+    "yaml": "^2.9.0"
   },
   "devDependencies": {
     "@casl/ability": "7.1.1",
@@ -133,7 +132,6 @@
     "@types/prompt-sync": "^4.2.3",
     "@types/react": "^19.2.14",
     "@types/react-test-renderer": "^19.1.0",
-    "@types/yargs": "^17.0.35",
     "@vitejs/plugin-react": "^5.1.4",
     "axios": "^1.13.1",
     "i18next": "^25.8.11",
