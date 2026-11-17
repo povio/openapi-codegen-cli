@@ -1,0 +1,835 @@
+openapi: 3.0.3
+info:
+  title: Renderer regressions
+  version: "1"
+  description: >-
+    Shapes from a large production spec where the native and TypeScript renderers used to differ.
+    Each path or schema notes the difference it covers.
+paths:
+  # An inline path enum with a component enum's values is named by that enum, which is emitted with
+  # the other component enums, after the endpoint error schemas.
+  /tracking/providers/{provider}/refresh:
+    post:
+      operationId: TrackingController_refreshProvider
+      tags: [Tracking]
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema: { type: string, enum: [alpha, beta, gamma] }
+      responses:
+        "204": { description: Refreshed }
+        "400":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, code, message]
+                properties:
+                  status: { type: string, enum: [error] }
+                  code: { type: string, enum: [tracking_not_found] }
+                  message: { type: string }
+  /tracking/providers/{provider}/sync:
+    post:
+      operationId: TrackingController_syncProvider
+      tags: [Tracking]
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema: { type: string, enum: [alpha, beta, gamma] }
+      responses:
+        "204": { description: Synced }
+        "400":
+          description: Invalid
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, code, message]
+                properties:
+                  status: { type: string, enum: [error] }
+                  code: { type: string, enum: [invalid_direction] }
+                  message: { type: string }
+  # Query parameter docs list every schema constraint; the response is owned by Common.
+  /tracking/labels:
+    get:
+      operationId: TrackingController_labels
+      tags: [Tracking]
+      parameters:
+        - name: query
+          in: query
+          required: false
+          schema: { nullable: true, type: string, minLength: 2, maxLength: 200 }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20, example: 10 }
+      responses:
+        "200":
+          description: Labels
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LabelPageDto" }
+  # Imports follow the first use of each owner: Common's response comes before the local filter.
+  /accounts/labels:
+    get:
+      operationId: AccountsController_labels
+      tags: [Accounts]
+      parameters:
+        - name: direction
+          in: query
+          schema: { $ref: "#/components/schemas/DirectionEnum" }
+        - name: filter
+          in: query
+          schema:
+            nullable: true
+            allOf: [{ $ref: "#/components/schemas/AccountLabelsFilterDto" }]
+      responses:
+        "200":
+          description: Labels
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LabelPageDto" }
+  /accounts/items:
+    get:
+      operationId: AccountsController_items
+      tags: [Accounts]
+      parameters:
+        - name: direction
+          in: query
+          schema: { $ref: "#/components/schemas/DirectionEnum" }
+        - name: metric
+          in: query
+          schema: { type: string, enum: [count, sum] }
+      responses:
+        "200":
+          description: Items
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AccountItemListDto" }
+    post:
+      operationId: AccountsController_createItem
+      tags: [Accounts]
+      requestBody:
+        required: true
+        description: The item to create
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateRemarkDto" }
+            example: '{"position":1}'
+      responses:
+        "201": { description: Created }
+  # Body parameter docs use the media type's schema and example.
+  /accounts/notes:
+    post:
+      operationId: AccountsController_createNote
+      tags: [Accounts]
+      requestBody:
+        content:
+          application/json:
+            schema: { type: string, minLength: 1, maxLength: 500 }
+            example: A note
+      responses:
+        "204": { description: Created }
+  # The extracted `status` enum is owned by the tag of the component that declares it, not by the
+  # tags whose inline error responses reuse it.
+  /scanner/results:
+    get:
+      operationId: ScannerController_results
+      tags: [Scanner]
+      responses:
+        "200":
+          description: Results
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ScannerErrorDto" }
+  # A later endpoint's composite response depends on the component enum with the same values as a
+  # property's enum, although an earlier endpoint already registered the property's schema.
+  /quotes/{quoteId}/items:
+    post:
+      operationId: QuoteItemsController_create
+      tags: [Quote Items]
+      parameters:
+        - { name: quoteId, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/QuoteItemDto" }
+  /quotes/{quoteId}/items/bulk:
+    post:
+      operationId: QuoteItemsController_createMany
+      tags: [Quote Items]
+      parameters:
+        - { name: quoteId, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/QuoteItemDto" }
+  /positions/{positionId}/items:
+    get:
+      operationId: PositionItemsController_list
+      tags: [Position Items]
+      parameters:
+        - { name: positionId, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Items
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PositionItemDto" }
+  # Two component enums share values; neither declaration uses the other.
+  /messages/outgoing:
+    get:
+      operationId: OutgoingMessagesController_list
+      tags: [Outgoing Messages]
+      responses:
+        "200":
+          description: Messages
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OutgoingMessageDto" }
+  /messages/incoming:
+    get:
+      operationId: IncomingMessagesController_list
+      tags: [Incoming Messages]
+      responses:
+        "200":
+          description: Messages
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/IncomingMessageDto" }
+  # A recursive union is typed `z.ZodType` and wrapped in `z.lazy` as a whole, so it can be built
+  # before its own binding is initialized. Enum values that look like model references stay intact.
+  /rules/tree:
+    get:
+      operationId: RulesController_tree
+      tags: [Rules]
+      responses:
+        "200":
+          description: Rule tree
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RuleDto" }
+  # Recursive additional properties and allOf members, and nullable object type arrays.
+  /rules/graph:
+    get:
+      operationId: RulesController_graph
+      tags: [Rules]
+      responses:
+        "200":
+          description: Rule graph
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RuleGraphDto" }
+  # Null-only (`type: ["null"]`) bodies and parameters are named `z.null()` schemas and typed `null`;
+  # inline `type: "null"` parameters are typed `null` too.
+  /rules/reset:
+    put:
+      operationId: RulesController_reset
+      tags: [Rules]
+      parameters:
+        - { name: scope, in: query, required: true, schema: { type: ["null"] } }
+        - { name: force, in: query, required: true, schema: { type: "null" } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: ["null"] }
+      responses:
+        "200":
+          description: Reset
+          content:
+            application/json:
+              schema: { type: ["null"] }
+  # Recursive properties use `z.lazy`; `additionalProperties: false` adds no index signature.
+  /folders/tree:
+    get:
+      operationId: FoldersController_tree
+      tags: [Folders]
+      responses:
+        "200":
+          description: Tree
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FolderTreeDto" }
+  # The native transport types are imported before the rest client used for uploads.
+  /uploads/{uploadId}:
+    get:
+      operationId: UploadsController_get
+      tags: [Uploads]
+      parameters:
+        - { name: uploadId, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Upload
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/UploadDto" }
+    post:
+      operationId: UploadsController_upload
+      tags: [Uploads]
+      x-media-upload: true
+      parameters:
+        - { name: uploadId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UploadRequestDto" }
+      responses:
+        "200":
+          description: Upload instructions
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/UploadDto" }
+  # A `$ref` to a simple component (complexity below 2) is inlined as that component's code, so a
+  # binary response is a blob download; a `$ref` to an enum stays a reference.
+  /exports/{exportId}/file:
+    get:
+      operationId: ExportsController_download
+      tags: [Exports]
+      parameters:
+        - { name: exportId, in: path, required: true, schema: { $ref: "#/components/schemas/ExportId" } }
+      responses:
+        "200":
+          description: File
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ExportFile" }
+        "404":
+          description: Missing
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ExportMessage" }
+  /exports/{exportId}/name:
+    put:
+      operationId: ExportsController_rename
+      tags: [Exports]
+      parameters:
+        - { name: exportId, in: path, required: true, schema: { $ref: "#/components/schemas/ExportId" } }
+        - { name: label, in: query, schema: { $ref: "#/components/schemas/ExportMessage" } }
+        - { name: copies, in: query, required: true, schema: { $ref: "#/components/schemas/ExportCount" } }
+        - { name: status, in: query, schema: { $ref: "#/components/schemas/ExportStatus" } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ExportMessage" }
+      responses:
+        "200":
+          description: Renamed
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ExportMessage" }
+  /exports/count:
+    post:
+      operationId: ExportsController_count
+      tags: [Exports]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ExportCount" }
+      responses:
+        "200":
+          description: Count
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ExportCount" }
+  /exports/status:
+    get:
+      operationId: ExportsController_status
+      tags: [Exports]
+      parameters:
+        - { name: status, in: query, required: true, schema: { $ref: "#/components/schemas/ExportStatus" } }
+      responses:
+        "200":
+          description: Status
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ExportStatus" }
+    post:
+      operationId: ExportsController_setStatus
+      tags: [Exports]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ExportStatus" }
+      responses:
+        "204": { description: Updated }
+  # A request body is optional unless `required: true` (the OpenAPI default is `false`): `data?`
+  # sorts after required parameters and validates with `.optional()`. Inlined `$ref` parameters
+  # keep the component's validations (`.min(2)`) and type (`number`), and an OpenAPI 3.1 type
+  # array is documented as a union (`@type { string | null }`).
+  /exports/{exportId}/note:
+    patch:
+      operationId: ExportsController_note
+      tags: [Exports]
+      parameters:
+        - { name: exportId, in: path, required: true, schema: { $ref: "#/components/schemas/ExportId" } }
+        - { name: copies, in: query, required: true, schema: { $ref: "#/components/schemas/ExportCount" } }
+        - { name: label, in: query, required: false, schema: { $ref: "#/components/schemas/ExportMessage" } }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ExportNoteDto" }
+      responses:
+        "200":
+          description: Note
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ExportNoteResult" }
+  /exports/search:
+    post:
+      operationId: ExportsController_search
+      tags: [Exports]
+      parameters:
+        - { name: limit, in: query, required: true, schema: { $ref: "#/components/schemas/ExportCount" } }
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object, properties: { query: { type: string } } }
+      responses:
+        "200":
+          description: Matches
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/ExportNoteDto" } }
+  # Literal and documentation text from the spec is escaped identically by both renderers: string
+  # enum values become escaped string literals and `*/` in descriptions does not end the JSDoc.
+  # OpenAPI 3.1 `prefixItems` tuples (closed with `items: false`, or with a rest schema) and
+  # free-form values render as tuples and `z.unknown()`.
+  /literals:
+    get:
+      operationId: LiteralsController_get
+      tags: [Literals]
+      summary: "Literal */ summary"
+      description: "Escapes */ in docs"
+      responses:
+        "200":
+          description: "Literal */ response"
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LiteralsDto" }
+  # A referenced tuple with `minItems` is validated at the response (`LiteralTupleDtoSchema.refine(...)`);
+  # imports and model proxies use only the schema name.
+  /literals/tuple:
+    get:
+      operationId: LiteralsController_tuple
+      tags: [Literals]
+      responses:
+        "200":
+          description: Tuple
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LiteralTupleDto" }
+  # With `allReadonly` a referenced array is `.readonly()` and has no `min`/`max`: its length checks
+  # are refinements at the response, properties and tuple members.
+  /literals/list:
+    get:
+      operationId: LiteralsController_list
+      tags: [Literals]
+      responses:
+        "200":
+          description: List
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LiteralListDto" }
+  # Cursor pagination: a GET with a string `cursor` query parameter whose response has a string
+  # `nextCursor` gets a cursor infinite query, which wins over the `page` parameter (passed as
+  # `undefined`). The next cursor may come through `allOf` and nullable references.
+  /feed/items:
+    get:
+      operationId: FeedController_listItems
+      tags: [Feed]
+      parameters:
+        - { name: page, in: query, required: false, schema: { type: integer } }
+        - { name: cursor, in: query, required: false, schema: { type: string } }
+        - { name: limit, in: query, required: false, schema: { type: integer } }
+      responses:
+        "200":
+          description: Items page
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FeedItemPageDto" }
+  /feed/threads/{threadId}/messages:
+    get:
+      operationId: FeedController_listMessages
+      tags: [Feed]
+      parameters:
+        - { name: threadId, in: path, required: true, schema: { type: string } }
+        - { name: cursor, in: query, required: false, schema: { type: string } }
+      responses:
+        "200":
+          description: Messages page
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: "#/components/schemas/FeedCursorPageDto" }
+                  - type: object
+                    properties: { messages: { type: array, items: { type: string } } }
+  # A cursor parameter without a next cursor in the response (a totals endpoint) is not paginated.
+  /feed/totals:
+    get:
+      operationId: FeedController_totals
+      tags: [Feed]
+      parameters:
+        - { name: cursor, in: query, required: false, schema: { type: string } }
+        - { name: limit, in: query, required: false, schema: { type: integer } }
+      responses:
+        "200":
+          description: Totals
+          content:
+            application/json:
+              schema: { type: object, properties: { total: { type: integer } } }
+  # Custom cursor names (`infiniteQueryParamNames.cursor: after`, `nextCursor: next`), and a page
+  # endpoint in the same module keeps page-number pagination.
+  /feed/events:
+    get:
+      operationId: FeedController_listEvents
+      tags: [Feed]
+      parameters:
+        - { name: after, in: query, required: false, schema: { type: string } }
+      responses:
+        "200":
+          description: Events page
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  events: { type: array, items: { type: string } }
+                  next: { type: ["string", "null"] }
+  /feed/archive:
+    get:
+      operationId: FeedController_listArchive
+      tags: [Feed]
+      parameters:
+        - { name: page, in: query, required: false, schema: { type: integer } }
+        - { name: limit, in: query, required: false, schema: { type: integer } }
+      responses:
+        "200":
+          description: Archive page
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FeedItemPageDto" }
+  # `ExportDto.order` is a string with a stray `items` (an object with an inline enum). Like
+  # `iterateSchema`, only array schemas have their items followed: the unreferenced
+  # `AuditQueryDto.order` enum with the same values is not imported into (or, with
+  # `modelsInModules`, emitted in) the Payments models.
+  /payments/exports:
+    post:
+      operationId: PaymentsController_export
+      tags: [Payments]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ExportDto" }
+      responses:
+        "201": { description: Exported }
+components:
+  schemas:
+    FeedItemPageDto:
+      type: object
+      required: [items]
+      properties:
+        items: { type: array, items: { type: string } }
+        page: { type: integer }
+        limit: { type: integer }
+        totalItems: { type: integer }
+        nextCursor: { type: string, nullable: true }
+    FeedCursorPageDto:
+      type: object
+      properties:
+        nextCursor: { $ref: "#/components/schemas/FeedCursor" }
+    FeedCursor: { type: string, nullable: true }
+    ExportDto:
+      type: object
+      properties:
+        order:
+          type: string
+          nullable: true
+          items:
+            type: object
+            required: [property, direction]
+            properties:
+              property: { type: string }
+              direction: { type: string, enum: [asc, desc] }
+        # Number constraints print like JavaScript numbers (`0.000001`, `1e-7`), not `1e-6`.
+        quantity: { type: number, multipleOf: 0.000001, maximum: 1000000000000, exclusiveMinimum: true, minimum: 0.0000001 }
+    AuditQueryDto:
+      type: object
+      properties:
+        order: { type: string, enum: [asc, desc] }
+    ProviderNameEnum:
+      type: string
+      enum: [alpha, beta, gamma]
+    DirectionEnum:
+      type: string
+      enum: [Import, Export]
+    LabelPageDto:
+      type: object
+      required: [items, total]
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            required: [id, label]
+            properties:
+              id: { type: string }
+              label: { type: string }
+        total: { type: integer }
+    # Declared before the filter, but has no dependencies, so it sorts after it.
+    CreateRemarkDto:
+      type: object
+      required: [content]
+      properties:
+        content:
+          type: object
+          properties:
+            html: { nullable: true, type: string }
+            json: { nullable: true, type: object, additionalProperties: {} }
+        position: { nullable: true, type: integer }
+    # `null` in an enum does not stop it matching DirectionEnum.
+    AccountLabelsFilterDto:
+      type: object
+      properties:
+        search: { nullable: true, type: string }
+        direction: { nullable: true, type: string, enum: [Import, Export, null] }
+    # A top-level array documents its items' properties.
+    AccountItemListDto:
+      type: array
+      items:
+        type: object
+        required: [id, name]
+        properties:
+          id: { type: string }
+          name: { type: string, description: The item name }
+          tags: { type: array, items: { type: string } }
+    ScannerErrorDto:
+      type: object
+      required: [status, message]
+      properties:
+        status: { type: string, enum: [error] }
+        message: { type: string }
+    ItemTypeAEnum:
+      type: string
+      enum: [CHARGE, TEXT, DIVIDER]
+    ItemTypeBEnum:
+      type: string
+      enum: [CHARGE, TEXT, DIVIDER]
+    # The nullable status matches an extracted enum owned by Common, which the models then import.
+    QuoteItemDto:
+      type: object
+      required: [id, type]
+      properties:
+        id: { type: string }
+        type: { $ref: "#/components/schemas/ItemTypeBEnum" }
+        determinationStatus: { nullable: true, type: string, enum: [MATCHED, NO_MATCH, null] }
+    PositionItemDto:
+      type: object
+      required: [id, type]
+      properties:
+        id: { type: string }
+        type: { $ref: "#/components/schemas/ItemTypeAEnum" }
+        determinationStatus: { type: string, enum: [MATCHED, NO_MATCH] }
+    MessageStatusAEnum:
+      type: string
+      enum: [Pending, Uploaded, Failed]
+    MessageStatusBEnum:
+      type: string
+      enum: [Pending, Uploaded, Failed]
+    OutgoingMessageDto:
+      type: object
+      properties:
+        status: { $ref: "#/components/schemas/MessageStatusAEnum" }
+    IncomingMessageDto:
+      type: object
+      properties:
+        status: { $ref: "#/components/schemas/MessageStatusBEnum" }
+    RuleNode:
+      oneOf:
+        - { type: string }
+        - { type: array, items: { $ref: "#/components/schemas/RuleNode" } }
+    RuleDto:
+      type: object
+      required: [node, kind]
+      properties:
+        node: { $ref: "#/components/schemas/RuleNode" }
+        kind: { type: string, enum: ["RulesModels.RuleNodeSchema", "CommonModels.StatusEnumSchema", plain] }
+        pattern: { type: string, pattern: "^CommonModels\\.x$" }
+    RuleGraphDto:
+      type: object
+      properties:
+        scopes: { $ref: "#/components/schemas/RuleScopeMap" }
+        chain: { $ref: "#/components/schemas/RuleChainDto" }
+        link: { $ref: "#/components/schemas/RuleLinkDto" }
+        named: { $ref: "#/components/schemas/NamedRuleChainDto" }
+        variants: { $ref: "#/components/schemas/RuleVariantDto" }
+        text: { $ref: "#/components/schemas/RuleTextDto" }
+        # Object keywords do not apply to `null`: only null is valid.
+        none: { type: ["null"], properties: { name: { type: string } } }
+    # Every member of a type array is traversed, so recursion through `items` of
+    # `[array, string, "null"]` is deferred with `z.lazy` and explicitly typed.
+    RuleVariantDto:
+      type: [array, string, "null"]
+      items: { $ref: "#/components/schemas/RuleVariantDto" }
+    # The explicit type includes `string` although `properties` are present.
+    RuleTextDto:
+      type: [object, string, "null"]
+      properties:
+        next: { $ref: "#/components/schemas/RuleTextDto" }
+    # Recursive additional properties are deferred with `z.lazy`.
+    RuleScopeMap:
+      type: object
+      properties:
+        label: { type: string }
+      additionalProperties: { $ref: "#/components/schemas/RuleScopeMap" }
+    # allOf members are merged before `.readonly()` (allReadonly).
+    RuleChainDto:
+      allOf:
+        - type: object
+          properties:
+            next: { $ref: "#/components/schemas/RuleChainDto" }
+        - type: object
+          properties:
+            name: { type: string }
+    # `type: [object, "null"]` is a nullable object, including where it recurses.
+    RuleLinkDto:
+      type: [object, "null"]
+      properties:
+        next: { $ref: "#/components/schemas/RuleLinkDto" }
+    # A referenced circular allOf member is unwrapped (allReadonly) before reading its shape.
+    NamedRuleChainDto:
+      allOf:
+        - { $ref: "#/components/schemas/RuleChainDto" }
+        - type: object
+          required: [id]
+          properties:
+            id: { type: string }
+    FolderTreeDto:
+      type: object
+      required: [id, folders]
+      properties:
+        id: { type: string }
+        folders:
+          type: array
+          items: { $ref: "#/components/schemas/FolderTreeDto__schema0" }
+    FolderTreeDto__schema0:
+      type: object
+      required: [id, name, folders]
+      additionalProperties: false
+      properties:
+        id: { type: string }
+        name: { type: string }
+        symlink:
+          nullable: true
+          type: object
+          required: [targetId]
+          additionalProperties: false
+          properties:
+            targetId: { type: string }
+        folders:
+          type: array
+          items: { $ref: "#/components/schemas/FolderTreeDto__schema0" }
+    UploadDto:
+      type: object
+      properties:
+        id: { type: string }
+        url: { type: string }
+    UploadRequestDto:
+      type: object
+      properties:
+        fileName: { type: string }
+    ExportFile: { type: string, format: binary }
+    ExportId: { type: string, format: uuid }
+    ExportMessage: { type: string, minLength: 2, description: A message }
+    ExportCount: { type: integer, minimum: 0 }
+    ExportStatus: { type: string, enum: [queued, done] }
+    ExportNoteDto:
+      type: object
+      properties:
+        text: { type: [string, "null"] }
+        tags: { type: array, items: { type: [string, "null"] } }
+    ExportNoteResult: { type: [string, "null"] }
+    # No operation uses these; `includeSchemas: [ReportPayloadDto]` generates both.
+    ReportPayloadDto:
+      type: object
+      required: [title, lines]
+      properties:
+        title: { type: string }
+        locale: { type: string, enum: [en, de] }
+        lines:
+          type: array
+          items: { $ref: "#/components/schemas/ReportLineDto" }
+    ReportLineDto:
+      type: object
+      properties:
+        label: { type: string }
+        amount: { type: number }
+    LiteralsDto:
+      type: object
+      description: "Close */ accidentally"
+      required: [pair, quirk]
+      properties:
+        pair:
+          type: array
+          prefixItems: [{ type: string }, { type: integer }]
+          items: false
+          minItems: 2
+        tagged:
+          type: array
+          prefixItems: [{ $ref: "#/components/schemas/LiteralItemDto" }]
+          items: { type: boolean }
+        # Referenced tuple members and rest get the referenced schema's validation and nullability.
+        named:
+          type: array
+          prefixItems: [{ $ref: "#/components/schemas/LiteralNameDto" }]
+          items: { $ref: "#/components/schemas/LiteralNameDto" }
+        quirk:
+          type: string
+          description: "Odd */ values"
+          enum: ["a\"b", "c\\d", "line\nbreak", "普通"]
+        list: { $ref: "#/components/schemas/LiteralListDto" }
+        lists:
+          type: array
+          minItems: 1
+          prefixItems: [{ $ref: "#/components/schemas/LiteralListDto" }]
+          items: { $ref: "#/components/schemas/LiteralListDto" }
+        tree: { $ref: "#/components/schemas/LiteralTreeDto" }
+        untyped: { type: array }
+        anything: { type: object, additionalProperties: true }
+    LiteralItemDto:
+      type: object
+      properties:
+        label: { type: string, description: "Item */ label" }
+    LiteralNameDto: { type: string, minLength: 3, nullable: true }
+    LiteralTupleDto:
+      type: array
+      prefixItems: [{ type: string }]
+      items: { type: number }
+      minItems: 3
+    LiteralListDto:
+      type: array
+      items: { type: string }
+      minItems: 2
+      maxItems: 3
+      nullable: true
+      default: [a, b]
+      description: A list
+    # A recursive tuple gets an explicit circular type, also when rendered from native extraction
+    # (`splitByTags: false`).
+    LiteralTreeDto:
+      type: array
+      minItems: 1
+      prefixItems: [{ type: string }, { $ref: "#/components/schemas/LiteralTreeDto" }]
+      items: false

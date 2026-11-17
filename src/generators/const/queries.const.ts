@@ -11,3 +11,6 @@ export const QUERY_IMPORT: Import = {
 };
 
 export const QUERIES_MODULE_NAME = "moduleName";
+
+/** Last query key element of cursor paginated infinite queries, separating their pages from page-number ones. */
+export const CURSOR_INFINITE_QUERY_KEY = "cursor-v1";

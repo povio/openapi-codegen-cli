@@ -14,6 +14,22 @@ Use this tool to generate code (Zod schemas, TypeScript types, API definitions, 
 
 The tool partially leverages code from [openapi-zod-client](https://github.com/astahmer/openapi-zod-client) repository.
 
+## Migrating to v4
+
+v4 contains breaking changes. Regenerate your clients after upgrading and check the following:
+
+- **Runtime requirements.** Node.js 22 or newer (or Bun 1.4.4 or newer) is required. Node 18 and 20 are no longer supported.
+- **Native renderer by default.** The CLI, Vite plugin and Metro plugin use the bundled Rust renderer when a native binary for the platform is available, and fall back to the TypeScript renderer otherwise. Output is byte-identical between the two. Set `OPENAPI_CODEGEN_NATIVE=0` to force the TypeScript renderer.
+- **Builder configs removed.** The `builderConfigs` option (`--builderConfigs`) and the related `filterParamName`, `dataResponseParamNames`, `dynamicInputsImportPath` and `dynamicColumnsImportPath` options were removed, along with the generated `*.configs.ts` files. Remove these options from your configuration; a typed configuration that still sets them no longer compiles. There is no replacement in the generator, so keep any builder configuration you still need in application code.
+- **No `any` in generated schemas.** Free-form values (`additionalProperties: true`, arrays without `items`, untyped schemas) are generated as `z.unknown()` instead of `z.any()`, so their inferred type is `unknown`. Narrow these values before use.
+- **Typed invalidation maps.** Generated clients no longer augment a global type registry, so several clients can be compiled together. `InvalidationMap` takes the query module enum and its mutations (`InvalidationMap<QueryModule, QueryModuleMutations>`), and each generated `queryModules.ts` exports a ready-made `QueryModuleInvalidationMap` alias. `RegisteredQueryModule` and the global `OpenApiCodegenQueryModules` / `OpenApiCodegenQueryModuleMutations` interfaces were removed. See [Typed invalidation maps](#typed-invalidation-maps).
+- **Optional request bodies.** A request body is optional unless the spec sets `requestBody.required: true` (the OpenAPI default is `false`). Such endpoints now take `data?: T` instead of `data: T`, validate it with `.optional()`, and the same applies to the variables of their query and mutation hooks. Because optional parameters follow required ones, `data` moves behind the required path, query and header parameters in the generated endpoint function, so positional calls such as `ExportsApi.note(id, data, count)` become `ExportsApi.note(id, count, data)`. Hook calls, which take an object, are unaffected by the order. Mark bodies your API always expects as `required: true` to keep `data` required.
+- **Optional query and header parameters.** Query, header and cookie parameters are optional unless the spec sets `required: true` (the OpenAPI default is `false`); path parameters are always required. They were already validated with `.optional()`, but were typed as required, so endpoint functions and hook variables now take `name?: T`. As with bodies, optional parameters sort behind required ones, so positional calls to endpoint functions may need reordering; hook calls are unaffected. Mark parameters your API always expects as `required: true` to keep them required.
+- **Inlined `$ref` parameters.** A parameter whose schema is a `$ref` to a simple component (for example `{ type: integer, minimum: 0 }`) is typed and validated like the component: it keeps the component's validations (`.gte(0)`, `.min(2)`, ...) and an integer or number component is typed `number` instead of `string`.
+- **CASL 7.** ACL output targets CASL 7 (see the note above).
+- **Cursor paginated infinite queries.** With `infiniteQueries`, GET endpoints with an optional string `cursor` query parameter and a `nextCursor` response field get cursor infinite queries (see [Infinite queries](#infinite-queries)), even without a `page` parameter. If such an endpoint also has a `page` parameter, its infinite hook, prefetch and `<name>Infinite` query key no longer take `cursor`, its pages are requested by cursor instead of page number, and its hook options are `AppCursorInfiniteQueryOptions`. Infinite query data is typed with its page params (`InfiniteData<T, number>` instead of `InfiniteData<T, unknown>`).
+- **New options.** `includeSchemas`, `lazySchemas`, `generateJsDoc` (JSDoc generation is off by default), `infiniteQueryParamNames.cursor` and `infiniteQueryResponseParamNames.nextCursor` were added.
+
 ## Setup
 
 ```bash
@@ -125,6 +141,7 @@ bunx openapi-codegen generate --config my-config.ts
   --excludeTags                       Comma-separated list of tags to exclude from generation
   --excludePathRegex                  Exclude operations whose paths match the given regular expression
   --excludeRedundantZodSchemas        Exclude any redundant Zod schemas (default: true)
+  --includeSchemas                    Comma-separated component schemas to generate even when no operation uses them
 
   --tsNamespaces                      Wrap generated files in TypeScript namespaces (default: true)
   --importPath                        Module import style for generated files (default: 'ts'; options: 'ts' | 'relative' | 'absolute')
@@ -155,7 +172,6 @@ bunx openapi-codegen generate --config my-config.ts
   --acl                               Generate ACL related files (default: true)
   --checkAcl                          Add ACL check to queries (default: true)
 
-  --builderConfigs                    Generate configs for builders (default: false)
 
   --baseUrl                           (Requires `--restClientImportPath` to NOT be set) Base URL for the generated REST client; falls back to the OpenAPI spec if not provided
 ```
@@ -174,6 +190,7 @@ bunx openapi-codegen generate --config my-config.ts
   --excludeTags                       Comma-separated list of tags to exclude from generation
   --excludePathRegex                  Exclude operations whose paths match the given regular expression
   --excludeRedundantZodSchemas        Exclude any redundant Zod schemas (default: true)
+  --includeSchemas                    Comma-separated component schemas to generate even when no operation uses them
 ```
 
 ## Development
@@ -204,6 +221,8 @@ bun run start:dist generate --input ./test/petstore.yaml --verbose
 The Bun and Node.js CLIs and the Vite plugin automatically use the bundled Rust code-generation core when a compatible native binary is available. Generated files remain byte-for-byte compatible with the TypeScript implementation, which is retained as the fallback when the addon cannot be loaded.
 
 Set `OPENAPI_CODEGEN_NATIVE=0` to force the TypeScript path, or `OPENAPI_CODEGEN_NATIVE=1` to require the native path and fail when its binary is unavailable.
+
+The native core caches up to two successful compilations per process within a 32 MiB estimated retained-memory budget. Reuse requires identical source text, YAML mode, and complete options JSON; returned objects remain independent. The cache is shared across Node workers and cleared when the last addon environment closes. It benefits repeated generation in long-running hosts such as Vite, not separate CLI processes. Set `OPENAPI_CODEGEN_NATIVE_CACHE=0` to disable it for profiling. Concurrent misses may compile independently; failures and oversized results are not retained.
 
 Release packages include native binaries for Linux x64, macOS arm64, and Windows x64. Build a binary for the current platform with `bun run build:native`.
 
@@ -315,6 +334,53 @@ import { OpenApiQueryConfig } from "@povio/openapi-codegen-cli/query";
   <App />
 </OpenApiQueryConfig.Provider>;
 ```
+
+### Typed invalidation maps
+
+With `mutationEffects` (the default), `queryModules.ts` exports `QueryModuleMutations` (for each module, the `data` and `variables` of its mutation hooks) and `QueryModuleInvalidationMap`, an alias for `InvalidationMap<QueryModule, QueryModuleMutations>` that types each module's callback from the spec:
+
+```ts
+import { QueryModule, type QueryModuleInvalidationMap } from "@/data/queryModules";
+
+export const invalidationMap: QueryModuleInvalidationMap = {
+  // `data` is any of the module's mutation responses; variables that only some
+  // of its mutations take (here `id`) are optional.
+  [QueryModule.Items]: (data, { officeId, id }) => [["items", officeId, id]],
+};
+```
+
+The types are exported per client rather than registered globally, so several generated clients can be used in one
+program; import each client's `QueryModuleInvalidationMap` from its own `queryModules.ts`.
+`InvalidationMap<QueryModule>` (without mutation types) is still accepted, but its callbacks receive `unknown`.
+
+Migrating from earlier v4 release candidates: generated code no longer augments the global
+`OpenApiCodegenQueryModules` / `OpenApiCodegenQueryModuleMutations` interfaces, and `RegisteredQueryModule` is
+removed. Replace a bare `InvalidationMap` or `InvalidationMap<QueryModule>` with the generated
+`QueryModuleInvalidationMap`.
+
+### Infinite queries
+
+With `infiniteQueries: true`, paginated GET endpoints also get `use<Name>Infinite` and `prefetch<Name>Infinite`
+(and a `<name>Infinite` query key). The pagination parameter and response field names are set in the config file:
+
+```ts
+const config: OpenAPICodegenConfig = {
+  infiniteQueries: true,
+  infiniteQueryParamNames: { page: "page", cursor: "cursor" }, // defaults
+  infiniteQueryResponseParamNames: { page: "page", totalItems: "totalItems", limit: "limit", nextCursor: "nextCursor" }, // defaults
+};
+```
+
+- **Page-number pagination.** An endpoint with a `page` query parameter starts at page `1` and requests the next
+  page while `page * limit < totalItems` in the response.
+- **Cursor pagination.** An endpoint with an optional string `cursor` query parameter whose response has a string
+  (optionally nullable) `nextCursor` property, directly or through `allOf`, starts without a cursor and requests the
+  next page with the returned `nextCursor` until it is `null` or missing. Cursor pagination takes precedence over
+  page-number pagination; a `page` parameter of the same endpoint must be optional and is left unset. The hooks take
+  `AppCursorInfiniteQueryOptions` (page params are `string | undefined`), and their query keys end with
+  `"cursor-v1"`. An endpoint whose response has no next cursor field, or whose `cursor` or `page` parameter is
+  required, is not cursor paginated (it is page-number paginated if it has a `page` parameter, otherwise it gets no
+  infinite query). Set `infiniteQueryParamNames.cursor` to `""` to turn cursor pagination off.
 
 ### Runtime response validation
 
@@ -624,3 +690,5 @@ Use package subpaths for runtime imports. Pure `import type` imports may use the
 
 For example: `import { AuthContext, AuthGuard } from "@povio/openapi-codegen-cli/auth"`.
 Custom application helpers should import error helpers from `/errors`, `AbilityContext` from `/acl`, and mutation effects from `/query`.
+
+`AbilityContext.Provider` accepts an optional `resolveAction` (CASL's `resolveAction` option) to expand action aliases when the ability is built, for example `resolveAction={createAliasResolver({ modify: ["read", "update"] })}`. Pass a stable function, since a new one rebuilds the ability.

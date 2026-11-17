@@ -1,6 +1,7 @@
 import { OpenAPIV3 } from "openapi-types";
 
 import { GenerateOptions } from "@/generators/types/options";
+import { getTupleSchemaParts } from "@/generators/utils/openapi-schema.utils";
 import { escapeControlCharacters, unwrapQuotesIfNeeded } from "@/generators/utils/openapi.utils";
 
 import { ZodSchemaMetaData } from "./ZodSchema.class";
@@ -39,7 +40,7 @@ export function getZodChain({
   } else if (schema.type === "number" || schema.type === "integer") {
     chains.push(getZodChainableNumberValidations(schema));
   } else if (schema.type === "array") {
-    chains.push(getZodChainableArrayValidations(schema));
+    chains.push(getZodChainableArrayValidations(schema, options));
   }
 
   if (typeof schema.description === "string" && schema.description !== "" && options.withDescription) {
@@ -160,16 +161,18 @@ function getZodChainableNumberValidations(schema: OpenAPIV3.SchemaObject) {
   return validations.join(".");
 }
 
-function getZodChainableArrayValidations(schema: OpenAPIV3.SchemaObject) {
+function getZodChainableArrayValidations(schema: OpenAPIV3.SchemaObject, options: GenerateOptions) {
   const validations: string[] = [];
-  const tuple = Array.isArray((schema as OpenAPIV3.ArraySchemaObject).items);
+  // Tuples have no `min`/`max`; neither do arrays wrapped in `.readonly()` (`allReadonly`), so their
+  // length checks are refinements (valid on any schema). Mirrored by `chain` in native/src/zod.rs.
+  const refine = getTupleSchemaParts(schema) !== undefined || options.allReadonly;
 
   if (schema.minItems) {
-    validations.push(tuple ? `refine((value) => value.length >= ${schema.minItems})` : `min(${schema.minItems})`);
+    validations.push(refine ? `refine((value) => value.length >= ${schema.minItems})` : `min(${schema.minItems})`);
   }
 
   if (schema.maxItems) {
-    validations.push(tuple ? `refine((value) => value.length <= ${schema.maxItems})` : `max(${schema.maxItems})`);
+    validations.push(refine ? `refine((value) => value.length <= ${schema.maxItems})` : `max(${schema.maxItems})`);
   }
 
   return validations.join(".");

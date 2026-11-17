@@ -1,6 +1,6 @@
 import { createElement } from "react";
 
-import { subject, type RawRuleOf } from "@casl/ability";
+import { createAliasResolver, subject, type RawRuleOf } from "@casl/ability";
 import { packRules } from "@casl/ability/extra";
 import { act, create, type ReactTestRenderer } from "react-test-renderer";
 import { describe, expect, it } from "vitest";
@@ -91,6 +91,34 @@ describe("CASL 7 runtime integration", () => {
         );
       });
       expect(renderer.toJSON()).toEqual(["allowed", "inverted"]);
+    } finally {
+      await act(async () => renderer?.unmount());
+    }
+  });
+
+  it("applies resolveAction aliases to the built ability", async () => {
+    const resolveAction = createAliasResolver({ modify: ["read", "update"] });
+    let ability!: AppAbility;
+    function Probe() {
+      ability = AbilityContext.useAbility();
+      return null;
+    }
+    let renderer!: ReactTestRenderer;
+    try {
+      await act(async () => {
+        renderer = create(
+          createElement(AuthContext.Provider, {
+            isAuthenticated: true,
+            isInitializing: false,
+            logout: noop,
+            user: { aclRules: packRules([{ action: "modify", subject: "Item" }]) },
+            children: createElement(AbilityContext.Provider, { resolveAction, children: createElement(Probe) }),
+          }),
+        );
+      });
+      expect(ability.can("read", "Item")).toBe(true);
+      expect(ability.can("update", "Item")).toBe(true);
+      expect(ability.can("delete", "Item")).toBe(false);
     } finally {
       await act(async () => renderer?.unmount());
     }

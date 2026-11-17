@@ -7,7 +7,7 @@ import { getEnumZodSchemaCodeFromEnumNames, getZodSchema } from "@/generators/co
 import { resolveZodSchemaName } from "@/generators/core/zod/resolveZodSchemaName";
 import { EndpointParameter } from "@/generators/types/endpoint";
 import { ParameterObject } from "@/generators/types/openapi";
-import { isSchemaObject } from "@/generators/utils/openapi-schema.utils";
+import { hasSchemaType, isSchemaObject } from "@/generators/utils/openapi-schema.utils";
 import {
   isParamMediaTypeAllowed,
   getParameterEnumNames,
@@ -18,6 +18,7 @@ import {
   getEnumZodSchemaName,
   getParamZodSchemaName,
   getZodSchemaOperationName,
+  isNamedZodSchema,
 } from "@/generators/utils/zod-schema.utils";
 
 export function getEndpointParameter({
@@ -103,7 +104,8 @@ export function getEndpointParameter({
     (paramObj.in === "query" || paramObj.in === "header") &&
     !paramObj.required &&
     isSchemaObject(schemaObject) &&
-    (schemaObject.type === "object" || (!!schemaObject.properties && Object.keys(schemaObject.properties).length > 0));
+    (hasSchemaType(schemaObject, "object") ||
+      (!!schemaObject.properties && Object.keys(schemaObject.properties).length > 0));
 
   const zodChain = getZodChain({
     schema: schemaObject,
@@ -111,13 +113,19 @@ export function getEndpointParameter({
     options: resolver.options,
   });
 
-  const zodSchemaName = resolveZodSchemaName({
+  const resolvedZodSchemaName = resolveZodSchemaName({
     schema: schemaObject,
     zodSchema: zodSchema.assign(zodSchema.getCodeString(tag) + zodChain),
     fallbackName,
     resolver,
     tag,
   });
+  // A `$ref` to a simple component is inlined as the component's bare code; keep the
+  // component's validations and the parameter's presence by appending the chain.
+  const zodSchemaName =
+    zodSchema.ref && !isNamedZodSchema(resolvedZodSchemaName)
+      ? resolvedZodSchemaName + zodChain
+      : resolvedZodSchemaName;
 
   return {
     name: paramObj.in === "path" ? pathParamToVariableName(paramObj.name) : paramObj.name,

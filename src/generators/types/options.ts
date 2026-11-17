@@ -45,12 +45,20 @@ interface QueriesGenerateOptions {
 interface InfiniteQueriesGenerateOptions {
   infiniteQueries?: boolean;
   infiniteQueryParamNames: {
+    /** Query parameter of page-number paginated GET endpoints. */
     page: string;
+    /**
+     * String query parameter of cursor paginated GET endpoints (default: "cursor"); takes precedence over `page`.
+     * Set to an empty string to disable cursor pagination.
+     */
+    cursor?: string;
   };
   infiniteQueryResponseParamNames: {
     page: string;
     totalItems: string;
     limit: string;
+    /** String response field holding the cursor of the next page of cursor paginated endpoints (default: "nextCursor"). */
+    nextCursor?: string;
   };
 }
 
@@ -60,14 +68,6 @@ interface ACLGenerateOptions {
   abilityContextGenericAppAbilities: boolean;
   abilityContextImportPath?: string;
   aclCheckImportPath: string;
-}
-
-interface BuilderConfigsGenerateOptions {
-  builderConfigs?: boolean;
-  filterParamName: string;
-  dataResponseParamNames: string[];
-  dynamicInputsImportPath: string;
-  dynamicColumnsImportPath: string;
 }
 
 interface GenerateConfig {
@@ -86,6 +86,8 @@ interface BaseGenerateOptions {
   excludeTags: string[];
   excludePathRegex: string;
   excludeRedundantZodSchemas: boolean;
+  /** Component schemas to generate even when no included operation uses them, with their dependencies. */
+  includeSchemas: string[];
   tsNamespaces: boolean;
   treeShakeableNamespaces?: boolean;
   tsPath: string;
@@ -103,5 +105,4 @@ export interface GenerateOptions
     EndpointsGenerateOptions,
     QueriesGenerateOptions,
     InfiniteQueriesGenerateOptions,
-    ACLGenerateOptions,
-    BuilderConfigsGenerateOptions {}
+    ACLGenerateOptions {}

@@ -327,7 +327,6 @@ describe("generateCodeFromOpenAPIDoc - modelsInCommon regressions", () => {
     ...DEFAULT_GENERATE_OPTIONS,
     output: "output",
     modelsInCommon: true,
-    builderConfigs: false,
     prefetchQueries: false,
     mutationEffects: false,
   } as GenerateOptions;
@@ -823,7 +822,6 @@ describe("generateCodeFromOpenAPIDoc - shared parameter schema namespace", () =>
 
   const files = generateCodeFromOpenAPIDoc(sharedParamSchemaDoc, {
     ...(DEFAULT_GENERATE_OPTIONS as GenerateOptions),
-    builderConfigs: true,
     acl: false,
     checkAcl: false,
   });
@@ -832,9 +830,6 @@ describe("generateCodeFromOpenAPIDoc - shared parameter schema namespace", () =>
   )?.content;
   const adminQueries = files.find(({ fileName }) =>
     fileName.endsWith("/pushNotificationAdmin/pushNotificationAdmin.queries.ts"),
-  )?.content;
-  const adminConfigs = files.find(({ fileName }) =>
-    fileName.endsWith("/pushNotificationAdmin/pushNotificationAdmin.configs.ts"),
   )?.content;
 
   test("api file uses the owning namespace (CommonModels) for the shared parameter schema", () => {
@@ -847,11 +842,5 @@ describe("generateCodeFromOpenAPIDoc - shared parameter schema namespace", () =>
     expect(adminQueries).toBeDefined();
     expect(adminQueries).toContain("CommonModels.TokenFiltersDto");
     expect(adminQueries).not.toContain("PushNotificationAdminModels.TokenFiltersDto");
-  });
-
-  test("configs file uses the owning namespace (CommonModels) for the shared parameter schema", () => {
-    expect(adminConfigs).toBeDefined();
-    expect(adminConfigs).toContain("CommonModels.TokenFiltersDto");
-    expect(adminConfigs).not.toContain("PushNotificationAdminModels.TokenFiltersDto");
   });
 });

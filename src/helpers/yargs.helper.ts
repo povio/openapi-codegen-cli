@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import "reflect-metadata";
-import type { Options } from "yargs";
+import type { Argv, Options } from "yargs";
 
 interface IOptionProperties extends Options {
   envAlias?: string;
@@ -25,28 +24,33 @@ export function YargOption(properties: IOptionProperties) {
   };
 }
 
-export function getYargsOption<T>(target: any): Record<keyof T, IOptionProperties> {
-  const options = Reflect.getMetadata(optionsKey, target.prototype);
+export function getYargsOption<T>(target: new () => T): Record<keyof T, IOptionProperties> {
+  const options: Record<keyof T, IOptionProperties> | undefined = Reflect.getMetadata(optionsKey, target.prototype);
   if (!options) {
-    throw new Error(`Options for ${(target as any).name} were not defined`);
+    throw new Error(`Options for ${target.name} were not defined`);
   }
   return options;
 }
 
-export function getBuilder(options: any) {
-  return async (y: any) => {
-    return y.options(getYargsOptions(options)).middleware(async (_argv: any) => {
-      return (await loadYargsConfig(options, _argv as any)) as any;
+export function getBuilder<T>(options: new () => T) {
+  return async (y: Argv) => {
+    return y.options(getYargsOptions(options)).middleware(async (argv) => {
+      // yargs replaces argv with what async middleware resolves to.
+      Object.assign(argv, await loadYargsConfig(options, argv));
     }, true);
   };
 }
 
-export function getYargsOptions<T>(target: any): Record<keyof T, Options> {
-  return Object.entries(getYargsOption(target)).reduce(
+function getYargsOptionEntries<T>(target: new () => T): [string, IOptionProperties][] {
+  return Object.entries(getYargsOption(target) as Record<string, IOptionProperties>);
+}
+
+export function getYargsOptions<T>(target: new () => T): Record<keyof T, Options> {
+  return getYargsOptionEntries(target).reduce(
     (a, [property, options]) => {
       a[property as keyof T] = Object.fromEntries(
         Object.entries(options).filter(([optionName]) => !["envAlias", "default"].includes(optionName)),
-      );
+      ) as Options;
       return a;
     },
     {} as Record<keyof T, Options>,
@@ -56,12 +60,9 @@ export function getYargsOptions<T>(target: any): Record<keyof T, Options> {
 export async function loadYargsConfig<T>(cls: new () => T, _argv: Record<string, unknown>): Promise<T> {
   const argv: T = new cls();
 
-  for (const [name, o] of Object.entries(getYargsOption(cls))) {
-    argv[name as keyof typeof argv] =
-      // yargs is always right
-      _argv[name] ??
-      // fallback to default
-      o.default;
+  for (const [name, o] of getYargsOptionEntries(cls)) {
+    // yargs is always right; fall back to the default
+    argv[name as keyof T] = (_argv[name] ?? o.default) as T[keyof T];
   }
 
   return argv;

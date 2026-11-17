@@ -40,7 +40,6 @@ export type GenerateParams = {
     | "mutationScope"
     | "parseRequestParams"
     | "inlineEndpoints"
-    | "builderConfigs"
     | "modelsOnly"
   >
 >;

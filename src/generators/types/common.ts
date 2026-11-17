@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-export type ObjectLiteral<T = any> = Record<string, T>;
+export type ObjectLiteral<T = unknown> = Record<string, T>;
 
-export type List<A = any> = ReadonlyArray<A>;
+export type List<A = unknown> = ReadonlyArray<A>;
 
 export type Length<L extends List> = L["length"];
 

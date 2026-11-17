@@ -1,7 +1,7 @@
 import { OpenAPIV3 } from "openapi-types";
 
 import {
-  ANY_SCHEMA,
+  UNKNOWN_SCHEMA,
   BLOB_SCHEMA,
   DATETIME_SCHEMA,
   EMAIL_SCHEMA,
@@ -16,6 +16,7 @@ import { SchemaResolver } from "@/generators/core/SchemaResolver.class";
 import { GenerateType } from "@/generators/types/generate";
 import { getNamespaceName } from "@/generators/utils/namespace.utils";
 import {
+  getTupleSchemaParts,
   inferRequiredSchema,
   isArraySchemaObject,
   isReferenceObject,
@@ -77,27 +78,51 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag }: Get
 
   const readonly = resolver.options.allReadonly ? ".readonly()" : "";
 
+  // Whether a member schema of this object (property or additional properties) or tuple references
+  // the schema being declared, so it must be deferred with `z.lazy` to avoid reading the declaration
+  // while it is initialized.
+  const parentRef = getParentRef(inheritedMeta);
+  const isCircularMember = (
+    memberSchema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject,
+    memberZodSchema: ZodSchema,
+  ) => {
+    if (!parentRef) {
+      return false;
+    }
+    const refs = [
+      ...(isReferenceObject(memberSchema) ? [memberSchema.$ref] : []),
+      ...getSchemaRefs(memberZodSchema, { skipObjectSchema: true }),
+    ];
+    return refs.some((ref) => resolver.dependencyGraph.deepDependencyGraph[ref]?.has(parentRef));
+  };
+
   if (isArraySchemaObject(schema)) {
-    if (Array.isArray(schema.items)) {
-      const tuple = schema as OpenAPIV3.ArraySchemaObject & { additionalItems?: boolean | OpenAPIV3.SchemaObject };
-      const items = schema.items.map((item, index) => {
-        const code = getZodSchema({ ...params, schema: item }).getCodeString(tag, resolver.options);
-        const chain = getZodChain({ schema: item, meta: { ...meta, isRequired: true }, options: resolver.options });
-        return code + chain + (index >= (schema.minItems ?? 0) ? ".optional()" : "");
-      });
-      const restSchema =
-        typeof tuple.additionalItems === "object"
-          ? getZodSchema({ ...params, schema: tuple.additionalItems }).getCodeString(tag, resolver.options) +
-            getZodChain({
-              schema: tuple.additionalItems,
-              meta: { ...meta, isRequired: true },
-              options: resolver.options,
-            })
-          : ANY_SCHEMA;
-      const rest = tuple.additionalItems === false ? "" : `.rest(${restSchema})`;
+    const tuple = getTupleSchemaParts(schema);
+    if (tuple) {
+      // Like object properties, a referenced member gets the referenced schema's chain
+      // (validation, nullability, default): the exported component schema omits its own chain.
+      const getMemberSchema = (member: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject) => {
+        const memberZodSchema = getZodSchema({ ...params, schema: member });
+        const code = memberZodSchema.getCodeString(tag, resolver.options);
+        // The chain is applied to the deferred member: checks clone a `z.lazy` schema, and a clone
+        // created inside the declaration's own getter would recreate the declaration endlessly.
+        return (
+          (isCircularMember(member, memberZodSchema) ? `z.lazy(() => ${code})` : code) +
+          getZodChain({
+            schema: getTupleMemberSchemaObject(member, resolver),
+            meta: { ...meta, isRequired: true },
+            options: resolver.options,
+          })
+        );
+      };
+      const items = tuple.items.map(
+        (item, index) => getMemberSchema(item) + (index >= (schema.minItems ?? 0) ? ".optional()" : ""),
+      );
+      const restSchema = typeof tuple.rest === "object" ? getMemberSchema(tuple.rest) : UNKNOWN_SCHEMA;
+      const rest = tuple.rest === false ? "" : `.rest(${restSchema})`;
       return zodSchema.assign(`z.tuple([${items.join(", ")}])${rest}${readonly}`);
     }
-    if (schema.items) {
+    if (schema.items && typeof schema.items === "object") {
       return zodSchema.assign(
         `z.array(${getZodSchema({ ...params, schema: schema.items }).getCodeString(tag, resolver.options)}${getZodChain(
           {
@@ -109,10 +134,15 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag }: Get
       );
     }
 
-    return zodSchema.assign(`z.array(${ANY_SCHEMA})${readonly}`);
+    return zodSchema.assign(`z.array(${UNKNOWN_SCHEMA})${readonly}`);
   }
 
   const schemaType = schema.type ? (schema.type.toLowerCase() as NonNullable<typeof schema.type>) : undefined;
+  // An explicit `null` type ignores object keywords (`properties`, ...), which do not apply to null.
+  if ((schemaType as unknown) === "null") {
+    return zodSchema.assign("z.null()");
+  }
+
   if (schemaType === "object" || schema.properties || schema.additionalProperties) {
     const hasRequiredArray = schema.required && schema.required.length > 0;
     const isPartial = resolver.options.withImplicitRequiredProps
@@ -151,17 +181,7 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag }: Get
             options: resolver.options,
           });
 
-        let isCircular = false;
-        const parentRef = getParentRef(inheritedMeta);
-        if (parentRef) {
-          const refs = [
-            ...(isReferenceObject(propSchema) ? [propSchema.$ref] : []),
-            ...getSchemaRefs(zodSchema, { skipObjectSchema: true }),
-          ];
-          isCircular = refs.some((ref) => resolver.dependencyGraph.deepDependencyGraph[ref]?.has(parentRef));
-        }
-
-        return [prop, propZodSchema, isCircular];
+        return [prop, propZodSchema, isCircularMember(propSchema, zodSchema)];
       });
 
       properties = `{ ${propsMap
@@ -175,15 +195,21 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag }: Get
 
     let additionalPropsSchema = "";
     if (schema.additionalProperties) {
-      const additionalPropsZodSchema =
-        typeof schema.additionalProperties === "object" && Object.keys(schema.additionalProperties).length > 0
-          ? getZodSchema({ ...params, schema: schema.additionalProperties }).getCodeString(tag, resolver.options) +
-            getZodChain({
-              schema: schema.additionalProperties as OpenAPIV3.SchemaObject,
-              meta: { ...meta, isRequired: true },
-              options: resolver.options,
-            })
-          : ANY_SCHEMA;
+      let additionalPropsZodSchema: string = UNKNOWN_SCHEMA;
+      if (typeof schema.additionalProperties === "object" && Object.keys(schema.additionalProperties).length > 0) {
+        const additionalProperties = schema.additionalProperties;
+        const additionalZodSchema = getZodSchema({ ...params, schema: additionalProperties });
+        additionalPropsZodSchema =
+          additionalZodSchema.getCodeString(tag, resolver.options) +
+          getZodChain({
+            schema: additionalProperties as OpenAPIV3.SchemaObject,
+            meta: { ...meta, isRequired: true },
+            options: resolver.options,
+          });
+        if (isCircularMember(additionalProperties, additionalZodSchema)) {
+          additionalPropsZodSchema = `z.lazy(() => ${additionalPropsZodSchema})`;
+        }
+      }
       additionalPropsSchema = `.catchall(${additionalPropsZodSchema})`;
     }
 
@@ -194,11 +220,7 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag }: Get
   }
 
   if ((schemaType as unknown) === "any") {
-    return zodSchema.assign(ANY_SCHEMA);
-  }
-
-  if ((schemaType as unknown) === "null") {
-    return zodSchema.assign("z.null()");
+    return zodSchema.assign(UNKNOWN_SCHEMA);
   }
 
   if (!schemaType) {
@@ -206,6 +228,22 @@ export function getZodSchema({ schema, resolver, meta: inheritedMeta, tag }: Get
   }
 
   throw new Error(`Unsupported schema type: ${schemaType}`);
+}
+
+/** The schema a tuple member's chain is built from: the referenced schema for a `$ref` member. */
+export function getTupleMemberSchemaObject(
+  member: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject,
+  resolver: SchemaResolver,
+): OpenAPIV3.SchemaObject {
+  if (!isReferenceObject(member)) {
+    return member;
+  }
+  // `resolveObject` is also implemented by the native-extraction resolver (hybrid rendering).
+  const resolved = resolver.resolveObject<OpenAPIV3.SchemaObject | undefined>(member);
+  if (!resolved) {
+    throw new Error(`Schema ${member.$ref} not found`);
+  }
+  return resolved;
 }
 
 type GetPartialZodSchemaParams = GetZodSchemaParams & { zodSchema: ZodSchema };
@@ -279,17 +317,20 @@ function getArrayZodSchema({ schema, zodSchema, resolver, meta, tag }: GetPartia
     return;
   }
 
-  if (schema.type.length === 1) {
-    return getZodSchema({ schema: { ...schema, type: schema.type[0]! }, resolver, meta, tag });
+  // A `null` member makes the schema of the other members nullable (`type: ["object", "null"]`);
+  // its other keywords (`properties`, `items`, ...) only describe the non-null members, so a
+  // null-only type array (`type: ["null"]`) is `z.null()` whatever keywords it has.
+  const types = schema.type.filter((type) => (type as string) !== "null");
+  const nullable = types.length < schema.type.length ? ".nullable()" : "";
+  if (types.length === 0) {
+    return zodSchema.assign("z.null()");
   }
-
-  return zodSchema.assign(
-    `z.union([${schema.type
-      .map((prop) =>
-        getZodSchema({ schema: { ...schema, type: prop }, resolver, meta, tag }).getCodeString(tag, resolver.options),
-      )
-      .join(", ")}])`,
+  // The code is assigned to this schema (not the single-type variant), so naming by complexity
+  // sees the type array, like native/src/endpoints.rs.
+  const codes = types.map((type) =>
+    getZodSchema({ schema: { ...schema, type }, resolver, meta, tag }).getCodeString(tag, resolver.options),
   );
+  return zodSchema.assign(`${codes.length === 1 ? codes[0] : `z.union([${codes.join(", ")}])`}${nullable}`);
 }
 
 function getAnyOfZodSchema({ schema, zodSchema, resolver, meta, tag }: GetPartialZodSchemaParams) {
@@ -335,10 +376,28 @@ function getAllOfZodSchema({ schema, zodSchema, resolver, meta, tag }: GetPartia
   const first = types.at(0)!;
   const rest = types
     .slice(1)
-    .map((type) => `...${type.getCodeString(tag, resolver.options)}.shape`)
+    .map((type) => `...${getObjectShapeCode(type.getCodeString(tag, resolver.options), resolver.options.allReadonly)}`)
     .join(", ");
+  const readonly = resolver.options.allReadonly ? ".readonly()" : "";
 
-  return zodSchema.assign(`z.object({ ...${first.getCodeString(tag, resolver.options)}.shape, ${rest} })`);
+  return zodSchema.assign(
+    `z.object({ ...${getObjectShapeCode(first.getCodeString(tag, resolver.options), resolver.options.allReadonly)}, ${rest} })${readonly}`,
+  );
+}
+
+const READONLY_SUFFIX = ".readonly()";
+
+/**
+ * The `shape` of an allOf member object schema. With `allReadonly` object schemas are wrapped in
+ * `.readonly()`, which has no `shape`: inline members are merged before being made readonly, and
+ * referenced members are unwrapped. The merged object is made readonly instead.
+ * Mirrored by `object_shape_code` in native/src/zod.rs.
+ */
+function getObjectShapeCode(code: string, allReadonly: boolean | undefined) {
+  if (!allReadonly) {
+    return `${code}.shape`;
+  }
+  return code.endsWith(READONLY_SUFFIX) ? `${code.slice(0, -READONLY_SUFFIX.length)}.shape` : `${code}.unwrap().shape`;
 }
 
 function getPrimitiveZodSchema({ schema, zodSchema, resolver, meta, tag }: GetPartialZodSchemaParams) {
@@ -443,9 +502,14 @@ function getEnumZodSchema({ resolver, schema, zodSchema, meta, tag }: GetPartial
 
 export function getEnumZodSchemaCode(schema: OpenAPIV3.SchemaObject) {
   const values = schema.enum?.filter((value) => value !== null) ?? [];
-  return `${ENUM_SCHEMA}([${values.map((value) => `"${value}"`).join(", ")}])`;
+  return `${ENUM_SCHEMA}([${values.map(toStringLiteral).join(", ")}])`;
 }
 
 export function getEnumZodSchemaCodeFromEnumNames(enumNames: string[]) {
-  return `${ENUM_SCHEMA}([${enumNames.map((value) => `"${value}"`).join(", ")}])`;
+  return `${ENUM_SCHEMA}([${enumNames.map(toStringLiteral).join(", ")}])`;
+}
+
+/** A double-quoted, escaped TypeScript string literal of the value's text (matches the native renderer). */
+function toStringLiteral(value: unknown) {
+  return JSON.stringify(typeof value === "string" ? value : String(value));
 }

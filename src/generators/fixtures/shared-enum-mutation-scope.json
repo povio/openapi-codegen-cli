@@ -8,9 +8,7 @@
     "/tracking/{provider}": {
       "delete": {
         "operationId": "cancelProviderTracking",
-        "tags": [
-          "Position Tracking"
-        ],
+        "tags": ["Position Tracking"],
         "parameters": [
           {
             "name": "provider",
@@ -31,9 +29,7 @@
     "/other/{provider}": {
       "delete": {
         "operationId": "cancelOther",
-        "tags": [
-          "Other"
-        ],
+        "tags": ["Other"],
         "parameters": [
           {
             "name": "provider",
@@ -56,10 +52,7 @@
     "schemas": {
       "Provider": {
         "type": "string",
-        "enum": [
-          "alpha",
-          "beta"
-        ]
+        "enum": ["alpha", "beta"]
       }
     }
   }

@@ -67,20 +67,22 @@ export const isPrimitiveType = (type: SingleType | undefined): type is Primitive
   PRIMITIVE_TYPE_LIST.includes(type as string);
 
 export function escapeControlCharacters(str: string): string {
-  return str
-    .replace(/\t/g, "\\t") // U+0009
-    .replace(/\n/g, "\\n") // U+000A
-    .replace(/\r/g, "\\r") // U+000D
-    .replace(/([\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F\uFFFE\uFFFF])/g, (_m, p1) => {
-      const dec: number = p1.codePointAt();
-      const hex: string = dec.toString(16);
-      if (dec <= 0xff) return `\\x${`00${hex}`.slice(-2)}`;
-      return `\\u${`0000${hex}`.slice(-4)}`;
-    })
-    // A slash is already escaped only after an odd number of backslashes.
-    .replace(/(\\*)\//g, (_match, backslashes: string) =>
-      backslashes.length % 2 === 0 ? `${backslashes}\\/` : `${backslashes}/`,
-    );
+  return (
+    str
+      .replace(/\t/g, "\\t") // U+0009
+      .replace(/\n/g, "\\n") // U+000A
+      .replace(/\r/g, "\\r") // U+000D
+      .replace(/([\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F\uFFFE\uFFFF])/g, (_m, p1) => {
+        const dec: number = p1.codePointAt();
+        const hex: string = dec.toString(16);
+        if (dec <= 0xff) return `\\x${`00${hex}`.slice(-2)}`;
+        return `\\u${`0000${hex}`.slice(-4)}`;
+      })
+      // A slash is already escaped only after an odd number of backslashes.
+      .replace(/(\\*)\//g, (_match, backslashes: string) =>
+        backslashes.length % 2 === 0 ? `${backslashes}\\/` : `${backslashes}/`,
+      )
+  );
 }
 
 export const toBoolean = (value: undefined | string | boolean, defaultValue: boolean) => {

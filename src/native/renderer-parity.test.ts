@@ -49,6 +49,41 @@ describe("renderer naming parity", () => {
     expect(expected.some(({ content }) => content.includes("z.tuple([z.string(), z.string()])"))).toBe(true);
     expect(generateFilesFromNativeOpenAPI(JSON.stringify(document), false, options)).toEqual(expected);
   });
+  test("inlines a $ref to a simple component, keeping blob downloads", () => {
+    const document = {
+      openapi: "3.1.0",
+      info: { title: "Simple refs", version: "1" },
+      paths: {
+        "/example": {
+          get: {
+            operationId: "getExample",
+            tags: ["Examples"],
+            responses: {
+              "200": {
+                description: "OK",
+                content: { "application/json": { schema: { $ref: "#/components/schemas/Example" } } },
+              },
+            },
+          },
+        },
+      },
+      components: { schemas: { Example: { type: "string", format: "binary" } } },
+    } as unknown as OpenAPIV3.Document;
+    for (const tsNamespaces of [true, false]) {
+      const options = resolveConfig({
+        params: {},
+        fileConfig: { splitByTags: true, tsNamespaces, acl: false, restClientImportPath: "@test/app-rest-client" },
+      });
+      const expected = generateCodeFromOpenAPIDoc(document, options);
+      const api = expected.find(({ fileName }) => fileName.endsWith("examples.api.ts"))!;
+      expect(api.content).toContain("{ resSchema: z.instanceof(Blob) }");
+      expect(api.content).toContain('responseType: "blob"');
+      expect(expected.find(({ fileName }) => fileName.endsWith("examples.models.ts"))?.content).toContain(
+        "ExampleSchema = z.instanceof(Blob)",
+      );
+      expect(generateFilesFromNativeOpenAPI(JSON.stringify(document), false, options)).toEqual(expected);
+    }
+  });
   test("keeps controller names when multiple operations reduce to a reserved word", () => {
     const document: OpenAPIV3.Document = {
       openapi: "3.0.3",

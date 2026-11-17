@@ -166,6 +166,11 @@ class NativeSchemaResolver {
     return value as T;
   }
 
+  // Like `SchemaResolver.getSchemaByRef`, for the TypeScript renderers used with native extraction.
+  getSchemaByRef(ref: string) {
+    return this.resolveRef(ref) as OpenAPIV3.SchemaObject;
+  }
+
   getBaseUrl() {
     return this.nativeData.baseUrl;
   }

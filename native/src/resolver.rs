@@ -71,7 +71,6 @@ pub struct IndexedOperation<'a> {
 
 pub struct Resolver<'a> {
     pub operations: Vec<IndexedOperation<'a>>,
-    pub direct_dependencies: HashMap<String, HashSet<String>>,
     pub deep_dependencies: HashMap<String, HashSet<String>>,
     pub schema_tags: HashMap<String, HashSet<String>>,
     pub topology_order: Vec<String>,
@@ -86,13 +85,9 @@ impl<'a> Resolver<'a> {
         let ordered_deep_dependencies = ordered_transitive_graph(&ordered_dependencies);
         let after_deep = started.elapsed();
         let topology_order = ordered_topology(&ordered_deep_dependencies);
-        let direct_dependencies = ordered_dependencies
-            .iter()
-            .map(|(root, dependencies)| (root.clone(), dependencies.iter().cloned().collect()))
-            .collect();
         let deep_dependencies = ordered_deep_dependencies
-            .iter()
-            .map(|(root, dependencies)| (root.clone(), dependencies.iter().cloned().collect()))
+            .into_iter()
+            .map(|(root, dependencies)| (root, dependencies.into_iter().collect()))
             .collect();
         let mut operations = index_operations(document, options)?;
         assign_unique_names(&mut operations, options);
@@ -131,7 +126,6 @@ impl<'a> Resolver<'a> {
         }
         Ok(Self {
             operations,
-            direct_dependencies,
             deep_dependencies,
             schema_tags,
             topology_order,
@@ -152,7 +146,7 @@ impl<'a> Resolver<'a> {
                 .pointer("/components/schemas")
                 .and_then(Value::as_object)
                 .map_or(0, Map::len),
-            direct_schema_edges: self.direct_dependencies.values().map(HashSet::len).sum(),
+            direct_schema_edges: self.ordered_dependencies.values().map(Vec::len).sum(),
             deep_schema_edges: self.deep_dependencies.values().map(HashSet::len).sum(),
             schema_tags: self.schema_tags.values().map(HashSet::len).sum(),
         }
@@ -170,15 +164,18 @@ fn collect_ordered_dependencies(
         return IndexMap::default();
     };
     let mut enum_ref_by_values: IndexMap<String, String> = IndexMap::default();
-    for (name, schema) in schemas {
-        if let Some(values) = schema.get("enum").and_then(Value::as_array) {
-            enum_ref_by_values
-                .entry(Value::Array(values.clone()).to_string())
-                .or_insert_with(|| format!("#/components/schemas/{name}"));
+    if extract_enums {
+        for (name, schema) in schemas {
+            // Keyed by the rendered code, which leaves out `null`, as the TypeScript resolver compares enums.
+            if let Some(code) = crate::zod::enum_code(schema) {
+                enum_ref_by_values
+                    .entry(code)
+                    .or_insert_with(|| format!("#/components/schemas/{name}"));
+            }
         }
     }
     let mut direct: IndexMap<String, Vec<String>> = IndexMap::default();
-    let mut inline_enum_values_by_parent: IndexMap<String, HashSet<String>> = IndexMap::default();
+    let mut parents_by_inline_enum: HashMap<String, Vec<String>> = HashMap::default();
     for (name, schema) in schemas {
         let root = format!("#/components/schemas/{name}");
         let mut dependencies = Vec::new();
@@ -190,12 +187,17 @@ fn collect_ordered_dependencies(
         if extract_enums {
             let mut inline_values = HashSet::default();
             if let Some(object) = schema.as_object() {
-                for value in object.values() {
-                    collect_inline_enum_values(value, &mut inline_values);
+                for (key, value) in object {
+                    if !crate::zod::is_stray_array_keyword(object, key) {
+                        collect_inline_enum_values(value, &mut inline_values);
+                    }
                 }
             }
-            if !inline_values.is_empty() {
-                inline_enum_values_by_parent.insert(root, inline_values);
+            for values in inline_values {
+                parents_by_inline_enum
+                    .entry(values)
+                    .or_default()
+                    .push(root.clone());
             }
         }
     }
@@ -204,15 +206,17 @@ fn collect_ordered_dependencies(
     // first, then their parent schemas in document order.
     if extract_enums {
         for (enum_values, enum_reference) in &enum_ref_by_values {
-            for (parent_reference, inline_values) in &inline_enum_values_by_parent {
+            for parent_reference in parents_by_inline_enum
+                .get(enum_values)
+                .into_iter()
+                .flatten()
+            {
                 if parent_reference == enum_reference {
                     continue;
                 }
-                if inline_values.contains(enum_values) {
-                    let dependencies = direct.entry(parent_reference.clone()).or_default();
-                    if !dependencies.contains(enum_reference) {
-                        dependencies.push(enum_reference.clone());
-                    }
+                let dependencies = direct.entry(parent_reference.clone()).or_default();
+                if !dependencies.contains(enum_reference) {
+                    dependencies.push(enum_reference.clone());
                 }
             }
         }
@@ -228,85 +232,99 @@ fn collect_inline_enum_values(value: &Value, values: &mut HashSet<String>) {
             }
         }
         Value::Object(object) => {
-            if let Some(enum_values) = object.get("enum").and_then(Value::as_array) {
-                values.insert(Value::Array(enum_values.clone()).to_string());
+            if let Some(code) = crate::zod::enum_code(value) {
+                values.insert(code);
             }
-            for value in object.values() {
-                collect_inline_enum_values(value, values);
+            for (key, value) in object {
+                if !crate::zod::is_stray_array_keyword(object, key) {
+                    collect_inline_enum_values(value, values);
+                }
             }
         }
         _ => {}
     }
 }
 
+// Intern references once per compilation. DFS uses dense integer adjacency and
+// generation marks instead of allocating/hashing a string set for every root.
 fn ordered_transitive_graph(
     direct: &IndexMap<String, Vec<String>>,
 ) -> IndexMap<String, Vec<String>> {
-    let mut deep: IndexMap<String, Vec<String>> = IndexMap::default();
+    let mut ids: IndexMap<&str, usize> = IndexMap::default();
     for root in direct.keys() {
-        let mut dependencies = Vec::new();
-        let mut visited = HashSet::default();
-        visit_ordered_dependencies(root, root, &direct, &mut dependencies, &mut visited);
-        deep.insert(root.clone(), dependencies);
+        let next = ids.len();
+        ids.insert(root, next);
+    }
+    for children in direct.values() {
+        for child in children {
+            let next = ids.len();
+            ids.entry(child).or_insert(next);
+        }
+    }
+    let mut adjacency = vec![Vec::new(); ids.len()];
+    for (root, children) in direct {
+        adjacency[ids[root.as_str()]] = children.iter().map(|child| ids[child.as_str()]).collect();
+    }
+    let names: Vec<&str> = ids.keys().copied().collect();
+    let mut marks = vec![0; ids.len()];
+    let mut output = Vec::new();
+    let mut deep = IndexMap::default();
+    for (root_id, root) in direct.keys().enumerate() {
+        output.clear();
+        visit_dependency_ids(root_id, root_id, &adjacency, &mut marks, &mut output);
+        deep.insert(
+            root.clone(),
+            output.iter().map(|&id| names[id].to_string()).collect(),
+        );
     }
     deep
+}
+
+fn visit_dependency_ids(
+    current: usize,
+    root: usize,
+    adjacency: &[Vec<usize>],
+    marks: &mut [usize],
+    output: &mut Vec<usize>,
+) {
+    let generation = root + 1;
+    for &child in &adjacency[current] {
+        if marks[child] != generation {
+            marks[child] = generation;
+            output.push(child);
+            if child != root {
+                visit_dependency_ids(child, root, adjacency, marks, output);
+            }
+        }
+    }
 }
 
 fn ordered_topology(deep: &IndexMap<String, Vec<String>>) -> Vec<String> {
     let mut sorted = Vec::new();
     let mut visited = HashSet::default();
     for root in deep.keys() {
-        visit_topology(
-            root,
-            &deep,
-            &mut sorted,
-            &mut visited,
-            &mut HashSet::default(),
-        );
+        visit_topology(root, deep, &mut sorted, &mut visited);
     }
     sorted
 }
 
-fn visit_ordered_dependencies(
-    current: &str,
-    root: &str,
-    direct: &IndexMap<String, Vec<String>>,
-    output: &mut Vec<String>,
-    visited: &mut HashSet<String>,
-) {
-    let Some(children) = direct.get(current) else {
-        return;
-    };
-    for child in children {
-        if visited.insert(child.clone()) {
-            output.push(child.clone());
-            if child != root {
-                visit_ordered_dependencies(child, root, direct, output, visited);
-            }
-        }
-    }
-}
-
-fn visit_topology(
-    name: &str,
-    graph: &IndexMap<String, Vec<String>>,
+fn visit_topology<'a>(
+    name: &'a str,
+    graph: &'a IndexMap<String, Vec<String>>,
     sorted: &mut Vec<String>,
-    visited: &mut HashSet<String>,
-    ancestors: &mut HashSet<String>,
+    visited: &mut HashSet<&'a str>,
 ) {
-    ancestors.insert(name.to_string());
-    visited.insert(name.to_string());
+    // Visiting a node marks it before descending, covering both shared dependencies
+    // and cycle ancestors without a second membership scan over the output.
+    if !visited.insert(name) {
+        return;
+    }
     if let Some(children) = graph.get(name) {
         for child in children {
-            if !ancestors.contains(child) && !visited.contains(child) {
-                visit_topology(child, graph, sorted, visited, ancestors);
-            }
+            visit_topology(child, graph, sorted, visited);
         }
     }
-    ancestors.remove(name);
-    if !sorted.iter().any(|value| value == name) {
-        sorted.push(name.to_string());
-    }
+    sorted.push(name.to_string());
 }
 
 fn collect_ordered_refs(value: &Value, refs: &mut Vec<String>, seen: &mut HashSet<String>) {
@@ -338,8 +356,9 @@ fn collect_ordered_refs(value: &Value, refs: &mut Vec<String>, seen: &mut HashSe
     {
         collect_ordered_refs(additional, refs, seen);
     }
-    if object.get("type").and_then(Value::as_str) == Some("array") {
-        if let Some(items) = object.get("items") {
+    // Every member of a type array (`type: ["array", "string", "null"]`) is traversed.
+    if crate::zod::object_has_schema_type(object, "array") {
+        for items in crate::zod::array_item_schemas(object) {
             collect_ordered_refs(items, refs, seen);
         }
     }
@@ -400,8 +419,10 @@ fn collect_duplicate_enum_tags(
                     }
                 }
             }
-            for child in object.values() {
-                collect_duplicate_enum_tags(child, enum_ref_by_code, tags, additions);
+            for (key, child) in object {
+                if !crate::zod::is_stray_array_keyword(object, key) {
+                    collect_duplicate_enum_tags(child, enum_ref_by_code, tags, additions);
+                }
             }
         }
         Value::Array(array) => {
@@ -662,8 +683,7 @@ fn collect_schema_tags(
         if let Some(responses) = operation.operation.get("responses") {
             collect_operation_schema_refs(document, responses, &mut refs, &mut HashSet::default());
         }
-        let roots: Vec<String> = refs.iter().cloned().collect();
-        for reference in roots {
+        for reference in refs {
             result
                 .entry(reference.clone())
                 .or_default()
@@ -702,8 +722,10 @@ fn collect_operation_schema_refs(
                 }
                 return;
             }
-            for child in object.values() {
-                collect_operation_schema_refs(document, child, refs, visited_components);
+            for (key, child) in object {
+                if !crate::zod::is_stray_array_keyword(object, key) {
+                    collect_operation_schema_refs(document, child, refs, visited_components);
+                }
             }
         }
         Value::Array(array) => {
@@ -834,4 +856,143 @@ fn remove_word(source: &str, word: &str) -> String {
         output.replace_range(start..end, "");
     }
     output
+}
+
+#[cfg(test)]
+mod dependency_tests {
+    use super::*;
+
+    fn reference(name: &str) -> String {
+        format!("#/components/schemas/{name}")
+    }
+
+    #[test]
+    fn dense_traversal_preserves_first_visit_order_and_cycle_membership() {
+        let graph: IndexMap<String, Vec<String>> = [
+            ("A", vec!["B", "C", "B"]),
+            ("B", vec!["A", "D"]),
+            ("Isolated", vec![]),
+            ("Self", vec!["Self"]),
+        ]
+        .into_iter()
+        .map(|(name, children)| {
+            (
+                name.to_string(),
+                children.into_iter().map(str::to_string).collect(),
+            )
+        })
+        .collect();
+        let deep = ordered_transitive_graph(&graph);
+        assert_eq!(deep["A"], ["B", "A", "D", "C"]);
+        assert_eq!(deep["B"], ["A", "B", "C", "D"]);
+        assert!(deep["Isolated"].is_empty());
+        assert_eq!(deep["Self"], ["Self"]);
+        assert!(!deep.contains_key("C"));
+    }
+
+    #[test]
+    fn enum_dependencies_keep_canonical_and_parent_order_and_deduplicate_edges() {
+        let document = serde_json::json!({ "components": { "schemas": {
+            "FirstB": { "type": "string", "enum": ["b", null] },
+            "SecondA": { "type": "string", "enum": ["a"] },
+            "DuplicateB": { "type": "string", "enum": ["b"] },
+            "ParentA": { "properties": { "value": { "enum": ["a"] } } },
+            "ParentB": { "properties": { "value": { "enum": ["b", null] } } },
+            "ParentBoth": { "properties": {
+                "reference": { "$ref": "#/components/schemas/FirstB" },
+                "sameReference": { "$ref": "#/components/schemas/FirstB" },
+                "first": { "enum": ["a"] },
+                "second": { "enum": ["b"] },
+                "repeated": { "enum": ["b"] }
+            } }
+        } } });
+        let graph = collect_ordered_dependencies(&document, true);
+        assert_eq!(
+            graph.keys().cloned().collect::<Vec<_>>(),
+            ["ParentBoth", "ParentB", "ParentA"].map(reference)
+        );
+        assert_eq!(
+            graph[&reference("ParentBoth")],
+            ["FirstB", "SecondA"].map(reference)
+        );
+        assert_eq!(graph[&reference("ParentB")], [reference("FirstB")]);
+        assert_eq!(graph[&reference("ParentA")], [reference("SecondA")]);
+        let without_extraction = collect_ordered_dependencies(&document, false);
+        assert_eq!(
+            without_extraction.keys().cloned().collect::<Vec<_>>(),
+            [reference("ParentBoth")]
+        );
+        assert_eq!(
+            without_extraction[&reference("ParentBoth")],
+            [reference("FirstB")]
+        );
+    }
+
+    #[test]
+    fn topology_keeps_depth_first_order_for_cycles_shared_and_disconnected_nodes() {
+        let graph: IndexMap<String, Vec<String>> = [
+            ("Root", vec!["CycleA", "Leaf", "CycleA"]),
+            ("CycleA", vec!["CycleB"]),
+            ("CycleB", vec!["CycleA", "Leaf"]),
+            ("Other", vec!["OtherLeaf"]),
+            ("Self", vec!["Self"]),
+            ("Isolated", vec![]),
+        ]
+        .into_iter()
+        .map(|(name, children)| {
+            (
+                name.to_string(),
+                children.into_iter().map(str::to_string).collect(),
+            )
+        })
+        .collect();
+        assert_eq!(
+            ordered_topology(&graph),
+            [
+                "Leaf",
+                "CycleB",
+                "CycleA",
+                "Root",
+                "OtherLeaf",
+                "Other",
+                "Self",
+                "Isolated"
+            ]
+        );
+        assert_eq!(
+            ordered_topology(&ordered_transitive_graph(&graph)),
+            ordered_topology(&graph)
+        );
+    }
+
+    #[test]
+    fn stats_count_unique_direct_edges_without_a_duplicate_graph() {
+        let document = serde_json::json!({
+            "paths": { "/parent": { "get": {
+                "operationId": "getParent", "tags": ["Items"],
+                "responses": { "200": { "description": "OK", "content": {
+                    "application/json": { "schema": { "$ref": "#/components/schemas/Parent" } }
+                } } }
+            } } },
+            "components": { "schemas": {
+                "Enum": { "enum": ["value"] },
+                "Parent": { "properties": {
+                    "first": { "$ref": "#/components/schemas/Leaf" },
+                    "second": { "$ref": "#/components/schemas/Leaf" },
+                    "choice": { "enum": ["value"] },
+                    "choiceAgain": { "enum": ["value"] }
+                } },
+                "Leaf": { "properties": { "parent": { "$ref": "#/components/schemas/Parent" } } }
+            } }
+        });
+        let options: GenerateOptions = serde_json::from_value(serde_json::json!({})).unwrap();
+        let resolver = Resolver::new(&document, &options).unwrap();
+        let stats = resolver.stats(&document);
+        assert_eq!(stats.operations, 1);
+        assert_eq!(stats.operation_tags, 1);
+        assert_eq!(stats.schemas, 3);
+        assert_eq!(stats.direct_schema_edges, 3);
+        assert_eq!(stats.deep_schema_edges, 6);
+        assert_eq!(stats.schema_tags, 3);
+    }
 }

@@ -12,7 +12,8 @@ codegen-units = 1
 lto = "fat"
 opt-level = 3
 panic = "abort"
-strip = "symbols"
+# Stripped dylibs fail to load on recent macOS ("mis-aligned LINKEDIT string pool").
+strip = false
 
 [profile.dev]
 opt-level = 2
@@ -25,8 +26,8 @@ serde_json = { version = "1", features = ["preserve_order"] }
 serde_yaml = "0.9"
 regex = "1"
 indexmap = { version = "2", features = ["serde"] }
-mimalloc = { version = "0.1", default-features = false }
 rustc-hash = "2"
+rayon = "1.12"
 
 [build-dependencies]
 napi-build = "2"

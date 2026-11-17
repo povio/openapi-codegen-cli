@@ -2,6 +2,7 @@ import { GenerateFileData, GenerateType } from "@/generators/types/generate";
 import { GenerateOptions } from "@/generators/types/options";
 import { getOutputFileName } from "@/generators/utils/file.utils";
 import { getTagFileName } from "@/generators/utils/generate/generate.utils";
+import { trimTrailingWhitespace } from "@/generators/utils/string.utils";
 
 import { compileNativeData } from "./native-bindings";
 
@@ -80,17 +81,11 @@ export function generateFilesFromNativeOpenAPI(
     }
   }
 
-  return files;
+  return files.map((file) => ({ ...file, content: trimTrailingWhitespace(file.content) }));
 }
 
 export function supportsCompleteNativeRender(options: GenerateOptions) {
-  return (
-    options.splitByTags &&
-    ((options.modelsInCommon && options.tsNamespaces) || (!options.modelsInCommon && !options.tsNamespaces)) &&
-    !options.inlineEndpoints &&
-    !options.builderConfigs &&
-    (options.workspaceContext?.length ?? 0) === 0
-  );
+  return options.splitByTags && !options.inlineEndpoints && (options.workspaceContext?.length ?? 0) === 0;
 }
 
 function taggedFile(options: GenerateOptions, tag: string, type: GenerateType, content: string) {

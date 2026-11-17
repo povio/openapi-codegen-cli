@@ -1,15 +1,25 @@
 import { OpenAPIV3 } from "openapi-types";
 
-import { Endpoint, ExtendedEndpoint } from "@/generators/types/endpoint";
+import { Endpoint, EndpointParameter, ExtendedEndpoint } from "@/generators/types/endpoint";
 import { GenerateOptions } from "@/generators/types/options";
+
+/**
+ * Whether a function parameter for `param` is required. A request body, query, header or cookie
+ * parameter is optional unless `required` is `true` (the OpenAPI default is `false`); path
+ * parameters are always required.
+ */
+export const isEndpointParameterRequired = (param: Pick<EndpointParameter, "parameterObject" | "bodyObject">) => {
+  if (param.bodyObject) return param.bodyObject.required ?? false;
+  if (!param.parameterObject) return true;
+  return param.parameterObject.in === "path" || (param.parameterObject.required ?? false);
+};
 
 export const isGetEndpoint = (endpoint: Endpoint) => endpoint.method === OpenAPIV3.HttpMethods.GET;
 
+/** A page-number paginated GET endpoint (see `isCursorPaginatedGetEndpoint` for cursor pagination). */
 export const isPaginatedGetEndpoint = (endpoint: Endpoint, options: GenerateOptions) =>
   isGetEndpoint(endpoint) &&
-  Object.values(options.infiniteQueryParamNames).every((infiniteQueryParam) =>
-    endpoint.parameters.some((param) => param.name === infiniteQueryParam && param.type === "Query"),
-  );
+  endpoint.parameters.some((param) => param.name === options.infiniteQueryParamNames.page && param.type === "Query");
 
 export const isReadAllEndpoint = (endpoint: ExtendedEndpoint, options: GenerateOptions) =>
   endpoint.method === OpenAPIV3.HttpMethods.GET &&

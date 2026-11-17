@@ -327,8 +327,8 @@ describe("getMetadataFromOpenAPIDoc", () => {
       isMutation: true,
       params: [
         { name: "petId", type: "number", isRequired: true, metaType: "primitive" },
-        { name: "name", type: "string", isRequired: true, metaType: "primitive" },
-        { name: "status", type: "string", isRequired: true, metaType: "primitive" },
+        { name: "name", type: "string", isRequired: false, metaType: "primitive" },
+        { name: "status", type: "string", isRequired: false, metaType: "primitive" },
       ],
       response: { type: "void", metaType: "primitive" },
     },
@@ -352,7 +352,7 @@ describe("getMetadataFromOpenAPIDoc", () => {
       isMutation: true,
       params: [
         { name: "petId", type: "number", isRequired: true, metaType: "primitive" },
-        { name: "data", type: "string", isRequired: true, metaType: "primitive" },
+        { name: "data", type: "string", isRequired: false, metaType: "primitive" },
         { name: "additionalMetadata", type: "string", isRequired: false, metaType: "primitive" },
       ],
       response: { ...ApiResponse },
@@ -372,7 +372,7 @@ describe("getMetadataFromOpenAPIDoc", () => {
       namespace: "StoreQueries",
       isQuery: false,
       isMutation: true,
-      params: [{ name: "data", isRequired: true, ...Order }],
+      params: [{ name: "data", isRequired: false, ...Order }],
       response: { ...Order },
     },
     {
@@ -399,7 +399,7 @@ describe("getMetadataFromOpenAPIDoc", () => {
       namespace: "UserQueries",
       isQuery: false,
       isMutation: true,
-      params: [{ name: "data", isRequired: true, ...User }],
+      params: [{ name: "data", isRequired: false, ...User }],
       response: { ...User },
     },
     {
@@ -408,7 +408,7 @@ describe("getMetadataFromOpenAPIDoc", () => {
       namespace: "UserQueries",
       isQuery: false,
       isMutation: true,
-      params: [{ name: "data", isRequired: true, ...CreateWithListInputBody }],
+      params: [{ name: "data", isRequired: false, ...CreateWithListInputBody }],
       response: { ...User },
     },
     {
@@ -449,7 +449,7 @@ describe("getMetadataFromOpenAPIDoc", () => {
       isMutation: true,
       params: [
         { name: "username", type: "string", isRequired: true, metaType: "primitive" },
-        { name: "data", isRequired: true, ...User },
+        { name: "data", isRequired: false, ...User },
       ],
       response: { type: "void", metaType: "primitive" },
     },

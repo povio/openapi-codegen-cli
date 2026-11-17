@@ -42,21 +42,32 @@ for (const fixture of parityFixtures) {
   });
 }
 
-test("canonical layouts retain full native rendering and local namespaces use native hybrid", () => {
+test("every namespace and model layout renders fully native", () => {
   vi.stubEnv("OPENAPI_CODEGEN_NATIVE", "1");
   const source = readParityFixture(parityFixtures[0]);
-  for (const [tsNamespaces, modelsInCommon] of [
-    [true, true],
-    [false, false],
-  ]) {
-    expect(renderParityCase(source, { name: "full", options: { tsNamespaces, modelsInCommon } }, "native").route).toBe(
-      "full-native",
-    );
+  for (const tsNamespaces of [true, false]) {
+    for (const modelsInCommon of [true, false]) {
+      expect(
+        renderParityCase(source, { name: "full", options: { tsNamespaces, modelsInCommon } }, "native").route,
+      ).toBe("full-native");
+    }
   }
-  expect(
-    renderParityCase(source, { name: "hybrid", options: { tsNamespaces: true, modelsInCommon: false } }, "native")
-      .route,
-  ).toBe("hybrid-native");
+});
+
+// Unsplit output renders the natively extracted data with the TypeScript generators, whose
+// resolver calls (circular explicit types, recursive tuples, ...) the native resolver must support.
+test.each([false, true])("unsplit regressions render through the hybrid route (allReadonly=%s)", (allReadonly) => {
+  vi.stubEnv("OPENAPI_CODEGEN_NATIVE", "1");
+  const source = readParityFixture(parityFixtures.find((fixture) => fixture.name === "renderer-regressions")!);
+  for (const lazySchemas of [false, true]) {
+    const scenario = { name: "unsplit", options: { splitByTags: false, tsNamespaces: true, lazySchemas, allReadonly } };
+    const expected = renderParityCase(source, scenario, "js");
+    const actual = renderParityCase(source, scenario, "native");
+    expect(actual.route).toBe("hybrid-native");
+    const contents = (files: typeof actual.files) => Object.fromEntries(files.map((f) => [f.fileName, f.content]));
+    expect(contents(actual.files)).toEqual(contents(expected.files));
+    expect(contents(actual.files)["generated/common/common.models.ts"]).toContain("LiteralTreeDtoSchema");
+  }
 });
 
 test("mutation scope include/exclude examples exercise the selected path mutation", () => {
@@ -133,4 +144,59 @@ test.each([false, true])("Petstore empty shared model scenario is active with mo
       expect(result.files.find((file) => file.fileName.endsWith("health.api.ts"))?.content).toContain("/health");
     }
   }
+});
+
+// A string property with a stray `items` object must not pull the unreferenced `AuditQueryDto.order`
+// enum (same values as the stray item's inline enum) into the Payments models. A component enum
+// sharing an extracted enum's name keeps that enum's tag and is still emitted where it is used.
+// (The collision is added here rather than to the fixture: with eager `modelsInModules` both
+// renderers emit the pulled-in enum after its use, which the fixture's typecheck rejects.)
+test.each([
+  { name: "default", options: {} },
+  {
+    name: "modules",
+    options: { modelsInModules: true, tsNamespaces: true, lazySchemas: true, replaceOptionalWithNullish: true },
+  },
+])("stray items and colliding enum names render identically ($name)", (scenario) => {
+  const document = parse(readParityFixture(parityFixtures.find((fixture) => fixture.name === "renderer-regressions")!));
+  // The unreferenced `BatchDto.incoterms` inline enum is extracted under the component enum's name.
+  document.paths["/routes"] = {
+    get: {
+      operationId: "RoutesController_get",
+      tags: ["Routes"],
+      responses: {
+        "200": {
+          description: "Route point",
+          content: { "application/json": { schema: { $ref: "#/components/schemas/RoutePointDto" } } },
+        },
+      },
+    },
+  };
+  Object.assign(document.components.schemas, {
+    IncotermsEnum: { type: "string", enum: ["EXW", "DDP"] },
+    RoutePointDto: {
+      type: "object",
+      properties: { incoterm: { nullable: true, allOf: [{ $ref: "#/components/schemas/IncotermsEnum" }] } },
+    },
+    BatchDto: { type: "object", properties: { incoterms: { type: "string", enum: ["DDP"] } } },
+  });
+  const source = stringify(document);
+  vi.stubEnv("OPENAPI_CODEGEN_NATIVE", "1");
+  const expected = renderParityCase(source, scenario, "js");
+  const actual = renderParityCase(source, scenario, "native");
+  expect(actual.route).toBe("full-native");
+  const file = (files: typeof actual.files, suffix: string) => files.find((f) => f.fileName.endsWith(suffix))!.content;
+  for (const files of [expected.files, actual.files]) {
+    const payments = file(files, "payments.models.ts");
+    expect(payments).not.toContain("OrderEnum");
+    expect(payments).not.toContain("CommonModels");
+    expect(payments).toContain("multipleOf(0.000001)");
+    expect(payments).toContain("gt(1e-7)");
+    const routes = file(files, "routes.models.ts");
+    expect(routes).toContain(
+      scenario.name === "modules" ? "IncotermsEnumSchema()" : "CommonModels.IncotermsEnumSchema",
+    );
+  }
+  const contents = (files: typeof actual.files) => Object.fromEntries(files.map((f) => [f.fileName, f.content]));
+  expect(contents(actual.files)).toEqual(contents(expected.files));
 });

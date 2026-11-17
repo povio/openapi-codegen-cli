@@ -9,6 +9,7 @@ import { compileNativeData } from "../native/native-bindings";
 
 import { DEFAULT_GENERATE_OPTIONS } from "./const/options.const";
 import { generateCodeFromOpenAPIDoc } from "./generateCodeFromOpenAPIDoc";
+import { trimTrailingWhitespace } from "./utils/string.utils";
 
 function fixture(withAcl: boolean): OpenAPIV3.Document {
   return {
@@ -53,12 +54,13 @@ describe("generated CASL 7 ACL", () => {
         const appAbility = files.find((file) => file.fileName.endsWith("app.ability.ts"));
         expect(appAbility).toBeDefined();
         expect(appAbility!.content).not.toContain("PureAbility");
-        if (nativeSource && withAcl) {
+        if (nativeSource) {
           const native = compileNativeData(source, false, JSON.stringify(options)).data as {
             renderedShared: Record<string, string>;
           };
           expect(native.renderedShared.appAcl).toContain("AppAbility = Ability<");
-          expect(appAbility!.content).toBe(native.renderedShared.appAcl);
+          // The public generation boundary trims trailing whitespace from every rendered file.
+          expect(appAbility!.content).toBe(trimTrailingWhitespace(native.renderedShared.appAcl));
         }
         const domainAcl = files.find((file) => file.fileName.endsWith(".acl.ts"));
         expect(Boolean(domainAcl)).toBe(withAcl);

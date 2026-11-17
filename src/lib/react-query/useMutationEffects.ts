@@ -2,7 +2,7 @@ import { useCallback, useEffect } from "react";
 
 import { QueryKey, useQueryClient } from "@tanstack/react-query";
 
-import { InvalidationMap, OpenApiQueryConfig, QueryModule } from "../config/queryConfig.context";
+import { InvalidationMap, InvalidationMapFunc, OpenApiQueryConfig, QueryModule } from "../config/queryConfig.context";
 import { broadcastQueryInvalidation, setupCrossTabListener } from "./cross-tab-invalidation";
 
 export interface MutationEffectsOptions<TQueryModule extends QueryModule = QueryModule> {
@@ -44,9 +44,10 @@ export function useMutationEffects<TQueryModule extends QueryModule = QueryModul
         keyA.length === keyB.length && keyA.every((item, index) => item === keyB[index]);
       const isQueryKeyPrefix = (queryKey: QueryKey, prefixKey: QueryKey) =>
         prefixKey.length <= queryKey.length && prefixKey.every((item, index) => item === queryKey[index]);
-      const mappedInvalidationKeys =
-        invalidationMap?.[currentModule]?.(data, variables) ??
-        config.invalidationMap?.[currentModule]?.(data, variables);
+      // Callbacks are typed per module; here the module is only known at runtime.
+      const invalidate: InvalidationMapFunc | undefined =
+        invalidationMap?.[currentModule] ?? config.invalidationMap?.[currentModule];
+      const mappedInvalidationKeys = invalidate?.(data, variables);
 
       const shouldInvalidateQuery = (queryKey: QueryKey) => {
         const isUpdateKey = updateKeys?.some((key) => isQueryKeyEqual(queryKey, key));

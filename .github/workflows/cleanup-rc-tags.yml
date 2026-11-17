@@ -4,11 +4,11 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to clean up (e.g. 3.2.0 or v3.2.0)'
+        description: "Version to clean up (e.g. 3.2.0 or v3.2.0)"
         required: true
         type: string
       dry_run:
-        description: 'Preview matching tags without deleting them'
+        description: "Preview matching tags without deleting them"
         required: true
         default: true
         type: boolean

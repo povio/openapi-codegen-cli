@@ -44,6 +44,7 @@ type NativeBindings = {
     optionsJson: string,
   ): {
     data: unknown;
+    cacheHit: boolean;
     elapsedMicros: number;
   };
   parseOpenapi(

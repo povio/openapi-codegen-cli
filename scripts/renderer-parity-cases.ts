@@ -9,6 +9,7 @@ export const parityFixtures = [
   { name: "petstore", file: "test/petstore.yaml" },
   { name: "configuration", file: "test/configuration.yaml" },
   { name: "petstore-health", file: "test/petstore.yaml", healthOnly: true },
+  { name: "renderer-regressions", file: "test/renderer-regressions.yaml" },
 ];
 
 export function readParityFixture(fixture: (typeof parityFixtures)[number]) {

@@ -2,7 +2,7 @@ import { OpenAPIV3 } from "openapi-types";
 
 import { CompositeType, PrimitiveType } from "@/generators/types/openapi";
 import { sum } from "@/generators/utils/math.utils";
-import { isReferenceObject } from "@/generators/utils/openapi-schema.utils";
+import { getTupleSchemaParts, isReferenceObject } from "@/generators/utils/openapi-schema.utils";
 import { isPrimitiveType } from "@/generators/utils/openapi.utils";
 
 export function getOpenAPISchemaComplexity(
@@ -60,7 +60,8 @@ export function getOpenAPISchemaComplexity(
     );
   }
 
-  if (!schema.type) {
+  // Object keywords do not apply to `null` (see getZodSchema).
+  if (!schema.type || (schema.type as string) === "null") {
     return current;
   }
 
@@ -78,6 +79,15 @@ export function getOpenAPISchemaComplexity(
   }
 
   if (schema.type === "array") {
+    const tuple = getTupleSchemaParts(schema);
+    if (tuple) {
+      const rest = typeof tuple.rest === "object" ? [tuple.rest] : [];
+      return (
+        current +
+        complexityByComposite("array") +
+        sum([...tuple.items, ...rest].map((item) => getOpenAPISchemaComplexity(0, item)))
+      );
+    }
     if (schema.items) {
       return complexityByComposite("array") + getOpenAPISchemaComplexity(current, schema.items);
     }

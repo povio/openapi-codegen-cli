@@ -1,17 +1,26 @@
+mod cache;
 mod config;
 mod endpoints;
 mod engine;
 mod openapi;
 mod render;
+mod render_pool;
 mod resolver;
 mod zod;
 
+use napi::Env;
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use serde_json::Value;
 
-#[global_allocator]
-static ALLOCATOR: mimalloc::MiMalloc = mimalloc::MiMalloc;
+// Use the system allocator: this addon can unload with its last Node worker and
+// later reload. An embedded allocator's thread-local state can outlive that load.
+
+#[napi(module_exports)]
+pub fn initialize_render_environment(env: Env) -> Result<()> {
+    render_pool::register_environment(env)?;
+    cache::register_environment(env)
+}
 
 #[napi(object)]
 pub struct NativeParseResult {
@@ -47,6 +56,7 @@ pub struct NativeEndpointsResult {
 
 #[napi(object)]
 pub struct NativeDataResult {
+    pub cache_hit: bool,
     pub data: Value,
     pub elapsed_micros: i64,
 }
@@ -161,8 +171,39 @@ pub fn compile_endpoints(
 }
 
 #[napi]
-pub fn compile_data(source: String, yaml: bool, options_json: String) -> Result<NativeDataResult> {
+pub fn compile_data(
+    env: Env,
+    source: String,
+    yaml: bool,
+    options_json: String,
+) -> Result<NativeDataResult> {
+    // Bun's process.env updates need not update the OS environment visible to
+    // Rust. Read the invoking JS environment, including worker-local settings.
+    let process: Object = env.get_global()?.get_named_property("process")?;
+    let environment: Object = process.get_named_property("env")?;
+    let setting: Option<String> = environment.get("OPENAPI_CODEGEN_NATIVE_CACHE")?;
+    compile_data_impl(source, yaml, options_json, setting.as_deref() != Some("0"))
+}
+
+fn compile_data_impl(
+    source: String,
+    yaml: bool,
+    options_json: String,
+    cache_enabled: bool,
+) -> Result<NativeDataResult> {
     let started = std::time::Instant::now();
+    let (cache_epoch, cached) = if cache_enabled {
+        cache::lookup(&source, yaml, &options_json)
+    } else {
+        (None, None)
+    };
+    if let Some(data) = cached {
+        return Ok(NativeDataResult {
+            data: (*data).clone(),
+            cache_hit: true,
+            elapsed_micros: started.elapsed().as_micros() as i64,
+        });
+    }
     let document = openapi::parse_document(&source, yaml)
         .map_err(|error| Error::new(Status::InvalidArg, error.to_string()))?;
     let options: config::GenerateOptions = serde_json::from_str(&options_json)
@@ -171,7 +212,7 @@ pub fn compile_data(source: String, yaml: bool, options_json: String) -> Result<
         .map_err(|error| Error::new(Status::InvalidArg, error))?;
     let after_resolver = started.elapsed();
     let extractor = endpoints::EndpointExtractor::new(&document, &options, &resolver);
-    let endpoints = extractor
+    let mut endpoints = extractor
         .extract()
         .map_err(|error| Error::new(Status::GenericFailure, error))?;
     let after_endpoints = started.elapsed();
@@ -192,10 +233,16 @@ pub fn compile_data(source: String, yaml: bool, options_json: String) -> Result<
             schema_refs.insert(zod_name, Value::String(reference));
         }
     }
-    for (name, tag) in compiler.extracted_schema_tags() {
-        schema_owners.insert(name, Value::String(tag));
+    let extracted_tags = compiler.extracted_schema_tags();
+    for (name, tag) in &extracted_tags {
+        schema_owners.insert(name.clone(), Value::String(tag.clone()));
     }
     for (name, tags) in generated.tags {
+        // The TypeScript resolver looks extracted enums up by name before anything else, so an
+        // extracted enum keeps its tag even when a component schema renders under the same name.
+        if extracted_tags.contains_key(&name) {
+            continue;
+        }
         let tag = if tags.len() == 1 {
             tags.into_iter()
                 .next()
@@ -232,30 +279,7 @@ pub fn compile_data(source: String, yaml: bool, options_json: String) -> Result<
         .compile_components_with_tags(&generated.first_tags)
         .map_err(|error| Error::new(Status::GenericFailure, error))?;
     let after_components = started.elapsed();
-    let root_enums: Vec<(String, Value)> = components
-        .iter()
-        .filter(|(_, code)| code.as_str().is_some_and(|code| code.starts_with("z.enum")))
-        .map(|(name, code)| (name.clone(), code.clone()))
-        .collect();
-    let mut sortable_schemas = serde_json::Map::new();
-    for (name, code) in components {
-        if !code.as_str().is_some_and(|code| code.starts_with("z.enum")) {
-            sortable_schemas.insert(name, code);
-        }
-    }
-    sortable_schemas.extend(generated.schemas);
-    sortable_schemas.extend(root_enums);
-    let mut schemas = serde_json::Map::new();
-    for reference in &resolver.topology_order {
-        let name = zod::schema_name(
-            reference.rsplit('/').next().unwrap_or_default(),
-            &options.schema_suffix,
-        );
-        if let Some(code) = sortable_schemas.shift_remove(&name) {
-            schemas.insert(name, code);
-        }
-    }
-    schemas.extend(sortable_schemas);
+    let schemas = order_compiled_schemas(components, generated.schemas, &topology_order);
     let mut ordered_schemas = extracted_schemas;
     ordered_schemas.extend(schemas);
     let mut usage_tags: rustc_hash::FxHashMap<String, rustc_hash::FxHashSet<String>> =
@@ -307,6 +331,8 @@ pub fn compile_data(source: String, yaml: bool, options_json: String) -> Result<
                 }),
         );
         for name in direct {
+            // Drop a use-site validation chain (`ExampleSchema.min(3)`) from referenced schemas.
+            let name = render::base_schema_name(name);
             if ordered_schemas.contains_key(name) {
                 usage_tags
                     .entry(name.to_string())
@@ -315,31 +341,23 @@ pub fn compile_data(source: String, yaml: bool, options_json: String) -> Result<
             }
         }
     }
-    let mut changed = true;
-    while changed {
-        changed = false;
-        for (name, code) in &ordered_schemas {
-            let Some(tags) = usage_tags.get(name).cloned() else {
-                continue;
+    propagate_schema_usage_tags(&ordered_schemas, &mut usage_tags);
+    // Like the TypeScript renderer, extracted enums keep the owner their component usages gave them,
+    // and with `modelsInModules` go to the modules of all those usages.
+    if options.models_in_modules {
+        for (name, tags) in compiler.extracted_schema_usage_tags() {
+            let tags = if tags.is_empty() {
+                extracted_tags.get(name).cloned().into_iter().collect()
+            } else {
+                tags.iter().cloned().collect()
             };
-            for dependency in code
-                .as_str()
-                .into_iter()
-                .flat_map(|code| {
-                    code.split(|c: char| !c.is_ascii_alphanumeric() && c != '_' && c != '$')
-                })
-                .filter(|dependency| {
-                    *dependency != name && ordered_schemas.contains_key(*dependency)
-                })
-            {
-                let target = usage_tags.entry(dependency.to_string()).or_default();
-                let previous = target.len();
-                target.extend(tags.iter().cloned());
-                changed |= target.len() != previous;
-            }
+            usage_tags.insert(name.clone(), tags);
         }
     }
     for (name, tags) in &usage_tags {
+        if extracted_tags.contains_key(name) {
+            continue;
+        }
         let owner = if tags.len() == 1 {
             tags.iter()
                 .next()
@@ -351,38 +369,67 @@ pub fn compile_data(source: String, yaml: bool, options_json: String) -> Result<
         schema_owners.insert(name.clone(), Value::String(owner));
     }
     let render_started = std::time::Instant::now();
+    let parameter_types = render::resolve_parameter_types(&mut endpoints, &document);
+    let render_endpoints = &endpoints;
     let (rendered_models, rendered_endpoints, rendered_queries, rendered_acl, rendered_shared) =
-        std::thread::scope(|scope| {
-            let models = scope.spawn(|| {
-                render::render_model_proxies(
-                    &document,
-                    &endpoints,
-                    &ordered_schemas,
-                    &schema_owners,
-                    &usage_tags,
-                    &schema_refs,
-                    &resolver.ordered_dependencies,
-                    &generated_objects,
-                    &generated_dependencies,
-                    &circular_schemas,
-                    &options,
-                )
-            });
-            let rendered_endpoints = scope.spawn(|| {
-                render::render_endpoints(&endpoints, &ordered_schemas, &schema_owners, &options)
-            });
-            let queries =
-                scope.spawn(|| render::render_queries(&endpoints, &schema_owners, &options));
-            let acl = scope.spawn(|| render::render_acl(&endpoints, &schema_owners, &options));
-            let shared = scope.spawn(|| render::render_shared(&endpoints, &options));
-            (
-                models.join().unwrap(),
-                rendered_endpoints.join().unwrap(),
-                queries.join().unwrap(),
-                acl.join().unwrap(),
-                shared.join().unwrap(),
-            )
-        });
+        render_pool::install(|| {
+            let (models, (endpoints, (queries, (acl, shared)))) = rayon::join(
+                || {
+                    render::render_model_proxies(
+                        &document,
+                        &endpoints,
+                        &ordered_schemas,
+                        &schema_owners,
+                        &usage_tags,
+                        &schema_refs,
+                        &resolver.ordered_dependencies,
+                        &generated_objects,
+                        &generated_dependencies,
+                        &circular_schemas,
+                        &options,
+                    )
+                },
+                || {
+                    rayon::join(
+                        || {
+                            render::render_endpoints(
+                                render_endpoints,
+                                &ordered_schemas,
+                                &schema_owners,
+                                &options,
+                            )
+                        },
+                        || {
+                            rayon::join(
+                                || {
+                                    render::render_queries(
+                                        render_endpoints,
+                                        &document,
+                                        &schema_owners,
+                                        &options,
+                                    )
+                                },
+                                || {
+                                    rayon::join(
+                                        || {
+                                            render::render_acl(
+                                                render_endpoints,
+                                                &schema_owners,
+                                                &options,
+                                            )
+                                        },
+                                        || render::render_shared(render_endpoints, &options),
+                                    )
+                                },
+                            )
+                        },
+                    )
+                },
+            );
+            (models, endpoints, queries, acl, shared)
+        })
+        .map_err(|error| Error::new(Status::GenericFailure, error))?;
+    render::restore_parameter_types(&mut endpoints, parameter_types);
     let render_elapsed = render_started.elapsed();
     let after_render = started.elapsed();
     let acl_tag_count = endpoints
@@ -404,10 +451,7 @@ pub fn compile_data(source: String, yaml: bool, options_json: String) -> Result<
         .len();
     let rendered_complete = options.native_compact
         && options.split_by_tags
-        && ((options.models_in_common && options.ts_namespaces)
-            || (!options.models_in_common && !options.ts_namespaces))
         && !options.inline_endpoints
-        && !options.builder_configs
         && options.workspace_context.is_empty()
         && (!options.acl
             || (rendered_acl.len() == acl_tag_count && rendered_shared.contains_key("appAcl")));
@@ -424,27 +468,110 @@ pub fn compile_data(source: String, yaml: bool, options_json: String) -> Result<
     rendered_tags.insert(options.default_tag.clone());
     let rendered_tags = rendered_tags.into_iter().collect::<Vec<_>>();
     let compact = || Value::Object(serde_json::Map::new());
-    let data = serde_json::json!({
-        "endpoints": if rendered_complete { Value::Array(Vec::new()) } else { Value::Array(endpoints) },
-        "schemas": if rendered_complete { compact() } else { Value::Object(ordered_schemas) },
-        "schemaOwners": if rendered_complete { compact() } else { Value::Object(schema_owners) },
-        "schemaUsageTags": if rendered_complete { compact() } else { serde_json::to_value(usage_tags).unwrap() },
-        "schemaRefs": if rendered_complete { compact() } else { Value::Object(schema_refs) },
-        "circularSchemas": if rendered_complete { Value::Array(Vec::new()) } else { serde_json::to_value(circular_schemas).unwrap() },
-        "topologyOrder": if rendered_complete { Value::Array(Vec::new()) } else { serde_json::to_value(topology_order).unwrap() },
-        "baseUrl": base_url,
-        "generatedObjects": if rendered_complete { compact() } else { Value::Object(generated_objects) },
-        "generatedDependencies": if rendered_complete { compact() } else { Value::Object(generated_dependencies) },
-        "dependencies": if rendered_complete { compact() } else { serde_json::to_value(resolver.ordered_dependencies).unwrap() },
-        "renderedModels": rendered_models,
-        "renderedEndpoints": rendered_endpoints,
-        "renderedQueries": rendered_queries,
-        "renderedAcl": rendered_acl,
-        "renderedShared": rendered_shared,
-        "renderedComplete": rendered_complete,
-        "renderedTags": rendered_tags,
-        "document": if rendered_complete { Value::Null } else { document.clone() },
-    });
+    let mut data = serde_json::Map::new();
+    data.insert(
+        "endpoints".into(),
+        if rendered_complete {
+            Value::Array(Vec::new())
+        } else {
+            Value::Array(endpoints)
+        },
+    );
+    data.insert(
+        "schemas".into(),
+        if rendered_complete {
+            compact()
+        } else {
+            Value::Object(ordered_schemas)
+        },
+    );
+    data.insert(
+        "schemaOwners".into(),
+        if rendered_complete {
+            compact()
+        } else {
+            Value::Object(schema_owners)
+        },
+    );
+    data.insert(
+        "schemaUsageTags".into(),
+        if rendered_complete {
+            compact()
+        } else {
+            serde_json::to_value(usage_tags).unwrap()
+        },
+    );
+    data.insert(
+        "schemaRefs".into(),
+        if rendered_complete {
+            compact()
+        } else {
+            Value::Object(schema_refs)
+        },
+    );
+    data.insert(
+        "circularSchemas".into(),
+        if rendered_complete {
+            Value::Array(Vec::new())
+        } else {
+            serde_json::to_value(circular_schemas).unwrap()
+        },
+    );
+    data.insert(
+        "topologyOrder".into(),
+        if rendered_complete {
+            Value::Array(Vec::new())
+        } else {
+            serde_json::to_value(topology_order).unwrap()
+        },
+    );
+    data.insert("baseUrl".into(), Value::String(base_url.to_owned()));
+    data.insert(
+        "generatedObjects".into(),
+        if rendered_complete {
+            compact()
+        } else {
+            Value::Object(generated_objects)
+        },
+    );
+    data.insert(
+        "generatedDependencies".into(),
+        if rendered_complete {
+            compact()
+        } else {
+            Value::Object(generated_dependencies)
+        },
+    );
+    data.insert(
+        "dependencies".into(),
+        if rendered_complete {
+            compact()
+        } else {
+            serde_json::to_value(resolver.ordered_dependencies).unwrap()
+        },
+    );
+    data.insert("renderedModels".into(), Value::Object(rendered_models));
+    data.insert(
+        "renderedEndpoints".into(),
+        Value::Object(rendered_endpoints),
+    );
+    data.insert("renderedQueries".into(), Value::Object(rendered_queries));
+    data.insert("renderedAcl".into(), Value::Object(rendered_acl));
+    data.insert("renderedShared".into(), Value::Object(rendered_shared));
+    data.insert("renderedComplete".into(), Value::Bool(rendered_complete));
+    data.insert(
+        "renderedTags".into(),
+        serde_json::to_value(rendered_tags).unwrap(),
+    );
+    data.insert(
+        "document".into(),
+        if rendered_complete {
+            Value::Null
+        } else {
+            document
+        },
+    );
+    let data = Value::Object(data);
     if std::env::var_os("OPENAPI_NATIVE_PROFILE").is_some() {
         let finished = started.elapsed();
         eprintln!(
@@ -461,10 +588,255 @@ pub fn compile_data(source: String, yaml: bool, options_json: String) -> Result<
             (finished - after_render).as_secs_f64() * 1000.0,
         );
     }
+    cache::insert(cache_epoch, source, yaml, options_json, &data);
     Ok(NativeDataResult {
+        cache_hit: false,
         data,
         elapsed_micros: started.elapsed().as_micros() as i64,
     })
+}
+
+// Preserve component/generated/enum precedence and stable leftover order without
+// shifting the remaining insertion-ordered map for each topology entry.
+fn order_compiled_schemas(
+    components: serde_json::Map<String, Value>,
+    generated: serde_json::Map<String, Value>,
+    topology_order: &[String],
+) -> serde_json::Map<String, Value> {
+    let mut root_enums = Vec::new();
+    let mut remaining = serde_json::Map::new();
+    for (name, code) in components {
+        if code.as_str().is_some_and(|code| code.starts_with("z.enum")) {
+            root_enums.push((name, code));
+        } else {
+            remaining.insert(name, code);
+        }
+    }
+    remaining.extend(generated);
+    remaining.extend(root_enums);
+    let mut ordered = serde_json::Map::new();
+    for name in topology_order {
+        // Distinct component references can normalize to the same schema name.
+        if !ordered.contains_key(name) {
+            if let Some(code) = remaining.get_mut(name) {
+                ordered.insert(name.clone(), std::mem::take(code));
+            }
+        }
+    }
+    for (name, code) in remaining {
+        if !ordered.contains_key(&name) {
+            ordered.insert(name, code);
+        }
+    }
+    ordered
+}
+
+// Build the rendered-schema graph once, then revisit only schemas whose usage changed.
+// Token recognition deliberately matches the existing ownership propagation semantics.
+fn propagate_schema_usage_tags(
+    schemas: &serde_json::Map<String, Value>,
+    usage_tags: &mut rustc_hash::FxHashMap<String, rustc_hash::FxHashSet<String>>,
+) {
+    use rustc_hash::FxHashMap;
+    let names: Vec<&str> = schemas.keys().map(String::as_str).collect();
+    let ids: FxHashMap<&str, usize> = names
+        .iter()
+        .enumerate()
+        .map(|(id, &name)| (name, id))
+        .collect();
+    // Move existing sets into dense slots, retaining their iteration order and
+    // capacity. Rendered module order depends on the original set traversal.
+    let mut tags: Vec<_> = names.iter().map(|name| usage_tags.remove(*name)).collect();
+    let mut queued = vec![false; names.len()];
+    let mut pending = std::collections::VecDeque::new();
+    for (id, initial) in tags.iter().enumerate() {
+        if initial.is_some() {
+            queued[id] = true;
+            pending.push_back(id);
+        }
+    }
+    let dependencies: Vec<Vec<usize>> = schemas
+        .iter()
+        .enumerate()
+        .map(|(id, (_, code))| {
+            let mut seen = rustc_hash::FxHashSet::default();
+            code.as_str()
+                .into_iter()
+                .flat_map(|code| {
+                    code.split(|c: char| !c.is_ascii_alphanumeric() && c != '_' && c != '$')
+                })
+                .filter_map(|name| ids.get(name).copied())
+                .filter(|&dependency| dependency != id && seen.insert(dependency))
+                .collect()
+        })
+        .collect();
+    while let Some(id) = pending.pop_front() {
+        queued[id] = false;
+        let source = tags[id].as_ref().unwrap().clone();
+        for &dependency in &dependencies[id] {
+            let target = tags[dependency].get_or_insert_with(Default::default);
+            let previous = target.len();
+            target.extend(source.iter().cloned());
+            if target.len() != previous && !queued[dependency] {
+                queued[dependency] = true;
+                pending.push_back(dependency);
+            }
+        }
+    }
+    for (name, tags) in names.into_iter().zip(tags) {
+        if let Some(tags) = tags {
+            usage_tags.insert(name.to_string(), tags);
+        }
+    }
+}
+
+#[cfg(test)]
+mod usage_tests {
+    use super::*;
+
+    #[test]
+    fn indexed_ownership_preserves_tag_iteration_order_used_by_module_rendering() {
+        use rustc_hash::{FxHashMap, FxHashSet};
+        let schemas = serde_json::json!({"First":"Shared", "Second":"Shared", "Shared":"Leaf", "Leaf":"Shared"});
+        let mut actual = FxHashMap::default();
+        actual.insert(
+            "First".to_string(),
+            (0..20)
+                .map(|i| format!("First{i}"))
+                .collect::<FxHashSet<_>>(),
+        );
+        actual.insert(
+            "Second".to_string(),
+            (0..25)
+                .map(|i| format!("Second{i}"))
+                .collect::<FxHashSet<_>>(),
+        );
+        let mut expected = actual.clone();
+        let mut pending = std::collections::VecDeque::from(["First", "Second"]);
+        while let Some(name) = pending.pop_front() {
+            let source = expected[name].clone();
+            let child = if name == "Shared" { "Leaf" } else { "Shared" };
+            let target = expected.entry(child.to_string()).or_default();
+            let old = target.len();
+            target.extend(source.iter().cloned());
+            if target.len() != old && !pending.contains(&child) {
+                pending.push_back(child);
+            }
+        }
+        propagate_schema_usage_tags(schemas.as_object().unwrap(), &mut actual);
+        for name in ["First", "Second", "Shared", "Leaf"] {
+            assert_eq!(
+                actual[name].iter().collect::<Vec<_>>(),
+                expected[name].iter().collect::<Vec<_>>()
+            );
+        }
+    }
+
+    #[test]
+    fn indexed_ownership_preserves_large_tag_sets_empty_and_external_entries() {
+        use rustc_hash::{FxHashMap, FxHashSet};
+        let schemas = serde_json::json!({"Root":"Middle", "Middle":"Leaf", "Leaf":"Root", "Empty":"EmptyChild", "EmptyChild":"Far", "Far":"z.string()"});
+        let all: FxHashSet<String> = (0..130).map(|i| format!("Tag{i}")).collect();
+        let mut usages = FxHashMap::default();
+        usages.insert("Root".to_string(), all.clone());
+        usages.insert(
+            "Leaf".to_string(),
+            ["Extra".to_string()].into_iter().collect(),
+        );
+        usages.insert("Empty".to_string(), FxHashSet::default());
+        usages.insert(
+            "External".to_string(),
+            ["ExternalTag".to_string()].into_iter().collect(),
+        );
+        propagate_schema_usage_tags(schemas.as_object().unwrap(), &mut usages);
+        let mut expected = all;
+        expected.insert("Extra".to_string());
+        for name in ["Root", "Middle", "Leaf"] {
+            assert_eq!(usages[name], expected);
+        }
+        assert!(usages["EmptyChild"].is_empty());
+        assert!(!usages.contains_key("Far")); // empty propagation does not enqueue unchanged children
+        assert!(usages["External"].contains("ExternalTag"));
+        let mut empty = FxHashMap::default();
+        empty.insert("Empty".to_string(), FxHashSet::default());
+        propagate_schema_usage_tags(schemas.as_object().unwrap(), &mut empty);
+        assert!(empty["EmptyChild"].is_empty());
+        assert!(!empty.contains_key("Far"));
+    }
+
+    #[test]
+    fn schema_order_preserves_normalized_collisions_and_leftover_enum_precedence() {
+        let components = serde_json::json!({
+            "UnusedSchema": "z.string()",
+            "ChoiceSchema": "z.enum([\"first\", \"second\"])",
+            "ThingItemSchema": "z.object({ value: z.string() })",
+            "LastEnumSchema": "z.enum([\"last\"])"
+        })
+        .as_object()
+        .unwrap()
+        .clone();
+        let generated = serde_json::json!({
+            "GeneratedSchema": "z.number()",
+            "ChoiceSchema": "z.boolean()",
+            "UnusedSchema": "z.string().optional()"
+        })
+        .as_object()
+        .unwrap()
+        .clone();
+        let topology =
+            ["thing-item", "Absent", "ThingItem"].map(|name| zod::schema_name(name, "Schema"));
+        assert_eq!(topology[0], topology[2]);
+        let ordered = order_compiled_schemas(components, generated, &topology);
+        assert_eq!(
+            ordered.keys().map(String::as_str).collect::<Vec<_>>(),
+            [
+                "ThingItemSchema",
+                "UnusedSchema",
+                "GeneratedSchema",
+                "ChoiceSchema",
+                "LastEnumSchema"
+            ]
+        );
+        assert_eq!(
+            ordered["ThingItemSchema"],
+            "z.object({ value: z.string() })"
+        );
+        assert_eq!(ordered["UnusedSchema"], "z.string().optional()");
+        assert_eq!(ordered["ChoiceSchema"], "z.enum([\"first\", \"second\"])");
+        assert_eq!(ordered["LastEnumSchema"], "z.enum([\"last\"])");
+        assert!(!ordered.contains_key("AbsentSchema"));
+    }
+
+    #[test]
+    fn propagates_usage_through_reversed_chains_and_cycles() {
+        let schemas = serde_json::json!({
+            "Leaf": "z.string()",
+            "CycleA": "z.object({ next: CycleB, leaf: Leaf })",
+            "CycleB": "z.object({ next: CycleA })",
+            "Root": "z.object({ child: CycleA, again: CycleA })",
+            "OtherRoot": "z.object({ child: CycleB })",
+            "Unused": "z.object({ child: Leaf })"
+        });
+        let mut usages = rustc_hash::FxHashMap::default();
+        usages.insert(
+            "Root".to_string(),
+            ["first".to_string()].into_iter().collect(),
+        );
+        usages.insert(
+            "OtherRoot".to_string(),
+            ["second".to_string()].into_iter().collect(),
+        );
+        propagate_schema_usage_tags(schemas.as_object().unwrap(), &mut usages);
+        let both: rustc_hash::FxHashSet<String> = ["first".to_string(), "second".to_string()]
+            .into_iter()
+            .collect();
+        for name in ["Leaf", "CycleA", "CycleB"] {
+            assert_eq!(usages[name], both);
+        }
+        assert_eq!(usages["Root"].len(), 1);
+        assert_eq!(usages["OtherRoot"].len(), 1);
+        assert!(!usages.contains_key("Unused"));
+    }
 }
 
 #[napi]
@@ -492,7 +864,8 @@ pub unsafe extern "C" fn openapi_codegen_compile_data(
     let Ok(options) = std::str::from_utf8(options) else {
         return std::ptr::null_mut();
     };
-    let Ok(result) = compile_data(source.to_string(), yaml != 0, options.to_string()) else {
+    let Ok(result) = compile_data_impl(source.to_string(), yaml != 0, options.to_string(), false)
+    else {
         return std::ptr::null_mut();
     };
     let Ok(mut bytes) = serde_json::to_vec(&result.data) else {

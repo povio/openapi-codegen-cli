@@ -23,7 +23,7 @@ jobs:
 
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
-          bun-version: "1.4.1"
+          bun-version: 1.4.4
 
       - uses: dtolnay/rust-toolchain@stable
         if: matrix.renderer == 'native'
@@ -32,6 +32,12 @@ jobs:
 
       - run: bun run build:native
         if: matrix.renderer == 'native'
+
+      - name: Test native ownership, caching, and worker lifecycle
+        if: matrix.renderer == 'native'
+        run: |
+          cargo test --manifest-path native/Cargo.toml
+          bunx vitest run src/native/cache.test.ts src/native/worker-pool.test.ts
 
       - name: Check configuration parity and runtime regressions
         if: matrix.renderer == 'native'
@@ -63,7 +69,7 @@ jobs:
 
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
-          bun-version: "1.4.1"
+          bun-version: 1.4.4
 
       - run: bun install --frozen-lockfile
 

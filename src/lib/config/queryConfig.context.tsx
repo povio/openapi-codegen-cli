@@ -1,14 +1,77 @@
 import { createContext, use, useMemo } from "react";
 import { PropsWithChildren } from "react";
 
-import type { QueryKey } from "@tanstack/react-query";
+import type { QueryKey, UseMutationResult } from "@tanstack/react-query";
 
 export type QueryModule = string | number | symbol;
 
-export type InvalidationMapFunc<TData = any, TVariables = any> = (data: TData, variables: TVariables) => QueryKey[];
-export type InvalidationMap<TQueryModule extends QueryModule = QueryModule, TData = any, TVariables = any> = Partial<
-  Record<TQueryModule, InvalidationMapFunc<TData, TVariables>>
+// Method syntax keeps parameters bivariant, so callbacks with annotated parameters fit the `unknown` defaults.
+export type InvalidationMapFunc<TData = unknown, TVariables = unknown> = {
+  invalidate(data: TData, variables: TVariables): QueryKey[];
+}["invalidate"];
+
+/** The `data` and `variables` one mutation passes to its module's invalidation callback. */
+export interface MutationEffectsTypes {
+  data: unknown;
+  variables: unknown;
+}
+
+/** `data` and `variables` of mutation hooks, e.g. `MutationEffectsOf<typeof useCreate | typeof useUpdate>`. */
+export type MutationEffectsOf<THook> = THook extends (
+  ...args: never
+) => UseMutationResult<infer TData, infer _TError, infer TVariables, infer _TOnMutateResult>
+  ? { data: TData; variables: TVariables }
+  : never;
+
+type ObjectMembers<T> = T extends object ? T : never;
+type KeysOfUnion<T> = T extends unknown ? keyof T : never;
+type ValueOfUnion<T, K extends PropertyKey> = T extends unknown ? (K extends keyof T ? T[K] : undefined) : never;
+type IsUnion<T, TAll = T> = T extends unknown ? ([TAll] extends [T] ? false : true) : never;
+// Objects whose fields merge; arrays, functions and dates are kept as they are.
+type MergeableMembers<T> = T extends readonly unknown[] | ((...args: never) => unknown) | Date
+  ? never
+  : ObjectMembers<T>;
+type MergedValue<T> =
+  true extends IsUnion<MergeableMembers<T>> ? MergedObjects<MergeableMembers<T>> | Exclude<T, MergeableMembers<T>> : T;
+// `Extract<keyof T, …>` rather than `keyof T`: a homomorphic mapped type would map each union member separately.
+type MergedObjects<T> = { [K in Extract<keyof T, PropertyKey>]: MergedValue<ValueOfUnion<T, K>> } & {
+  [K in Exclude<KeysOfUnion<T>, keyof T>]?: MergedValue<ValueOfUnion<T, K>>;
+};
+
+// `void` (a mutation without variables or response body) is `undefined` at runtime.
+type VoidAsUndefined<T> = [void] extends [T] ? Exclude<T, void> | undefined : T;
+
+/**
+ * A union of a module's mutation values as one object: keys some mutations lack become optional, at any
+ * depth (e.g. fields of request bodies only some mutations send). `void` becomes `undefined`, which is
+ * what callbacks receive for mutations without one.
+ */
+export type MergedMutationValues<T> = [ObjectMembers<T>] extends [never]
+  ? VoidAsUndefined<T>
+  : MergedObjects<ObjectMembers<T>> | VoidAsUndefined<Exclude<T, object>>;
+
+/** The variables of a module's mutations as one object; see `MergedMutationValues`. */
+export type MergedMutationVariables<T> = MergedMutationValues<T>;
+
+/** The responses of a module's mutations as one object; see `MergedMutationValues`. */
+export type MergedMutationData<T> = MergedMutationValues<T>;
+
+type InvalidationMapFuncFor<T> = InvalidationMapFunc<
+  MergedMutationData<T extends MutationEffectsTypes ? T["data"] : never>,
+  MergedMutationVariables<T extends MutationEffectsTypes ? T["variables"] : never>
 >;
+
+/**
+ * Query keys to invalidate after a module's mutations. `TMutations` types each module's callback; the generated
+ * `queryModules.ts` exports `QueryModuleInvalidationMap`, i.e. `InvalidationMap<QueryModule, QueryModuleMutations>`.
+ * Modules without mutation types get `unknown` callback arguments.
+ */
+export type InvalidationMap<
+  TQueryModule extends QueryModule = QueryModule,
+  TMutations extends { [K in TQueryModule]?: MutationEffectsTypes } = Record<never, never>,
+> = {
+  [K in TQueryModule]?: K extends keyof TMutations ? InvalidationMapFuncFor<TMutations[K]> : InvalidationMapFunc;
+};
 
 export namespace OpenApiQueryConfig {
   export interface Type<TQueryModule extends QueryModule = QueryModule> {

@@ -1,10 +1,6 @@
 import { Endpoint } from "@/generators/types/endpoint";
-import { GenerateType } from "@/generators/types/generate";
-import { GenerateOptions } from "@/generators/types/options";
-import { getNamespaceName } from "@/generators/utils/namespace.utils";
 import { isMutation, isQuery } from "@/generators/utils/query.utils";
 import { capitalize, snakeToCamel } from "@/generators/utils/string.utils";
-import { getEndpointTag } from "@/generators/utils/tag.utils";
 
 const operationNameByEndpoint = new WeakMap<Endpoint, string>();
 const capitalizedOperationNameByEndpoint = new WeakMap<Endpoint, string>();
@@ -42,17 +38,3 @@ export const getPrefetchQueryName = (endpoint: Endpoint) => `prefetch${getCapita
 
 export const getPrefetchInfiniteQueryName = (endpoint: Endpoint) =>
   `prefetch${getCapitalizedOperationName(endpoint)}Infinite`;
-
-export const getImportedQueryName = (endpoint: Endpoint, options: GenerateOptions) => {
-  const namespacePrefix = options.tsNamespaces
-    ? `${getNamespaceName({ type: GenerateType.Queries, tag: getEndpointTag(endpoint, options), options })}.`
-    : "";
-  return `${namespacePrefix}${getQueryName(endpoint)}`;
-};
-
-export const getImportedInfiniteQueryName = (endpoint: Endpoint, options: GenerateOptions) => {
-  const namespacePrefix = options.tsNamespaces
-    ? `${getNamespaceName({ type: GenerateType.Queries, tag: getEndpointTag(endpoint, options), options })}.`
-    : "";
-  return `${namespacePrefix}${getInfiniteQueryName(endpoint)}`;
-};

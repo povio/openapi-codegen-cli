@@ -6,6 +6,7 @@ export type {
   RestTransportInterceptor,
   TransportRequest,
   TransportRequestConfig,
+  TransportRequestHeaders,
   TransportResponse,
   TransportResult,
   UploadProgress,

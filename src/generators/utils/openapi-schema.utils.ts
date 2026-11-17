@@ -14,6 +14,51 @@ export function isArraySchemaObject(schema: OpenAPIV3.SchemaObject): schema is O
   return schema.type === "array";
 }
 
+/**
+ * Whether `type` permits `type`, also for OpenAPI 3.1 type arrays (`type: ["array", "null"]`).
+ * Mirrored by `has_schema_type` in native/src/zod.rs.
+ */
+export function hasSchemaType(schema: OpenAPIV3.SchemaObject, type: string): boolean {
+  const schemaType = schema.type as unknown;
+  return Array.isArray(schemaType) ? schemaType.includes(type) : schemaType === type;
+}
+
+type SchemaOrRef = OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject;
+
+/** Array keywords from JSON Schema that OpenAPI 3.0 types do not describe. */
+type JsonSchemaArrayKeywords = {
+  prefixItems?: SchemaOrRef[];
+  items?: SchemaOrRef | SchemaOrRef[] | boolean;
+  additionalItems?: SchemaOrRef | boolean;
+};
+
+export type TupleSchemaParts = {
+  items: SchemaOrRef[];
+  /** `false` closes the tuple, `true` allows unknown rest elements, a schema validates them. */
+  rest: SchemaOrRef | boolean;
+};
+
+/**
+ * Positional array items: OpenAPI 3.1 `prefixItems` (rest from `items`), the older
+ * `items: [...]` form (rest from `additionalItems`), or `items: false` (an empty tuple).
+ */
+export function getTupleSchemaParts(schema: OpenAPIV3.SchemaObject): TupleSchemaParts | undefined {
+  const arraySchema = schema as JsonSchemaArrayKeywords;
+  if (Array.isArray(arraySchema.prefixItems)) {
+    return {
+      items: arraySchema.prefixItems,
+      rest: Array.isArray(arraySchema.items) ? true : (arraySchema.items ?? true),
+    };
+  }
+  if (Array.isArray(arraySchema.items)) {
+    return { items: arraySchema.items, rest: arraySchema.additionalItems ?? true };
+  }
+  if (arraySchema.items === false) {
+    return { items: [], rest: false };
+  }
+  return undefined;
+}
+
 export function inferRequiredSchema(schema: OpenAPIV3.SchemaObject) {
   if (!schema.allOf) {
     throw new Error("Function inferRequiredSchema is specialized to handle item with required only in an allOf array.");

@@ -26,6 +26,7 @@ export const optionCases = {
   excludeTags: [{ excludeTags: ["pet"] }],
   excludePathRegex: [{ excludePathRegex: "^/pet" }],
   excludeRedundantZodSchemas: bool("excludeRedundantZodSchemas"),
+  includeSchemas: [{ includeSchemas: ["ReportPayloadDto", "Pet"] }],
   tsPath: [{ tsPath: "@/openapi" }],
   importPath: ["ts", "relative", "absolute"].map((importPath) => ({ importPath })) as Partial<GenerateOptions>[],
   configs: [
@@ -75,11 +76,20 @@ export const optionCases = {
     mutationScope,
   })),
   infiniteQueries: bool("infiniteQueries"),
-  infiniteQueryParamNames: [{ infiniteQueries: true, infiniteQueryParamNames: { page: "pageIndex" } }],
+  infiniteQueryParamNames: [
+    { infiniteQueries: true, infiniteQueryParamNames: { page: "pageIndex" } },
+    { infiniteQueries: true, infiniteQueryParamNames: { page: "page", cursor: "after" } },
+    { infiniteQueries: true, infiniteQueryParamNames: { page: "page", cursor: "" } },
+  ],
   infiniteQueryResponseParamNames: [
     {
       infiniteQueries: true,
       infiniteQueryResponseParamNames: { page: "pageIndex", totalItems: "count", limit: "pageSize" },
+    },
+    {
+      infiniteQueries: true,
+      infiniteQueryParamNames: { page: "page", cursor: "after" },
+      infiniteQueryResponseParamNames: { page: "page", totalItems: "totalItems", limit: "limit", nextCursor: "next" },
     },
   ],
   acl: bool("acl"),
@@ -91,11 +101,6 @@ export const optionCases = {
   abilityContextImportPath: [{ acl: true, abilityContextImportPath: "@test/ability-context" }],
   aclCheckImportPath: [{ acl: true, aclCheckImportPath: "@test/acl" }],
   generateJsDoc: bool("generateJsDoc"),
-  builderConfigs: bool("builderConfigs"),
-  filterParamName: [{ builderConfigs: true, filterParamName: "filters" }],
-  dataResponseParamNames: [{ builderConfigs: true, dataResponseParamNames: ["results"] }],
-  dynamicInputsImportPath: [{ builderConfigs: true, dynamicInputsImportPath: "@test/inputs" }],
-  dynamicColumnsImportPath: [{ builderConfigs: true, dynamicColumnsImportPath: "@test/columns" }],
 } satisfies Record<OptionKey, readonly Partial<GenerateOptions>[]>;
 
 export const lifecycleOptions = [
@@ -139,5 +144,14 @@ for (const restClient of ["axios", "native"] as const)
       parityScenarios.push({
         name: `transport-${restClient}-${importPath}-${standalone}`,
         options: { modelsInCommon: true, restClient, importPath, standalone, axiosRequestConfig: true },
+      });
+    }
+// Readonly schemas with every model layout, including unsplit output (hybrid native rendering).
+for (const splitByTags of [false, true])
+  for (const modelsInModules of [false, true])
+    for (const lazySchemas of [false, true]) {
+      parityScenarios.push({
+        name: `readonly-${splitByTags ? "split" : "unsplit"}-${modelsInModules ? "modules" : "default"}-${lazySchemas ? "lazy" : "eager"}`,
+        options: { tsNamespaces: true, allReadonly: true, splitByTags, modelsInModules, lazySchemas },
       });
     }

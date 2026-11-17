@@ -2,24 +2,28 @@ import { DEFAULT_GENERATE_OPTIONS } from "@/generators/const/options.const";
 import { GenerateOptions } from "@/generators/types/options";
 import { deepMerge } from "@/generators/utils/object.utils";
 
+type ListParams =
+  | "includeTags"
+  | "excludeTags"
+  | "includeSchemas"
+  | "inlineEndpointsExcludeModules"
+  | "workspaceContext";
+
+/** CLI options, where list options are comma-separated strings. */
+export type ConfigParams = Partial<Omit<GenerateOptions, ListParams> & Record<ListParams, string>>;
+
 export function resolveConfig({
   fileConfig = {},
-  params: { includeTags, excludeTags, inlineEndpointsExcludeModules, workspaceContext, ...options },
+  params: { includeTags, excludeTags, includeSchemas, inlineEndpointsExcludeModules, workspaceContext, ...options },
 }: {
   fileConfig?: Partial<GenerateOptions> | null;
-  params: Partial<
-    Omit<GenerateOptions, "includeTags" | "excludeTags" | "inlineEndpointsExcludeModules" | "workspaceContext"> & {
-      includeTags: string;
-      excludeTags: string;
-      inlineEndpointsExcludeModules: string;
-      workspaceContext: string;
-    }
-  >;
+  params: ConfigParams;
 }) {
   const resolvedConfig = deepMerge(DEFAULT_GENERATE_OPTIONS, fileConfig ?? {}, {
     ...options,
     includeTags: includeTags?.split(","),
     excludeTags: excludeTags?.split(","),
+    includeSchemas: includeSchemas?.split(","),
     inlineEndpointsExcludeModules: inlineEndpointsExcludeModules?.split(","),
     workspaceContext: workspaceContext?.split(","),
   });

@@ -1,6 +1,6 @@
 import { styleText } from "node:util";
 
-/* eslint-disable no-console, @typescript-eslint/no-explicit-any */
+/* eslint-disable no-console */
 import type { Prompt as PromptSyncPrompt } from "prompt-sync";
 
 /**
@@ -19,9 +19,9 @@ async function prompt(...args: Parameters<PromptSyncPrompt>) {
  * @param value
  * @param defaultValue
  */
-export function logVariable(name: string, value: any, defaultValue?: string | number) {
+export function logVariable(name: string, value: unknown, defaultValue?: string | number) {
   if (defaultValue !== undefined && defaultValue !== value) {
-    console.log(`${styleText("yellow", `${name}:`.padEnd(20))}${styleText("magenta", value)}`);
+    console.log(`${styleText("yellow", `${name}:`.padEnd(20))}${styleText("magenta", String(value))}`);
   } else {
     console.log(`${`${name}:`.padEnd(20)}${value}`);
   }
