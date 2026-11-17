@@ -4,11 +4,15 @@ import { Endpoint, EndpointParameter, ExtendedEndpoint } from "@/generators/type
 import { GenerateOptions } from "@/generators/types/options";
 
 /**
- * Whether a function parameter for `param` is required. A request body is optional unless
- * `requestBody.required` is `true` (the OpenAPI default is `false`).
+ * Whether a function parameter for `param` is required. A request body, query, header or cookie
+ * parameter is optional unless `required` is `true` (the OpenAPI default is `false`); path
+ * parameters are always required.
  */
-export const isEndpointParameterRequired = (param: Pick<EndpointParameter, "parameterObject" | "bodyObject">) =>
-  param.bodyObject ? (param.bodyObject.required ?? false) : (param.parameterObject?.required ?? true);
+export const isEndpointParameterRequired = (param: Pick<EndpointParameter, "parameterObject" | "bodyObject">) => {
+  if (param.bodyObject) return param.bodyObject.required ?? false;
+  if (!param.parameterObject) return true;
+  return param.parameterObject.in === "path" || (param.parameterObject.required ?? false);
+};
 
 export const isGetEndpoint = (endpoint: Endpoint) => endpoint.method === OpenAPIV3.HttpMethods.GET;
 

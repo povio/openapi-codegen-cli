@@ -2518,18 +2518,23 @@ fn function_params<'a>(
     result
 }
 
-/// `isEndpointParameterRequired`: a request body is optional unless `required: true`.
+/// `isEndpointParameterRequired`: a request body, query, header or cookie parameter is optional
+/// unless `required: true`; path parameters are always required.
 fn is_parameter_required(parameter: &Value) -> bool {
     if let Some(body) = parameter.get("bodyObject") {
-        body.get("required")
+        return body
+            .get("required")
+            .and_then(Value::as_bool)
+            .unwrap_or(false);
+    }
+    let Some(object) = parameter.get("parameterObject") else {
+        return true;
+    };
+    object.get("in").and_then(Value::as_str) == Some("path")
+        || object
+            .get("required")
             .and_then(Value::as_bool)
             .unwrap_or(false)
-    } else {
-        parameter
-            .pointer("/parameterObject/required")
-            .and_then(Value::as_bool)
-            .unwrap_or(true)
-    }
 }
 
 /// Render-only key holding the OpenAPI type of a parameter's `$ref` schema target.

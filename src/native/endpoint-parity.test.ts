@@ -34,8 +34,12 @@ export const undefinedBody = () => note("id", 1, undefined);
 export const searchWithoutBody = () => search(1);
 // A required body is still required.
 // @ts-expect-error -- \`data\` is required
-export const missingBody = () => rename("id", undefined, "label", 1, "queued");
-export const requiredBody = () => rename("id", "message", "label", 1, "queued");
+export const missingBody = () => rename("id", undefined, 1, "label", "queued");
+export const requiredBody = () => rename("id", "message", 1, "label", "queued");
+// Query parameters without \`required: true\` are optional and sort after required ones.
+export const withoutOptionalQuery = () => rename("id", "message", 1);
+// @ts-expect-error -- \`copies\` is required
+export const missingRequiredQuery = () => rename("id", "message");
 // An inlined integer \`$ref\` parameter is a number.
 // @ts-expect-error -- \`copies\` is a number
 export const stringCount = () => note("id", "1");

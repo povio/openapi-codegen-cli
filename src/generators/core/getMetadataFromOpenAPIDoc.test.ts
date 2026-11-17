@@ -327,8 +327,8 @@ describe("getMetadataFromOpenAPIDoc", () => {
       isMutation: true,
       params: [
         { name: "petId", type: "number", isRequired: true, metaType: "primitive" },
-        { name: "name", type: "string", isRequired: true, metaType: "primitive" },
-        { name: "status", type: "string", isRequired: true, metaType: "primitive" },
+        { name: "name", type: "string", isRequired: false, metaType: "primitive" },
+        { name: "status", type: "string", isRequired: false, metaType: "primitive" },
       ],
       response: { type: "void", metaType: "primitive" },
     },
