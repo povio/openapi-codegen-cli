@@ -3,6 +3,9 @@ use std::thread::JoinHandle;
 
 const MAX_RENDER_THREADS: usize = 8;
 static RENDER_POOL: PoolManager = PoolManager::new();
+/// Threads freeing a finished compile's intermediate data. Teardown joins them so no
+/// thread runs addon code (destructors included) once Node may unload the addon.
+static RELEASES: Mutex<Vec<JoinHandle<()>>> = Mutex::new(Vec::new());
 
 struct RenderWorkers {
     pool: Option<rayon::ThreadPool>,
@@ -103,7 +106,11 @@ impl PoolManager {
             state = self.changed.wait(state).unwrap();
         }
         let workers = Self::take_idle_workers(&mut state);
+        let last_environment = state.environments == 0;
         drop(state);
+        if last_environment {
+            join_releases();
+        }
         self.finish_shutdown(workers);
     }
 
@@ -183,6 +190,34 @@ pub(crate) fn register_environment(env: napi::Env) -> napi::Result<()> {
         return Err(error);
     }
     Ok(())
+}
+
+/// Drops `value` on a tracked thread so the caller can return without paying for
+/// freeing large trees. Falls back to dropping inline if no thread can be spawned.
+pub(crate) fn release_in_background<T: Send + 'static>(value: T) {
+    let mut releases = RELEASES.lock().unwrap();
+    let mut index = 0;
+    while index < releases.len() {
+        if releases[index].is_finished() {
+            let _ = releases.swap_remove(index).join();
+        } else {
+            index += 1;
+        }
+    }
+    // A failed spawn drops the closure, and with it `value`, on this thread.
+    if let Ok(handle) = std::thread::Builder::new()
+        .name("openapi-codegen-release".into())
+        .spawn(move || drop(value))
+    {
+        releases.push(handle);
+    }
+}
+
+fn join_releases() {
+    let releases = std::mem::take(&mut *RELEASES.lock().unwrap());
+    for handle in releases {
+        let _ = handle.join();
+    }
 }
 
 /// Nested joins and parallel iterators share these bounded workers. Only Rust data

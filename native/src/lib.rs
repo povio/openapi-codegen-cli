@@ -474,7 +474,7 @@ fn compile_data_impl(
         if rendered_complete {
             Value::Array(Vec::new())
         } else {
-            Value::Array(endpoints)
+            Value::Array(std::mem::take(&mut endpoints))
         },
     );
     data.insert(
@@ -547,7 +547,7 @@ fn compile_data_impl(
         if rendered_complete {
             compact()
         } else {
-            serde_json::to_value(resolver.ordered_dependencies).unwrap()
+            serde_json::to_value(&resolver.ordered_dependencies).unwrap()
         },
     );
     data.insert("renderedModels".into(), Value::Object(rendered_models));
@@ -563,14 +563,17 @@ fn compile_data_impl(
         "renderedTags".into(),
         serde_json::to_value(rendered_tags).unwrap(),
     );
-    data.insert(
-        "document".into(),
-        if rendered_complete {
-            Value::Null
-        } else {
-            document
-        },
-    );
+    // Borrowers of `document` must go before it can move to the release thread.
+    drop(compiler);
+    drop(resolver);
+    let document = if rendered_complete {
+        // Freeing the parsed document is a sizeable share of a compile.
+        render_pool::release_in_background((document, endpoints));
+        Value::Null
+    } else {
+        document
+    };
+    data.insert("document".into(), document);
     let data = Value::Object(data);
     if std::env::var_os("OPENAPI_NATIVE_PROFILE").is_some() {
         let finished = started.elapsed();
