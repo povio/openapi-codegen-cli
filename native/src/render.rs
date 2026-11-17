@@ -1,6 +1,7 @@
-use std::collections::VecDeque;
+use std::{borrow::Cow, collections::VecDeque};
 
 use indexmap::{IndexMap as BaseIndexMap, IndexSet as BaseIndexSet};
+use rayon::prelude::*;
 use rustc_hash::{FxBuildHasher, FxHashMap as HashMap, FxHashSet as HashSet};
 use serde_json::{Map, Value};
 
@@ -45,9 +46,9 @@ pub fn render_model_proxies(
     let after_dependencies = started.elapsed();
     let composite_dependencies = compiled_component_dependencies(schemas, schema_refs);
     let after_composites = started.elapsed();
-    let (common, proxies, common_elapsed, proxies_elapsed) = std::thread::scope(|scope| {
-        let common_started = std::time::Instant::now();
-        let common = scope.spawn(move || {
+    let ((common, common_elapsed), (proxies, proxies_elapsed)) = rayon::join(
+        || {
+            let started = std::time::Instant::now();
             let content = render_common_models(
                 document,
                 schemas,
@@ -59,10 +60,10 @@ pub fn render_model_proxies(
                 &options.default_tag,
                 options,
             );
-            (content, common_started.elapsed())
-        });
-        let proxies_started = std::time::Instant::now();
-        let proxies = scope.spawn(move || {
+            (content, started.elapsed())
+        },
+        || {
+            let started = std::time::Instant::now();
             let content = render_proxy_modules(
                 endpoints,
                 schemas,
@@ -72,12 +73,9 @@ pub fn render_model_proxies(
                 generated_dependencies,
                 options,
             );
-            (content, proxies_started.elapsed())
-        });
-        let (common, common_elapsed) = common.join().unwrap();
-        let (proxies, proxies_elapsed) = proxies.join().unwrap();
-        (common, proxies, common_elapsed, proxies_elapsed)
-    });
+            (content, started.elapsed())
+        },
+    );
     // Match JavaScript: an empty schema collection emits no shared model file.
     if !schemas.is_empty() {
         rendered.insert(options.default_tag.clone(), Value::String(common));
@@ -167,6 +165,21 @@ fn render_local_models(
             }
         }
     }
+    // Each component's inline enum dependencies are independent of its module.
+    // Build them once and borrow the ordered list in every module that uses it.
+    let inline_enums: HashMap<&str, Vec<String>> = schema_refs
+        .values()
+        .filter_map(Value::as_str)
+        .filter_map(|reference| {
+            let schema = resolve_document_ref(document, reference)?;
+            if schema.get("enum").is_some() {
+                return None;
+            }
+            let mut codes = IndexSet::default();
+            collect_inline_enum_codes(schema, &mut codes);
+            Some((reference, codes.into_iter().collect()))
+        })
+        .collect();
     // With `modelsInModules` the dependencies are copied into the module (not imported) in the
     // order they are found, as the TypeScript renderer appends them, so they are not grouped by owner.
     let import_group = |owner: &str| {
@@ -176,36 +189,20 @@ fn render_local_models(
             owner.to_string()
         }
     };
-    for (tag, mut tag_schemas) in by_tag {
-        let mut imports: IndexMap<String, Vec<String>> = IndexMap::default();
-        for schema_name in tag_schemas.keys() {
-            if let Some(reference) = schema_refs.get(schema_name).and_then(Value::as_str) {
-                for name in dependencies
-                    .get(reference)
-                    .into_iter()
-                    .flatten()
-                    .filter_map(|dependency| name_by_ref.get(dependency.as_str()).copied())
-                {
-                    let Some(owner) = schema_owners.get(name).and_then(Value::as_str) else {
-                        continue;
-                    };
-                    if owner != tag {
-                        let names = imports.entry(import_group(owner)).or_default();
-                        if !names.iter().any(|existing| existing == name) {
-                            names.push(name.to_string());
-                        }
-                    }
-                }
-                // An enum component declares its values; it does not use another enum.
-                if let Some(schema) = resolve_document_ref(document, reference)
-                    .filter(|schema| schema.get("enum").is_none())
-                {
-                    let mut enum_codes = Vec::new();
-                    collect_inline_enum_codes(schema, &mut enum_codes);
-                    for code in enum_codes {
-                        let Some(name) = enum_name_by_code.get(code.as_str()).copied() else {
-                            continue;
-                        };
+    let modules = by_tag
+        .into_iter()
+        .collect::<Vec<_>>()
+        .into_par_iter()
+        .map(|(tag, mut tag_schemas)| {
+            let mut imports: IndexMap<String, Vec<String>> = IndexMap::default();
+            for schema_name in tag_schemas.keys() {
+                if let Some(reference) = schema_refs.get(schema_name).and_then(Value::as_str) {
+                    for name in dependencies
+                        .get(reference)
+                        .into_iter()
+                        .flatten()
+                        .filter_map(|dependency| name_by_ref.get(dependency.as_str()).copied())
+                    {
                         let Some(owner) = schema_owners.get(name).and_then(Value::as_str) else {
                             continue;
                         };
@@ -216,87 +213,104 @@ fn render_local_models(
                             }
                         }
                     }
-                }
-            }
-            let mut visited = HashSet::default();
-            for name in generated_dependencies
-                .get(schema_name)
-                .and_then(Value::as_array)
-                .into_iter()
-                .flatten()
-                .filter_map(Value::as_str)
-            {
-                append_local_model_dependency(
-                    name,
-                    &tag,
-                    schemas,
-                    schema_owners,
-                    schema_refs,
-                    dependencies,
-                    &name_by_ref,
-                    &import_group,
-                    &mut imports,
-                    &mut visited,
-                );
-            }
-        }
-        if options.models_in_modules {
-            for names in imports.values() {
-                for name in names {
-                    if let Some(code) = schemas.get(name) {
-                        tag_schemas.insert(name.clone(), code.clone());
+                    // An enum component declares its values; it does not use another enum.
+                    if let Some(enum_codes) = inline_enums.get(reference) {
+                        for code in enum_codes {
+                            let Some(name) = enum_name_by_code.get(code.as_str()).copied() else {
+                                continue;
+                            };
+                            let Some(owner) = schema_owners.get(name).and_then(Value::as_str)
+                            else {
+                                continue;
+                            };
+                            if owner != tag {
+                                let names = imports.entry(import_group(owner)).or_default();
+                                if !names.iter().any(|existing| existing == name) {
+                                    names.push(name.to_string());
+                                }
+                            }
+                        }
                     }
                 }
+                let mut visited = HashSet::default();
+                for name in generated_dependencies
+                    .get(schema_name)
+                    .and_then(Value::as_array)
+                    .into_iter()
+                    .flatten()
+                    .filter_map(Value::as_str)
+                {
+                    append_local_model_dependency(
+                        name,
+                        &tag,
+                        schemas,
+                        schema_owners,
+                        schema_refs,
+                        dependencies,
+                        &name_by_ref,
+                        &import_group,
+                        &mut imports,
+                        &mut visited,
+                    );
+                }
             }
-            imports.clear();
-            let namespace_suffix = options
-                .configs
-                .get("models")
-                .map(|config| config.namespace_suffix.as_str())
-                .unwrap_or("Models");
-            for value in tag_schemas.values_mut() {
-                let Value::String(code) = value else {
-                    continue;
-                };
-                *code = strip_model_namespace_references(code, namespace_suffix);
-            }
-        } else {
-            // Generated schemas can reference schemas the dependency graph does not record (e.g. an
-            // inline enum extracted to a shared enum owned by another tag), so the emitted code is
-            // the final source of truth for which models need to be imported.
-            for code in tag_schemas.values().filter_map(Value::as_str) {
-                for name in code_schema_references(code, |name| schemas.contains_key(name)) {
-                    if tag_schemas.contains_key(&name) {
-                        continue;
+            if options.models_in_modules {
+                for names in imports.values() {
+                    for name in names {
+                        if let Some(code) = schemas.get(name) {
+                            tag_schemas.insert(name.clone(), code.clone());
+                        }
                     }
-                    let Some(owner) = schema_owners.get(&name).and_then(Value::as_str) else {
+                }
+                imports.clear();
+                let namespace_suffix = options
+                    .configs
+                    .get("models")
+                    .map(|config| config.namespace_suffix.as_str())
+                    .unwrap_or("Models");
+                for value in tag_schemas.values_mut() {
+                    let Value::String(code) = value else {
                         continue;
                     };
-                    if owner != tag {
-                        let names = imports.entry(owner.to_string()).or_default();
-                        if !names.contains(&name) {
-                            names.push(name);
+                    *code = strip_model_namespace_references(code, namespace_suffix);
+                }
+            } else {
+                // Generated schemas can reference schemas the dependency graph does not record (e.g. an
+                // inline enum extracted to a shared enum owned by another tag), so the emitted code is
+                // the final source of truth for which models need to be imported.
+                for code in tag_schemas.values().filter_map(Value::as_str) {
+                    for name in code_schema_references(code, |name| schemas.contains_key(name)) {
+                        if tag_schemas.contains_key(&name) {
+                            continue;
+                        }
+                        let Some(owner) = schema_owners.get(&name).and_then(Value::as_str) else {
+                            continue;
+                        };
+                        if owner != tag {
+                            let names = imports.entry(owner.to_string()).or_default();
+                            if !names.contains(&name) {
+                                names.push(name);
+                            }
                         }
                     }
                 }
             }
-        }
-        let mut content = render_common_models(
-            document,
-            &tag_schemas,
-            schema_refs,
-            generated_objects,
-            &enum_objects,
-            &property_refs,
-            circular_schemas,
-            &tag,
-            options,
-        );
-        if !imports.is_empty() {
-            let mut lines = vec!["import { z } from \"zod\";".to_string()];
-            for (owner, names) in imports {
-                let owner_tag = decapitalize(&owner);
-                lines.push(format!(
+            let mut content = render_common_models(
+                document,
+                &tag_schemas,
+                schema_refs,
+                generated_objects,
+                &enum_objects,
+                &property_refs,
+                circular_schemas,
+                &tag,
+                options,
+            );
+            if !imports.is_empty() {
+                let mut lines = vec!["import { z } from \"zod\";".to_string()];
+                for (owner, names) in imports {
+                    let owner_tag = decapitalize(&owner);
+                    lines.push(format!(
                     "import {{ {} }} from \"{import_root}{owner_tag}/{owner_tag}.{model_suffix}\";",
                     if options.ts_namespaces {
                         let suffix = options
@@ -309,15 +323,17 @@ fn render_local_models(
                         names.join(", ")
                     }
                 ));
+                }
+                content = content.replacen("import { z } from \"zod\";", &lines.join("\n"), 1);
             }
-            content = content.replacen("import { z } from \"zod\";", &lines.join("\n"), 1);
-        }
-        rendered.insert(tag, Value::String(content));
-    }
+            (tag, Value::String(content))
+        })
+        .collect::<Vec<_>>();
+    rendered.extend(modules);
     rendered
 }
 
-fn collect_inline_enum_codes(value: &Value, codes: &mut Vec<String>) {
+fn collect_inline_enum_codes(value: &Value, codes: &mut IndexSet<String>) {
     match value {
         Value::Array(values) => values
             .iter()
@@ -325,9 +341,7 @@ fn collect_inline_enum_codes(value: &Value, codes: &mut Vec<String>) {
         Value::Object(object) => {
             if !object.contains_key("$ref") {
                 if let Some(code) = crate::zod::enum_code(value) {
-                    if !codes.contains(&code) {
-                        codes.push(code);
-                    }
+                    codes.insert(code);
                 }
                 object
                     .iter()
@@ -507,12 +521,41 @@ fn render_proxy_modules(
     rendered
 }
 
+// Keep tiny modules sequential to avoid task scheduling overhead, and submit larger
+// ordered batches to the reusable render pool (including nested render calls).
+fn render_schema_items<T: Send>(
+    schemas: &Map<String, Value>,
+    render: impl Fn(&str, &Value) -> Option<T> + Sync,
+) -> Vec<T> {
+    const PARALLEL_SCHEMA_THRESHOLD: usize = 128;
+    if schemas.len() < PARALLEL_SCHEMA_THRESHOLD {
+        return schemas
+            .iter()
+            .filter_map(|(name, code)| render(name, code))
+            .collect();
+    }
+    let schemas = schemas.iter().collect::<Vec<_>>();
+    let chunk_size = schemas.len().div_ceil(4);
+    schemas
+        .par_chunks(chunk_size)
+        .map(|chunk| {
+            chunk
+                .iter()
+                .filter_map(|(name, code)| render(name, code))
+                .collect::<Vec<_>>()
+        })
+        .collect::<Vec<_>>()
+        .into_iter()
+        .flatten()
+        .collect()
+}
+
 fn render_common_models(
     document: &Value,
     schemas: &Map<String, Value>,
     schema_refs: &Map<String, Value>,
     generated_objects: &Map<String, Value>,
-    enum_objects: &HashMap<String, Value>,
+    enum_objects: &HashMap<String, Cow<'_, Value>>,
     property_refs: &PropertyRefs,
     circular_schemas: &[String],
     namespace_tag: &str,
@@ -550,39 +593,21 @@ fn render_common_models(
     if options.ts_namespaces {
         lines.push(format!("export namespace {namespace} {{"));
     }
-    let schemas = schemas.iter().collect::<Vec<_>>();
-    let chunk_size = schemas.len().div_ceil(4).max(1);
-    let schema_lines = std::thread::scope(|scope| {
-        schemas
-            .chunks(chunk_size)
-            .map(|chunk| {
-                scope.spawn(|| {
-                    chunk
-                        .iter()
-                        .filter_map(|(name, code)| {
-                            render_common_schema_lines(
-                                document,
-                                name,
-                                code,
-                                schema_refs,
-                                generated_objects,
-                                enum_objects,
-                                circular_schemas,
-                                suffix,
-                                &property_ref_names,
-                                options,
-                            )
-                        })
-                        .flatten()
-                        .collect::<Vec<_>>()
-                })
-            })
-            .collect::<Vec<_>>()
-            .into_iter()
-            .flat_map(|handle| handle.join().unwrap())
-            .collect::<Vec<_>>()
+    let schema_lines = render_schema_items(schemas, |name, code| {
+        render_common_schema_lines(
+            document,
+            name,
+            code,
+            schema_refs,
+            generated_objects,
+            enum_objects,
+            circular_schemas,
+            suffix,
+            &property_ref_names,
+            options,
+        )
     });
-    lines.extend(schema_lines);
+    lines.extend(schema_lines.into_iter().flatten());
     if options.ts_namespaces {
         lines.push("}".into());
     }
@@ -595,7 +620,7 @@ fn render_common_schema_lines(
     code: &Value,
     schema_refs: &Map<String, Value>,
     generated_objects: &Map<String, Value>,
-    enum_objects: &HashMap<String, Value>,
+    enum_objects: &HashMap<String, Cow<'_, Value>>,
     circular_schemas: &[String],
     suffix: &str,
     property_ref_names: &PropertyRefNames,
@@ -656,7 +681,7 @@ fn render_schema_docs<'a>(
     code: &str,
     schema_refs: &Map<String, Value>,
     generated_objects: &'a Map<String, Value>,
-    enum_objects: &'a HashMap<String, Value>,
+    enum_objects: &'a HashMap<String, Cow<'_, Value>>,
     property_ref_names: &PropertyRefNames,
     generate_js_doc: bool,
 ) -> (Vec<String>, Option<&'a Value>) {
@@ -668,7 +693,7 @@ fn render_schema_docs<'a>(
                 .and_then(Value::as_str)
                 .and_then(|reference| resolve_document_ref(document, reference))
         })
-        .or_else(|| enum_objects.get(code));
+        .or_else(|| enum_objects.get(code).map(Cow::as_ref));
     if !generate_js_doc {
         return (Vec::new(), schema_object);
     }
@@ -725,7 +750,7 @@ fn render_lazy_common_models(
     schemas: &Map<String, Value>,
     schema_refs: &Map<String, Value>,
     generated_objects: &Map<String, Value>,
-    enum_objects: &HashMap<String, Value>,
+    enum_objects: &HashMap<String, Cow<'_, Value>>,
     circular_schemas: &[String],
     suffix: &str,
     property_ref_names: &PropertyRefNames,
@@ -736,38 +761,21 @@ fn render_lazy_common_models(
     let schema_names: HashSet<&str> = schemas.keys().map(String::as_str).collect();
     lines.extend(ONCE_HELPER_LINES.iter().map(|line| line.to_string()));
     lines.push(String::new());
-    let schemas = schemas.iter().collect::<Vec<_>>();
-    let chunk_size = schemas.len().div_ceil(4).max(1);
-    let parts = std::thread::scope(|scope| {
-        schemas
-            .chunks(chunk_size)
-            .map(|chunk| {
-                scope.spawn(|| {
-                    chunk
-                        .iter()
-                        .filter_map(|(name, code)| {
-                            render_lazy_schema_parts(
-                                document,
-                                name,
-                                code,
-                                schema_refs,
-                                generated_objects,
-                                enum_objects,
-                                circular_schemas,
-                                suffix,
-                                property_ref_names,
-                                &schema_names,
-                                namespace,
-                                options,
-                            )
-                        })
-                        .collect::<Vec<_>>()
-                })
-            })
-            .collect::<Vec<_>>()
-            .into_iter()
-            .flat_map(|handle| handle.join().unwrap())
-            .collect::<Vec<_>>()
+    let parts = render_schema_items(schemas, |name, code| {
+        render_lazy_schema_parts(
+            document,
+            name,
+            code,
+            schema_refs,
+            generated_objects,
+            enum_objects,
+            circular_schemas,
+            suffix,
+            property_ref_names,
+            &schema_names,
+            namespace,
+            options,
+        )
     });
     let mut members = Vec::new();
     let mut types = Vec::new();
@@ -792,7 +800,7 @@ fn render_lazy_schema_parts(
     code: &Value,
     schema_refs: &Map<String, Value>,
     generated_objects: &Map<String, Value>,
-    enum_objects: &HashMap<String, Value>,
+    enum_objects: &HashMap<String, Cow<'_, Value>>,
     circular_schemas: &[String],
     suffix: &str,
     property_ref_names: &PropertyRefNames,
@@ -1498,7 +1506,7 @@ fn escape_js_doc_lines(lines: &mut [String]) {
     }
 }
 
-fn document_enum_objects(document: &Value) -> HashMap<String, Value> {
+fn document_enum_objects(document: &Value) -> HashMap<String, Cow<'_, Value>> {
     let mut enum_objects = HashMap::default();
     if let Some(component_schemas) = document.pointer("/components/schemas") {
         collect_enum_objects(component_schemas, &mut enum_objects);
@@ -1506,7 +1514,7 @@ fn document_enum_objects(document: &Value) -> HashMap<String, Value> {
     enum_objects
 }
 
-fn collect_enum_objects(value: &Value, enums: &mut HashMap<String, Value>) {
+fn collect_enum_objects<'a>(value: &'a Value, enums: &mut HashMap<String, Cow<'a, Value>>) {
     match value {
         Value::Array(values) => values
             .iter()
@@ -1517,12 +1525,16 @@ fn collect_enum_objects(value: &Value, enums: &mut HashMap<String, Value>) {
                     "z.enum({})",
                     Value::Array(values.clone()).to_string().replace(',', ", ")
                 );
-                let entry = enums
-                    .entry(code)
-                    .or_insert_with(|| Value::Object(Map::new()));
-                if let Some(target) = entry.as_object_mut() {
-                    for (key, value) in object {
-                        target.insert(key.clone(), value.clone());
+                match enums.entry(code) {
+                    std::collections::hash_map::Entry::Vacant(entry) => {
+                        entry.insert(Cow::Borrowed(value));
+                    }
+                    std::collections::hash_map::Entry::Occupied(mut entry) => {
+                        if let Some(target) = entry.get_mut().to_mut().as_object_mut() {
+                            for (key, value) in object {
+                                target.insert(key.clone(), value.clone());
+                            }
+                        }
                     }
                 }
             }
@@ -2540,41 +2552,50 @@ fn is_parameter_required(parameter: &Value) -> bool {
 /// Render-only key holding the OpenAPI type of a parameter's `$ref` schema target.
 const RESOLVED_SCHEMA_TYPE: &str = "x-resolvedSchemaType";
 
-/// Copies of `endpoints` for rendering in which each parameter whose schema is a `$ref` records its
-/// target's type, so a parameter inlining a simple component is typed like an inline schema (the
-/// renderers do not see the document). `None` when no parameter uses a `$ref` schema.
-pub fn with_resolved_parameter_types(endpoints: &[Value], document: &Value) -> Option<Vec<Value>> {
-    let has_reference = |endpoint: &Value| {
-        endpoint
-            .get("parameters")
-            .and_then(Value::as_array)
-            .is_some_and(|parameters| {
-                parameters
-                    .iter()
-                    .any(|parameter| parameter.pointer("/parameterObject/schema/$ref").is_some())
-            })
-    };
-    if !endpoints.iter().any(has_reference) {
-        return None;
-    }
-    let mut endpoints = endpoints.to_vec();
-    for parameter in endpoints
-        .iter_mut()
-        .filter_map(|endpoint| endpoint.get_mut("parameters"))
-        .filter_map(Value::as_array_mut)
-        .flatten()
-    {
-        let schema_type = parameter
-            .pointer("/parameterObject/schema/$ref")
-            .and_then(Value::as_str)
-            .and_then(|reference| resolve_document_ref(document, reference))
-            .and_then(|schema| schema.get("type"))
-            .cloned();
-        if let (Some(schema_type), Some(object)) = (schema_type, parameter.as_object_mut()) {
-            object.insert(RESOLVED_SCHEMA_TYPE.into(), schema_type);
+/// Temporarily annotate the owned endpoint data for rendering. Record only the
+/// changed fields, avoiding a deep copy of every endpoint for a handful of refs.
+pub fn resolve_parameter_types(
+    endpoints: &mut [Value],
+    document: &Value,
+) -> Vec<(usize, usize, Option<Value>)> {
+    let mut previous = Vec::new();
+    for (endpoint_index, endpoint) in endpoints.iter_mut().enumerate() {
+        let Some(parameters) = endpoint.get_mut("parameters").and_then(Value::as_array_mut) else {
+            continue;
+        };
+        for (parameter_index, parameter) in parameters.iter_mut().enumerate() {
+            let schema_type = parameter
+                .pointer("/parameterObject/schema/$ref")
+                .and_then(Value::as_str)
+                .and_then(|reference| resolve_document_ref(document, reference))
+                .and_then(|schema| schema.get("type"))
+                .cloned();
+            if let (Some(schema_type), Some(object)) = (schema_type, parameter.as_object_mut()) {
+                let old = object.insert(RESOLVED_SCHEMA_TYPE.into(), schema_type);
+                previous.push((endpoint_index, parameter_index, old));
+            }
         }
     }
-    Some(endpoints)
+    previous
+}
+
+pub fn restore_parameter_types(
+    endpoints: &mut [Value],
+    previous: Vec<(usize, usize, Option<Value>)>,
+) {
+    for (endpoint_index, parameter_index, old) in previous {
+        let object = endpoints[endpoint_index]["parameters"][parameter_index]
+            .as_object_mut()
+            .unwrap();
+        match old {
+            Some(value) => {
+                object.insert(RESOLVED_SCHEMA_TYPE.into(), value);
+            }
+            None => {
+                object.shift_remove(RESOLVED_SCHEMA_TYPE);
+            }
+        }
+    }
 }
 
 /// `getInlineParameterTsType`: the TS type of an inline (unnamed) parameter schema by its OpenAPI
@@ -2888,33 +2909,21 @@ pub fn render_queries(
     }
     let tags = by_tag.into_iter().collect::<Vec<_>>();
     let model_owners = ModelOwners::new(schema_owners, options);
-    let chunk_size = tags.len().div_ceil(4).max(1);
-    let modules = std::thread::scope(|scope| {
-        tags.chunks(chunk_size)
-            .map(|chunk| {
-                scope.spawn(|| {
-                    chunk
-                        .iter()
-                        .map(|(tag, tag_endpoints)| {
-                            (
-                                tag.clone(),
-                                Value::String(render_query_module(
-                                    tag,
-                                    tag_endpoints,
-                                    schema_owners,
-                                    &model_owners,
-                                    options,
-                                )),
-                            )
-                        })
-                        .collect::<Vec<_>>()
-                })
-            })
-            .collect::<Vec<_>>()
-            .into_iter()
-            .flat_map(|handle| handle.join().unwrap())
-            .collect::<Vec<_>>()
-    });
+    let modules = tags
+        .par_iter()
+        .map(|(tag, tag_endpoints)| {
+            (
+                tag.clone(),
+                Value::String(render_query_module(
+                    tag,
+                    tag_endpoints,
+                    schema_owners,
+                    &model_owners,
+                    options,
+                )),
+            )
+        })
+        .collect::<Vec<_>>();
     rendered.extend(modules);
     rendered
 }
@@ -5493,6 +5502,43 @@ mod namespace_owner_tests {
     use super::*;
 
     #[test]
+    fn schema_render_batches_keep_input_order_and_skip_absent_parts() {
+        let single_worker = rayon::ThreadPoolBuilder::new()
+            .num_threads(1)
+            .build()
+            .unwrap();
+        for count in [0, 1, 127, 128, 513] {
+            let schemas: Map<String, Value> = (0..count)
+                .rev()
+                .map(|index| (format!("Schema{index}"), Value::from(index)))
+                .collect();
+            let actual = crate::render_pool::install(|| {
+                render_schema_items(&schemas, |name, value| {
+                    (value.as_u64().unwrap() % 3 != 0).then(|| name.to_string())
+                })
+            })
+            .unwrap();
+            let expected: Vec<_> = (0..count)
+                .rev()
+                .filter(|index| index % 3 != 0)
+                .map(|index| format!("Schema{index}"))
+                .collect();
+            assert_eq!(actual, expected, "batch size {count}");
+            let (nested, _) = single_worker.install(|| {
+                rayon::join(
+                    || {
+                        render_schema_items(&schemas, |name, value| {
+                            (value.as_u64().unwrap() % 3 != 0).then(|| name.to_string())
+                        })
+                    },
+                    || 1,
+                )
+            });
+            assert_eq!(nested, expected, "single-worker batch size {count}");
+        }
+    }
+
+    #[test]
     fn shared_model_routing_preserves_literals_and_description_text() {
         let options: GenerateOptions = serde_json::from_value(serde_json::json!({})).unwrap();
         let owners = serde_json::json!({ "BaseLogLevelEnumSchema": "Common" })
@@ -5613,6 +5659,69 @@ mod model_code_tests {
 mod cursor_pagination_tests {
     use super::*;
     use serde_json::json;
+
+    #[test]
+    fn enum_metadata_borrows_unique_objects_and_merges_duplicates_in_document_order() {
+        let document = json!({"components":{"schemas":{
+            "First":{"type":"string", "enum":["same"], "description":"first", "title":"kept"},
+            "Unique":{"enum":["other"]},
+            "Second":{"enum":["same"], "description":"last"}
+        }}});
+        let metadata = document_enum_objects(&document);
+        assert!(matches!(metadata["z.enum([\"other\"])"], Cow::Borrowed(_)));
+        let merged = metadata["z.enum([\"same\"])"].as_ref();
+        assert_eq!(merged["description"], "last");
+        assert_eq!(merged["title"], "kept");
+        assert_eq!(merged["type"], "string");
+        let schema = json!({"properties":{
+            "first":{"enum":["a",null]},
+            "repeat":{"enum":["a"]},
+            "reference":{"$ref":"#/components/schemas/First", "enum":["ignored"]},
+            "second":{"enum":["b"]}
+        }});
+        let mut codes = IndexSet::default();
+        collect_inline_enum_codes(&schema, &mut codes);
+        assert_eq!(
+            codes.into_iter().collect::<Vec<_>>(),
+            ["z.enum([\"a\"])", "z.enum([\"b\"])"]
+        );
+    }
+
+    #[test]
+    fn parameter_type_annotations_restore_exact_endpoint_metadata() {
+        let document = json!({"components":{"schemas":{"Count":{"type":["integer","null"]}}}});
+        let mut endpoints = vec![
+            json!({"parameters":[
+                {"parameterObject":{"schema":{"$ref":"#/components/schemas/Count"}}},
+                {"parameterObject":{"schema":{"$ref":"#/components/schemas/Count"}}, "x-resolvedSchemaType":"original", "after":true},
+                {"parameterObject":{"schema":{"$ref":"#/components/schemas/Missing"}}},
+                {"parameterObject":{"schema":{"type":"boolean"}}}
+            ]}),
+            json!({}),
+        ];
+        let original = serde_json::to_string(&endpoints).unwrap();
+        let previous = resolve_parameter_types(&mut endpoints, &document);
+        assert_eq!(previous.len(), 2);
+        assert_eq!(
+            primitive_parameter_type(&endpoints[0]["parameters"][0]),
+            "number | null"
+        );
+        assert_eq!(
+            endpoints[0]["parameters"][1][RESOLVED_SCHEMA_TYPE],
+            json!(["integer", "null"])
+        );
+        assert!(
+            endpoints[0]["parameters"][2]
+                .get(RESOLVED_SCHEMA_TYPE)
+                .is_none()
+        );
+        assert_eq!(
+            primitive_parameter_type(&endpoints[0]["parameters"][3]),
+            "boolean"
+        );
+        restore_parameter_types(&mut endpoints, previous);
+        assert_eq!(serde_json::to_string(&endpoints).unwrap(), original);
+    }
 
     fn options(extra: Value) -> GenerateOptions {
         let mut base = json!({ "infiniteQueries": true });

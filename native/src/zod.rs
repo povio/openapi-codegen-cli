@@ -1,4 +1,4 @@
-use std::{cell::RefCell, rc::Rc};
+use std::{borrow::Cow, cell::RefCell, collections::BTreeSet, rc::Rc};
 
 use indexmap::IndexMap as BaseIndexMap;
 use rustc_hash::{FxBuildHasher, FxHashMap as HashMap, FxHashSet as HashSet};
@@ -14,12 +14,38 @@ struct Meta {
     parent_partial: bool,
 }
 
+/// Borrowed schema fields shared by primitive and composite compilation.
+/// A type-array variant overrides only its type; the JSON tree is never copied.
+#[derive(Clone, Copy)]
+struct SchemaView<'a> {
+    object: &'a Map<String, Value>,
+    schema_type: Option<&'a Value>,
+}
+impl<'a> SchemaView<'a> {
+    fn new(object: &'a Map<String, Value>) -> Self {
+        Self {
+            object,
+            schema_type: object.get("type"),
+        }
+    }
+    fn normalized_type(self) -> Option<Cow<'a, str>> {
+        self.schema_type.and_then(Value::as_str).map(|value| {
+            if value.bytes().any(|byte| byte.is_ascii_uppercase()) {
+                Cow::Owned(value.to_ascii_lowercase())
+            } else {
+                Cow::Borrowed(value)
+            }
+        })
+    }
+}
+
 pub struct ZodCompiler<'a> {
     document: &'a Value,
     options: &'a GenerateOptions,
     resolver: &'a Resolver<'a>,
     root_enums: HashMap<String, String>,
     extracted_enums: IndexMap<String, (String, String)>,
+    extracted_enum_tags_by_name: HashMap<String, String>,
     extracted_enum_objects: Map<String, Value>,
     extracted_enum_usage_tags: HashMap<String, Vec<String>>,
     circular_getters: HashSet<String>,
@@ -61,6 +87,7 @@ impl<'a> ZodCompiler<'a> {
         }
         let (extracted_enums, extracted_enum_objects, extracted_enum_usage_tags) =
             collect_extracted_enums(document, resolver, options, &root_enums);
+        let extracted_enum_tags_by_name = first_extracted_enum_tags(&extracted_enums);
         let circular_getters = collect_precompiled_circular_refs(document, resolver);
         Self {
             document,
@@ -68,6 +95,7 @@ impl<'a> ZodCompiler<'a> {
             resolver,
             root_enums,
             extracted_enums,
+            extracted_enum_tags_by_name,
             extracted_enum_objects,
             extracted_enum_usage_tags,
             circular_getters,
@@ -284,7 +312,19 @@ impl<'a> ZodCompiler<'a> {
         let object = schema
             .as_object()
             .ok_or_else(|| "Schema must be an object".to_string())?;
-        if let Some(types) = object.get("type").and_then(Value::as_array) {
+        self.compile_view(SchemaView::new(object), meta, tag, root_ref, stack)
+    }
+
+    fn compile_view(
+        &self,
+        view: SchemaView<'_>,
+        meta: Meta,
+        tag: &str,
+        root_ref: Option<&str>,
+        stack: &mut Vec<String>,
+    ) -> Result<String, String> {
+        let object = view.object;
+        if let Some(types) = view.schema_type.and_then(Value::as_array) {
             // A `null` member makes the schema of the other members nullable (`type: ["object",
             // "null"]`); its other keywords (`properties`, `items`, ...) only describe the
             // non-null members, so a null-only type array (`type: ["null"]`) is `z.null()`
@@ -298,9 +338,11 @@ impl<'a> ZodCompiler<'a> {
             }
             let mut compiled = Vec::with_capacity(non_null.len());
             for schema_type in &non_null {
-                let mut variant = object.clone();
-                variant.insert("type".into(), (*schema_type).clone());
-                compiled.push(self.compile(&Value::Object(variant), meta, tag, root_ref, stack)?);
+                let variant = SchemaView {
+                    object,
+                    schema_type: Some(schema_type),
+                };
+                compiled.push(self.compile_view(variant, meta, tag, root_ref, stack)?);
             }
             let code = if compiled.len() == 1 {
                 compiled.remove(0)
@@ -344,13 +386,10 @@ impl<'a> ZodCompiler<'a> {
         if let Some(items) = object.get("allOf").and_then(Value::as_array) {
             return self.compile_all_of(items, meta, tag, root_ref, stack);
         }
-        if let Some(primitive) = self.compile_primitive(object, tag, root_ref)? {
+        if let Some(primitive) = self.compile_primitive(view, tag, root_ref)? {
             return Ok(primitive);
         }
-        let schema_type = object
-            .get("type")
-            .and_then(Value::as_str)
-            .map(str::to_ascii_lowercase);
+        let schema_type = view.normalized_type();
         if schema_type.as_deref() == Some("array") {
             if let Some((items, rest)) = tuple_parts(object) {
                 let required = object.get("minItems").and_then(Value::as_u64).unwrap_or(0) as usize;
@@ -459,27 +498,23 @@ impl<'a> ZodCompiler<'a> {
 
     fn compile_primitive(
         &self,
-        schema: &Map<String, Value>,
+        view: SchemaView<'_>,
         tag: &str,
         root_ref: Option<&str>,
     ) -> Result<Option<String>, String> {
-        let Some(schema_type) = schema
-            .get("type")
-            .and_then(Value::as_str)
-            .map(str::to_ascii_lowercase)
-        else {
+        let schema = view.object;
+        let Some(schema_type) = view.normalized_type() else {
             return Ok(None);
         };
         if !matches!(
-            schema_type.as_str(),
+            schema_type.as_ref(),
             "string" | "number" | "integer" | "boolean"
         ) {
             return Ok(None);
         }
         if let Some(values) = schema.get("enum").and_then(Value::as_array) {
             if schema_type == "string" {
-                let code = enum_code(&Value::Object(schema.clone()))
-                    .unwrap_or_else(|| "z.enum([])".into());
+                let code = enum_values_code(values);
                 // Match the TypeScript renderer: module-local singleton uses do not
                 // need a dependency on an enum declaration owned by another module.
                 let inline_module_singleton = self.options.models_in_modules && values.len() == 1;
@@ -526,7 +561,7 @@ impl<'a> ZodCompiler<'a> {
                 )
             }));
         }
-        Ok(Some(match schema_type.as_str() {
+        Ok(Some(match schema_type.as_ref() {
             "integer" => "z.int()".into(),
             "number" => "z.number()".into(),
             "boolean" => "z.boolean()".into(),
@@ -597,10 +632,9 @@ impl<'a> ZodCompiler<'a> {
         };
         let partial_code = if partial { ".partial()" } else { "" };
         let additional = match schema.get("additionalProperties") {
-            Some(Value::Object(object)) if !object.is_empty() => {
-                let value = Value::Object(object.clone());
+            Some(value @ Value::Object(object)) if !object.is_empty() => {
                 let mut code = self.compile(
-                    &value,
+                    value,
                     Meta {
                         required: true,
                         parent_partial: false,
@@ -610,14 +644,14 @@ impl<'a> ZodCompiler<'a> {
                     stack,
                 )?;
                 code.push_str(&chain(
-                    &value,
+                    value,
                     Meta {
                         required: true,
                         parent_partial: false,
                     },
                     self.options,
                 ));
-                if self.is_circular_member(&value, root_ref, stack) {
+                if self.is_circular_member(value, root_ref, stack) {
                     format!(".catchall(z.lazy(() => {code}))")
                 } else {
                     format!(".catchall({code})")
@@ -756,30 +790,34 @@ impl<'a> ZodCompiler<'a> {
             reference.rsplit('/').next().unwrap_or_default(),
             &self.options.schema_suffix,
         );
-        if let Some((_, tag)) = self
-            .extracted_enums
-            .values()
-            .find(|(extracted, _)| *extracted == name)
-        {
+        if let Some(tag) = self.extracted_enum_tags_by_name.get(&name) {
             return tag.clone();
         }
+        // Ownership depends on the union's cardinality, not on an allocated copy
+        // of that union. Runtime tags remain live as endpoint registration proceeds.
+        let runtime_tags = self.runtime_tags.borrow();
         let mut tags = self
             .resolver
             .schema_tags
             .get(reference)
-            .cloned()
-            .unwrap_or_default();
-        if let Some(runtime) = self.runtime_tags.borrow().get(reference) {
-            tags.extend(runtime.iter().cloned());
-        }
-        if tags.len() == 1 {
-            tags.into_iter()
-                .next()
-                .unwrap_or_else(|| self.options.default_tag.clone())
-        } else {
-            self.options.default_tag.clone()
+            .into_iter()
+            .flatten()
+            .chain(runtime_tags.get(reference).into_iter().flatten());
+        match tags.next() {
+            Some(tag) if tags.all(|other| other == tag) => tag.clone(),
+            _ => self.options.default_tag.clone(),
         }
     }
+}
+
+fn first_extracted_enum_tags(
+    enums: &IndexMap<String, (String, String)>,
+) -> HashMap<String, String> {
+    let mut tags = HashMap::default();
+    for (name, tag) in enums.values() {
+        tags.entry(name.clone()).or_insert_with(|| tag.clone());
+    }
+    tags
 }
 
 /// The `shape` of an allOf member object schema. With `allReadonly` object schemas are wrapped in
@@ -934,17 +972,24 @@ fn chain(schema: &Value, meta: Meta, options: &GenerateOptions) -> String {
 }
 
 pub(crate) fn enum_code(schema: &Value) -> Option<String> {
-    let values = schema.get("enum")?.as_array()?;
-    let values = values
-        .iter()
-        .filter(|value| !value.is_null())
-        .map(|value| match value.as_str() {
-            Some(text) => string_literal(text),
-            None => string_literal(&value.to_string()),
-        })
-        .collect::<Vec<String>>()
-        .join(", ");
-    Some(format!("z.enum([{values}])"))
+    Some(enum_values_code(schema.get("enum")?.as_array()?))
+}
+
+fn enum_values_code(values: &[Value]) -> String {
+    let mut code = String::from("z.enum([");
+    let mut first = true;
+    for value in values.iter().filter(|value| !value.is_null()) {
+        if !first {
+            code.push_str(", ");
+        }
+        first = false;
+        match value.as_str() {
+            Some(text) => code.push_str(&string_literal(text)),
+            None => code.push_str(&string_literal(&value.to_string())),
+        }
+    }
+    code.push_str("])");
+    code
 }
 
 /// A double-quoted, escaped TypeScript string literal; byte-identical to JavaScript's `JSON.stringify`.
@@ -1014,24 +1059,31 @@ pub(crate) fn object_has_schema_type(object: &Map<String, Value>, schema_type: &
     }
 }
 
-pub(crate) fn is_tuple_object(schema: &Map<String, Value>) -> bool {
-    tuple_parts(schema).is_some()
-}
-
 fn is_tuple(schema: &Value) -> bool {
     schema
         .as_object()
         .is_some_and(|object| tuple_parts(object).is_some())
 }
 pub(crate) fn schema_name(name: &str, suffix: &str) -> String {
-    let normalized = normalize_name(name);
-    let capitalized = capitalize(&normalized);
-    if capitalized.ends_with(suffix) {
-        capitalized
-    } else {
-        format!("{capitalized}{suffix}")
+    // Most references already have simple ASCII names. Keep them in one buffer
+    // instead of allocating sanitized text, a character vector, and capitalized text.
+    let trimmed = name.trim();
+    if !trimmed.is_empty() && trimmed.bytes().all(|byte| byte.is_ascii_alphanumeric()) {
+        let mut result = String::with_capacity(trimmed.len() + suffix.len());
+        result.push_str(trimmed);
+        result[..1].make_ascii_uppercase();
+        if !result.ends_with(suffix) {
+            result.push_str(suffix);
+        }
+        return result;
     }
+    let mut capitalized = capitalize(&normalize_name(name));
+    if !capitalized.ends_with(suffix) {
+        capitalized.push_str(suffix);
+    }
+    capitalized
 }
+
 fn normalize_name(value: &str) -> String {
     let mut sanitized = String::new();
     let mut separator = false;
@@ -1239,56 +1291,7 @@ fn collect_extracted_enums(
         };
         preliminary.insert(code.clone(), (name, tag));
     }
-    // Match JavaScript's progressive disambiguation using preceding name segments.
-    for depth in 2..=6 {
-        for index in 0..preliminary.len() {
-            let name = preliminary[index].0.clone();
-            let duplicates: Vec<usize> = (0..preliminary.len())
-                .filter(|&other| preliminary[other].0 == name)
-                .collect();
-            if duplicates.len() < 2 {
-                continue;
-            }
-            for other in duplicates {
-                let (code, (name, _)) = preliminary.get_index_mut(other).unwrap();
-                let preceding: Vec<String> = candidates[code]
-                    .name_segments
-                    .iter()
-                    .filter_map(|segments| {
-                        segments
-                            .len()
-                            .checked_sub(depth)
-                            .map(|i| segments[i].clone())
-                    })
-                    .collect();
-                let prefix = if preceding.len() == 1 {
-                    preceding.first().cloned()
-                } else {
-                    most_common_adjacent(&preceding)
-                };
-                if let Some(prefix) = prefix {
-                    *name = format!("{}{name}", sanitize_enum_segment(&prefix));
-                }
-            }
-        }
-    }
-    let duplicates: Vec<usize> = (0..preliminary.len())
-        .filter(|&index| {
-            preliminary
-                .values()
-                .filter(|(name, _)| name == &preliminary[index].0)
-                .count()
-                > 1
-        })
-        .collect();
-    for index in duplicates {
-        let (code, (name, _)) = preliminary.get_index_mut(index).unwrap();
-        let full_name = candidates[code].name_segments[0]
-            .iter()
-            .map(|segment| sanitize_enum_segment(segment))
-            .collect::<String>();
-        *name = enum_schema_name(&full_name, &options.enum_suffix, &options.schema_suffix);
-    }
+    disambiguate_enum_names(&mut preliminary, &candidates, options);
     let objects = preliminary
         .iter()
         .map(|(code, (name, _))| {
@@ -1307,6 +1310,73 @@ fn collect_extracted_enums(
         })
         .collect();
     (preliminary, objects, usage_tags)
+}
+
+fn disambiguate_enum_names(
+    preliminary: &mut IndexMap<String, (String, String)>,
+    candidates: &IndexMap<String, ExtractedEnumCandidate>,
+    options: &GenerateOptions,
+) {
+    let mut by_name: HashMap<String, BTreeSet<usize>> = HashMap::default();
+    for (index, (name, _)) in preliminary.values().enumerate() {
+        by_name.entry(name.clone()).or_default().insert(index);
+    }
+    // Match JavaScript's progressive disambiguation. Renames update the index immediately:
+    // a later candidate can collide with a name produced earlier in the same depth pass.
+    for depth in 2..=6 {
+        if by_name.values().all(|indices| indices.len() < 2) {
+            break;
+        }
+        for index in 0..preliminary.len() {
+            let indices = &by_name[&preliminary[index].0];
+            if indices.len() < 2 {
+                continue;
+            }
+            // Snapshot in original candidate order, even while this group's names change.
+            let duplicates: Vec<usize> = indices.iter().copied().collect();
+            for other in duplicates {
+                let (code, (name, _)) = preliminary.get_index_mut(other).unwrap();
+                let preceding: Vec<String> = candidates[code]
+                    .name_segments
+                    .iter()
+                    .filter_map(|segments| {
+                        segments
+                            .len()
+                            .checked_sub(depth)
+                            .map(|i| segments[i].clone())
+                    })
+                    .collect();
+                let prefix = if preceding.len() == 1 {
+                    preceding.first().cloned()
+                } else {
+                    most_common_adjacent(&preceding)
+                };
+                if let Some(prefix) = prefix {
+                    let next = format!("{}{name}", sanitize_enum_segment(&prefix));
+                    if next != *name {
+                        let indices = by_name.get_mut(name).unwrap();
+                        indices.remove(&other);
+                        if indices.is_empty() {
+                            by_name.remove(name);
+                        }
+                        by_name.entry(next.clone()).or_default().insert(other);
+                        *name = next;
+                    }
+                }
+            }
+        }
+    }
+    let duplicates: Vec<usize> = (0..preliminary.len())
+        .filter(|&index| by_name[&preliminary[index].0].len() > 1)
+        .collect();
+    for index in duplicates {
+        let (code, (name, _)) = preliminary.get_index_mut(index).unwrap();
+        let full_name = candidates[code].name_segments[0]
+            .iter()
+            .map(|segment| sanitize_enum_segment(segment))
+            .collect::<String>();
+        *name = enum_schema_name(&full_name, &options.enum_suffix, &options.schema_suffix);
+    }
 }
 
 fn sanitize_enum_segment(segment: &str) -> String {
@@ -1616,21 +1686,246 @@ fn collect_schema_refs(value: &Value, refs: &mut HashSet<String>) {
 }
 
 fn schema_reaches(schema: &Value, root: &str, resolver: &Resolver<'_>) -> bool {
-    let mut refs = HashSet::default();
-    collect_schema_refs(schema, &mut refs);
-    refs.iter().any(|reference| {
-        reference == root
-            || resolver
-                .deep_dependencies
-                .get(reference)
-                .is_some_and(|dependencies| dependencies.contains(root))
-    })
+    match schema {
+        Value::Object(object) => {
+            if let Some(reference) = object.get("$ref").and_then(Value::as_str) {
+                let reference = autocorrect_ref(reference);
+                if reference == root
+                    || resolver
+                        .deep_dependencies
+                        .get(&reference)
+                        .is_some_and(|dependencies| dependencies.contains(root))
+                {
+                    return true;
+                }
+            }
+            object.iter().any(|(key, value)| {
+                !is_stray_array_keyword(object, key) && schema_reaches(value, root, resolver)
+            })
+        }
+        Value::Array(values) => values
+            .iter()
+            .any(|value| schema_reaches(value, root, resolver)),
+        _ => false,
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{is_stray_array_keyword, js_number};
+    use super::*;
     use serde_json::json;
+
+    fn disambiguated_names(cases: &[(&str, &[&str])]) -> Vec<String> {
+        let options: GenerateOptions = serde_json::from_value(json!({})).unwrap();
+        let mut names = IndexMap::default();
+        let mut candidates = IndexMap::default();
+        for (index, (name, segments)) in cases.iter().enumerate() {
+            let code = format!("z.enum([\"{index}\"])");
+            names.insert(code.clone(), (name.to_string(), "Tag".to_string()));
+            candidates.insert(
+                code,
+                ExtractedEnumCandidate {
+                    name_segments: vec![
+                        segments.iter().map(|segment| segment.to_string()).collect(),
+                    ],
+                    ..Default::default()
+                },
+            );
+        }
+        disambiguate_enum_names(&mut names, &candidates, &options);
+        names.into_values().map(|(name, _)| name).collect()
+    }
+
+    #[test]
+    fn borrowed_type_variants_preserve_original_schema_and_case_rules() {
+        let document = json!({});
+        let options: GenerateOptions = serde_json::from_value(json!({})).unwrap();
+        let resolver = Resolver::new(&document, &options).unwrap();
+        let compiler = ZodCompiler::new(&document, &options, &resolver);
+        let schema = json!({"type":["STRING","null"], "format":"email", "description":"literal STRING null"});
+        let original = schema.clone();
+        assert_eq!(
+            compiler
+                .compile_endpoint_schema(&schema, true, "Tag")
+                .unwrap()
+                .0,
+            "z.email().nullable()"
+        );
+        assert_eq!(schema, original);
+        let schema =
+            json!({"type":["string","number"], "properties":{"ignored":{"type":"boolean"}}});
+        assert_eq!(
+            compiler
+                .compile_endpoint_schema(&schema, true, "Tag")
+                .unwrap()
+                .0,
+            "z.union([z.string(), z.number()])"
+        );
+    }
+
+    #[test]
+    fn schema_names_preserve_normalization_and_suffix_boundaries() {
+        for (name, suffix, expected) in [
+            ("pet", "Schema", "PetSchema"),
+            (" PetSchema ", "Schema", "PetSchema"),
+            ("1pet", "Schema", "1petSchema"),
+            ("pet", "", "Pet"),
+            ("", "Schema", "Schema"),
+            ("pet", "Pet", "Pet"),
+            ("pet", "pet", "Petpet"),
+            ("a__b", "Schema", "A_bSchema"),
+            ("a---b", "Schema", "ABSchema"),
+            ("éclair", "Schema", "ClairSchema"),
+        ] {
+            assert_eq!(schema_name(name, suffix), expected);
+        }
+    }
+
+    #[test]
+    fn borrowed_enum_values_preserve_null_filtering_and_literal_escaping() {
+        assert_eq!(
+            enum_code(&json!({"enum": [null, "a\\b", "c\"d", 2, true]})),
+            Some(r#"z.enum(["a\\b", "c\"d", "2", "true"])"#.to_string())
+        );
+        assert_eq!(
+            enum_code(&json!({"enum": [null]})),
+            Some("z.enum([])".to_string())
+        );
+        assert_eq!(enum_code(&json!({"enum": "invalid"})), None);
+    }
+
+    #[test]
+    fn enum_renaming_handles_new_collisions_in_the_same_pass_in_candidate_order() {
+        let names = disambiguated_names(&[
+            ("FooEnumSchema", &["Bar", "x"]),
+            ("FooEnumSchema", &["Baz", "x"]),
+            ("BarFooEnumSchema", &["Qux", "x"]),
+        ]);
+        // The third candidate collides with the first candidate's newly prefixed name,
+        // and both are renamed again during depth two, despite index zero having passed.
+        assert_eq!(
+            names,
+            [
+                "BarBarFooEnumSchema",
+                "BazFooEnumSchema",
+                "QuxBarFooEnumSchema"
+            ]
+        );
+    }
+
+    #[test]
+    fn enum_fallback_snapshots_persistent_collisions_before_replacing_names() {
+        let names = disambiguated_names(&[
+            ("FooEnumSchema", &["Root", "x"]),
+            ("FooEnumSchema", &["Root", "x"]),
+            ("RootXEnumSchema", &["Solo"]),
+        ]);
+        // Fallback can create another collision; the previously unique third candidate
+        // must not be reclassified and renamed to SoloEnumSchema during this final pass.
+        assert_eq!(
+            names,
+            ["RootXEnumSchema", "RootXEnumSchema", "RootXEnumSchema"]
+        );
+    }
+
+    #[test]
+    fn unique_enum_names_and_first_canonical_component_are_preserved() {
+        assert_eq!(
+            disambiguated_names(&[("UniqueEnumSchema", &["Unused", "x"])]),
+            ["UniqueEnumSchema"]
+        );
+        let document = json!({"components": {"schemas": {
+            "FirstStatus": {"type": "string", "enum": ["a", "b"]},
+            "SecondStatus": {"type": "string", "enum": ["a", "b"]},
+            "Container": {"type": "object", "properties": {
+                "status": {"type": "string", "enum": ["a", "b"]}
+            }}
+        }}});
+        let options: GenerateOptions = serde_json::from_value(json!({})).unwrap();
+        let resolver = Resolver::new(&document, &options).unwrap();
+        let compiler = ZodCompiler::new(&document, &options, &resolver);
+        assert_eq!(
+            compiler.matching_component_enum_ref(&json!({"type": "string", "enum": ["a", "b"]})),
+            Some("#/components/schemas/FirstStatus".to_string())
+        );
+        assert!(compiler.extracted_enums.is_empty());
+    }
+
+    #[test]
+    fn schema_ownership_reads_current_runtime_tags_without_caching() {
+        let document = json!({});
+        let options: GenerateOptions = serde_json::from_value(json!({})).unwrap();
+        let reference = "#/components/schemas/Item";
+        for initial in [vec![], vec!["First"], vec!["First", "Second"]] {
+            let mut resolver = Resolver::new(&document, &options).unwrap();
+            resolver.schema_tags.insert(
+                reference.to_string(),
+                initial.iter().map(|tag| tag.to_string()).collect(),
+            );
+            let runtime_tags = Rc::new(RefCell::new(HashMap::default()));
+            let compiler = ZodCompiler::new_with_runtime_tags(
+                &document,
+                &options,
+                &resolver,
+                runtime_tags.clone(),
+            );
+            assert_eq!(
+                compiler.schema_tag(reference),
+                if initial.len() == 1 {
+                    "First"
+                } else {
+                    &options.default_tag
+                }
+            );
+            runtime_tags.borrow_mut().insert(
+                reference.to_string(),
+                HashSet::from_iter(["First".to_string()]),
+            );
+            assert_eq!(
+                compiler.schema_tag(reference),
+                if initial.len() < 2 {
+                    "First"
+                } else {
+                    &options.default_tag
+                }
+            );
+            runtime_tags
+                .borrow_mut()
+                .get_mut(reference)
+                .unwrap()
+                .insert("Second".to_string());
+            assert_eq!(compiler.schema_tag(reference), options.default_tag);
+        }
+    }
+
+    #[test]
+    fn extracted_enum_name_collisions_keep_first_owner_before_component_tags() {
+        let document = json!({});
+        let options: GenerateOptions = serde_json::from_value(json!({})).unwrap();
+        let reference = "#/components/schemas/StatusEnum";
+        let mut resolver = Resolver::new(&document, &options).unwrap();
+        resolver.schema_tags.insert(
+            reference.to_string(),
+            HashSet::from_iter(["Component".to_string()]),
+        );
+        let mut compiler = ZodCompiler::new(&document, &options, &resolver);
+        let enums = IndexMap::from_iter([
+            (
+                "z.enum([\"first\"])".to_string(),
+                ("StatusEnumSchema".to_string(), "First".to_string()),
+            ),
+            (
+                "z.enum([\"second\"])".to_string(),
+                ("StatusEnumSchema".to_string(), "Second".to_string()),
+            ),
+        ]);
+        compiler.extracted_enum_tags_by_name = first_extracted_enum_tags(&enums);
+        compiler.runtime_tags.borrow_mut().insert(
+            reference.to_string(),
+            HashSet::from_iter(["Runtime".to_string()]),
+        );
+        assert_eq!(compiler.schema_tag(reference), "First");
+    }
 
     #[test]
     fn formats_numbers_like_javascript() {

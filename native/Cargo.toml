@@ -28,6 +28,7 @@ regex = "1"
 indexmap = { version = "2", features = ["serde"] }
 mimalloc = { version = "0.1", default-features = false }
 rustc-hash = "2"
+rayon = "1.12"
 
 [build-dependencies]
 napi-build = "2"

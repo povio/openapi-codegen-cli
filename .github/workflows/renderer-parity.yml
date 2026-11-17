@@ -33,6 +33,12 @@ jobs:
       - run: bun run build:native
         if: matrix.renderer == 'native'
 
+      - name: Test native ownership, caching, and worker lifecycle
+        if: matrix.renderer == 'native'
+        run: |
+          cargo test --manifest-path native/Cargo.toml
+          bunx vitest run src/native/cache.test.ts src/native/worker-pool.test.ts
+
       - name: Check configuration parity and runtime regressions
         if: matrix.renderer == 'native'
         run: bun run test:parity

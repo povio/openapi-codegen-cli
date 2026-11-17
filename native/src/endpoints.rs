@@ -6,7 +6,7 @@ use serde_json::{Map, Number, Value};
 use crate::{
     config::GenerateOptions,
     resolver::{IndexedOperation, Resolver, format_tag},
-    zod::ZodCompiler,
+    zod::{ZodCompiler, schema_name},
 };
 
 pub struct EndpointExtractor<'a> {
@@ -110,20 +110,18 @@ impl<'a> EndpointExtractor<'a> {
         names
     }
 
-    fn register_inline_dependencies(
-        &self,
-        schema: &Value,
-        tag: &str,
-    ) -> Result<Vec<String>, String> {
+    fn register_inline_references(&self, schema: &Value, tag: &str) -> Result<Vec<String>, String> {
+        // Referenced schemas are registered separately and never get a generated
+        // endpoint dependency entry. Avoid expanding their entire graph here.
+        if schema.get("$ref").is_some() {
+            return Ok(Vec::new());
+        }
         let mut references = Vec::new();
         collect_compiled_reference_order(schema, &mut references, &mut HashSet::default());
-        let dependencies = self.generated_dependency_names_from_references(&references);
-        if schema.get("$ref").is_none() {
-            for reference in references {
-                self.register_reference(&reference, tag)?;
-            }
+        for reference in &references {
+            self.register_reference(reference, tag)?;
         }
-        Ok(dependencies)
+        Ok(references)
     }
 
     fn add_generated_dependency(
@@ -293,7 +291,7 @@ impl<'a> EndpointExtractor<'a> {
                 if let Some(schema) = schema {
                     self.register_reference_schema(schema, &indexed.tag)?;
                     let schema_object = self.resolve(schema).unwrap_or(schema);
-                    let dependencies = self.register_inline_dependencies(schema, &indexed.tag)?;
+                    let references = self.register_inline_references(schema, &indexed.tag)?;
                     let (code, chain) =
                         self.compiler
                             .compile_endpoint_schema(schema, true, &indexed.tag)?;
@@ -320,7 +318,10 @@ impl<'a> EndpointExtractor<'a> {
                     {
                         self.set_generated_schema(resolved.clone(), code, &indexed.tag);
                         self.set_generated_object(&resolved, schema_object);
-                        self.set_generated_dependencies(&resolved, dependencies);
+                        self.set_generated_dependencies(
+                            &resolved,
+                            self.generated_dependency_names_from_references(&references),
+                        );
                     }
                     let response_zod = format!("{resolved}{chain}");
                     let status = status_code.parse::<u16>().ok();
@@ -585,7 +586,7 @@ impl<'a> EndpointExtractor<'a> {
             .get("required")
             .and_then(Value::as_bool)
             .unwrap_or(false);
-        let dependencies = self.register_inline_dependencies(schema, &indexed.tag)?;
+        let references = self.register_inline_references(schema, &indexed.tag)?;
         let (code, chain) =
             self.compiler
                 .compile_endpoint_schema(schema, required, &indexed.tag)?;
@@ -610,7 +611,10 @@ impl<'a> EndpointExtractor<'a> {
         if naming.get("$ref").is_none() && complexity(actual) >= COMPLEXITY_THRESHOLD {
             self.set_generated_schema(resolved.clone(), code, &indexed.tag);
             self.set_generated_object(&resolved, actual);
-            self.set_generated_dependencies(&resolved, dependencies);
+            self.set_generated_dependencies(
+                &resolved,
+                self.generated_dependency_names_from_references(&references),
+            );
         }
         let zod = if is_named(&resolved) {
             resolved
@@ -702,7 +706,7 @@ impl<'a> EndpointExtractor<'a> {
                 .and_then(Value::as_bool)
                 .unwrap_or(false);
         self.register_reference_schema(schema, &indexed.tag)?;
-        let dependencies = self.register_inline_dependencies(schema, &indexed.tag)?;
+        let references = self.register_inline_references(schema, &indexed.tag)?;
         let (code, chain) =
             self.compiler
                 .compile_endpoint_schema(schema, required, &indexed.tag)?;
@@ -752,7 +756,10 @@ impl<'a> EndpointExtractor<'a> {
         if naming.get("$ref").is_none() && complexity(actual) >= COMPLEXITY_THRESHOLD {
             self.set_generated_schema(zod.clone(), composed_code, &indexed.tag);
             self.set_generated_object(&zod, actual);
-            self.set_generated_dependencies(&zod, dependencies);
+            self.set_generated_dependencies(
+                &zod,
+                self.generated_dependency_names_from_references(&references),
+            );
         }
         let mut result = Map::new();
         result.insert(
@@ -1017,54 +1024,30 @@ fn naming_schema(compiler: &ZodCompiler, schema: &Value) -> Option<Value> {
 /// Below this complexity an endpoint schema is inlined instead of named (`COMPLEXITY_THRESHOLD`).
 const COMPLEXITY_THRESHOLD: u32 = 2;
 
-/// `getOpenAPISchemaComplexity(0, schema)`.
+/// `getOpenAPISchemaComplexity(0, schema)`, capped at the only threshold callers use.
 fn complexity(schema: &Value) -> u32 {
     schema_complexity(0, Some(schema))
 }
 
-/// A port of `getOpenAPISchemaComplexity`; JavaScript truthiness decides which branch applies.
+/// A capped port of `getOpenAPISchemaComplexity`; JavaScript truthiness decides each branch.
+/// Every contribution is nonnegative, so reaching the naming threshold ends the walk.
 fn schema_complexity(current: u32, schema: Option<&Value>) -> u32 {
+    if current >= COMPLEXITY_THRESHOLD {
+        return COMPLEXITY_THRESHOLD;
+    }
     let Some(schema) = schema.filter(|schema| !schema.is_null()) else {
         return current;
     };
     let truthy = |key: &str| schema.get(key).is_some_and(is_truthy);
     if schema.get("$ref").is_some() {
-        return current + 2;
+        return COMPLEXITY_THRESHOLD;
     }
-    if let Some(types) = schema.get("type").and_then(Value::as_array) {
-        let with_type = |schema_type: &Value| {
-            let mut single = schema.clone();
-            single["type"] = schema_type.clone();
-            single
-        };
-        if types.len() == 1 {
-            return 2 + schema_complexity(current, Some(&with_type(&types[0])));
-        }
-        return current
-            + 2
-            + types
-                .iter()
-                .map(|schema_type| schema_complexity(0, Some(&with_type(schema_type))))
-                .sum::<u32>();
+    // Even an empty type array contributes two, without inspecting cloned variants.
+    if schema.get("type").is_some_and(Value::is_array) {
+        return COMPLEXITY_THRESHOLD;
     }
-    for (key, composite) in [("oneOf", 2), ("anyOf", 3), ("allOf", 2)] {
-        if !truthy(key) {
-            continue;
-        }
-        let items = schema
-            .get(key)
-            .and_then(Value::as_array)
-            .map(Vec::as_slice)
-            .unwrap_or_default();
-        if items.len() == 1 {
-            return composite + schema_complexity(current, Some(&items[0]));
-        }
-        return current
-            + composite
-            + items
-                .iter()
-                .map(|item| schema_complexity(0, Some(item)))
-                .sum::<u32>();
+    if ["oneOf", "anyOf", "allOf"].into_iter().any(truthy) {
+        return COMPLEXITY_THRESHOLD;
     }
     let schema_type = schema.get("type").and_then(Value::as_str);
     // Object keywords do not apply to `null` (see zod.rs).
@@ -1073,35 +1056,25 @@ fn schema_complexity(current: u32, schema: Option<&Value>) -> u32 {
     }
     if let Some("string" | "number" | "integer" | "boolean") = schema_type {
         if truthy("enum") {
-            return current
-                + 1
-                + 1
-                + schema
-                    .get("enum")
-                    .and_then(Value::as_array)
-                    .map(|values| {
-                        values
-                            .iter()
-                            .map(|value| schema_complexity(0, Some(value)))
-                            .sum()
-                    })
-                    .unwrap_or(0);
+            return COMPLEXITY_THRESHOLD;
         }
         return current + 1;
     }
     if schema_type == Some("array") {
-        if let Some(object) = schema
-            .as_object()
-            .filter(|object| crate::zod::is_tuple_object(object))
-        {
-            return current
-                + 1
-                + crate::zod::array_item_schemas(object)
-                    .into_iter()
-                    .map(|item| schema_complexity(0, Some(item)))
-                    .sum::<u32>();
+        let mut current = current + 1;
+        if current >= COMPLEXITY_THRESHOLD {
+            return COMPLEXITY_THRESHOLD;
         }
-        return 1 + if truthy("items") {
+        if let Some((items, rest)) = schema.as_object().and_then(crate::zod::tuple_parts) {
+            for item in items.iter().chain(rest.filter(|rest| rest.is_object())) {
+                current = schema_complexity(current, Some(item));
+                if current >= COMPLEXITY_THRESHOLD {
+                    break;
+                }
+            }
+            return current;
+        }
+        return if truthy("items") {
             schema_complexity(current, schema.get("items"))
         } else {
             current
@@ -1109,24 +1082,15 @@ fn schema_complexity(current: u32, schema: Option<&Value>) -> u32 {
     }
     let mut current = current;
     if schema_type == Some("object") || truthy("properties") || truthy("additionalProperties") {
-        if let Some(properties) = schema.get("properties").filter(|value| is_truthy(value)) {
-            current += 2 + properties
-                .as_object()
-                .map(|properties| {
-                    properties
-                        .values()
-                        .map(|property| schema_complexity(0, Some(property)))
-                        .sum()
-                })
-                .unwrap_or(0);
-        } else {
-            current += 1;
+        if truthy("properties") {
+            return COMPLEXITY_THRESHOLD;
         }
+        current += 1;
         match schema.get("additionalProperties") {
             Some(additional @ Value::Object(_)) => {
-                current += schema_complexity(0, Some(additional));
+                return schema_complexity(current, Some(additional));
             }
-            Some(additional) if is_truthy(additional) => current += 1,
+            Some(additional) if is_truthy(additional) => return COMPLEXITY_THRESHOLD,
             _ => {}
         }
     }
@@ -1153,50 +1117,6 @@ fn response_schema_name(status: &str, operation: &str, unique: bool, tag: &str) 
     } else {
         snake_to_camel(&format!("{op}Response"))
     }
-}
-fn schema_name(name: &str, suffix: &str) -> String {
-    let name = capitalize(&normalize_name(name));
-    if name.ends_with(suffix) {
-        name
-    } else {
-        format!("{name}{suffix}")
-    }
-}
-fn normalize_name(value: &str) -> String {
-    let mut sanitized = String::new();
-    let mut separator = false;
-    for ch in value.trim().chars() {
-        if ch.is_ascii_alphanumeric() || ch == '_' {
-            sanitized.push(ch);
-            separator = false;
-        } else if !separator {
-            sanitized.push('_');
-            separator = true;
-        }
-    }
-    if sanitized
-        .chars()
-        .next()
-        .is_some_and(|ch| ch.is_ascii_digit())
-    {
-        sanitized.insert(0, '_');
-    }
-    let chars: Vec<char> = sanitized.chars().collect();
-    let mut output = String::new();
-    let mut index = 0;
-    while index < chars.len() {
-        if chars[index] == '_'
-            && index + 1 < chars.len()
-            && (chars[index + 1].is_ascii_alphanumeric() || chars[index + 1] == '_')
-        {
-            output.extend(chars[index + 1].to_uppercase());
-            index += 2;
-        } else {
-            output.push(chars[index]);
-            index += 1;
-        }
-    }
-    output
 }
 fn snake_to_camel(value: &str) -> String {
     let mut out = String::new();
@@ -1331,5 +1251,155 @@ fn add_missing_path_parameters(path: &str, parameters: &mut Vec<Value>) {
             parameters.push(serde_json::json!({"name":name,"type":"Path","zodSchema":"z.string()","parameterObject":{"name":name,"required":true,"in":"path","schema":{"type":"string"}}}));
         }
         index = end;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn schema_complexity_preserves_inline_and_named_boundaries() {
+        for (schema, expected) in [
+            (json!(null), 0),
+            (json!(false), 0),
+            (json!({}), 0),
+            (json!({"$ref": null}), 2),
+            (json!({"type": "string"}), 1),
+            (json!({"type": "integer"}), 1),
+            (json!({"type": "number", "enum": []}), 2),
+            (json!({"type": "boolean", "enum": [true]}), 2),
+            (json!({"type": "string", "enum": true}), 2),
+            (json!({"type": "string", "enum": false}), 1),
+            (json!({"type": "string", "enum": null}), 1),
+            (json!({"type": "string", "enum": {}}), 2),
+            (json!({"type": "object"}), 1),
+            (json!({"type": "object", "properties": {}}), 2),
+            (json!({"type": "object", "properties": []}), 2),
+            (json!({"type": "object", "properties": false}), 1),
+            (json!({"type": "object", "properties": null}), 1),
+            (json!({"properties": {"name": {"type": "string"}}}), 0),
+            (json!({"type": "null", "properties": {}}), 0),
+            (json!({"type": null, "properties": {}}), 0),
+            (json!({"type": false, "properties": {}}), 0),
+            (json!({"type": "", "properties": {}}), 0),
+            (json!({"type": 1}), 0),
+            (json!({"type": 1, "properties": {}}), 2),
+            (json!({"type": "unknown"}), 0),
+            (json!({"type": "unknown", "additionalProperties": true}), 2),
+            (json!({"type": []}), 2),
+            (json!({"type": ["null"]}), 2),
+            (json!({"type": ["string"]}), 2),
+            (json!({"type": ["object", "null"]}), 2),
+            (json!({"type": [null, 1, {}]}), 2),
+            (json!({"oneOf": []}), 2),
+            (json!({"anyOf": [{}]}), 2),
+            (json!({"allOf": [{}, {"type": "string"}]}), 2),
+            (json!({"oneOf": true}), 2),
+            (json!({"allOf": {}, "type": "null"}), 2),
+            (json!({"oneOf": false, "type": "string"}), 1),
+            (json!({"type": "array"}), 1),
+            (json!({"type": "array", "items": {}}), 1),
+            (json!({"type": "array", "items": {"type": "null"}}), 1),
+            (json!({"type": "array", "items": {"type": "string"}}), 2),
+            (json!({"type": "array", "items": {"type": "array"}}), 2),
+            (json!({"type": "array", "items": false}), 1),
+            (json!({"type": "array", "items": []}), 1),
+            (json!({"type": "array", "items": [{}]}), 1),
+            (
+                json!({"type": "array", "items": [{}, {"type": "integer"}]}),
+                2,
+            ),
+            (json!({"type": "array", "prefixItems": [], "items": {}}), 1),
+            (
+                json!({"type": "array", "prefixItems": [{}], "items": true}),
+                1,
+            ),
+            (
+                json!({"type": "array", "prefixItems": [], "items": {"type": "string"}}),
+                2,
+            ),
+            (
+                json!({"type": "array", "items": [], "additionalItems": {"type": "string"}}),
+                2,
+            ),
+            (
+                json!({"type": "array", "items": [], "additionalItems": true}),
+                1,
+            ),
+            (json!({"type": "object", "additionalProperties": false}), 1),
+            (json!({"type": "object", "additionalProperties": true}), 2),
+            (json!({"type": "object", "additionalProperties": {}}), 1),
+            (
+                json!({"type": "object", "additionalProperties": {"type": "null"}}),
+                1,
+            ),
+            (
+                json!({"type": "object", "additionalProperties": {"type": "string"}}),
+                2,
+            ),
+            (json!({"type": "object", "additionalProperties": []}), 2),
+        ] {
+            assert_eq!(complexity(&schema), expected, "{schema}");
+        }
+    }
+
+    #[test]
+    fn inline_endpoint_dependencies_keep_nested_reference_order_and_registration() {
+        let reference = json!({"$ref": "#/components/schemas/Parent"});
+        let inline = json!({
+            "type": "object",
+            "properties": {"parent": reference.clone()}
+        });
+        let document = json!({
+            "openapi": "3.0.0",
+            "paths": {
+                "/inline": {"post": {
+                    "operationId": "create",
+                    "tags": ["Inline"],
+                    "requestBody": {"content": {"application/json": {"schema": inline.clone()}}},
+                    "parameters": [{"name": "filter", "in": "query", "schema": inline.clone()}],
+                    "responses": {"200": {"content": {"application/json": {"schema": inline}}}}
+                }},
+                "/referenced": {"post": {
+                    "operationId": "referenced",
+                    "tags": ["Referenced"],
+                    "requestBody": {"content": {"application/json": {"schema": reference.clone()}}},
+                    "parameters": [{"name": "filter", "in": "query", "schema": reference.clone()}],
+                    "responses": {"200": {"content": {"application/json": {"schema": reference}}}}
+                }}
+            },
+            "components": {"schemas": {
+                "Parent": {"type": "object", "properties": {"child": {"$ref": "#/components/schemas/Child"}}},
+                "Child": {"type": "object", "properties": {"name": {"type": "string"}}}
+            }}
+        });
+        let options: GenerateOptions = serde_json::from_value(json!({})).unwrap();
+        let resolver = Resolver::new(&document, &options).unwrap();
+        let extractor = EndpointExtractor::new(&document, &options, &resolver);
+        let endpoints = extractor.extract().unwrap();
+        assert_eq!(endpoints.len(), 2);
+        assert!(
+            extractor.runtime_tags.borrow()["#/components/schemas/Parent"].contains("Referenced")
+        );
+        let (generated, _) = extractor.into_generated_data();
+        // Inline body, query parameter, and response each retain their full graph.
+        assert_eq!(generated.dependencies.len(), 3);
+        for dependencies in generated.dependencies.values() {
+            assert_eq!(dependencies, &json!(["ParentSchema", "ChildSchema"]));
+        }
+        // Root references still register component usage, but create no endpoint aliases.
+        assert!(
+            generated
+                .dependencies
+                .keys()
+                .all(|name| !name.starts_with("Referenced"))
+        );
+        assert_eq!(
+            generated.first_tags["#/components/schemas/Parent"],
+            "Inline"
+        );
+        assert_eq!(generated.first_tags["#/components/schemas/Child"], "Inline");
     }
 }
