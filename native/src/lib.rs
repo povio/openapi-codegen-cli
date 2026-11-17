@@ -13,8 +13,8 @@ use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use serde_json::Value;
 
-#[global_allocator]
-static ALLOCATOR: mimalloc::MiMalloc = mimalloc::MiMalloc;
+// Use the system allocator: this addon can unload with its last Node worker and
+// later reload. An embedded allocator's thread-local state can outlive that load.
 
 #[napi(module_exports)]
 pub fn initialize_render_environment(env: Env) -> Result<()> {

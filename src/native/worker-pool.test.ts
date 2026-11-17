@@ -105,6 +105,13 @@ test.each(["reuse", "shutdown", "reload"])(
         console.log("worker shutdown passed");
         return;
       }
+      if (mode === "reload") {
+        // Keep the parent unloaded across repeated worker-only lifecycles so
+        // stale allocator or pool state cannot be hidden by a parent reference.
+        for (let round = 0; round < 3; round++) {
+          assert.deepEqual(await concurrentRound(), first);
+        }
+      }
       const native = require(binary);
       const expected = cases.map(testCase => {
         const result = native.compileData(testCase.source, false, testCase.options);
