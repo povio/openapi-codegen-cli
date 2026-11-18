@@ -27,7 +27,11 @@ export class IncrementalCache {
   private readonly manifestPath: string;
   private manifest: IncrementalManifest | undefined;
 
-  constructor(output: string) {
+  /** `salt` identifies how files are post-processed (the formatter), so changing it rewrites them. */
+  constructor(
+    output: string,
+    private readonly salt = "",
+  ) {
     const outputPath = path.resolve(output);
     this.manifestPath = path.join(findCacheDirectory(outputPath), `${hash(outputPath).slice(0, 32)}.json`);
     this.manifest = readManifest(this.manifestPath);
@@ -49,7 +53,8 @@ export class IncrementalCache {
     const previous = this.manifest?.files;
     if (!previous) return filesData;
     return filesData.filter(
-      ({ fileName, content }) => previous[path.resolve(fileName)] !== hash(content) || !fs.existsSync(fileName),
+      ({ fileName, content }) =>
+        previous[path.resolve(fileName)] !== hash(this.salt + content) || !fs.existsSync(fileName),
     );
   }
 
@@ -57,7 +62,9 @@ export class IncrementalCache {
     const manifest: IncrementalManifest = {
       version: MANIFEST_VERSION,
       key,
-      files: Object.fromEntries(filesData.map(({ fileName, content }) => [path.resolve(fileName), hash(content)])),
+      files: Object.fromEntries(
+        filesData.map(({ fileName, content }) => [path.resolve(fileName), hash(this.salt + content)]),
+      ),
       stats,
     };
     try {

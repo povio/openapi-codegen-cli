@@ -17,7 +17,7 @@ describe("configuration coverage inventory", () => {
     expect(layouts.filter((s) => s.invalid)).toHaveLength(56);
     expect(new Set(parityScenarios.map((s) => s.name)).size).toBe(parityScenarios.length);
     expect(Object.keys(optionCases).length).toBeGreaterThan(40);
-    expect(lifecycleOptions).toEqual(["input", "output", "clearOutput", "incremental"]);
+    expect(lifecycleOptions).toEqual(["input", "output", "clearOutput", "incremental", "format"]);
   });
 });
 

@@ -128,7 +128,7 @@ class GenerateOptions implements GenerateParams {
   @CliOption({ envAlias: "axiosRequestConfig", type: "boolean" })
   axiosRequestConfig?: boolean;
 
-  @CliOption({ envAlias: "format", default: true, type: "boolean" })
+  @CliOption({ envAlias: "format", type: "boolean" })
   format?: boolean;
 
   @CliOption({ envAlias: "verbose", default: false, type: "boolean" })

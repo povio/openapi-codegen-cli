@@ -11,7 +11,7 @@ function parse(...args: string[]) {
 
 describe("parseCliOptions", () => {
   test("applies declared defaults", () => {
-    expect(parse()).toEqual({ format: true, verbose: false });
+    expect(parse()).toEqual({ verbose: false });
   });
 
   test("reads string values in both spellings", () => {
@@ -52,7 +52,7 @@ describe("parseCliOptions", () => {
   });
 
   test("ignores positionals and everything after --", () => {
-    expect(parse("extra", "--", "--input", "x")).toEqual({ format: true, verbose: false });
+    expect(parse("extra", "--", "--input", "x")).toEqual({ verbose: false });
   });
 
   test("uses the last value of a repeated option", () => {

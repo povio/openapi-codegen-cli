@@ -232,6 +232,8 @@ The separate Renderer parity workflow generates this matrix with JavaScript and 
 
 With `incremental` (the default), the generator records what it produced for each output directory in `node_modules/.cache/openapi-codegen` (or the system temp directory when there is no `node_modules`). A run whose OpenAPI source, resolved config, and generator build are unchanged, and whose files all still exist, is skipped. Otherwise only files whose generated content changed are written, so files rewritten afterwards by a formatter or post-processing script are left alone. Edits to generated files are therefore kept until that file's generated content changes; pass `--no-incremental` to rewrite every file.
 
+With `format` (the default), generated files are formatted in-process using the nearest `.oxfmtrc.json` above the output directory and the project's installed `oxfmt` package, exactly as `oxfmt` or `bun fmt` would format them, so no separate formatting step is needed after generation. Only files whose generated content changed are formatted. Without an oxfmt config nothing is formatted; if a config exists but `oxfmt` is not installed, a warning is printed. Set `format: false` (or `--no-format`) to turn it off.
+
 ## Common Issues
 
 ### App REST Client Interceptors
