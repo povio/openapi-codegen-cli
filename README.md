@@ -222,7 +222,7 @@ The Bun and Node.js CLIs and the Vite plugin automatically use the bundled Rust 
 
 Set `OPENAPI_CODEGEN_NATIVE=0` to force the TypeScript path, or `OPENAPI_CODEGEN_NATIVE=1` to require the native path and fail when its binary is unavailable.
 
-The native core caches up to two successful compilations per process within a 32 MiB estimated retained-memory budget. Reuse requires identical source text, YAML mode, and complete options JSON; returned objects remain independent. The cache is shared across Node workers and cleared when the last addon environment closes. It benefits repeated generation in long-running hosts such as Vite, not separate CLI processes. Set `OPENAPI_CODEGEN_NATIVE_CACHE=0` to disable it for profiling. Concurrent misses may compile independently; failures and oversized results are not retained.
+The native core caches up to two successful compilations per process within a 32 MiB estimated retained-memory budget. Reuse requires identical source text, YAML mode, and complete options JSON; returned objects remain independent. The cache is shared across Node workers and cleared when the last addon environment closes. It benefits repeated generation in long-running hosts such as Vite with `incremental: false`; with `incremental` (the default), unchanged inputs are skipped before compiling, so generation does not use the cache. Set `OPENAPI_CODEGEN_NATIVE_CACHE=0` to disable it for profiling. Concurrent misses may compile independently; failures and oversized results are not retained.
 
 Release packages include native binaries for Linux x64, macOS arm64, and Windows x64. Build a binary for the current platform with `bun run build:native`.
 

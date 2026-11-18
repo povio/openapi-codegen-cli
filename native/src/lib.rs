@@ -217,7 +217,8 @@ pub fn generate_files(
         .map_err(|error| Error::new(Status::InvalidArg, error.to_string()))?;
     let write: files::WriteOptions = serde_json::from_str(&write_json)
         .map_err(|error| Error::new(Status::InvalidArg, error.to_string()))?;
-    let compiled = compile_data_impl(source, yaml, options_json, setting.as_deref() != Some("0"))?;
+    let use_cache = write.use_cache && setting.as_deref() != Some("0");
+    let compiled = compile_data_impl(source, yaml, options_json, use_cache)?;
     let after_compile = started.elapsed();
     let generated = files::generate_files(compiled.data, &options, &write)
         .map_err(|error| Error::new(Status::GenericFailure, error))?;
@@ -724,21 +725,24 @@ fn propagate_schema_usage_tags(
             pending.push_back(id);
         }
     }
-    let dependencies: Vec<Vec<usize>> = schemas
-        .iter()
-        .enumerate()
-        .map(|(id, (_, code))| {
-            let mut seen = rustc_hash::FxHashSet::default();
-            code.as_str()
-                .into_iter()
-                .flat_map(|code| {
-                    code.split(|c: char| !c.is_ascii_alphanumeric() && c != '_' && c != '$')
-                })
-                .filter_map(|name| ids.get(name).copied())
-                .filter(|&dependency| dependency != id && seen.insert(dependency))
-                .collect()
-        })
-        .collect();
+    // Scanning every compiled schema for the names it uses is independent per schema.
+    let scan = |(id, code): (usize, &Value)| -> Vec<usize> {
+        let mut seen = rustc_hash::FxHashSet::default();
+        code.as_str()
+            .into_iter()
+            .flat_map(|code| {
+                code.split(|c: char| !c.is_ascii_alphanumeric() && c != '_' && c != '$')
+            })
+            .filter_map(|name| ids.get(name).copied())
+            .filter(|&dependency| dependency != id && seen.insert(dependency))
+            .collect()
+    };
+    let codes: Vec<(usize, &Value)> = schemas.values().enumerate().collect();
+    let dependencies: Vec<Vec<usize>> = render_pool::install(|| {
+        use rayon::prelude::*;
+        codes.par_iter().map(|&entry| scan(entry)).collect()
+    })
+    .unwrap_or_else(|_| codes.iter().map(|&entry| scan(entry)).collect());
     while let Some(id) = pending.pop_front() {
         queued[id] = false;
         let source = tags[id].as_ref().unwrap().clone();

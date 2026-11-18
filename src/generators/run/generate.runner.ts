@@ -75,6 +75,7 @@ export async function runGenerate({
         salt: formatterId,
         write: !formatGeneratedFile && !projectFormatter,
         skipExistingCheck: !outputExists,
+        useCache: !cache,
       }),
     );
     if (native) {

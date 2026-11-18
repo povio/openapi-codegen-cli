@@ -31,6 +31,10 @@ pub struct WriteOptions {
     /// The output directory did not exist, so no file needs comparing with what is on disk.
     #[serde(default)]
     skip_existing_check: bool,
+    /// Reuse and keep compiled results in the in-process cache. Only repeated runs without the
+    /// incremental manifest can hit it; hashing the source and copying the result costs a few ms.
+    #[serde(default)]
+    pub use_cache: bool,
 }
 
 pub struct GeneratedFiles {

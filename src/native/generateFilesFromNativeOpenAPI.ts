@@ -15,6 +15,11 @@ export type NativeWriteOptions = {
   write: boolean;
   /** The output directory did not exist, so nothing needs comparing with disk. */
   skipExistingCheck: boolean;
+  /**
+   * Reuse compiled results across runs in this process. Only worth it without the incremental
+   * manifest, which already skips unchanged inputs before compiling.
+   */
+  useCache?: boolean;
 };
 
 export type NativeOutputFiles = {

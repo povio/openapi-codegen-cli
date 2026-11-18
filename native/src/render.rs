@@ -2896,7 +2896,10 @@ pub fn render_queries(
         return rendered;
     }
     let annotated = with_cursor_pagination(endpoints, document, options);
-    let endpoints = annotated.as_deref().unwrap_or(endpoints);
+    let endpoints: Vec<&Value> = match &annotated {
+        Some(annotated) => annotated.iter().map(|endpoint| endpoint.as_ref()).collect(),
+        None => endpoints.iter().collect(),
+    };
     let mut by_tag: IndexMap<String, Vec<&Value>> = IndexMap::default();
     for endpoint in endpoints {
         let tag = endpoint
@@ -4266,11 +4269,11 @@ fn page_param_type(endpoint: &Value) -> &'static str {
 
 /// Copies of `endpoints` in which cursor paginated GET endpoints are marked with
 /// `CURSOR_PAGINATED`. `None` when infinite queries are off or no endpoint is cursor paginated.
-fn with_cursor_pagination(
-    endpoints: &[Value],
+fn with_cursor_pagination<'e>(
+    endpoints: &'e [Value],
     document: &Value,
     options: &GenerateOptions,
-) -> Option<Vec<Value>> {
+) -> Option<Vec<Cow<'e, Value>>> {
     if !options.infinite_queries {
         return None;
     }
@@ -4281,13 +4284,21 @@ fn with_cursor_pagination(
     if !marked.contains(&true) {
         return None;
     }
-    let mut endpoints = endpoints.to_vec();
-    for (endpoint, marked) in endpoints.iter_mut().zip(marked) {
-        if let (true, Some(object)) = (marked, endpoint.as_object_mut()) {
-            object.insert(CURSOR_PAGINATED.into(), Value::Bool(true));
-        }
-    }
-    Some(endpoints)
+    // Copy only the endpoints that get the flag; the rest are borrowed.
+    Some(
+        endpoints
+            .iter()
+            .zip(marked)
+            .map(|(endpoint, marked)| match (marked, endpoint.as_object()) {
+                (true, Some(object)) => {
+                    let mut object = object.clone();
+                    object.insert(CURSOR_PAGINATED.into(), Value::Bool(true));
+                    Cow::Owned(Value::Object(object))
+                }
+                _ => Cow::Borrowed(endpoint),
+            })
+            .collect(),
+    )
 }
 
 /// `isCursorPaginatedGetEndpoint`: a GET endpoint with an optional string query parameter named
@@ -5851,7 +5862,7 @@ mod cursor_pagination_tests {
             response,
         )];
         let annotated = with_cursor_pagination(&endpoints, &json!({}), &options).unwrap();
-        let endpoint = &annotated[0];
+        let endpoint: &Value = &annotated[0];
         assert!(is_cursor_paginated(endpoint) && is_infinite(endpoint, &options));
         let mut lines = Vec::new();
         render_query_keys(&mut lines, &[endpoint], &options, "");

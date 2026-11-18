@@ -83,33 +83,58 @@ pub struct Resolver<'a> {
 impl<'a> Resolver<'a> {
     pub fn new(document: &'a Value, options: &GenerateOptions) -> Result<Self, String> {
         let started = std::time::Instant::now();
-        let ordered_dependencies = collect_ordered_dependencies(document, options.extract_enums);
-        let after_direct = started.elapsed();
-        let ordered_deep_dependencies = ordered_transitive_graph(&ordered_dependencies);
-        let after_deep = started.elapsed();
-        let topology_order = ordered_topology(&ordered_deep_dependencies);
-        let deep_dependencies = ordered_deep_dependencies
-            .into_iter()
-            .map(|(root, dependencies)| (root, dependencies.into_iter().collect()))
-            .collect();
-        let mut operations = index_operations(document, options)?;
-        assign_unique_names(&mut operations, options);
-        // Naming shares a single collision index when tags are not split, but
-        // schema compilation still uses each operation's source tag, as in the
-        // JavaScript resolver's operation contexts.
-        if !options.split_by_tags {
-            for operation in &mut operations {
-                operation.tag = format_tag(
-                    operation
-                        .operation
-                        .get("tags")
-                        .and_then(Value::as_array)
-                        .and_then(|tags| tags.first())
-                        .and_then(Value::as_str)
-                        .unwrap_or(&options.default_tag),
-                );
+        // The schema graph, the operation index and the component index read the document
+        // independently; build them side by side.
+        let graph = || {
+            let ordered_dependencies =
+                collect_ordered_dependencies(document, options.extract_enums);
+            let ordered_deep_dependencies = ordered_transitive_graph(&ordered_dependencies);
+            let topology_order = ordered_topology(&ordered_deep_dependencies);
+            let deep_dependencies: HashMap<String, HashSet<String>> = ordered_deep_dependencies
+                .into_iter()
+                .map(|(root, dependencies)| (root, dependencies.into_iter().collect()))
+                .collect();
+            (ordered_dependencies, topology_order, deep_dependencies)
+        };
+        let index = || -> Result<_, String> {
+            let mut operations = index_operations(document, options)?;
+            assign_unique_names(&mut operations, options);
+            // Naming shares a single collision index when tags are not split, but
+            // schema compilation still uses each operation's source tag, as in the
+            // JavaScript resolver's operation contexts.
+            if !options.split_by_tags {
+                for operation in &mut operations {
+                    operation.tag = format_tag(
+                        operation
+                            .operation
+                            .get("tags")
+                            .and_then(Value::as_array)
+                            .and_then(|tags| tags.first())
+                            .and_then(Value::as_str)
+                            .unwrap_or(&options.default_tag),
+                    );
+                }
             }
-        }
+            Ok(operations)
+        };
+        let components = || -> HashMap<String, &'a Value> {
+            document
+                .pointer("/components/schemas")
+                .and_then(Value::as_object)
+                .into_iter()
+                .flatten()
+                .map(|(name, schema)| {
+                    let escaped = name.replace('~', "~0").replace('/', "~1");
+                    (format!("#/components/schemas/{escaped}"), schema)
+                })
+                .collect()
+        };
+        let (
+            (ordered_dependencies, topology_order, deep_dependencies),
+            (operations, component_schemas),
+        ) = crate::render_pool::install(|| rayon::join(graph, || rayon::join(index, components)))
+            .unwrap_or_else(|_| (graph(), (index(), components())));
+        let operations = operations?;
         let after_operations = started.elapsed();
         let mut schema_tags = collect_schema_tags(document, &operations, &deep_dependencies);
         let after_tags = started.elapsed();
@@ -119,24 +144,12 @@ impl<'a> Resolver<'a> {
         if std::env::var_os("OPENAPI_NATIVE_PROFILE").is_some() {
             let finished = started.elapsed();
             eprintln!(
-                "native resolver direct={:.3}ms deep={:.3}ms topology+ops={:.3}ms tags={:.3}ms enums={:.3}ms",
-                after_direct.as_secs_f64() * 1000.0,
-                (after_deep - after_direct).as_secs_f64() * 1000.0,
-                (after_operations - after_deep).as_secs_f64() * 1000.0,
+                "native resolver graph+operations={:.3}ms tags={:.3}ms enums={:.3}ms",
+                after_operations.as_secs_f64() * 1000.0,
                 (after_tags - after_operations).as_secs_f64() * 1000.0,
                 (finished - after_tags).as_secs_f64() * 1000.0,
             );
         }
-        let component_schemas = document
-            .pointer("/components/schemas")
-            .and_then(Value::as_object)
-            .into_iter()
-            .flatten()
-            .map(|(name, schema)| {
-                let escaped = name.replace('~', "~0").replace('/', "~1");
-                (format!("#/components/schemas/{escaped}"), schema)
-            })
-            .collect();
         Ok(Self {
             document,
             component_schemas,

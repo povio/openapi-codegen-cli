@@ -657,6 +657,12 @@ pub fn to_value<T: Serialize>(value: T) -> serde_json::Result<Value> {
     serde_json::to_value(value).map(Value::from)
 }
 
+/// `serde_json::from_value`, from this [`Value`].
+#[cfg(test)]
+pub fn from_value<T: serde::de::DeserializeOwned>(value: Value) -> serde_json::Result<T> {
+    serde_json::from_value(serde_json::Value::from(value))
+}
+
 /// `serde_json::json!`, producing this [`Value`].
 #[macro_export]
 macro_rules! json {
