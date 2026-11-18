@@ -142,33 +142,50 @@ impl<'a> ZodCompiler<'a> {
             return Ok(result);
         };
         let included = self.included_schema_refs();
-        for (name, schema) in schemas {
-            let zod_name = schema_name(name, &self.options.schema_suffix);
-            let reference = format!("#/components/schemas/{name}");
-            // Endpoints can use a component enum without referencing it (see `matching_component_enum_ref`).
-            if self.options.exclude_redundant_zod_schemas
-                && !self.resolver.schema_tags.contains_key(&reference)
-                && !first_tags.contains_key(&reference)
-                && !included.contains(&reference)
-            {
-                continue;
-            }
-            let tag = first_tags
-                .get(&reference)
-                .cloned()
-                .unwrap_or_else(|| self.schema_tag(&reference));
-            let code = if schema.get("enum").is_some() {
-                enum_code(schema).unwrap_or_else(|| "z.enum([])".into())
-            } else {
-                self.compile(
-                    schema,
-                    Meta::default(),
-                    &tag,
-                    Some(&reference),
-                    &mut Vec::new(),
-                )?
+        // Extraction is done, so ownership no longer changes: every component compiles on its
+        // own. Compile them in parallel and keep the results (and the first error) in schema order.
+        let compile_one =
+            |(name, schema): (&String, &Value)| -> Result<Option<(String, String)>, String> {
+                let zod_name = schema_name(name, &self.options.schema_suffix);
+                let reference = format!("#/components/schemas/{name}");
+                // Endpoints can use a component enum without referencing it (see `matching_component_enum_ref`).
+                if self.options.exclude_redundant_zod_schemas
+                    && !self.resolver.schema_tags.contains_key(&reference)
+                    && !first_tags.contains_key(&reference)
+                    && !included.contains(&reference)
+                {
+                    return Ok(None);
+                }
+                let tag = first_tags
+                    .get(&reference)
+                    .cloned()
+                    .unwrap_or_else(|| self.schema_tag(&reference));
+                let code = if schema.get("enum").is_some() {
+                    enum_code(schema).unwrap_or_else(|| "z.enum([])".into())
+                } else {
+                    self.compile(
+                        schema,
+                        Meta::default(),
+                        &tag,
+                        Some(&reference),
+                        &mut Vec::new(),
+                    )?
+                };
+                Ok(Some((zod_name, code)))
             };
-            result.insert(zod_name, Value::String(code));
+        let entries: Vec<(&String, &Value)> = schemas.iter().collect();
+        let compiled: Vec<Result<Option<(String, String)>, String>> =
+            crate::render_pool::install(|| {
+                entries
+                    .par_iter()
+                    .map(|&entry| compile_one(entry))
+                    .collect()
+            })
+            .unwrap_or_else(|_| entries.iter().map(|&entry| compile_one(entry)).collect());
+        for entry in compiled {
+            if let Some((zod_name, code)) = entry? {
+                result.insert(zod_name, Value::String(code));
+            }
         }
         Ok(result)
     }
