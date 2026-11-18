@@ -2,8 +2,8 @@ use std::cell::RefCell;
 
 use rayon::prelude::*;
 
+use crate::json::{Map, Number, Value};
 use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
-use serde_json::{Map, Number, Value};
 
 use crate::{
     config::GenerateOptions,
@@ -1511,7 +1511,7 @@ fn add_missing_path_parameters(path: &str, parameters: &mut Vec<Value>) {
         }
         let name = &path[start..end];
         if !names.contains(name) {
-            parameters.push(serde_json::json!({"name":name,"type":"Path","zodSchema":"z.string()","parameterObject":{"name":name,"required":true,"in":"path","schema":{"type":"string"}}}));
+            parameters.push(crate::json!({"name":name,"type":"Path","zodSchema":"z.string()","parameterObject":{"name":name,"required":true,"in":"path","schema":{"type":"string"}}}));
         }
         index = end;
     }
@@ -1520,7 +1520,7 @@ fn add_missing_path_parameters(path: &str, parameters: &mut Vec<Value>) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use serde_json::json;
+    use crate::json;
 
     #[test]
     fn schema_complexity_preserves_inline_and_named_boundaries() {
@@ -1638,7 +1638,7 @@ mod tests {
                 "Child": {"type": "object", "properties": {"name": {"type": "string"}}}
             }}
         });
-        let options: GenerateOptions = serde_json::from_value(json!({})).unwrap();
+        let options: GenerateOptions = crate::json::from_value(json!({})).unwrap();
         let resolver = Resolver::new(&document, &options).unwrap();
         let extractor = EndpointExtractor::new(&document, &options, &resolver);
         let endpoints = extractor.extract().unwrap();
@@ -1671,7 +1671,7 @@ mod tests {
     fn parallel_extraction_matches_sequential_extraction() {
         let source = include_str!("../../test/petstore.yaml");
         let document: Value =
-            serde_json::to_value(serde_yaml::from_str::<serde_yaml::Value>(source).unwrap())
+            crate::json::to_value(serde_yaml::from_str::<serde_yaml::Value>(source).unwrap())
                 .unwrap();
         for layout in [
             json!({ "modelsInModules": true, "tsNamespaces": true }),
@@ -1679,7 +1679,7 @@ mod tests {
             json!({ "tsNamespaces": false }),
             json!({ "splitByTags": false }),
         ] {
-            let options: GenerateOptions = serde_json::from_value(layout.clone()).unwrap();
+            let options: GenerateOptions = crate::json::from_value(layout.clone()).unwrap();
             let resolver = Resolver::new(&document, &options).unwrap();
             let sequential = EndpointExtractor::new(&document, &options, &resolver);
             let parallel = EndpointExtractor::new(&document, &options, &resolver);

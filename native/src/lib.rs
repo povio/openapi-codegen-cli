@@ -3,16 +3,17 @@ mod config;
 mod endpoints;
 mod engine;
 mod files;
+mod json;
 mod openapi;
 mod render;
 mod render_pool;
 mod resolver;
 mod zod;
 
+use crate::json::Value;
 use napi::Env;
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
-use serde_json::Value;
 
 // Use the system allocator: this addon can unload with its last Node worker and
 // later reload. An embedded allocator's thread-local state can outlive that load.
@@ -282,8 +283,8 @@ fn compile_data_impl(
         .map_err(|error| Error::new(Status::GenericFailure, error))?;
     let after_endpoints = started.elapsed();
     let (generated, compiler) = extractor.into_generated_data();
-    let mut schema_owners = serde_json::Map::new();
-    let mut schema_refs = serde_json::Map::new();
+    let mut schema_owners = crate::json::Map::new();
+    let mut schema_refs = crate::json::Map::new();
     if let Some(document_schemas) = document
         .pointer("/components/schemas")
         .and_then(Value::as_object)
@@ -532,8 +533,8 @@ fn compile_data_impl(
     }
     rendered_tags.insert(options.default_tag.clone());
     let rendered_tags = rendered_tags.into_iter().collect::<Vec<_>>();
-    let compact = || Value::Object(serde_json::Map::new());
-    let mut data = serde_json::Map::new();
+    let compact = || Value::Object(crate::json::Map::new());
+    let mut data = crate::json::Map::new();
     data.insert(
         "endpoints".into(),
         if rendered_complete {
@@ -563,7 +564,7 @@ fn compile_data_impl(
         if rendered_complete {
             compact()
         } else {
-            serde_json::to_value(usage_tags).unwrap()
+            crate::json::to_value(usage_tags).unwrap()
         },
     );
     data.insert(
@@ -579,7 +580,7 @@ fn compile_data_impl(
         if rendered_complete {
             Value::Array(Vec::new())
         } else {
-            serde_json::to_value(circular_schemas).unwrap()
+            crate::json::to_value(circular_schemas).unwrap()
         },
     );
     data.insert(
@@ -587,7 +588,7 @@ fn compile_data_impl(
         if rendered_complete {
             Value::Array(Vec::new())
         } else {
-            serde_json::to_value(topology_order).unwrap()
+            crate::json::to_value(topology_order).unwrap()
         },
     );
     data.insert("baseUrl".into(), Value::String(base_url.to_owned()));
@@ -612,7 +613,7 @@ fn compile_data_impl(
         if rendered_complete {
             compact()
         } else {
-            serde_json::to_value(&resolver.ordered_dependencies).unwrap()
+            crate::json::to_value(&resolver.ordered_dependencies).unwrap()
         },
     );
     data.insert("renderedModels".into(), Value::Object(rendered_models));
@@ -626,7 +627,7 @@ fn compile_data_impl(
     data.insert("renderedComplete".into(), Value::Bool(rendered_complete));
     data.insert(
         "renderedTags".into(),
-        serde_json::to_value(rendered_tags).unwrap(),
+        crate::json::to_value(rendered_tags).unwrap(),
     );
     // Borrowers of `document` must go before it can move to the release thread.
     drop(compiler);
@@ -667,12 +668,12 @@ fn compile_data_impl(
 // Preserve component/generated/enum precedence and stable leftover order without
 // shifting the remaining insertion-ordered map for each topology entry.
 fn order_compiled_schemas(
-    components: serde_json::Map<String, Value>,
-    generated: serde_json::Map<String, Value>,
+    components: crate::json::Map<String, Value>,
+    generated: crate::json::Map<String, Value>,
     topology_order: &[String],
-) -> serde_json::Map<String, Value> {
+) -> crate::json::Map<String, Value> {
     let mut root_enums = Vec::new();
-    let mut remaining = serde_json::Map::new();
+    let mut remaining = crate::json::Map::new();
     for (name, code) in components {
         if code.as_str().is_some_and(|code| code.starts_with("z.enum")) {
             root_enums.push((name, code));
@@ -682,7 +683,7 @@ fn order_compiled_schemas(
     }
     remaining.extend(generated);
     remaining.extend(root_enums);
-    let mut ordered = serde_json::Map::new();
+    let mut ordered = crate::json::Map::new();
     for name in topology_order {
         // Distinct component references can normalize to the same schema name.
         if !ordered.contains_key(name) {
@@ -702,7 +703,7 @@ fn order_compiled_schemas(
 // Build the rendered-schema graph once, then revisit only schemas whose usage changed.
 // Token recognition deliberately matches the existing ownership propagation semantics.
 fn propagate_schema_usage_tags(
-    schemas: &serde_json::Map<String, Value>,
+    schemas: &crate::json::Map<String, Value>,
     usage_tags: &mut rustc_hash::FxHashMap<String, rustc_hash::FxHashSet<String>>,
 ) {
     use rustc_hash::FxHashMap;
@@ -765,7 +766,8 @@ mod usage_tests {
     #[test]
     fn indexed_ownership_preserves_tag_iteration_order_used_by_module_rendering() {
         use rustc_hash::{FxHashMap, FxHashSet};
-        let schemas = serde_json::json!({"First":"Shared", "Second":"Shared", "Shared":"Leaf", "Leaf":"Shared"});
+        let schemas =
+            crate::json!({"First":"Shared", "Second":"Shared", "Shared":"Leaf", "Leaf":"Shared"});
         let mut actual = FxHashMap::default();
         actual.insert(
             "First".to_string(),
@@ -803,7 +805,7 @@ mod usage_tests {
     #[test]
     fn indexed_ownership_preserves_large_tag_sets_empty_and_external_entries() {
         use rustc_hash::{FxHashMap, FxHashSet};
-        let schemas = serde_json::json!({"Root":"Middle", "Middle":"Leaf", "Leaf":"Root", "Empty":"EmptyChild", "EmptyChild":"Far", "Far":"z.string()"});
+        let schemas = crate::json!({"Root":"Middle", "Middle":"Leaf", "Leaf":"Root", "Empty":"EmptyChild", "EmptyChild":"Far", "Far":"z.string()"});
         let all: FxHashSet<String> = (0..130).map(|i| format!("Tag{i}")).collect();
         let mut usages = FxHashMap::default();
         usages.insert("Root".to_string(), all.clone());
@@ -834,7 +836,7 @@ mod usage_tests {
 
     #[test]
     fn schema_order_preserves_normalized_collisions_and_leftover_enum_precedence() {
-        let components = serde_json::json!({
+        let components = crate::json!({
             "UnusedSchema": "z.string()",
             "ChoiceSchema": "z.enum([\"first\", \"second\"])",
             "ThingItemSchema": "z.object({ value: z.string() })",
@@ -843,7 +845,7 @@ mod usage_tests {
         .as_object()
         .unwrap()
         .clone();
-        let generated = serde_json::json!({
+        let generated = crate::json!({
             "GeneratedSchema": "z.number()",
             "ChoiceSchema": "z.boolean()",
             "UnusedSchema": "z.string().optional()"
@@ -877,7 +879,7 @@ mod usage_tests {
 
     #[test]
     fn propagates_usage_through_reversed_chains_and_cycles() {
-        let schemas = serde_json::json!({
+        let schemas = crate::json!({
             "Leaf": "z.string()",
             "CycleA": "z.object({ next: CycleB, leaf: Leaf })",
             "CycleB": "z.object({ next: CycleA })",

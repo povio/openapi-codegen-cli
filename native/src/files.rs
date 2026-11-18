@@ -9,9 +9,9 @@ use std::{
     path::{MAIN_SEPARATOR, MAIN_SEPARATOR_STR, Path, PathBuf},
 };
 
+use crate::json::{Map, Value};
 use rayon::prelude::*;
 use serde::Deserialize;
-use serde_json::{Map, Value};
 
 use crate::{config::GenerateOptions, render::decapitalize};
 

@@ -1,6 +1,6 @@
 //! Bounded successful results shared by active addon environments. No disk cache.
+use crate::json::Value;
 use napi::{Env, Result};
-use serde_json::Value;
 use std::collections::VecDeque;
 use std::sync::{Arc, Mutex};
 
@@ -143,7 +143,7 @@ mod tests {
             source: source.into(),
             yaml: false,
             options: "{}".into(),
-            data: Arc::new(serde_json::json!({"nested":[1]})),
+            data: Arc::new(crate::json!({"nested":[1]})),
             bytes,
         }
     }

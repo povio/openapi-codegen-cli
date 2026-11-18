@@ -159,7 +159,7 @@ pub struct GenerateOptions {
     #[serde(default)]
     pub workspace_context: Vec<String>,
     #[serde(default)]
-    pub mutation_scope: serde_json::Value,
+    pub mutation_scope: crate::json::Value,
 }
 
 fn default_rest_client() -> String {

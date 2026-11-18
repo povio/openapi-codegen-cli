@@ -4,9 +4,9 @@ use std::{
     sync::{Arc, RwLock},
 };
 
+use crate::json::{Map, Value};
 use indexmap::IndexMap as BaseIndexMap;
 use rustc_hash::{FxBuildHasher, FxHashMap as HashMap, FxHashSet as HashSet};
-use serde_json::{Map, Value};
 
 use rayon::prelude::*;
 
@@ -757,7 +757,7 @@ impl<'a> ZodCompiler<'a> {
                     .unwrap_or_else(|| Value::Object(Map::new()));
                 properties.insert(required.clone(), found);
             }
-            let required_schema = serde_json::json!({"type":"object","properties":properties,"required":standalone_required});
+            let required_schema = crate::json!({"type":"object","properties":properties,"required":standalone_required});
             compiled.push(self.compile(&required_schema, meta, tag, root_ref, stack)?);
         }
         let Some(first) = compiled.first() else {
@@ -1786,10 +1786,10 @@ fn schema_reaches(schema: &Value, root: &str, resolver: &Resolver<'_>) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use serde_json::json;
+    use crate::json;
 
     fn disambiguated_names(cases: &[(&str, &[&str])]) -> Vec<String> {
-        let options: GenerateOptions = serde_json::from_value(json!({})).unwrap();
+        let options: GenerateOptions = crate::json::from_value(json!({})).unwrap();
         let mut names = IndexMap::default();
         let mut candidates = IndexMap::default();
         for (index, (name, segments)) in cases.iter().enumerate() {
@@ -1812,7 +1812,7 @@ mod tests {
     #[test]
     fn borrowed_type_variants_preserve_original_schema_and_case_rules() {
         let document = json!({});
-        let options: GenerateOptions = serde_json::from_value(json!({})).unwrap();
+        let options: GenerateOptions = crate::json::from_value(json!({})).unwrap();
         let resolver = Resolver::new(&document, &options).unwrap();
         let compiler = ZodCompiler::new(&document, &options, &resolver);
         let schema = json!({"type":["STRING","null"], "format":"email", "description":"literal STRING null"});
@@ -1914,7 +1914,7 @@ mod tests {
                 "status": {"type": "string", "enum": ["a", "b"]}
             }}
         }}});
-        let options: GenerateOptions = serde_json::from_value(json!({})).unwrap();
+        let options: GenerateOptions = crate::json::from_value(json!({})).unwrap();
         let resolver = Resolver::new(&document, &options).unwrap();
         let compiler = ZodCompiler::new(&document, &options, &resolver);
         assert_eq!(
@@ -1927,7 +1927,7 @@ mod tests {
     #[test]
     fn schema_ownership_reads_current_runtime_tags_without_caching() {
         let document = json!({});
-        let options: GenerateOptions = serde_json::from_value(json!({})).unwrap();
+        let options: GenerateOptions = crate::json::from_value(json!({})).unwrap();
         let reference = "#/components/schemas/Item";
         for initial in [vec![], vec!["First"], vec!["First", "Second"]] {
             let mut resolver = Resolver::new(&document, &options).unwrap();
@@ -1975,7 +1975,7 @@ mod tests {
     #[test]
     fn extracted_enum_name_collisions_keep_first_owner_before_component_tags() {
         let document = json!({});
-        let options: GenerateOptions = serde_json::from_value(json!({})).unwrap();
+        let options: GenerateOptions = crate::json::from_value(json!({})).unwrap();
         let reference = "#/components/schemas/StatusEnum";
         let mut resolver = Resolver::new(&document, &options).unwrap();
         resolver.schema_tags.insert(

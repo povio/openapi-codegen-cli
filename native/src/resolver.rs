@@ -1,8 +1,8 @@
+use crate::json::{Map, Value};
 use indexmap::IndexMap as BaseIndexMap;
 use regex::Regex;
 use rustc_hash::{FxBuildHasher, FxHashMap as HashMap, FxHashSet as HashSet};
 use serde::Serialize;
-use serde_json::{Map, Value};
 
 use crate::config::GenerateOptions;
 
@@ -915,7 +915,7 @@ mod dependency_tests {
 
     #[test]
     fn enum_dependencies_keep_canonical_and_parent_order_and_deduplicate_edges() {
-        let document = serde_json::json!({ "components": { "schemas": {
+        let document = crate::json!({ "components": { "schemas": {
             "FirstB": { "type": "string", "enum": ["b", null] },
             "SecondA": { "type": "string", "enum": ["a"] },
             "DuplicateB": { "type": "string", "enum": ["b"] },
@@ -990,7 +990,7 @@ mod dependency_tests {
 
     #[test]
     fn stats_count_unique_direct_edges_without_a_duplicate_graph() {
-        let document = serde_json::json!({
+        let document = crate::json!({
             "paths": { "/parent": { "get": {
                 "operationId": "getParent", "tags": ["Items"],
                 "responses": { "200": { "description": "OK", "content": {
@@ -1008,7 +1008,7 @@ mod dependency_tests {
                 "Leaf": { "properties": { "parent": { "$ref": "#/components/schemas/Parent" } } }
             } }
         });
-        let options: GenerateOptions = serde_json::from_value(serde_json::json!({})).unwrap();
+        let options: GenerateOptions = crate::json::from_value(crate::json!({})).unwrap();
         let resolver = Resolver::new(&document, &options).unwrap();
         let stats = resolver.stats(&document);
         assert_eq!(stats.operations, 1);

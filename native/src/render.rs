@@ -1,9 +1,9 @@
 use std::{borrow::Cow, collections::VecDeque};
 
+use crate::json::{Map, Value};
 use indexmap::{IndexMap as BaseIndexMap, IndexSet as BaseIndexSet};
 use rayon::prelude::*;
 use rustc_hash::{FxBuildHasher, FxHashMap as HashMap, FxHashSet as HashSet};
-use serde_json::{Map, Value};
 
 use crate::config::GenerateOptions;
 
@@ -5540,8 +5540,8 @@ mod namespace_owner_tests {
 
     #[test]
     fn shared_model_routing_preserves_literals_and_description_text() {
-        let options: GenerateOptions = serde_json::from_value(serde_json::json!({})).unwrap();
-        let owners = serde_json::json!({ "BaseLogLevelEnumSchema": "Common" })
+        let options: GenerateOptions = crate::json::from_value(crate::json!({})).unwrap();
+        let owners = crate::json!({ "BaseLogLevelEnumSchema": "Common" })
             .as_object()
             .unwrap()
             .clone();
@@ -5658,7 +5658,7 @@ mod model_code_tests {
 #[cfg(test)]
 mod cursor_pagination_tests {
     use super::*;
-    use serde_json::json;
+    use crate::json;
 
     #[test]
     fn enum_metadata_borrows_unique_objects_and_merges_duplicates_in_document_order() {
@@ -5728,7 +5728,7 @@ mod cursor_pagination_tests {
         base.as_object_mut()
             .unwrap()
             .extend(extra.as_object().unwrap().clone());
-        serde_json::from_value(base).unwrap()
+        crate::json::from_value(base).unwrap()
     }
 
     fn query(name: &str, schema: Value) -> Value {
@@ -5869,7 +5869,7 @@ mod cursor_pagination_tests {
             "getNextPageParam: ({ \"next-cursor\": nextCursor }: Awaited<ReturnType<typeof ItemsApi.list>>) => nextCursor ?? undefined,"
         ));
         // Without infinite queries nothing is marked.
-        let off: GenerateOptions = serde_json::from_value(json!({})).unwrap();
+        let off: GenerateOptions = crate::json::from_value(json!({})).unwrap();
         assert!(with_cursor_pagination(&endpoints, &json!({}), &off).is_none());
     }
 }
