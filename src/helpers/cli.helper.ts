@@ -1,7 +1,34 @@
-import { styleText } from "node:util";
-
 /* eslint-disable no-console */
 import type { Prompt as PromptSyncPrompt } from "prompt-sync";
+
+// Plain ANSI codes: importing node:util for styleText costs several ms of CLI startup.
+const STYLES = {
+  red: [31, 39],
+  green: [32, 39],
+  yellow: [33, 39],
+  magenta: [35, 39],
+  bgYellow: [43, 49],
+} as const;
+
+let colorEnabled: boolean | undefined;
+
+/** Same rules as util.styleText: colour on a TTY unless NO_COLOR or TERM=dumb; FORCE_COLOR wins. */
+function useColor() {
+  if (colorEnabled === undefined) {
+    const { FORCE_COLOR, NO_COLOR, TERM } = process.env;
+    colorEnabled =
+      FORCE_COLOR !== undefined
+        ? FORCE_COLOR !== "0" && FORCE_COLOR !== "false"
+        : NO_COLOR === undefined && TERM !== "dumb" && process.stdout.isTTY === true;
+  }
+  return colorEnabled;
+}
+
+function styleText(style: keyof typeof STYLES, text: string) {
+  if (!useColor()) return text;
+  const [open, close] = STYLES[style];
+  return `\u001b[${open}m${text}\u001b[${close}m`;
+}
 
 /**
  * Wraps prop in a dynamic import

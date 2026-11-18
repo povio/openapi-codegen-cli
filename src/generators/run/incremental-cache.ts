@@ -1,5 +1,5 @@
-import { createHash } from "node:crypto";
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -72,7 +72,10 @@ export class IncrementalCache {
   }
 }
 
+/** Change detection only. Bun.hash avoids loading node:crypto, which slows CLI startup. */
 function hash(value: string) {
+  if (typeof Bun !== "undefined") return Bun.hash(value).toString(16);
+  const { createHash } = createRequire(import.meta.url)("node:crypto") as typeof import("node:crypto");
   return createHash("sha256").update(value).digest("hex");
 }
 

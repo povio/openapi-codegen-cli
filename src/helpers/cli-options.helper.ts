@@ -1,8 +1,7 @@
-import "reflect-metadata";
-
 type CliOptionType = "string" | "boolean";
 
 interface CliOptionProperties {
+  /** Defaults to `"string"`; boolean options must say so. */
   type?: CliOptionType;
   describe?: string;
   envAlias?: string;
@@ -16,22 +15,24 @@ export type CliOptionsClass<T> = new () => T;
 
 export class CliUsageError extends Error {}
 
-const optionsKey = Symbol("options_key");
+// Plain storage instead of reflect-metadata, which costs several ms of CLI startup.
+const optionsByPrototype = new WeakMap<object, Record<string, ResolvedCliOption>>();
 
 export function CliOption(properties: CliOptionProperties) {
   return (target: object, propertyKey: string) => {
-    const designType = Reflect.getMetadata("design:type", target, propertyKey) as { name?: string } | undefined;
-    const option: ResolvedCliOption = {
-      ...properties,
-      describe: properties.envAlias ? `${properties.describe || ""} [${properties.envAlias}]` : properties.describe,
-      type: properties.type ?? (designType?.name === "Boolean" ? "boolean" : "string"),
-    };
-    Reflect.defineMetadata(optionsKey, { ...Reflect.getMetadata(optionsKey, target), [propertyKey]: option }, target);
+    optionsByPrototype.set(target, {
+      ...optionsByPrototype.get(target),
+      [propertyKey]: {
+        ...properties,
+        describe: properties.envAlias ? `${properties.describe || ""} [${properties.envAlias}]` : properties.describe,
+        type: properties.type ?? "string",
+      },
+    });
   };
 }
 
 function getCliOptions<T>(target: CliOptionsClass<T>): Record<string, ResolvedCliOption> {
-  const options = Reflect.getMetadata(optionsKey, target.prototype) as Record<string, ResolvedCliOption> | undefined;
+  const options = optionsByPrototype.get(target.prototype as object);
   if (!options) {
     throw new Error(`Options for ${target.name} were not defined`);
   }
