@@ -7,6 +7,7 @@ import { GenerateFileFormatter } from "@/generators/types/generate";
 import { GenerateOptions } from "@/generators/types/options";
 import { removeStaleGeneratedFiles, writeGenerateFileData } from "@/generators/utils/file.utils";
 import { Profiler } from "@/helpers/profile.helper";
+import { IncrementalCache } from "@/generators/run/incremental-cache";
 import { shouldUseNativeCodegen } from "@/native/native-bindings";
 import { generateFilesFromNativeOpenAPI } from "@/native/generateFilesFromNativeOpenAPI";
 
@@ -44,6 +45,16 @@ export async function runGenerate({
   const openApiDoc =
     "document" in nativeInput ? (nativeInput.document as OpenAPIV3.Document) : ({} as OpenAPIV3.Document);
   const outputExists = fs.existsSync(config.output);
+  const cache = config.incremental ? new IncrementalCache(config.output) : undefined;
+  const cacheKey = cache
+    ? profiler.runSync("incremental.key", () =>
+        IncrementalCache.key([useNative ? "native" : "js", JSON.stringify(config), nativeInput.source]),
+      )
+    : "";
+  const unchangedStats = cache?.unchangedStats(cacheKey);
+  if (unchangedStats) {
+    return { skipped: true, config, stats: unchangedStats };
+  }
 
   const filesData = await profiler.runAsync("generate.total", async () => {
     if (useNative) {
@@ -61,10 +72,13 @@ export async function runGenerate({
       removeStaleGeneratedFiles({ output: config.output, filesData, options: config });
     });
   }
+  // Leave files alone whose generated content is unchanged, even if a formatter rewrote them since.
+  const changedFiles = cache ? profiler.runSync("incremental.diff", () => cache.changedFiles(filesData)) : filesData;
   await profiler.runAsync("files.write", async () => {
-    await writeGenerateFileData(filesData, { formatGeneratedFile, skipExistingCheck: !outputExists });
+    await writeGenerateFileData(changedFiles, { formatGeneratedFile, skipExistingCheck: !outputExists });
   });
   const stats = getGenerateStats(filesData, config);
+  cache?.save(cacheKey, filesData, stats);
 
   return { skipped: false, config, stats };
 }

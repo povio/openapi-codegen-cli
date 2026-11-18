@@ -228,7 +228,9 @@ Release packages include native binaries for Linux x64, macOS arm64, and Windows
 
 Run `bun run test:parity` after building the addon to compare every generated file across 64 layout combinations and representative values for every other renderer option. The matrix uses both `test/petstore.yaml` and `test/configuration.yaml`, exercises complete native and hybrid native generation, and loads generated models to check runtime references. The contradictory combination `modelsInCommon: true` with `modelsInModules: true` is rejected explicitly. Arbitrary strings and lists are covered by representative cases, not every possible value.
 
-The separate Renderer parity workflow generates this matrix with JavaScript and native on Linux and macOS, then compares exact file lists and SHA-256 hashes. Artifacts include route reports identifying complete versus hybrid native generation. Runner integration tests cover input/output, stale-file cleanup, and unchanged files; `incremental` is currently retained as a compatibility option and does not change the writer's unchanged-file optimization.
+The separate Renderer parity workflow generates this matrix with JavaScript and native on Linux and macOS, then compares exact file lists and SHA-256 hashes. Artifacts include route reports identifying complete versus hybrid native generation. Runner integration tests cover input/output, stale-file cleanup, unchanged files, and incremental runs.
+
+With `incremental` (the default), the generator records what it produced for each output directory in `node_modules/.cache/openapi-codegen` (or the system temp directory when there is no `node_modules`). A run whose OpenAPI source, resolved config, and generator build are unchanged, and whose files all still exist, is skipped. Otherwise only files whose generated content changed are written, so files rewritten afterwards by a formatter or post-processing script are left alone. Edits to generated files are therefore kept until that file's generated content changes; pass `--no-incremental` to rewrite every file.
 
 ## Common Issues
 
