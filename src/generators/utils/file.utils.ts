@@ -87,7 +87,7 @@ export function removeStaleGeneratedFiles({
   options,
 }: {
   output: string;
-  filesData: GenerateFileData[];
+  filesData: Pick<GenerateFileData, "fileName">[];
   options: Pick<GenerateOptions, "configs">;
 }) {
   if (!fs.existsSync(output)) {

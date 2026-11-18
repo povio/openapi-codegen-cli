@@ -10,7 +10,7 @@ import { Profiler } from "@/helpers/profile.helper";
 import { IncrementalCache } from "@/generators/run/incremental-cache";
 import { findProjectFormatter } from "@/generators/run/oxfmt-formatter";
 import { shouldUseNativeCodegen } from "@/native/native-bindings";
-import { generateFilesFromNativeOpenAPI } from "@/native/generateFilesFromNativeOpenAPI";
+import { generateNativeOutputFiles } from "@/native/generateFilesFromNativeOpenAPI";
 
 type GenerateStats = {
   generatedFilesCount: number;
@@ -63,17 +63,53 @@ export async function runGenerate({
     return { skipped: true, config, stats: unchangedStats };
   }
 
-  const filesData = await profiler.runAsync("generate.total", async () => {
-    if (useNative) {
-      const nativeFiles = generateFilesFromNativeOpenAPI(nativeInput.source, nativeInput.yaml, config);
-      if (nativeFiles) return nativeFiles;
+  const loadFormatter = async () =>
+    formatGeneratedFile ??
+    (projectFormatter ? await profiler.runAsync("format.load", () => projectFormatter.load()) : undefined);
+
+  if (useNative) {
+    // Rendered files stay native: only names, hashes and files left to format come back.
+    const native = profiler.runSync("generate.total", () =>
+      generateNativeOutputFiles(nativeInput.source, nativeInput.yaml, config, {
+        previous: cache?.previousHashes() ?? null,
+        salt: formatterId,
+        write: !formatGeneratedFile && !projectFormatter,
+        skipExistingCheck: !outputExists,
+      }),
+    );
+    if (native) {
+      const generated = native.names.map((fileName) => ({ fileName }));
+      if (config.clearOutput) {
+        profiler.runSync("files.removeStaleGenerated", () => {
+          removeStaleGeneratedFiles({ output: config.output, filesData: generated, options: config });
+        });
+      }
+      if (native.changed.length > 0) {
+        const formatter = await loadFormatter();
+        await profiler.runAsync("files.write", async () => {
+          await writeGenerateFileData(native.changed, {
+            formatGeneratedFile: formatter,
+            skipExistingCheck: !outputExists,
+          });
+        });
+      }
+      const stats = getGenerateStats(generated, config);
+      cache?.saveHashes(
+        cacheKey,
+        native.names.map((fileName, index) => [fileName, native.hashes[index]]),
+        stats,
+      );
+      return { skipped: false, config, stats };
     }
-    const { generateCodeFromOpenAPIDoc } = await import("@/generators/generateCodeFromOpenAPIDoc");
-    return generateCodeFromOpenAPIDoc(openApiDoc, config, profiler, {
+  }
+
+  const { generateCodeFromOpenAPIDoc } = await import("@/generators/generateCodeFromOpenAPIDoc");
+  const filesData = await profiler.runAsync("generate.total", async () =>
+    generateCodeFromOpenAPIDoc(openApiDoc, config, profiler, {
       source: nativeInput.source,
       yaml: nativeInput.yaml,
-    });
-  });
+    }),
+  );
   if (config.clearOutput) {
     profiler.runSync("files.removeStaleGenerated", () => {
       removeStaleGeneratedFiles({ output: config.output, filesData, options: config });
@@ -81,11 +117,7 @@ export async function runGenerate({
   }
   // Leave files alone whose generated content is unchanged, even if a formatter rewrote them since.
   const changedFiles = cache ? profiler.runSync("incremental.diff", () => cache.changedFiles(filesData)) : filesData;
-  const formatter =
-    formatGeneratedFile ??
-    (projectFormatter && changedFiles.length > 0
-      ? await profiler.runAsync("format.load", () => projectFormatter.load())
-      : undefined);
+  const formatter = changedFiles.length > 0 ? await loadFormatter() : formatGeneratedFile;
   await profiler.runAsync("files.write", async () => {
     await writeGenerateFileData(changedFiles, { formatGeneratedFile: formatter, skipExistingCheck: !outputExists });
   });

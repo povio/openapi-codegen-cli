@@ -2,6 +2,7 @@ mod cache;
 mod config;
 mod endpoints;
 mod engine;
+mod files;
 mod openapi;
 mod render;
 mod render_pool;
@@ -183,6 +184,70 @@ pub fn compile_data(
     let environment: Object = process.get_named_property("env")?;
     let setting: Option<String> = environment.get("OPENAPI_CODEGEN_NATIVE_CACHE")?;
     compile_data_impl(source, yaml, options_json, setting.as_deref() != Some("0"))
+}
+
+#[napi(object)]
+pub struct NativeFilesResult {
+    /// False when the options need the TypeScript renderer; nothing else is set then.
+    pub complete: bool,
+    pub names: Vec<String>,
+    pub hashes: Vec<String>,
+    pub changed_names: Vec<String>,
+    pub changed_contents: Vec<String>,
+    pub written: u32,
+    pub elapsed_micros: i64,
+}
+
+/// Compiles, renders and assembles the output files, and writes the changed ones unless the
+/// caller formats them first. Only file names, hashes and files left to format reach JavaScript.
+#[napi]
+pub fn generate_files(
+    env: Env,
+    source: String,
+    yaml: bool,
+    options_json: String,
+    write_json: String,
+) -> Result<NativeFilesResult> {
+    let process: Object = env.get_global()?.get_named_property("process")?;
+    let environment: Object = process.get_named_property("env")?;
+    let setting: Option<String> = environment.get("OPENAPI_CODEGEN_NATIVE_CACHE")?;
+    let started = std::time::Instant::now();
+    let options: config::GenerateOptions = serde_json::from_str(&options_json)
+        .map_err(|error| Error::new(Status::InvalidArg, error.to_string()))?;
+    let write: files::WriteOptions = serde_json::from_str(&write_json)
+        .map_err(|error| Error::new(Status::InvalidArg, error.to_string()))?;
+    let compiled = compile_data_impl(source, yaml, options_json, setting.as_deref() != Some("0"))?;
+    let after_compile = started.elapsed();
+    let generated = files::generate_files(compiled.data, &options, &write)
+        .map_err(|error| Error::new(Status::GenericFailure, error))?;
+    if std::env::var_os("OPENAPI_NATIVE_PROFILE").is_some() {
+        eprintln!(
+            "native files compile={:.3}ms files={:.3}ms",
+            after_compile.as_secs_f64() * 1000.0,
+            (started.elapsed() - after_compile).as_secs_f64() * 1000.0,
+        );
+    }
+    let elapsed_micros = started.elapsed().as_micros() as i64;
+    Ok(match generated {
+        Some(generated) => NativeFilesResult {
+            complete: true,
+            names: generated.names,
+            hashes: generated.hashes,
+            changed_names: generated.changed_names,
+            changed_contents: generated.changed_contents,
+            written: generated.written,
+            elapsed_micros,
+        },
+        None => NativeFilesResult {
+            complete: false,
+            names: Vec::new(),
+            hashes: Vec::new(),
+            changed_names: Vec::new(),
+            changed_contents: Vec::new(),
+            written: 0,
+            elapsed_micros,
+        },
+    })
 }
 
 fn compile_data_impl(

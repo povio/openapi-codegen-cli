@@ -58,13 +58,25 @@ export class IncrementalCache {
     );
   }
 
+  /** The previous run's file hashes, for the native writer to compare against. */
+  previousHashes(): Record<string, string> | null {
+    return this.manifest?.files ?? null;
+  }
+
   save(key: string, filesData: GenerateFileData[], stats: IncrementalManifest["stats"]) {
+    this.saveHashes(
+      key,
+      filesData.map(({ fileName, content }) => [fileName, hash(this.salt + content)]),
+      stats,
+    );
+  }
+
+  /** Records files whose hashes were computed elsewhere (the native writer). */
+  saveHashes(key: string, files: [fileName: string, hash: string][], stats: IncrementalManifest["stats"]) {
     const manifest: IncrementalManifest = {
       version: MANIFEST_VERSION,
       key,
-      files: Object.fromEntries(
-        filesData.map(({ fileName, content }) => [path.resolve(fileName), hash(this.salt + content)]),
-      ),
+      files: Object.fromEntries(files.map(([fileName, fileHash]) => [path.resolve(fileName), fileHash])),
       stats,
     };
     try {

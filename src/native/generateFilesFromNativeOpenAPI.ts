@@ -1,27 +1,42 @@
-import { GenerateFileData, GenerateType } from "@/generators/types/generate";
+import path from "path";
+
+import { GenerateFileData } from "@/generators/types/generate";
 import { GenerateOptions } from "@/generators/types/options";
-import { getOutputFileName } from "@/generators/utils/file.utils";
-import { getTagFileName } from "@/generators/utils/generate/generate.utils";
-import { trimTrailingWhitespace } from "@/generators/utils/string.utils";
 
-import { compileNativeData } from "./native-bindings";
+import { generateNativeFiles } from "./native-bindings";
 
-type CompleteNativeData = {
-  baseUrl: string;
-  renderedModels: Record<string, string>;
-  renderedEndpoints: Record<string, string>;
-  renderedQueries: Record<string, string>;
-  renderedAcl: Record<string, string>;
-  renderedShared: Record<string, string>;
-  renderedComplete: boolean;
-  renderedTags: string[];
+/** How the native writer handles files beyond the generate options. */
+export type NativeWriteOptions = {
+  /** Content hashes of the previous run's files by absolute name, when generating incrementally. */
+  previous: Record<string, string> | null;
+  /** Identifies post-processing (the formatter); part of every content hash. */
+  salt: string;
+  /** Write changed files natively. Otherwise they are returned to be formatted and written. */
+  write: boolean;
+  /** The output directory did not exist, so nothing needs comparing with disk. */
+  skipExistingCheck: boolean;
 };
 
-export function generateFilesFromNativeOpenAPI(
+export type NativeOutputFiles = {
+  /** Every generated file name, in generation order. */
+  names: string[];
+  hashes: string[];
+  /** Changed files left to format and write (when not written natively). */
+  changed: GenerateFileData[];
+  written: number;
+};
+
+/**
+ * Generates the output files natively: compile, render, name, trim, and (with `write`) write the
+ * changed files, so rendered contents only reach JavaScript when they still need formatting.
+ * Returns undefined when the options need the TypeScript renderer.
+ */
+export function generateNativeOutputFiles(
   source: string,
   yaml: boolean,
   options: GenerateOptions,
-): GenerateFileData[] | undefined {
+  write: NativeWriteOptions,
+): NativeOutputFiles | undefined {
   if (options.standalone && options.importPath === "ts") {
     options = { ...options, importPath: "relative" };
   }
@@ -31,67 +46,40 @@ export function generateFilesFromNativeOpenAPI(
     }
     return undefined;
   }
-
-  const nativeData = compileNativeData(source, yaml, JSON.stringify({ ...options, nativeCompact: true }))
-    .data as CompleteNativeData;
-  if (!nativeData.renderedComplete) {
+  const result = generateNativeFiles(
+    source,
+    yaml,
+    JSON.stringify({ ...options, nativeCompact: true }),
+    JSON.stringify({ ...write, outputAbsolute: path.resolve(options.output) }),
+  );
+  if (!result.complete) {
     if (process.env.OPENAPI_CODEGEN_REQUIRE_FULL_NATIVE === "1") {
       throw new Error("The selected options are not supported by the full native renderer");
     }
     return undefined;
   }
+  return {
+    names: result.names,
+    hashes: result.hashes,
+    changed: result.changedNames.map((fileName, index) => ({ fileName, content: result.changedContents[index] })),
+    written: result.written,
+  };
+}
 
-  const files: GenerateFileData[] = [];
-  const taggedRenderers: [GenerateType, Record<string, string>][] = options.modelsOnly
-    ? [[GenerateType.Models, nativeData.renderedModels]]
-    : [
-        [GenerateType.Models, nativeData.renderedModels],
-        [GenerateType.Endpoints, nativeData.renderedEndpoints],
-        [GenerateType.Queries, nativeData.renderedQueries],
-        ...(options.acl
-          ? ([[GenerateType.Acl, nativeData.renderedAcl]] as [GenerateType, Record<string, string>][])
-          : []),
-      ];
-
-  for (const tag of nativeData.renderedTags) {
-    for (const [type, rendered] of taggedRenderers) {
-      const content = rendered[tag];
-      if (content) files.push(taggedFile(options, tag, type, content));
-    }
-  }
-
-  if (!options.modelsOnly) {
-    if (options.acl && nativeData.renderedShared.appAcl) {
-      files.push(outputFile(options, "acl/app.ability.ts", nativeData.renderedShared.appAcl));
-    }
-    if (options.mutationEffects && nativeData.renderedShared.queryModules) {
-      files.push(outputFile(options, "queryModules.ts", nativeData.renderedShared.queryModules));
-    }
-    if (!options.restClientImportPath) {
-      files.push(
-        outputFile(
-          options,
-          "app-rest-client.ts",
-          `import { ${options.restClient === "native" ? "NativeRestClient" : "RestClient"} } from "@povio/openapi-codegen-cli${options.restClient === "native" ? "/native" : "/axios"}";\n\nexport const AppRestClient = new ${options.restClient === "native" ? "NativeRestClient" : "RestClient"}({\n  config: {\n    baseURL: "${nativeData.baseUrl}"\n  },\n});\n`,
-        ),
-      );
-    }
-    if (nativeData.renderedShared.domainErrors) {
-      files.push(outputFile(options, "domain-errors.ts", nativeData.renderedShared.domainErrors));
-    }
-  }
-
-  return files.map((file) => ({ ...file, content: trimTrailingWhitespace(file.content) }));
+/** Every generated file with its content, without writing anything. */
+export function generateFilesFromNativeOpenAPI(
+  source: string,
+  yaml: boolean,
+  options: GenerateOptions,
+): GenerateFileData[] | undefined {
+  return generateNativeOutputFiles(source, yaml, options, {
+    previous: null,
+    salt: "",
+    write: false,
+    skipExistingCheck: true,
+  })?.changed;
 }
 
 export function supportsCompleteNativeRender(options: GenerateOptions) {
   return options.splitByTags && !options.inlineEndpoints && (options.workspaceContext?.length ?? 0) === 0;
-}
-
-function taggedFile(options: GenerateOptions, tag: string, type: GenerateType, content: string) {
-  return outputFile(options, getTagFileName({ tag, type, options }), content);
-}
-
-function outputFile(options: GenerateOptions, fileName: string, content: string) {
-  return { fileName: getOutputFileName({ output: options.output, fileName }), content };
 }

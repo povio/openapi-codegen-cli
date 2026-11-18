@@ -2092,7 +2092,7 @@ fn capitalize(value: &str) -> String {
         .unwrap_or_default()
 }
 
-fn decapitalize(value: &str) -> String {
+pub(crate) fn decapitalize(value: &str) -> String {
     let mut chars = value.chars();
     chars
         .next()

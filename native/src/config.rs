@@ -133,6 +133,8 @@ pub struct GenerateOptions {
     #[serde(default)]
     pub native_compact: bool,
     #[serde(default)]
+    pub models_only: bool,
+    #[serde(default)]
     pub inline_endpoints_exclude_modules: Vec<String>,
     #[serde(default)]
     pub infinite_queries: bool,
