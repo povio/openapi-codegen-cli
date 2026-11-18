@@ -133,6 +133,9 @@ class GenerateOptions implements GenerateParams {
 
   @CliOption({ envAlias: "verbose", default: false, type: "boolean" })
   verbose?: boolean;
+
+  @CliOption({ envAlias: "watch", default: false, type: "boolean" })
+  watch?: boolean;
 }
 
 export const command: CliCommand<GenerateOptions> = {
