@@ -1,10 +1,19 @@
-use std::{borrow::Cow, cell::RefCell, collections::BTreeSet, rc::Rc};
+use std::{
+    borrow::Cow,
+    collections::BTreeSet,
+    sync::{Arc, RwLock},
+};
 
 use indexmap::IndexMap as BaseIndexMap;
 use rustc_hash::{FxBuildHasher, FxHashMap as HashMap, FxHashSet as HashSet};
 use serde_json::{Map, Value};
 
-use crate::{config::GenerateOptions, resolver::Resolver};
+use rayon::prelude::*;
+
+use crate::{
+    config::GenerateOptions,
+    resolver::{IndexedOperation, Resolver},
+};
 
 type IndexMap<K, V> = BaseIndexMap<K, V, FxBuildHasher>;
 
@@ -39,6 +48,11 @@ impl<'a> SchemaView<'a> {
     }
 }
 
+/// Tags endpoints register for each schema reference while they are extracted. Shared between the
+/// extractor, which writes it, and the compiler, whose schema ownership reads it. Extraction may
+/// compile operations on several threads, so this is thread-safe.
+pub type RuntimeTags = Arc<RwLock<HashMap<String, HashSet<String>>>>;
+
 pub struct ZodCompiler<'a> {
     document: &'a Value,
     options: &'a GenerateOptions,
@@ -49,7 +63,7 @@ pub struct ZodCompiler<'a> {
     extracted_enum_objects: Map<String, Value>,
     extracted_enum_usage_tags: HashMap<String, Vec<String>>,
     circular_getters: HashSet<String>,
-    runtime_tags: Rc<RefCell<HashMap<String, HashSet<String>>>>,
+    runtime_tags: RuntimeTags,
 }
 
 impl<'a> ZodCompiler<'a> {
@@ -58,19 +72,14 @@ impl<'a> ZodCompiler<'a> {
         options: &'a GenerateOptions,
         resolver: &'a Resolver<'a>,
     ) -> Self {
-        Self::new_with_runtime_tags(
-            document,
-            options,
-            resolver,
-            Rc::new(RefCell::new(HashMap::default())),
-        )
+        Self::new_with_runtime_tags(document, options, resolver, RuntimeTags::default())
     }
 
     pub fn new_with_runtime_tags(
         document: &'a Value,
         options: &'a GenerateOptions,
         resolver: &'a Resolver<'a>,
-        runtime_tags: Rc<RefCell<HashMap<String, HashSet<String>>>>,
+        runtime_tags: RuntimeTags,
     ) -> Self {
         let mut root_enums = HashMap::default();
         if let Some(schemas) = document
@@ -796,7 +805,7 @@ impl<'a> ZodCompiler<'a> {
         }
         // Ownership depends on the union's cardinality, not on an allocated copy
         // of that union. Runtime tags remain live as endpoint registration proceeds.
-        let runtime_tags = self.runtime_tags.borrow();
+        let runtime_tags = self.runtime_tags.read().unwrap();
         let mut tags = self
             .resolver
             .schema_tags
@@ -1242,28 +1251,58 @@ fn collect_extracted_enums(
     if !options.extract_enums {
         return (IndexMap::default(), Map::new(), HashMap::default());
     }
-    let mut candidates: IndexMap<String, ExtractedEnumCandidate> = IndexMap::default();
-    collect_operation_enum_candidates(document, resolver, &mut candidates);
-    if let Some(schemas) = document
+    // Every operation, then every component, contributes candidates on its own; merging their
+    // candidates in that order equals collecting them one after another, so scan them in parallel.
+    let components: Vec<(&String, &Value)> = document
         .pointer("/components/schemas")
         .and_then(Value::as_object)
-    {
-        for (component_name, schema) in schemas {
-            if schema.get("enum").is_some() {
-                continue;
-            }
-            let reference = format!("#/components/schemas/{component_name}");
-            let tags = resolver
-                .schema_tags
-                .get(&reference)
-                .cloned()
-                .unwrap_or_default();
-            collect_inline_enum_candidates(
-                schema,
-                &[component_name.clone()],
-                &tags,
-                &mut candidates,
+        .into_iter()
+        .flatten()
+        .filter(|(_, schema)| schema.get("enum").is_none())
+        .collect();
+    let operation_names = operation_enum_names(resolver);
+    let scan_operation = |(operation, name): (&IndexedOperation<'_>, &String)| {
+        let mut candidates = IndexMap::default();
+        collect_operation_enum_candidates(document, resolver, operation, name, &mut candidates);
+        candidates
+    };
+    let scan_component = |&(component_name, schema): &(&String, &Value)| {
+        let mut candidates = IndexMap::default();
+        let reference = format!("#/components/schemas/{component_name}");
+        let tags = resolver
+            .schema_tags
+            .get(&reference)
+            .cloned()
+            .unwrap_or_default();
+        collect_inline_enum_candidates(schema, &[component_name.clone()], &tags, &mut candidates);
+        candidates
+    };
+    let operations = resolver.operations.iter().zip(&operation_names);
+    let partials: Vec<IndexMap<String, ExtractedEnumCandidate>> =
+        crate::render_pool::install(|| {
+            let operations: Vec<_> = operations.clone().collect();
+            let mut partials: Vec<_> = operations.into_par_iter().map(scan_operation).collect();
+            partials.extend(
+                components
+                    .par_iter()
+                    .map(scan_component)
+                    .collect::<Vec<_>>(),
             );
+            partials
+        })
+        .unwrap_or_else(|_| {
+            operations
+                .map(scan_operation)
+                .chain(components.iter().map(scan_component))
+                .collect()
+        });
+    let mut candidates: IndexMap<String, ExtractedEnumCandidate> = IndexMap::default();
+    for partial in partials {
+        for (code, partial) in partial {
+            let candidate = candidates.entry(code).or_default();
+            candidate.name_segments.extend(partial.name_segments);
+            candidate.schema_object.extend(partial.schema_object);
+            candidate.tags.extend(partial.tags);
         }
     }
     // Codes backed by a canonical component enum never become separately extracted schemas.
@@ -1388,116 +1427,132 @@ fn sanitize_enum_segment(segment: &str) -> String {
         .replace("Request", "")
 }
 
-fn collect_operation_enum_candidates(
-    document: &Value,
-    resolver: &Resolver<'_>,
-    candidates: &mut IndexMap<String, ExtractedEnumCandidate>,
-) {
-    fn resolve<'a>(document: &'a Value, value: &'a Value) -> &'a Value {
-        value
-            .get("$ref")
-            .and_then(Value::as_str)
-            .and_then(|reference| document.pointer(reference.trim_start_matches('#')))
-            .unwrap_or(value)
-    }
+/// The name each operation's enum candidates are named after: its name, prefixed by its tag when
+/// another operation shares the name.
+fn operation_enum_names(resolver: &Resolver<'_>) -> Vec<String> {
     let mut name_counts = HashMap::default();
     for operation in &resolver.operations {
         *name_counts.entry(operation.name.as_str()).or_insert(0usize) += 1;
     }
-    for operation in &resolver.operations {
-        let unique = name_counts[operation.name.as_str()] == 1;
-        let operation_name = normalize_name(&if unique {
-            operation.name.clone()
-        } else {
-            format!("{}_{}", operation.tag, operation.name)
-        });
-        let tags = HashSet::from_iter([operation.tag.clone()]);
-        let mut parameters: IndexMap<String, &Value> = IndexMap::default();
-        for source in [
-            operation.path_parameters,
-            operation.operation.get("parameters"),
-        ]
-        .into_iter()
-        .flatten()
-        {
-            for parameter in source.as_array().into_iter().flatten() {
-                let key = parameter
-                    .get("$ref")
-                    .or_else(|| parameter.get("name"))
+    resolver
+        .operations
+        .iter()
+        .map(|operation| {
+            let unique = name_counts[operation.name.as_str()] == 1;
+            normalize_name(&if unique {
+                operation.name.clone()
+            } else {
+                format!("{}_{}", operation.tag, operation.name)
+            })
+        })
+        .collect()
+}
+
+fn collect_operation_enum_candidates(
+    document: &Value,
+    resolver: &Resolver<'_>,
+    operation: &IndexedOperation<'_>,
+    operation_name: &str,
+    candidates: &mut IndexMap<String, ExtractedEnumCandidate>,
+) {
+    fn resolve<'v>(document: &'v Value, resolver: &Resolver<'v>, value: &'v Value) -> &'v Value {
+        value
+            .get("$ref")
+            .and_then(Value::as_str)
+            .and_then(|reference| {
+                resolver
+                    .resolve_ref(reference)
+                    .or_else(|| document.pointer(reference.trim_start_matches('#')))
+            })
+            .unwrap_or(value)
+    }
+    let resolve = |value| resolve(document, resolver, value);
+    let tags = HashSet::from_iter([operation.tag.clone()]);
+    let mut parameters: IndexMap<String, &Value> = IndexMap::default();
+    for source in [
+        operation.path_parameters,
+        operation.operation.get("parameters"),
+    ]
+    .into_iter()
+    .flatten()
+    {
+        for parameter in source.as_array().into_iter().flatten() {
+            let key = parameter
+                .get("$ref")
+                .or_else(|| parameter.get("name"))
+                .and_then(Value::as_str)
+                .unwrap_or_default();
+            parameters.insert(key.to_string(), parameter);
+        }
+    }
+    for parameter in parameters.values() {
+        let parameter = resolve(parameter);
+        if let Some(schema) = parameter.get("schema") {
+            let segments = vec![
+                operation_name.to_string(),
+                parameter
+                    .get("name")
                     .and_then(Value::as_str)
-                    .unwrap_or_default();
-                parameters.insert(key.to_string(), parameter);
-            }
+                    .unwrap_or_default()
+                    .to_string(),
+            ];
+            add_enum_candidate(schema, &segments, &tags, candidates);
+            collect_inline_enum_candidates(schema, &segments, &tags, candidates);
         }
-        for parameter in parameters.values() {
-            let parameter = resolve(document, parameter);
-            if let Some(schema) = parameter.get("schema") {
-                let segments = vec![
-                    operation_name.clone(),
-                    parameter
-                        .get("name")
-                        .and_then(Value::as_str)
-                        .unwrap_or_default()
-                        .to_string(),
-                ];
-                add_enum_candidate(schema, &segments, &tags, candidates);
-                collect_inline_enum_candidates(schema, &segments, &tags, candidates);
-            }
-        }
-        if let Some(body) = operation.operation.get("requestBody") {
-            let body = resolve(document, body);
-            if let Some(content) = body.get("content").and_then(Value::as_object) {
-                if let Some((_, media)) = content.iter().find(|(media, _)| {
-                    (media.contains("application/") && media.contains("json"))
-                        || media.contains("text/")
-                        || matches!(
-                            media.as_str(),
-                            "application/x-www-form-urlencoded"
-                                | "multipart/form-data"
-                                | "application/octet-stream"
-                                | "*/*"
-                        )
-                }) {
-                    if let Some(schema) = media.get("schema") {
-                        collect_inline_enum_candidates(
-                            schema,
-                            &[format!("{operation_name}Body")],
-                            &tags,
-                            candidates,
-                        );
-                    }
+    }
+    if let Some(body) = operation.operation.get("requestBody") {
+        let body = resolve(body);
+        if let Some(content) = body.get("content").and_then(Value::as_object) {
+            if let Some((_, media)) = content.iter().find(|(media, _)| {
+                (media.contains("application/") && media.contains("json"))
+                    || media.contains("text/")
+                    || matches!(
+                        media.as_str(),
+                        "application/x-www-form-urlencoded"
+                            | "multipart/form-data"
+                            | "application/octet-stream"
+                            | "*/*"
+                    )
+            }) {
+                if let Some(schema) = media.get("schema") {
+                    collect_inline_enum_candidates(
+                        schema,
+                        &[format!("{operation_name}Body")],
+                        &tags,
+                        candidates,
+                    );
                 }
             }
         }
-        if let Some(responses) = operation
-            .operation
-            .get("responses")
-            .and_then(Value::as_object)
-        {
-            for (status, response) in responses {
-                let response = resolve(document, response);
-                if let Some(content) = response.get("content").and_then(Value::as_object) {
-                    if let Some((_, media)) = content
-                        .iter()
-                        .find(|(_, media)| media.get("schema").is_some())
-                        .or_else(|| {
-                            content
-                                .iter()
-                                .find(|(media, _)| media.starts_with("application/"))
-                        })
-                    {
-                        if let Some(schema) = media.get("schema") {
-                            let name = if status == "default"
-                                || status
-                                    .parse::<u16>()
-                                    .is_ok_and(|status| (200..300).contains(&status))
-                            {
-                                format!("{operation_name}Response")
-                            } else {
-                                format!("{operation_name}{status}ErrorResponse")
-                            };
-                            collect_inline_enum_candidates(schema, &[name], &tags, candidates);
-                        }
+    }
+    if let Some(responses) = operation
+        .operation
+        .get("responses")
+        .and_then(Value::as_object)
+    {
+        for (status, response) in responses {
+            let response = resolve(response);
+            if let Some(content) = response.get("content").and_then(Value::as_object) {
+                if let Some((_, media)) = content
+                    .iter()
+                    .find(|(_, media)| media.get("schema").is_some())
+                    .or_else(|| {
+                        content
+                            .iter()
+                            .find(|(media, _)| media.starts_with("application/"))
+                    })
+                {
+                    if let Some(schema) = media.get("schema") {
+                        let name = if status == "default"
+                            || status
+                                .parse::<u16>()
+                                .is_ok_and(|status| (200..300).contains(&status))
+                        {
+                            format!("{operation_name}Response")
+                        } else {
+                            format!("{operation_name}{status}ErrorResponse")
+                        };
+                        collect_inline_enum_candidates(schema, &[name], &tags, candidates);
                     }
                 }
             }
@@ -1863,7 +1918,7 @@ mod tests {
                 reference.to_string(),
                 initial.iter().map(|tag| tag.to_string()).collect(),
             );
-            let runtime_tags = Rc::new(RefCell::new(HashMap::default()));
+            let runtime_tags = RuntimeTags::default();
             let compiler = ZodCompiler::new_with_runtime_tags(
                 &document,
                 &options,
@@ -1878,7 +1933,7 @@ mod tests {
                     &options.default_tag
                 }
             );
-            runtime_tags.borrow_mut().insert(
+            runtime_tags.write().unwrap().insert(
                 reference.to_string(),
                 HashSet::from_iter(["First".to_string()]),
             );
@@ -1891,7 +1946,8 @@ mod tests {
                 }
             );
             runtime_tags
-                .borrow_mut()
+                .write()
+                .unwrap()
                 .get_mut(reference)
                 .unwrap()
                 .insert("Second".to_string());
@@ -1921,7 +1977,7 @@ mod tests {
             ),
         ]);
         compiler.extracted_enum_tags_by_name = first_extracted_enum_tags(&enums);
-        compiler.runtime_tags.borrow_mut().insert(
+        compiler.runtime_tags.write().unwrap().insert(
             reference.to_string(),
             HashSet::from_iter(["Runtime".to_string()]),
         );

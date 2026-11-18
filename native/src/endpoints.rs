@@ -1,4 +1,6 @@
-use std::{cell::RefCell, rc::Rc};
+use std::cell::RefCell;
+
+use rayon::prelude::*;
 
 use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 use serde_json::{Map, Number, Value};
@@ -6,21 +8,110 @@ use serde_json::{Map, Number, Value};
 use crate::{
     config::GenerateOptions,
     resolver::{IndexedOperation, Resolver, format_tag},
-    zod::{ZodCompiler, schema_name},
+    zod::{RuntimeTags, ZodCompiler, schema_name},
 };
 
 pub struct EndpointExtractor<'a> {
+    context: Context<'a>,
+    state: State,
+}
+
+/// What extracting an operation reads: shared, read-only, and safe to use from several threads.
+struct Context<'a> {
     options: &'a GenerateOptions,
     resolver: &'a Resolver<'a>,
     compiler: ZodCompiler<'a>,
+    canonical_enum_refs: HashMap<String, String>,
+}
+
+/// What registering references and generated schemas changes, in operation order.
+struct State {
     generated_schemas: RefCell<Map<String, Value>>,
     generated_tags: RefCell<HashMap<String, HashSet<String>>>,
     generated_objects: RefCell<Map<String, Value>>,
     generated_dependencies: RefCell<Map<String, Value>>,
-    canonical_enum_refs: HashMap<String, String>,
-    runtime_tags: Rc<RefCell<HashMap<String, HashSet<String>>>>,
+    runtime_tags: RuntimeTags,
     first_tags: RefCell<HashMap<String, String>>,
     registering: RefCell<HashSet<String>>,
+}
+
+/// The state changes extracting an operation makes. [`Apply`] makes them as they happen; a
+/// [`Recorder`] keeps them so operations can be extracted in parallel and replayed in order.
+trait Effects {
+    fn register_reference(&self, reference: &str, tag: &str) -> Result<(), String>;
+    fn register_reference_usage(&self, reference: &str, tag: &str);
+    fn set_generated_schema(&self, name: String, code: String, tag: &str);
+    fn set_generated_object(&self, name: &str, schema: &Value);
+    fn set_generated_dependencies(&self, name: &str, dependencies: Vec<String>);
+}
+
+enum Effect {
+    Reference(String, String),
+    Usage(String, String),
+    Schema(String, String, String),
+    Object(String, Value),
+    Dependencies(String, Vec<String>),
+}
+
+#[derive(Default)]
+struct Recorder(RefCell<Vec<Effect>>);
+
+impl Effects for Recorder {
+    fn register_reference(&self, reference: &str, tag: &str) -> Result<(), String> {
+        let effect = Effect::Reference(reference.to_string(), tag.to_string());
+        self.0.borrow_mut().push(effect);
+        Ok(())
+    }
+
+    fn register_reference_usage(&self, reference: &str, tag: &str) {
+        let effect = Effect::Usage(reference.to_string(), tag.to_string());
+        self.0.borrow_mut().push(effect);
+    }
+
+    fn set_generated_schema(&self, name: String, code: String, tag: &str) {
+        self.0
+            .borrow_mut()
+            .push(Effect::Schema(name, code, tag.to_string()));
+    }
+
+    fn set_generated_object(&self, name: &str, schema: &Value) {
+        let effect = Effect::Object(name.to_string(), schema.clone());
+        self.0.borrow_mut().push(effect);
+    }
+
+    fn set_generated_dependencies(&self, name: &str, dependencies: Vec<String>) {
+        self.0
+            .borrow_mut()
+            .push(Effect::Dependencies(name.to_string(), dependencies));
+    }
+}
+
+/// Makes state changes immediately, in the order extraction asks for them.
+struct Apply<'x, 'a> {
+    context: &'x Context<'a>,
+    state: &'x State,
+}
+
+impl Effects for Apply<'_, '_> {
+    fn register_reference(&self, reference: &str, tag: &str) -> Result<(), String> {
+        Apply::register_reference(self, reference, tag)
+    }
+
+    fn register_reference_usage(&self, reference: &str, tag: &str) {
+        Apply::register_reference_usage(self, reference, tag)
+    }
+
+    fn set_generated_schema(&self, name: String, code: String, tag: &str) {
+        Apply::set_generated_schema(self, name, code, tag)
+    }
+
+    fn set_generated_object(&self, name: &str, schema: &Value) {
+        Apply::set_generated_object(self, name, schema)
+    }
+
+    fn set_generated_dependencies(&self, name: &str, dependencies: Vec<String>) {
+        Apply::set_generated_dependencies(self, name, dependencies)
+    }
 }
 
 pub struct GeneratedEndpointData {
@@ -37,66 +128,117 @@ impl<'a> EndpointExtractor<'a> {
         options: &'a GenerateOptions,
         resolver: &'a Resolver<'a>,
     ) -> Self {
-        Self::new_with_runtime_tags(
-            document,
-            options,
-            resolver,
-            Rc::new(RefCell::new(HashMap::default())),
-        )
+        Self::new_with_runtime_tags(document, options, resolver, RuntimeTags::default())
     }
 
     pub fn new_with_runtime_tags(
         document: &'a Value,
         options: &'a GenerateOptions,
         resolver: &'a Resolver<'a>,
-        runtime_tags: Rc<RefCell<HashMap<String, HashSet<String>>>>,
+        runtime_tags: RuntimeTags,
     ) -> Self {
-        let canonical_enum_refs = canonical_enum_refs(document);
         Self {
-            options,
-            resolver,
-            compiler: ZodCompiler::new_with_runtime_tags(
-                document,
+            context: Context {
                 options,
                 resolver,
-                runtime_tags.clone(),
-            ),
-            generated_schemas: RefCell::new(Map::new()),
-            generated_tags: RefCell::new(HashMap::default()),
-            generated_objects: RefCell::new(Map::new()),
-            generated_dependencies: RefCell::new(Map::new()),
-            canonical_enum_refs,
-            runtime_tags,
-            first_tags: RefCell::new(HashMap::default()),
-            registering: RefCell::new(HashSet::default()),
+                compiler: ZodCompiler::new_with_runtime_tags(
+                    document,
+                    options,
+                    resolver,
+                    runtime_tags.clone(),
+                ),
+                canonical_enum_refs: canonical_enum_refs(document),
+            },
+            state: State {
+                generated_schemas: RefCell::new(Map::new()),
+                generated_tags: RefCell::new(HashMap::default()),
+                generated_objects: RefCell::new(Map::new()),
+                generated_dependencies: RefCell::new(Map::new()),
+                runtime_tags,
+                first_tags: RefCell::new(HashMap::default()),
+                registering: RefCell::new(HashSet::default()),
+            },
         }
     }
 
     pub fn extract(&self) -> Result<Vec<Value>, String> {
+        self.extract_with(!self.context.ownership_shapes_code())
+    }
+
+    /// Extracts every operation, in parallel when `parallel` (only valid when ownership does not
+    /// shape compiled code) and otherwise one after another.
+    fn extract_with(&self, parallel: bool) -> Result<Vec<Value>, String> {
         let mut name_counts = HashMap::default();
-        for operation in &self.resolver.operations {
+        for operation in &self.context.resolver.operations {
             *name_counts.entry(operation.name.as_str()).or_insert(0usize) += 1;
         }
-        self.resolver
-            .operations
-            .iter()
-            .map(|operation| {
-                self.extract_operation(operation, name_counts[operation.name.as_str()] == 1)
-            })
-            .collect()
+        let unique = |operation: &IndexedOperation<'_>| name_counts[operation.name.as_str()] == 1;
+        let apply = Apply {
+            context: &self.context,
+            state: &self.state,
+        };
+        let operations = &self.context.resolver.operations;
+        if !parallel || operations.len() < 2 {
+            return operations
+                .iter()
+                .map(|operation| {
+                    self.context
+                        .extract_operation(operation, unique(operation), &apply)
+                })
+                .collect();
+        }
+        // Compiled code does not depend on which tag owns a schema in this layout (see
+        // `ownership_shapes_code`), so operations are independent until their state changes, which
+        // are replayed in operation order: the result matches extracting one after another.
+        let context = &self.context;
+        let extracted: Vec<Result<(Value, Vec<Effect>), String>> =
+            crate::render_pool::install(|| {
+                operations
+                    .par_iter()
+                    .map(|operation| {
+                        let recorder = Recorder::default();
+                        let endpoint =
+                            context.extract_operation(operation, unique(operation), &recorder)?;
+                        Ok((endpoint, recorder.0.into_inner()))
+                    })
+                    .collect()
+            })?;
+        let mut endpoints = Vec::with_capacity(extracted.len());
+        for result in extracted {
+            let (endpoint, effects) = result?;
+            for effect in effects {
+                apply.replay(effect)?;
+            }
+            endpoints.push(endpoint);
+        }
+        Ok(endpoints)
     }
 
     pub fn into_generated_data(self) -> (GeneratedEndpointData, ZodCompiler<'a>) {
         (
             GeneratedEndpointData {
-                schemas: self.generated_schemas.into_inner(),
-                tags: self.generated_tags.into_inner(),
-                objects: self.generated_objects.into_inner(),
-                dependencies: self.generated_dependencies.into_inner(),
-                first_tags: self.first_tags.into_inner(),
+                schemas: self.state.generated_schemas.into_inner(),
+                tags: self.state.generated_tags.into_inner(),
+                objects: self.state.generated_objects.into_inner(),
+                dependencies: self.state.generated_dependencies.into_inner(),
+                first_tags: self.state.first_tags.into_inner(),
             },
-            self.compiler,
+            self.context.compiler,
         )
+    }
+}
+
+impl<'a> Context<'a> {
+    /// Whether compiled code depends on which tag owns a referenced schema, and so on the tags
+    /// earlier operations registered. Only namespaced, split output importing models from their
+    /// owner names other tags' schemas by namespace; `modelsInModules` copies them into each
+    /// module and strips those namespaces, so extraction order cannot change the output.
+    fn ownership_shapes_code(&self) -> bool {
+        let options = self.options;
+        options.ts_namespaces
+            && options.split_by_tags
+            && !options.models_in_common
+            && !options.models_in_modules
     }
 
     fn generated_dependency_names_from_references(&self, references: &[String]) -> Vec<String> {
@@ -108,7 +250,12 @@ impl<'a> EndpointExtractor<'a> {
         names
     }
 
-    fn register_inline_references(&self, schema: &Value, tag: &str) -> Result<Vec<String>, String> {
+    fn register_inline_references<E: Effects>(
+        &self,
+        schema: &Value,
+        tag: &str,
+        effects: &E,
+    ) -> Result<Vec<String>, String> {
         // Referenced schemas are registered separately and never get a generated
         // endpoint dependency entry. Avoid expanding their entire graph here.
         if schema.get("$ref").is_some() {
@@ -117,7 +264,7 @@ impl<'a> EndpointExtractor<'a> {
         let mut references = Vec::new();
         collect_compiled_reference_order(schema, &mut references, &mut HashSet::default());
         for reference in &references {
-            self.register_reference(reference, tag)?;
+            effects.register_reference(reference, tag)?;
         }
         Ok(references)
     }
@@ -158,35 +305,11 @@ impl<'a> EndpointExtractor<'a> {
         }
     }
 
-    fn set_generated_dependencies(&self, name: &str, dependencies: Vec<String>) {
-        self.generated_dependencies.borrow_mut().insert(
-            name.to_string(),
-            Value::Array(dependencies.into_iter().map(Value::String).collect()),
-        );
-    }
-
-    fn set_generated_object(&self, name: &str, schema: &Value) {
-        self.generated_objects
-            .borrow_mut()
-            .entry(name.to_string())
-            .or_insert_with(|| schema.clone());
-    }
-
-    fn set_generated_schema(&self, name: String, code: String, tag: &str) {
-        self.generated_schemas
-            .borrow_mut()
-            .insert(name.clone(), Value::String(code));
-        self.generated_tags
-            .borrow_mut()
-            .entry(name)
-            .or_default()
-            .insert(tag.to_string());
-    }
-
-    fn extract_operation(
+    fn extract_operation<E: Effects>(
         &self,
         indexed: &IndexedOperation<'a>,
         unique_name: bool,
+        effects: &E,
     ) -> Result<Value, String> {
         let operation = indexed.operation;
         let mut endpoint = Map::new();
@@ -214,14 +337,14 @@ impl<'a> EndpointExtractor<'a> {
 
         if let Some(request_body) = operation.get("requestBody") {
             if let Some((parameter, format)) =
-                self.body_parameter(request_body, indexed, unique_name)?
+                self.body_parameter(request_body, indexed, unique_name, effects)?
             {
                 parameters.push(parameter);
                 endpoint.insert("requestFormat".into(), Value::String(format));
             }
         }
         for parameter in self.merged_parameters(indexed) {
-            if let Some(parameter) = self.parameter(parameter, indexed, unique_name)? {
+            if let Some(parameter) = self.parameter(parameter, indexed, unique_name, effects)? {
                 parameters.push(parameter);
             }
         }
@@ -287,9 +410,10 @@ impl<'a> EndpointExtractor<'a> {
                 }
                 let schema = matching.and_then(|(_, media)| media.get("schema"));
                 if let Some(schema) = schema {
-                    self.register_reference_schema(schema, &indexed.tag)?;
+                    self.register_reference_schema(schema, &indexed.tag, effects)?;
                     let schema_object = self.resolve(schema).unwrap_or(schema);
-                    let references = self.register_inline_references(schema, &indexed.tag)?;
+                    let references =
+                        self.register_inline_references(schema, &indexed.tag, effects)?;
                     let (code, chain) =
                         self.compiler
                             .compile_endpoint_schema(schema, true, &indexed.tag)?;
@@ -301,7 +425,7 @@ impl<'a> EndpointExtractor<'a> {
                         .and_then(|named| named.get("$ref"))
                         .and_then(Value::as_str)
                     {
-                        self.register_reference_usage(reference, &indexed.tag);
+                        effects.register_reference_usage(reference, &indexed.tag);
                     }
                     let naming = named.as_ref().unwrap_or(schema);
                     let resolved = self.resolve_schema_name(
@@ -314,9 +438,9 @@ impl<'a> EndpointExtractor<'a> {
                     if naming.get("$ref").is_none()
                         && complexity(schema_object) >= COMPLEXITY_THRESHOLD
                     {
-                        self.set_generated_schema(resolved.clone(), code, &indexed.tag);
-                        self.set_generated_object(&resolved, schema_object);
-                        self.set_generated_dependencies(
+                        effects.set_generated_schema(resolved.clone(), code, &indexed.tag);
+                        effects.set_generated_object(&resolved, schema_object);
+                        effects.set_generated_dependencies(
                             &resolved,
                             self.generated_dependency_names_from_references(&references),
                         );
@@ -558,11 +682,12 @@ impl<'a> EndpointExtractor<'a> {
         Some(Value::Object(result))
     }
 
-    fn body_parameter(
+    fn body_parameter<E: Effects>(
         &self,
         raw_body: &Value,
         indexed: &IndexedOperation<'_>,
         unique_name: bool,
+        effects: &E,
     ) -> Result<Option<(Value, String)>, String> {
         let body = self.resolve(raw_body).unwrap_or(raw_body);
         let Some(body_obj) = body.as_object() else {
@@ -578,13 +703,13 @@ impl<'a> EndpointExtractor<'a> {
         let Some(schema) = media.get("schema") else {
             return Ok(None);
         };
-        self.register_reference_schema(schema, &indexed.tag)?;
+        self.register_reference_schema(schema, &indexed.tag, effects)?;
         // OpenAPI: `requestBody.required` defaults to `false`.
         let required = body_obj
             .get("required")
             .and_then(Value::as_bool)
             .unwrap_or(false);
-        let references = self.register_inline_references(schema, &indexed.tag)?;
+        let references = self.register_inline_references(schema, &indexed.tag, effects)?;
         let (code, chain) =
             self.compiler
                 .compile_endpoint_schema(schema, required, &indexed.tag)?;
@@ -601,15 +726,15 @@ impl<'a> EndpointExtractor<'a> {
             .and_then(|named| named.get("$ref"))
             .and_then(Value::as_str)
         {
-            self.register_reference_usage(reference, &indexed.tag);
+            effects.register_reference_usage(reference, &indexed.tag);
         }
         let naming = named.as_ref().unwrap_or(schema);
         let resolved =
             self.resolve_schema_name(naming, actual, code.clone(), Some(&fallback), &indexed.tag)?;
         if naming.get("$ref").is_none() && complexity(actual) >= COMPLEXITY_THRESHOLD {
-            self.set_generated_schema(resolved.clone(), code, &indexed.tag);
-            self.set_generated_object(&resolved, actual);
-            self.set_generated_dependencies(
+            effects.set_generated_schema(resolved.clone(), code, &indexed.tag);
+            effects.set_generated_object(&resolved, actual);
+            effects.set_generated_dependencies(
                 &resolved,
                 self.generated_dependency_names_from_references(&references),
             );
@@ -655,11 +780,12 @@ impl<'a> EndpointExtractor<'a> {
         values.into_iter().map(|(_, value)| value).collect()
     }
 
-    fn parameter(
+    fn parameter<E: Effects>(
         &self,
         raw: &Value,
         indexed: &IndexedOperation<'_>,
         unique_name: bool,
+        effects: &E,
     ) -> Result<Option<Value>, String> {
         let param = self.resolve(raw).unwrap_or(raw);
         let Some(obj) = param.as_object() else {
@@ -703,8 +829,8 @@ impl<'a> EndpointExtractor<'a> {
                 .get("required")
                 .and_then(Value::as_bool)
                 .unwrap_or(false);
-        self.register_reference_schema(schema, &indexed.tag)?;
-        let references = self.register_inline_references(schema, &indexed.tag)?;
+        self.register_reference_schema(schema, &indexed.tag, effects)?;
+        let references = self.register_inline_references(schema, &indexed.tag, effects)?;
         let (code, chain) =
             self.compiler
                 .compile_endpoint_schema(schema, required, &indexed.tag)?;
@@ -734,7 +860,7 @@ impl<'a> EndpointExtractor<'a> {
             .and_then(|named| named.get("$ref"))
             .and_then(Value::as_str)
         {
-            self.register_reference_usage(reference, &indexed.tag);
+            effects.register_reference_usage(reference, &indexed.tag);
         }
         let naming = named.as_ref().unwrap_or(schema);
         let zod = self.resolve_schema_name(
@@ -752,9 +878,9 @@ impl<'a> EndpointExtractor<'a> {
             zod
         };
         if naming.get("$ref").is_none() && complexity(actual) >= COMPLEXITY_THRESHOLD {
-            self.set_generated_schema(zod.clone(), composed_code, &indexed.tag);
-            self.set_generated_object(&zod, actual);
-            self.set_generated_dependencies(
+            effects.set_generated_schema(zod.clone(), composed_code, &indexed.tag);
+            effects.set_generated_object(&zod, actual);
+            effects.set_generated_dependencies(
                 &zod,
                 self.generated_dependency_names_from_references(&references),
             );
@@ -804,7 +930,7 @@ impl<'a> EndpointExtractor<'a> {
                     .collect::<Vec<_>>()
                     .join(", ")
             );
-            self.set_generated_schema(enum_name, enum_code, &indexed.tag);
+            effects.set_generated_schema(enum_name, enum_code, &indexed.tag);
         }
         Ok(Some(Value::Object(result)))
     }
@@ -813,24 +939,6 @@ impl<'a> EndpointExtractor<'a> {
         let reference = value.get("$ref")?.as_str()?;
         reference.strip_prefix('#')?;
         self.resolver.resolve_ref(reference)
-    }
-
-    /// Records that `tag` uses the component enum `reference` without generating its schema here, as the
-    /// TypeScript renderer does for inline enums it names by a matching component enum: the enum is then
-    /// emitted with the other component enums, after the endpoint schemas.
-    fn register_reference_usage(&self, reference: &str, tag: &str) {
-        if self.is_registered(reference, tag) {
-            return;
-        }
-        self.runtime_tags
-            .borrow_mut()
-            .entry(reference.to_string())
-            .or_default()
-            .insert(tag.to_string());
-        self.first_tags
-            .borrow_mut()
-            .entry(reference.to_string())
-            .or_insert_with(|| tag.to_string());
     }
 
     /// The zod schema an endpoint uses, as `resolveZodSchemaName` resolves it: a `$ref` to a simple
@@ -863,20 +971,91 @@ impl<'a> EndpointExtractor<'a> {
             .unwrap_or(code))
     }
 
-    fn register_reference_schema(&self, schema: &Value, tag: &str) -> Result<(), String> {
+    fn register_reference_schema<E: Effects>(
+        &self,
+        schema: &Value,
+        tag: &str,
+        effects: &E,
+    ) -> Result<(), String> {
         let Some(reference) = schema.get("$ref").and_then(Value::as_str) else {
             return Ok(());
         };
-        self.register_reference(reference, tag)
+        effects.register_reference(reference, tag)
+    }
+}
+
+impl Apply<'_, '_> {
+    fn replay(&self, effect: Effect) -> Result<(), String> {
+        match effect {
+            Effect::Reference(reference, tag) => self.register_reference(&reference, &tag)?,
+            Effect::Usage(reference, tag) => self.register_reference_usage(&reference, &tag),
+            Effect::Schema(name, code, tag) => self.set_generated_schema(name, code, &tag),
+            Effect::Object(name, schema) => self.set_generated_object(&name, &schema),
+            Effect::Dependencies(name, dependencies) => {
+                self.set_generated_dependencies(&name, dependencies)
+            }
+        }
+        Ok(())
+    }
+
+    fn set_generated_dependencies(&self, name: &str, dependencies: Vec<String>) {
+        self.state.generated_dependencies.borrow_mut().insert(
+            name.to_string(),
+            Value::Array(dependencies.into_iter().map(Value::String).collect()),
+        );
+    }
+
+    fn set_generated_object(&self, name: &str, schema: &Value) {
+        self.state
+            .generated_objects
+            .borrow_mut()
+            .entry(name.to_string())
+            .or_insert_with(|| schema.clone());
+    }
+
+    fn set_generated_schema(&self, name: String, code: String, tag: &str) {
+        self.state
+            .generated_schemas
+            .borrow_mut()
+            .insert(name.clone(), Value::String(code));
+        self.state
+            .generated_tags
+            .borrow_mut()
+            .entry(name)
+            .or_default()
+            .insert(tag.to_string());
+    }
+
+    /// Records that `tag` uses the component enum `reference` without generating its schema here, as the
+    /// TypeScript renderer does for inline enums it names by a matching component enum: the enum is then
+    /// emitted with the other component enums, after the endpoint schemas.
+    fn register_reference_usage(&self, reference: &str, tag: &str) {
+        if self.is_registered(reference, tag) {
+            return;
+        }
+        self.state
+            .runtime_tags
+            .write()
+            .unwrap()
+            .entry(reference.to_string())
+            .or_default()
+            .insert(tag.to_string());
+        self.state
+            .first_tags
+            .borrow_mut()
+            .entry(reference.to_string())
+            .or_insert_with(|| tag.to_string());
     }
 
     /// Whether `tag` already uses `reference` and its first tag is recorded, in which case
     /// registering it again changes nothing. Most registrations are repeats; skip their allocations.
     fn is_registered(&self, reference: &str, tag: &str) -> bool {
-        self.first_tags.borrow().contains_key(reference)
+        self.state.first_tags.borrow().contains_key(reference)
             && self
+                .state
                 .runtime_tags
-                .borrow()
+                .read()
+                .unwrap()
                 .get(reference)
                 .is_some_and(|tags| tags.contains(tag))
     }
@@ -894,13 +1073,15 @@ impl<'a> EndpointExtractor<'a> {
             )
         };
         let effective_tag = tag;
-        self.runtime_tags
-            .borrow_mut()
+        self.state
+            .runtime_tags
+            .write()
+            .unwrap()
             .entry(reference.clone())
             .or_default()
             .insert(effective_tag.to_string());
         let first_use = {
-            let mut first_tags = self.first_tags.borrow_mut();
+            let mut first_tags = self.state.first_tags.borrow_mut();
             if first_tags.contains_key(&reference) {
                 false
             } else {
@@ -908,10 +1089,16 @@ impl<'a> EndpointExtractor<'a> {
                 true
             }
         };
-        if !first_use || !self.registering.borrow_mut().insert(reference.clone()) {
+        if !first_use
+            || !self
+                .state
+                .registering
+                .borrow_mut()
+                .insert(reference.clone())
+        {
             return Ok(());
         }
-        if let Some(actual) = self.resolver.resolve_ref(&reference) {
+        if let Some(actual) = self.context.resolver.resolve_ref(&reference) {
             let mut refs = Vec::new();
             let mut seen = HashSet::default();
             collect_compiled_reference_order(actual, &mut refs, &mut seen);
@@ -921,15 +1108,17 @@ impl<'a> EndpointExtractor<'a> {
             if actual.get("enum").is_some() {
                 let name = schema_name(
                     reference.rsplit('/').next().unwrap_or_default(),
-                    &self.options.schema_suffix,
+                    &self.context.options.schema_suffix,
                 );
                 let (_, code) = self
+                    .context
                     .compiler
                     .compile_reference_for_tag(&reference, effective_tag)?;
                 self.set_generated_schema(name, code, effective_tag);
             }
         }
         if self
+            .context
             .resolver
             .deep_dependencies
             .get(&reference)
@@ -937,14 +1126,15 @@ impl<'a> EndpointExtractor<'a> {
         {
             let name = schema_name(
                 reference.rsplit('/').next().unwrap_or_default(),
-                &self.options.schema_suffix,
+                &self.context.options.schema_suffix,
             );
             let (_, code) = self
+                .context
                 .compiler
                 .compile_reference_for_tag(&reference, effective_tag)?;
             self.set_generated_schema(name, code, effective_tag);
         }
-        self.registering.borrow_mut().remove(&reference);
+        self.state.registering.borrow_mut().remove(&reference);
         Ok(())
     }
 }
@@ -1454,7 +1644,8 @@ mod tests {
         let endpoints = extractor.extract().unwrap();
         assert_eq!(endpoints.len(), 2);
         assert!(
-            extractor.runtime_tags.borrow()["#/components/schemas/Parent"].contains("Referenced")
+            extractor.state.runtime_tags.read().unwrap()["#/components/schemas/Parent"]
+                .contains("Referenced")
         );
         let (generated, _) = extractor.into_generated_data();
         // Inline body, query parameter, and response each retain their full graph.
@@ -1474,5 +1665,63 @@ mod tests {
             "Inline"
         );
         assert_eq!(generated.first_tags["#/components/schemas/Child"], "Inline");
+    }
+
+    #[test]
+    fn parallel_extraction_matches_sequential_extraction() {
+        let source = include_str!("../../test/petstore.yaml");
+        let document: Value =
+            serde_json::to_value(serde_yaml::from_str::<serde_yaml::Value>(source).unwrap())
+                .unwrap();
+        for layout in [
+            json!({ "modelsInModules": true, "tsNamespaces": true }),
+            json!({ "modelsInCommon": true }),
+            json!({ "tsNamespaces": false }),
+            json!({ "splitByTags": false }),
+        ] {
+            let options: GenerateOptions = serde_json::from_value(layout.clone()).unwrap();
+            let resolver = Resolver::new(&document, &options).unwrap();
+            let sequential = EndpointExtractor::new(&document, &options, &resolver);
+            let parallel = EndpointExtractor::new(&document, &options, &resolver);
+            assert!(!parallel.context.ownership_shapes_code(), "{layout}");
+            assert_eq!(
+                sequential.extract_with(false).unwrap(),
+                parallel.extract_with(true).unwrap(),
+                "{layout}"
+            );
+            let runtime_tags = |extractor: &EndpointExtractor| {
+                let mut tags: Vec<_> = extractor
+                    .state
+                    .runtime_tags
+                    .read()
+                    .unwrap()
+                    .iter()
+                    .map(|(reference, tags)| {
+                        let mut tags: Vec<_> = tags.iter().cloned().collect();
+                        tags.sort();
+                        (reference.clone(), tags)
+                    })
+                    .collect();
+                tags.sort();
+                tags
+            };
+            assert_eq!(
+                runtime_tags(&sequential),
+                runtime_tags(&parallel),
+                "{layout}"
+            );
+            let (sequential, _) = sequential.into_generated_data();
+            let (parallel, _) = parallel.into_generated_data();
+            assert_eq!(sequential.schemas, parallel.schemas, "{layout}");
+            assert_eq!(sequential.objects, parallel.objects, "{layout}");
+            assert_eq!(sequential.dependencies, parallel.dependencies, "{layout}");
+            assert_eq!(sequential.tags, parallel.tags, "{layout}");
+            assert_eq!(sequential.first_tags, parallel.first_tags, "{layout}");
+            // Map equality ignores order; generated schemas are emitted in insertion order.
+            assert!(
+                sequential.schemas.keys().eq(parallel.schemas.keys()),
+                "{layout}"
+            );
+        }
     }
 }
