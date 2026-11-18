@@ -3,6 +3,7 @@
 //! writer in `src/generators/run`.
 
 use std::{
+    borrow::Cow,
     collections::HashMap,
     hash::{DefaultHasher, Hasher},
     io::ErrorKind,
@@ -65,7 +66,11 @@ pub fn generate_files(
         files
             .into_par_iter()
             .map(|(relative, content)| {
-                let content = trim_trailing_whitespace(&content);
+                // Rendered code rarely has trailing whitespace; keep it without a copy then.
+                let content = match trim_trailing_whitespace(&content) {
+                    Cow::Borrowed(_) => content,
+                    Cow::Owned(trimmed) => trimmed,
+                };
                 let hash = content_hash(&write.salt, &content);
                 let name = format!("{}/{relative}", options.output);
                 let key = absolute_key(output_absolute, &relative);
@@ -216,8 +221,8 @@ fn tag_file_name(tag: &str, suffix: &str) -> String {
 
 /// `text.replace(/[ \t]+$/gm, "")`: drop spaces and tabs before every JavaScript line terminator
 /// and at the end.
-pub(crate) fn trim_trailing_whitespace(text: &str) -> String {
-    let mut output = String::with_capacity(text.len());
+pub(crate) fn trim_trailing_whitespace(text: &str) -> Cow<'_, str> {
+    let mut output = String::new();
     // Start of the current run of spaces and tabs, and how much of `text` is already copied.
     let mut run: Option<usize> = None;
     let mut copied = 0;
@@ -235,8 +240,12 @@ pub(crate) fn trim_trailing_whitespace(text: &str) -> String {
             _ => run = None,
         }
     }
-    output.push_str(&text[copied..run.unwrap_or(text.len())]);
-    output
+    let end = run.unwrap_or(text.len());
+    if copied == 0 && end == text.len() {
+        return Cow::Borrowed(text);
+    }
+    output.push_str(&text[copied..end]);
+    Cow::Owned(output)
 }
 
 fn content_hash(salt: &str, content: &str) -> String {
