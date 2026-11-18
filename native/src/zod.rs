@@ -263,13 +263,12 @@ impl<'a> ZodCompiler<'a> {
         tag: &str,
     ) -> Result<(String, String), String> {
         let reference = autocorrect_ref(reference);
+        if !reference.starts_with('#') {
+            return Err(format!("Invalid ref: {reference}"));
+        }
         let schema = self
-            .document
-            .pointer(
-                reference
-                    .strip_prefix('#')
-                    .ok_or_else(|| format!("Invalid ref: {reference}"))?,
-            )
+            .resolver
+            .resolve_ref(&reference)
             .ok_or_else(|| format!("Schema not found: {reference}"))?;
         let name = schema_name(
             reference.rsplit('/').next().unwrap_or_default(),
@@ -760,14 +759,16 @@ impl<'a> ZodCompiler<'a> {
         };
         let reference = autocorrect_ref(reference);
         reference
-            .strip_prefix('#')
-            .and_then(|pointer| self.document.pointer(pointer))
+            .starts_with('#')
+            .then(|| self.resolver.resolve_ref(&reference))
+            .flatten()
             .ok_or_else(|| format!("Schema {reference} not found"))
     }
 
     fn resolve_schema<'b>(&'b self, schema: &'b Value) -> Option<&'b Value> {
         let reference = schema.get("$ref")?.as_str()?;
-        self.document.pointer(reference.strip_prefix('#')?)
+        reference.strip_prefix('#')?;
+        self.resolver.resolve_ref(reference)
     }
 
     fn models_namespace(&self, tag: &str) -> String {

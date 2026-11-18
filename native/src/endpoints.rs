@@ -10,7 +10,6 @@ use crate::{
 };
 
 pub struct EndpointExtractor<'a> {
-    document: &'a Value,
     options: &'a GenerateOptions,
     resolver: &'a Resolver<'a>,
     compiler: ZodCompiler<'a>,
@@ -54,7 +53,6 @@ impl<'a> EndpointExtractor<'a> {
     ) -> Self {
         let canonical_enum_refs = canonical_enum_refs(document);
         Self {
-            document,
             options,
             resolver,
             compiler: ZodCompiler::new_with_runtime_tags(
@@ -813,13 +811,17 @@ impl<'a> EndpointExtractor<'a> {
 
     fn resolve<'b>(&'b self, value: &'b Value) -> Option<&'b Value> {
         let reference = value.get("$ref")?.as_str()?;
-        self.document.pointer(reference.strip_prefix('#')?)
+        reference.strip_prefix('#')?;
+        self.resolver.resolve_ref(reference)
     }
 
     /// Records that `tag` uses the component enum `reference` without generating its schema here, as the
     /// TypeScript renderer does for inline enums it names by a matching component enum: the enum is then
     /// emitted with the other component enums, after the endpoint schemas.
     fn register_reference_usage(&self, reference: &str, tag: &str) {
+        if self.is_registered(reference, tag) {
+            return;
+        }
         self.runtime_tags
             .borrow_mut()
             .entry(reference.to_string())
@@ -868,7 +870,21 @@ impl<'a> EndpointExtractor<'a> {
         self.register_reference(reference, tag)
     }
 
+    /// Whether `tag` already uses `reference` and its first tag is recorded, in which case
+    /// registering it again changes nothing. Most registrations are repeats; skip their allocations.
+    fn is_registered(&self, reference: &str, tag: &str) -> bool {
+        self.first_tags.borrow().contains_key(reference)
+            && self
+                .runtime_tags
+                .borrow()
+                .get(reference)
+                .is_some_and(|tags| tags.contains(tag))
+    }
+
     fn register_reference(&self, reference: &str, tag: &str) -> Result<(), String> {
+        if reference.starts_with("#/") && self.is_registered(reference, tag) {
+            return Ok(());
+        }
         let reference = if reference.starts_with("#/") {
             reference.to_string()
         } else {
@@ -895,10 +911,7 @@ impl<'a> EndpointExtractor<'a> {
         if !first_use || !self.registering.borrow_mut().insert(reference.clone()) {
             return Ok(());
         }
-        if let Some(actual) = self
-            .document
-            .pointer(reference.strip_prefix('#').unwrap_or_default())
-        {
+        if let Some(actual) = self.resolver.resolve_ref(&reference) {
             let mut refs = Vec::new();
             let mut seen = HashSet::default();
             collect_compiled_reference_order(actual, &mut refs, &mut seen);
@@ -936,6 +949,54 @@ impl<'a> EndpointExtractor<'a> {
     }
 }
 
+/// The schema keywords the walkers below read, gathered in one pass over the object. Schema objects
+/// have a handful of keys, so comparing them beats a hashed lookup per keyword.
+#[derive(Default)]
+struct Keywords<'v> {
+    reference: Option<&'v Value>,
+    all_of: Option<&'v Value>,
+    any_of: Option<&'v Value>,
+    one_of: Option<&'v Value>,
+    schema_type: Option<&'v Value>,
+    enumeration: Option<&'v Value>,
+    items: Option<&'v Value>,
+    properties: Option<&'v Value>,
+    additional_properties: Option<&'v Value>,
+}
+
+impl<'v> Keywords<'v> {
+    fn of(object: &'v Map<String, Value>) -> Self {
+        let mut keywords = Self::default();
+        for (key, value) in object {
+            let slot = match key.as_str() {
+                "$ref" => &mut keywords.reference,
+                "allOf" => &mut keywords.all_of,
+                "anyOf" => &mut keywords.any_of,
+                "oneOf" => &mut keywords.one_of,
+                "type" => &mut keywords.schema_type,
+                "enum" => &mut keywords.enumeration,
+                "items" => &mut keywords.items,
+                "properties" => &mut keywords.properties,
+                "additionalProperties" => &mut keywords.additional_properties,
+                _ => continue,
+            };
+            *slot = Some(value);
+        }
+        keywords
+    }
+
+    /// `zod::object_has_schema_type` on the gathered `type`.
+    fn has_type(&self, schema_type: &str) -> bool {
+        match self.schema_type {
+            Some(Value::String(value)) => value == schema_type,
+            Some(Value::Array(types)) => types
+                .iter()
+                .any(|value| value.as_str() == Some(schema_type)),
+            _ => false,
+        }
+    }
+}
+
 fn collect_compiled_reference_order(
     value: &Value,
     refs: &mut Vec<String>,
@@ -943,32 +1004,34 @@ fn collect_compiled_reference_order(
 ) {
     match value {
         Value::Object(object) => {
-            if let Some(reference) = object.get("$ref").and_then(Value::as_str) {
-                if seen.insert(reference.to_string()) {
+            let keywords = Keywords::of(object);
+            if let Some(reference) = keywords.reference.and_then(Value::as_str) {
+                if !seen.contains(reference) {
+                    seen.insert(reference.to_string());
                     refs.push(reference.to_string());
                 }
                 return;
             }
-            for keyword in ["allOf", "anyOf", "oneOf"] {
-                if let Some(items) = object.get(keyword).and_then(Value::as_array) {
+            for items in [keywords.all_of, keywords.any_of, keywords.one_of] {
+                if let Some(items) = items.and_then(Value::as_array) {
                     for child in items {
                         collect_compiled_reference_order(child, refs, seen);
                     }
                     return;
                 }
             }
-            if let Some(properties) = object.get("properties").and_then(Value::as_object) {
+            if let Some(properties) = keywords.properties.and_then(Value::as_object) {
                 for child in properties.values() {
                     collect_compiled_reference_order(child, refs, seen);
                 }
             }
-            if let Some(child) = object
-                .get("additionalProperties")
+            if let Some(child) = keywords
+                .additional_properties
                 .filter(|value| value.is_object())
             {
                 collect_compiled_reference_order(child, refs, seen);
             }
-            if crate::zod::object_has_schema_type(object, "array") {
+            if keywords.has_type("array") {
                 for child in crate::zod::array_item_schemas(object) {
                     collect_compiled_reference_order(child, refs, seen);
                 }
@@ -1038,24 +1101,31 @@ fn schema_complexity(current: u32, schema: Option<&Value>) -> u32 {
     let Some(schema) = schema.filter(|schema| !schema.is_null()) else {
         return current;
     };
-    let truthy = |key: &str| schema.get(key).is_some_and(is_truthy);
-    if schema.get("$ref").is_some() {
+    // Non-object schemas have no keywords: every lookup below is absent.
+    let empty = Map::new();
+    let object = schema.as_object().unwrap_or(&empty);
+    let keywords = Keywords::of(object);
+    let truthy = |value: Option<&Value>| value.is_some_and(is_truthy);
+    if keywords.reference.is_some() {
         return COMPLEXITY_THRESHOLD;
     }
     // Even an empty type array contributes two, without inspecting cloned variants.
-    if schema.get("type").is_some_and(Value::is_array) {
+    if keywords.schema_type.is_some_and(Value::is_array) {
         return COMPLEXITY_THRESHOLD;
     }
-    if ["oneOf", "anyOf", "allOf"].into_iter().any(truthy) {
+    if [keywords.one_of, keywords.any_of, keywords.all_of]
+        .into_iter()
+        .any(truthy)
+    {
         return COMPLEXITY_THRESHOLD;
     }
-    let schema_type = schema.get("type").and_then(Value::as_str);
+    let schema_type = keywords.schema_type.and_then(Value::as_str);
     // Object keywords do not apply to `null` (see zod.rs).
-    if !truthy("type") || schema_type == Some("null") {
+    if !truthy(keywords.schema_type) || schema_type == Some("null") {
         return current;
     }
     if let Some("string" | "number" | "integer" | "boolean") = schema_type {
-        if truthy("enum") {
+        if truthy(keywords.enumeration) {
             return COMPLEXITY_THRESHOLD;
         }
         return current + 1;
@@ -1074,19 +1144,22 @@ fn schema_complexity(current: u32, schema: Option<&Value>) -> u32 {
             }
             return current;
         }
-        return if truthy("items") {
-            schema_complexity(current, schema.get("items"))
+        return if truthy(keywords.items) {
+            schema_complexity(current, keywords.items)
         } else {
             current
         };
     }
     let mut current = current;
-    if schema_type == Some("object") || truthy("properties") || truthy("additionalProperties") {
-        if truthy("properties") {
+    if schema_type == Some("object")
+        || truthy(keywords.properties)
+        || truthy(keywords.additional_properties)
+    {
+        if truthy(keywords.properties) {
             return COMPLEXITY_THRESHOLD;
         }
         current += 1;
-        match schema.get("additionalProperties") {
+        match keywords.additional_properties {
             Some(additional @ Value::Object(_)) => {
                 return schema_complexity(current, Some(additional));
             }

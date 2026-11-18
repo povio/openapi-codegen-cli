@@ -70,6 +70,9 @@ pub struct IndexedOperation<'a> {
 }
 
 pub struct Resolver<'a> {
+    document: &'a Value,
+    /// `#/components/schemas/<name>` references, the vast majority of `$ref`s, resolved once.
+    component_schemas: HashMap<String, &'a Value>,
     pub operations: Vec<IndexedOperation<'a>>,
     pub deep_dependencies: HashMap<String, HashSet<String>>,
     pub schema_tags: HashMap<String, HashSet<String>>,
@@ -124,13 +127,33 @@ impl<'a> Resolver<'a> {
                 (finished - after_tags).as_secs_f64() * 1000.0,
             );
         }
+        let component_schemas = document
+            .pointer("/components/schemas")
+            .and_then(Value::as_object)
+            .into_iter()
+            .flatten()
+            .map(|(name, schema)| {
+                let escaped = name.replace('~', "~0").replace('/', "~1");
+                (format!("#/components/schemas/{escaped}"), schema)
+            })
+            .collect();
         Ok(Self {
+            document,
+            component_schemas,
             operations,
             deep_dependencies,
             schema_tags,
             topology_order,
             ordered_dependencies,
         })
+    }
+
+    /// `document.pointer` for a `#`-prefixed reference, without re-parsing component references.
+    pub fn resolve_ref(&self, reference: &str) -> Option<&'a Value> {
+        if let Some(schema) = self.component_schemas.get(reference) {
+            return Some(schema);
+        }
+        self.document.pointer(reference.strip_prefix('#')?)
     }
 
     pub fn stats(&self, document: &Value) -> ResolverStats {
