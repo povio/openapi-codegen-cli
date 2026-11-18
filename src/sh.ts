@@ -40,7 +40,13 @@ async function main(args: string[]) {
   if (!command) {
     throw new CliUsageError(`Unknown command: ${commandName}`);
   }
-  await command.handler(parseCliOptions(command.options, args));
+  const options = parseCliOptions(command.options, args) as { watch?: boolean; prettier?: boolean };
+  await command.handler(options);
+  // Nothing else is pending (watch keeps running; --prettier finishes in the background), so exit
+  // now: letting the runtime tear down the native addon's threads and memory costs a few ms.
+  if (!options.watch && !options.prettier) {
+    process.exit(process.exitCode ?? 0);
+  }
 }
 
 main(process.argv.slice(2)).catch((error: unknown) => {
