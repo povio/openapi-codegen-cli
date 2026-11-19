@@ -132,6 +132,7 @@ bunx openapi-codegen generate --config my-config.ts
   --output                            Output directory path (default: 'output')
   --incremental                       Skip generation when OpenAPI and config are unchanged (default: true)
   --format                            Format the generated code using Oxfmt (default: true)
+  --watch                             Keep running and regenerate when the input spec or config changes (default: false)
   --verbose                           Display detailed log messages during execution (default: false)
 
   --splitByTags                       Organize output into separate folders based on OpenAPI operation tags (default: true)
@@ -222,13 +223,19 @@ The Bun and Node.js CLIs and the Vite plugin automatically use the bundled Rust 
 
 Set `OPENAPI_CODEGEN_NATIVE=0` to force the TypeScript path, or `OPENAPI_CODEGEN_NATIVE=1` to require the native path and fail when its binary is unavailable.
 
-The native core caches up to two successful compilations per process within a 32 MiB estimated retained-memory budget. Reuse requires identical source text, YAML mode, and complete options JSON; returned objects remain independent. The cache is shared across Node workers and cleared when the last addon environment closes. It benefits repeated generation in long-running hosts such as Vite, not separate CLI processes. Set `OPENAPI_CODEGEN_NATIVE_CACHE=0` to disable it for profiling. Concurrent misses may compile independently; failures and oversized results are not retained.
+The native core caches up to two successful compilations per process within a 32 MiB estimated retained-memory budget. Reuse requires identical source text, YAML mode, and complete options JSON; returned objects remain independent. The cache is shared across Node workers and cleared when the last addon environment closes. It benefits repeated generation in long-running hosts such as Vite with `incremental: false`; with `incremental` (the default), unchanged inputs are skipped before compiling, so generation does not use the cache. Set `OPENAPI_CODEGEN_NATIVE_CACHE=0` to disable it for profiling. Concurrent misses may compile independently; failures and oversized results are not retained.
 
 Release packages include native binaries for Linux x64, macOS arm64, and Windows x64. Build a binary for the current platform with `bun run build:native`.
 
 Run `bun run test:parity` after building the addon to compare every generated file across 64 layout combinations and representative values for every other renderer option. The matrix uses both `test/petstore.yaml` and `test/configuration.yaml`, exercises complete native and hybrid native generation, and loads generated models to check runtime references. The contradictory combination `modelsInCommon: true` with `modelsInModules: true` is rejected explicitly. Arbitrary strings and lists are covered by representative cases, not every possible value.
 
-The separate Renderer parity workflow generates this matrix with JavaScript and native on Linux and macOS, then compares exact file lists and SHA-256 hashes. Artifacts include route reports identifying complete versus hybrid native generation. Runner integration tests cover input/output, stale-file cleanup, and unchanged files; `incremental` is currently retained as a compatibility option and does not change the writer's unchanged-file optimization.
+The separate Renderer parity workflow generates this matrix with JavaScript and native on Linux and macOS, then compares exact file lists and SHA-256 hashes. Artifacts include route reports identifying complete versus hybrid native generation. Runner integration tests cover input/output, stale-file cleanup, unchanged files, and incremental runs.
+
+With `incremental` (the default), the generator records what it produced for each output directory in `node_modules/.cache/openapi-codegen` (or the system temp directory when there is no `node_modules`). A run whose OpenAPI source, resolved config, and generator build are unchanged, and whose files all still exist, is skipped. Otherwise only files whose generated content changed are written, so files rewritten afterwards by a formatter or post-processing script are left alone. Edits to generated files are therefore kept until that file's generated content changes; pass `--no-incremental` to rewrite every file.
+
+With `format` (the default), generated files are formatted in-process using the nearest `.oxfmtrc.json` above the output directory and the project's installed `oxfmt` package, exactly as `oxfmt` or `bun fmt` would format them, so no separate formatting step is needed after generation. Only files whose generated content changed are formatted. Without an oxfmt config nothing is formatted; if a config exists but `oxfmt` is not installed, a warning is printed. Set `format: false` (or `--no-format`) to turn it off.
+
+`openapi-codegen generate --watch` stays running and regenerates whenever the local input spec or the config file changes, reusing the loaded generator and native addon, so each run skips process startup. A spec read while it is still being written is retried once it is complete.
 
 ## Common Issues
 

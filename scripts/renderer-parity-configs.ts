@@ -12,7 +12,7 @@ const layoutKeys = [
   "lazySchemas",
 ] as const;
 type LayoutKey = (typeof layoutKeys)[number];
-type LifecycleKey = "input" | "output" | "clearOutput" | "incremental";
+type LifecycleKey = "input" | "output" | "clearOutput" | "incremental" | "format";
 type OptionKey = Exclude<keyof GenerateOptions, LayoutKey | LifecycleKey>;
 const bool = <K extends OptionKey>(key: K) =>
   [false, true].map((value) => ({ [key]: value }) as Partial<GenerateOptions>);
@@ -108,6 +108,7 @@ export const lifecycleOptions = [
   "output",
   "clearOutput",
   "incremental",
+  "format",
 ] as const satisfies readonly LifecycleKey[];
 export const parityScenarios: ParityScenario[] = [];
 const layoutInvalidReason = (options: Partial<GenerateOptions>) => {

@@ -77,9 +77,8 @@ export async function writeGenerateFileData(filesData: GenerateFileData[], optio
     return;
   }
 
-  for (const file of filesData) {
-    await writeFile(file, options);
-  }
+  // Formatters such as oxfmt work off-thread, so format and write every file concurrently.
+  await Promise.all(filesData.map((file) => writeFile(file, options)));
 }
 
 export function removeStaleGeneratedFiles({
@@ -88,7 +87,7 @@ export function removeStaleGeneratedFiles({
   options,
 }: {
   output: string;
-  filesData: GenerateFileData[];
+  filesData: Pick<GenerateFileData, "fileName">[];
   options: Pick<GenerateOptions, "configs">;
 }) {
   if (!fs.existsSync(output)) {

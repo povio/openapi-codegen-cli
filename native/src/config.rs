@@ -133,6 +133,8 @@ pub struct GenerateOptions {
     #[serde(default)]
     pub native_compact: bool,
     #[serde(default)]
+    pub models_only: bool,
+    #[serde(default)]
     pub inline_endpoints_exclude_modules: Vec<String>,
     #[serde(default)]
     pub infinite_queries: bool,
@@ -157,7 +159,7 @@ pub struct GenerateOptions {
     #[serde(default)]
     pub workspace_context: Vec<String>,
     #[serde(default)]
-    pub mutation_scope: serde_json::Value,
+    pub mutation_scope: crate::json::Value,
 }
 
 fn default_rest_client() -> String {

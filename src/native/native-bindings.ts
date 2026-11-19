@@ -54,6 +54,20 @@ type NativeBindings = {
     documentJson: string;
     parseMicros: number;
   };
+  generateFiles(
+    source: string,
+    yaml: boolean,
+    optionsJson: string,
+    writeJson: string,
+  ): {
+    complete: boolean;
+    names: string[];
+    hashes: string[];
+    changedNames: string[];
+    changedContents: string[];
+    written: number;
+    elapsedMicros: number;
+  };
 };
 
 let bindings: NativeBindings | undefined;
@@ -101,4 +115,8 @@ export function getNativeBindings(): NativeBindings {
 
 export function compileNativeData(source: string, yaml: boolean, optionsJson: string) {
   return getNativeBindings().compileData(source, yaml, optionsJson);
+}
+
+export function generateNativeFiles(source: string, yaml: boolean, optionsJson: string, writeJson: string) {
+  return getNativeBindings().generateFiles(source, yaml, optionsJson, writeJson);
 }

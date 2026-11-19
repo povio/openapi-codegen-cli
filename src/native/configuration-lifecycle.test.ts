@@ -65,8 +65,8 @@ describe("configuration input and output lifecycle", () => {
       await saveInput(false);
       await generate(false);
       expect(await readFile(stale, "utf8")).toContain("/obsolete");
-      // incremental is currently a compatibility option: unchanged writes are skipped
-      // for both values. Assert the actual behavior without timers or sleeps.
+      // Unchanged files are not rewritten with or without incremental: incremental skips
+      // them by generated content, the writer by comparing with disk. No timers or sleeps.
       expect((await stat(current)).mtimeMs).toBe(unchangedMtime);
 
       await generate(true);

@@ -1,9 +1,9 @@
 use std::{borrow::Cow, collections::VecDeque};
 
+use crate::json::{Map, Value};
 use indexmap::{IndexMap as BaseIndexMap, IndexSet as BaseIndexSet};
 use rayon::prelude::*;
 use rustc_hash::{FxBuildHasher, FxHashMap as HashMap, FxHashSet as HashSet};
-use serde_json::{Map, Value};
 
 use crate::config::GenerateOptions;
 
@@ -106,22 +106,20 @@ fn render_local_models(
     circular_schemas: &[String],
     options: &GenerateOptions,
 ) -> Map<String, Value> {
-    let mut by_tag: IndexMap<String, Map<String, Value>> = IndexMap::default();
+    // Which schemas each module gets, in schema order; modules copy their code in parallel below.
+    let mut by_tag: IndexMap<String, Vec<(&String, &Value)>> = IndexMap::default();
     for (name, code) in schemas {
         if options.models_in_modules
             && let Some(tags) = schema_usage_tags.get(name)
         {
             for tag in tags {
-                by_tag
-                    .entry(tag.clone())
-                    .or_default()
-                    .insert(name.clone(), code.clone());
+                by_tag.entry(tag.clone()).or_default().push((name, code));
             }
         } else if let Some(tag) = schema_owners.get(name).and_then(Value::as_str) {
             by_tag
                 .entry(tag.to_string())
                 .or_default()
-                .insert(name.clone(), code.clone());
+                .push((name, code));
         }
     }
 
@@ -144,8 +142,31 @@ fn render_local_models(
                 .map(|reference| (reference, name.as_str()))
         })
         .collect();
-    let enum_objects = document_enum_objects(document);
-    let property_refs = property_refs(schema_refs, schema_owners, options);
+    // Independent scans of the document and the schema references.
+    let scan_inline_enums = || -> HashMap<&str, Vec<String>> {
+        let references: Vec<&str> = schema_refs.values().filter_map(Value::as_str).collect();
+        references
+            .into_par_iter()
+            .filter_map(|reference| {
+                let schema = resolve_document_ref(document, reference)?;
+                if schema.get("enum").is_some() {
+                    return None;
+                }
+                let mut codes = IndexSet::default();
+                collect_inline_enum_codes(schema, &mut codes);
+                Some((reference, codes.into_iter().collect()))
+            })
+            .collect()
+    };
+    let (enum_objects, (property_refs, inline_enums)) = rayon::join(
+        || document_enum_objects(document),
+        || {
+            rayon::join(
+                || property_refs(schema_refs, schema_owners, options),
+                scan_inline_enums,
+            )
+        },
+    );
     // First non-ref schema per enum code, matching the previous linear `find_map` over `schemas`.
     let mut enum_name_by_code: HashMap<&str, &str> = HashMap::default();
     for (name, value) in schemas {
@@ -165,21 +186,8 @@ fn render_local_models(
             }
         }
     }
-    // Each component's inline enum dependencies are independent of its module.
-    // Build them once and borrow the ordered list in every module that uses it.
-    let inline_enums: HashMap<&str, Vec<String>> = schema_refs
-        .values()
-        .filter_map(Value::as_str)
-        .filter_map(|reference| {
-            let schema = resolve_document_ref(document, reference)?;
-            if schema.get("enum").is_some() {
-                return None;
-            }
-            let mut codes = IndexSet::default();
-            collect_inline_enum_codes(schema, &mut codes);
-            Some((reference, codes.into_iter().collect()))
-        })
-        .collect();
+    // Each component's inline enum dependencies (`inline_enums`, built above) are independent of
+    // its module: built once, the ordered list is borrowed in every module that uses it.
     // With `modelsInModules` the dependencies are copied into the module (not imported) in the
     // order they are found, as the TypeScript renderer appends them, so they are not grouped by owner.
     let import_group = |owner: &str| {
@@ -193,7 +201,11 @@ fn render_local_models(
         .into_iter()
         .collect::<Vec<_>>()
         .into_par_iter()
-        .map(|(tag, mut tag_schemas)| {
+        .map(|(tag, entries)| {
+            let mut tag_schemas: Map<String, Value> = entries
+                .into_iter()
+                .map(|(name, code)| (name.clone(), code.clone()))
+                .collect();
             let mut imports: IndexMap<String, Vec<String>> = IndexMap::default();
             for schema_name in tag_schemas.keys() {
                 if let Some(reference) = schema_refs.get(schema_name).and_then(Value::as_str) {
@@ -874,10 +886,6 @@ fn render_lazy_member(name: &str, value: &str) -> [String; 3] {
     ]
 }
 
-fn is_identifier_char(ch: char) -> bool {
-    ch.is_ascii_alphanumeric() || ch == '_' || ch == '$'
-}
-
 fn find_literal_end(chars: &[char], start: usize, quote: char) -> usize {
     let mut index = start + 1;
     while index < chars.len() {
@@ -928,51 +936,104 @@ struct CodeIdentifier<'a> {
 /// template and regex literals are copied unchanged, so literal data (enum values, defaults,
 /// patterns) is never mistaken for a symbol reference. Mirrors `rewriteCodeIdentifiers` in
 /// src/generators/utils/generate/generate.lazy.utils.ts.
-fn rewrite_code_identifiers(
-    code: &str,
-    mut replace: impl FnMut(&CodeIdentifier) -> (String, bool),
+fn rewrite_code_identifiers<'c>(
+    code: &'c str,
+    mut replace: impl FnMut(&CodeIdentifier<'c>) -> (Cow<'c, str>, bool),
 ) -> String {
-    let chars: Vec<char> = code.chars().collect();
+    // Every character this looks for is ASCII, and UTF-8 continuation bytes never equal an ASCII
+    // byte, so walking bytes finds the same boundaries as walking characters.
+    let bytes = code.as_bytes();
     let mut output = String::with_capacity(code.len());
     let mut index = 0;
-    while index < chars.len() {
-        let ch = chars[index];
-        if ch == '"' || ch == '\'' || ch == '`' {
-            let end = find_literal_end(&chars, index, ch);
-            output.extend(&chars[index..end]);
+    while index < bytes.len() {
+        let byte = bytes[index];
+        if matches!(byte, b'"' | b'\'' | b'`') {
+            let end = literal_end(bytes, index, byte);
+            output.push_str(&code[index..end]);
             index = end;
             continue;
         }
-        if ch == '/' && output.trim_end().ends_with(".regex(") {
-            let end = find_regex_end(&chars, index);
-            output.extend(&chars[index..end]);
+        if byte == b'/' && output.trim_end().ends_with(".regex(") {
+            let end = regex_end(bytes, index);
+            output.push_str(&code[index..end]);
             index = end;
             continue;
         }
-        if is_identifier_char(ch) {
+        if is_identifier_byte(byte) {
             let mut end = index + 1;
-            while end < chars.len() && is_identifier_char(chars[end]) {
+            while end < bytes.len() && is_identifier_byte(bytes[end]) {
                 end += 1;
             }
-            let identifier: String = chars[index..end].iter().collect();
+            let rest = &code[end..];
+            let next_char = rest.chars().next();
             let (text, consume_next_char) = replace(&CodeIdentifier {
-                identifier: &identifier,
+                identifier: &code[index..end],
                 // A spread (`...PetSchema.shape`) is not a member access.
                 is_member_access: output.ends_with('.') && !output.ends_with("..."),
-                is_object_key: chars[end..]
-                    .iter()
-                    .find(|next| !next.is_whitespace())
-                    .is_some_and(|next| *next == ':'),
-                next_char: chars.get(end).copied(),
+                is_object_key: rest.chars().find(|next| !next.is_whitespace()) == Some(':'),
+                next_char,
             });
             output.push_str(&text);
-            index = if consume_next_char { end + 1 } else { end };
+            index = if consume_next_char {
+                end + next_char.map_or(1, char::len_utf8)
+            } else {
+                end
+            };
             continue;
         }
-        output.push(ch);
-        index += 1;
+        // Copy everything up to the next byte this loop handles.
+        let mut end = index + 1;
+        while end < bytes.len()
+            && !matches!(bytes[end], b'"' | b'\'' | b'`' | b'/')
+            && !is_identifier_byte(bytes[end])
+        {
+            end += 1;
+        }
+        output.push_str(&code[index..end]);
+        index = end;
     }
     output
+}
+
+fn is_identifier_byte(byte: u8) -> bool {
+    byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'$'
+}
+
+/// `find_literal_end` on bytes: just past the closing quote, or the end of the code.
+fn literal_end(bytes: &[u8], start: usize, quote: u8) -> usize {
+    let mut index = start + 1;
+    while index < bytes.len() {
+        let byte = bytes[index];
+        if byte == b'\\' {
+            index += 2;
+            continue;
+        }
+        index += 1;
+        if byte == quote {
+            break;
+        }
+    }
+    index.min(bytes.len())
+}
+
+/// `find_regex_end` on bytes: just past the closing `/`, or the end of the code.
+fn regex_end(bytes: &[u8], start: usize) -> usize {
+    let mut escaped = false;
+    let mut character_class = false;
+    for (index, byte) in bytes.iter().enumerate().skip(start + 1) {
+        if escaped {
+            escaped = false;
+            continue;
+        }
+        match byte {
+            b'\\' => escaped = true,
+            b'[' => character_class = true,
+            b']' => character_class = false,
+            b'/' if !character_class => return index + 1,
+            _ => {}
+        }
+    }
+    bytes.len()
 }
 
 /// Rewrites bare references to sibling schemas (`PetSchema`) into factory calls (`PetSchema()`).
@@ -984,9 +1045,9 @@ fn call_lazy_schema_references(code: &str, schema_names: &HashSet<&str>) -> Stri
             && !token.is_object_key;
         (
             if call {
-                format!("{}()", token.identifier)
+                Cow::Owned(format!("{}()", token.identifier))
             } else {
-                token.identifier.to_string()
+                Cow::Borrowed(token.identifier)
             },
             false,
         )
@@ -1009,9 +1070,9 @@ fn strip_model_namespace_references(code: &str, namespace_suffix: &str) -> Strin
             && token.next_char == Some('.')
             && is_model_namespace(token.identifier, namespace_suffix)
         {
-            (String::new(), true)
+            (Cow::Borrowed(""), true)
         } else {
-            (token.identifier.to_string(), false)
+            (Cow::Borrowed(token.identifier), false)
         }
     })
 }
@@ -1029,7 +1090,7 @@ fn code_schema_references(code: &str, is_schema_name: impl Fn(&str) -> bool) -> 
         {
             references.push(token.identifier.to_string());
         }
-        (token.identifier.to_string(), false)
+        (Cow::Borrowed(token.identifier), false)
     });
     references
 }
@@ -1044,6 +1105,15 @@ const OBJECT_PRESERVING_METHODS: [&str; 7] = [
     "extend",
 ];
 
+/// Whether `chars`, ignoring trailing whitespace, ends with `.regex(`.
+fn chars_end_with_regex_call(chars: &[char]) -> bool {
+    let end = chars
+        .iter()
+        .rposition(|ch| !ch.is_whitespace())
+        .map_or(0, |position| position + 1);
+    chars[..end].ends_with(&['.', 'r', 'e', 'g', 'e', 'x', '('])
+}
+
 /// Index just past the `)` that closes the call opened at `open_index`.
 fn find_call_end(chars: &[char], open_index: usize) -> Option<usize> {
     let mut depth = 0usize;
@@ -1054,13 +1124,7 @@ fn find_call_end(chars: &[char], open_index: usize) -> Option<usize> {
             index = find_literal_end(chars, index, ch);
             continue;
         }
-        if ch == '/'
-            && chars[..index]
-                .iter()
-                .collect::<String>()
-                .trim_end()
-                .ends_with(".regex(")
-        {
+        if ch == '/' && chars_end_with_regex_call(&chars[..index]) {
             index = find_regex_end(chars, index);
             continue;
         }
@@ -2092,7 +2156,7 @@ fn capitalize(value: &str) -> String {
         .unwrap_or_default()
 }
 
-fn decapitalize(value: &str) -> String {
+pub(crate) fn decapitalize(value: &str) -> String {
     let mut chars = value.chars();
     chars
         .next()
@@ -2896,7 +2960,10 @@ pub fn render_queries(
         return rendered;
     }
     let annotated = with_cursor_pagination(endpoints, document, options);
-    let endpoints = annotated.as_deref().unwrap_or(endpoints);
+    let endpoints: Vec<&Value> = match &annotated {
+        Some(annotated) => annotated.iter().map(|endpoint| endpoint.as_ref()).collect(),
+        None => endpoints.iter().collect(),
+    };
     let mut by_tag: IndexMap<String, Vec<&Value>> = IndexMap::default();
     for endpoint in endpoints {
         let tag = endpoint
@@ -4266,11 +4333,11 @@ fn page_param_type(endpoint: &Value) -> &'static str {
 
 /// Copies of `endpoints` in which cursor paginated GET endpoints are marked with
 /// `CURSOR_PAGINATED`. `None` when infinite queries are off or no endpoint is cursor paginated.
-fn with_cursor_pagination(
-    endpoints: &[Value],
+fn with_cursor_pagination<'e>(
+    endpoints: &'e [Value],
     document: &Value,
     options: &GenerateOptions,
-) -> Option<Vec<Value>> {
+) -> Option<Vec<Cow<'e, Value>>> {
     if !options.infinite_queries {
         return None;
     }
@@ -4281,13 +4348,21 @@ fn with_cursor_pagination(
     if !marked.contains(&true) {
         return None;
     }
-    let mut endpoints = endpoints.to_vec();
-    for (endpoint, marked) in endpoints.iter_mut().zip(marked) {
-        if let (true, Some(object)) = (marked, endpoint.as_object_mut()) {
-            object.insert(CURSOR_PAGINATED.into(), Value::Bool(true));
-        }
-    }
-    Some(endpoints)
+    // Copy only the endpoints that get the flag; the rest are borrowed.
+    Some(
+        endpoints
+            .iter()
+            .zip(marked)
+            .map(|(endpoint, marked)| match (marked, endpoint.as_object()) {
+                (true, Some(object)) => {
+                    let mut object = object.clone();
+                    object.insert(CURSOR_PAGINATED.into(), Value::Bool(true));
+                    Cow::Owned(Value::Object(object))
+                }
+                _ => Cow::Borrowed(endpoint),
+            })
+            .collect(),
+    )
 }
 
 /// `isCursorPaginatedGetEndpoint`: a GET endpoint with an optional string query parameter named
@@ -5540,8 +5615,8 @@ mod namespace_owner_tests {
 
     #[test]
     fn shared_model_routing_preserves_literals_and_description_text() {
-        let options: GenerateOptions = serde_json::from_value(serde_json::json!({})).unwrap();
-        let owners = serde_json::json!({ "BaseLogLevelEnumSchema": "Common" })
+        let options: GenerateOptions = crate::json::from_value(crate::json!({})).unwrap();
+        let owners = crate::json!({ "BaseLogLevelEnumSchema": "Common" })
             .as_object()
             .unwrap()
             .clone();
@@ -5588,6 +5663,103 @@ const escapedRegex = z.string().regex(/\/[/]EmailAdminModels.BaseLogLevelEnumSch
 
 #[cfg(test)]
 mod model_code_tests {
+    /// The previous character-based `rewrite_code_identifiers`, kept to check the byte-based one.
+    fn reference_rewrite(
+        code: &str,
+        mut replace: impl FnMut(&CodeIdentifier) -> (String, bool),
+    ) -> String {
+        let is_identifier_char = |ch: char| ch.is_ascii_alphanumeric() || ch == '_' || ch == '$';
+        let chars: Vec<char> = code.chars().collect();
+        let mut output = String::new();
+        let mut index = 0;
+        while index < chars.len() {
+            let ch = chars[index];
+            if ch == '"' || ch == '\'' || ch == '`' {
+                let end = find_literal_end(&chars, index, ch);
+                output.extend(&chars[index..end]);
+                index = end;
+                continue;
+            }
+            if ch == '/' && output.trim_end().ends_with(".regex(") {
+                let end = find_regex_end(&chars, index);
+                output.extend(&chars[index..end]);
+                index = end;
+                continue;
+            }
+            if is_identifier_char(ch) {
+                let mut end = index + 1;
+                while end < chars.len() && is_identifier_char(chars[end]) {
+                    end += 1;
+                }
+                let identifier: String = chars[index..end].iter().collect();
+                let (text, consume_next_char) = replace(&CodeIdentifier {
+                    identifier: &identifier,
+                    is_member_access: output.ends_with('.') && !output.ends_with("..."),
+                    is_object_key: chars[end..]
+                        .iter()
+                        .find(|next| !next.is_whitespace())
+                        .is_some_and(|next| *next == ':'),
+                    next_char: chars.get(end).copied(),
+                });
+                output.push_str(&text);
+                index = if consume_next_char { end + 1 } else { end };
+                continue;
+            }
+            output.push(ch);
+            index += 1;
+        }
+        output
+    }
+
+    #[test]
+    fn byte_rewrite_matches_character_rewrite() {
+        let samples = [
+            r#"z.object({ a: CommonModels.PetSchema, b: z.enum(["ExamplesModels.ExampleSchema", 'CommonModels.x']), c: z.string().regex(/^CommonModels\.x[/]$/).default(`CommonModels.y`), CommonModels: z.string(), d: z.lazy(() => PetsModels.PetSchema.nullable()) })"#,
+            "z.object({ é: CommonModels.Ünïcode, \"naïve\\\"é\": 1, ...BaseModels.BaseSchema.shape, k :Value })",
+            "z.string().regex(/a\\/b[\\]/]c/u).describe('it\\'s') // CommonModels.Tail",
+            "'unterminated CommonModels.X",
+            "CommonModels.",
+            "x.regex(  /[/]/g ) Ä.CommonModels.Y CommonModels.Z\u{2028}",
+        ];
+        for code in samples {
+            let strip = |token: &CodeIdentifier| {
+                if !token.is_member_access
+                    && !token.is_object_key
+                    && token.next_char == Some('.')
+                    && is_model_namespace(token.identifier, "Models")
+                {
+                    (String::new(), true)
+                } else {
+                    (token.identifier.to_string(), false)
+                }
+            };
+            assert_eq!(
+                strip_model_namespace_references(code, "Models"),
+                reference_rewrite(code, strip),
+                "{code}"
+            );
+            let names: HashSet<&str> = ["PetSchema", "Value", "BaseSchema"].into_iter().collect();
+            let call = |token: &CodeIdentifier| {
+                let call = names.contains(token.identifier)
+                    && !token.is_member_access
+                    && !token.is_object_key;
+                (
+                    if call {
+                        format!("{}()", token.identifier)
+                    } else {
+                        token.identifier.to_string()
+                    },
+                    false,
+                )
+            };
+            assert_eq!(
+                call_lazy_schema_references(code, &names),
+                reference_rewrite(code, call),
+                "{code}"
+            );
+        }
+    }
+
     use super::*;
 
     #[test]
@@ -5658,7 +5830,7 @@ mod model_code_tests {
 #[cfg(test)]
 mod cursor_pagination_tests {
     use super::*;
-    use serde_json::json;
+    use crate::json;
 
     #[test]
     fn enum_metadata_borrows_unique_objects_and_merges_duplicates_in_document_order() {
@@ -5728,7 +5900,7 @@ mod cursor_pagination_tests {
         base.as_object_mut()
             .unwrap()
             .extend(extra.as_object().unwrap().clone());
-        serde_json::from_value(base).unwrap()
+        crate::json::from_value(base).unwrap()
     }
 
     fn query(name: &str, schema: Value) -> Value {
@@ -5851,7 +6023,7 @@ mod cursor_pagination_tests {
             response,
         )];
         let annotated = with_cursor_pagination(&endpoints, &json!({}), &options).unwrap();
-        let endpoint = &annotated[0];
+        let endpoint: &Value = &annotated[0];
         assert!(is_cursor_paginated(endpoint) && is_infinite(endpoint, &options));
         let mut lines = Vec::new();
         render_query_keys(&mut lines, &[endpoint], &options, "");
@@ -5869,7 +6041,7 @@ mod cursor_pagination_tests {
             "getNextPageParam: ({ \"next-cursor\": nextCursor }: Awaited<ReturnType<typeof ItemsApi.list>>) => nextCursor ?? undefined,"
         ));
         // Without infinite queries nothing is marked.
-        let off: GenerateOptions = serde_json::from_value(json!({})).unwrap();
+        let off: GenerateOptions = crate::json::from_value(json!({})).unwrap();
         assert!(with_cursor_pagination(&endpoints, &json!({}), &off).is_none());
     }
 }

@@ -10,6 +10,7 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   output: "output",
   clearOutput: false,
   incremental: true,
+  format: true,
   splitByTags: true,
   defaultTag: "Common",
   includeTags: [],

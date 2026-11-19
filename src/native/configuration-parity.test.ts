@@ -17,7 +17,7 @@ describe("configuration coverage inventory", () => {
     expect(layouts.filter((s) => s.invalid)).toHaveLength(56);
     expect(new Set(parityScenarios.map((s) => s.name)).size).toBe(parityScenarios.length);
     expect(Object.keys(optionCases).length).toBeGreaterThan(40);
-    expect(lifecycleOptions).toEqual(["input", "output", "clearOutput", "incremental"]);
+    expect(lifecycleOptions).toEqual(["input", "output", "clearOutput", "incremental", "format"]);
   });
 });
 
@@ -26,15 +26,18 @@ for (const fixture of parityFixtures) {
   describe(`all renderer configurations: ${fixture.name}`, () => {
     test.each(parityScenarios)("$name", (scenario) => {
       vi.stubEnv("OPENAPI_CODEGEN_NATIVE", "1");
-      const binding = vi.spyOn(getNativeBindings(), "compileData");
+      // Complete native renders go through generateFiles, hybrid ones through compileData.
+      const compileData = vi.spyOn(getNativeBindings(), "compileData");
+      const generateFiles = vi.spyOn(getNativeBindings(), "generateFiles");
+      const nativeCalls = () => compileData.mock.calls.length + generateFiles.mock.calls.length;
       const expected = renderParityCase(source, scenario, "js");
-      expect(binding).not.toHaveBeenCalled();
+      expect(nativeCalls()).toBe(0);
       const actual = renderParityCase(source, scenario, "native");
       if (scenario.invalid) {
         expect(actual.route).toBe("rejected");
-        expect(binding).not.toHaveBeenCalled();
+        expect(nativeCalls()).toBe(0);
       } else {
-        expect(binding).toHaveBeenCalled();
+        expect(nativeCalls()).toBeGreaterThan(0);
       }
       const contents = (files: typeof actual.files) => Object.fromEntries(files.map((f) => [f.fileName, f.content]));
       expect(contents(actual.files)).toEqual(contents(expected.files));

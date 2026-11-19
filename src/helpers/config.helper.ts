@@ -7,6 +7,14 @@ import { logError } from "./cli.helper";
 
 const CONFIG_FILE_NAMES = ["openapi-codegen.config.mjs", "openapi-codegen.config.ts"];
 
+/** The config file `loadConfig` reads: the given path, or a default name in the working directory. */
+export function resolveConfigPath(configPath?: string): string | undefined {
+  if (configPath) return path.resolve(process.cwd(), configPath);
+  return CONFIG_FILE_NAMES.map((fileName) => path.resolve(process.cwd(), fileName)).find((filePath) =>
+    fs.existsSync(filePath),
+  );
+}
+
 export async function loadConfig(configPath?: string): Promise<OpenAPICodegenConfig | null> {
   try {
     if (configPath) {

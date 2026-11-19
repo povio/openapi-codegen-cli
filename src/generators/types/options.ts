@@ -80,6 +80,11 @@ interface BaseGenerateOptions {
   output: string;
   clearOutput?: boolean;
   incremental?: boolean;
+  /**
+   * Format generated files with the project's oxfmt config (nearest `.oxfmtrc.json` above the
+   * output, also used by `bun fmt`) when `oxfmt` is installed. Defaults to true.
+   */
+  format?: boolean;
   splitByTags: boolean;
   defaultTag: string;
   includeTags: string[];

@@ -273,6 +273,7 @@ name = "openapi-codegen-native"
 version = "0.1.0"
 dependencies = [
  "indexmap",
+ "memchr",
  "napi",
  "napi-build",
  "napi-derive",

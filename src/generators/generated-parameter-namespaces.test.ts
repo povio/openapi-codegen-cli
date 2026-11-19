@@ -73,7 +73,11 @@ describe("generated parameter namespaces", () => {
       const output = await mkdtemp(join(tmpdir(), "parameter-namespaces-"));
       try {
         vi.stubEnv("OPENAPI_CODEGEN_NATIVE", "1");
-        const compileData = renderer === "native" ? vi.spyOn(getNativeBindings(), "compileData") : undefined;
+        // Full native renders go through generateFiles, hybrid ones through compileData.
+        const nativeBindings =
+          renderer === "native"
+            ? [vi.spyOn(getNativeBindings(), "compileData"), vi.spyOn(getNativeBindings(), "generateFiles")]
+            : [];
         const generated = renderParityCase(
           JSON.stringify(sharedEnumMutationScope),
           {
@@ -100,7 +104,7 @@ describe("generated parameter namespaces", () => {
         );
         const files = generated.files;
         if (renderer === "native") {
-          expect(compileData).toHaveBeenCalled();
+          expect(nativeBindings.reduce((calls, spy) => calls + spy.mock.calls.length, 0)).toBeGreaterThan(0);
           expect(["full-native", "hybrid-native"]).toContain(generated.route);
         } else {
           expect(generated.route).toBe("js");

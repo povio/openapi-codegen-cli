@@ -2,16 +2,18 @@ mod cache;
 mod config;
 mod endpoints;
 mod engine;
+mod files;
+mod json;
 mod openapi;
 mod render;
 mod render_pool;
 mod resolver;
 mod zod;
 
+use crate::json::Value;
 use napi::Env;
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
-use serde_json::Value;
 
 // Use the system allocator: this addon can unload with its last Node worker and
 // later reload. An embedded allocator's thread-local state can outlive that load.
@@ -185,6 +187,71 @@ pub fn compile_data(
     compile_data_impl(source, yaml, options_json, setting.as_deref() != Some("0"))
 }
 
+#[napi(object)]
+pub struct NativeFilesResult {
+    /// False when the options need the TypeScript renderer; nothing else is set then.
+    pub complete: bool,
+    pub names: Vec<String>,
+    pub hashes: Vec<String>,
+    pub changed_names: Vec<String>,
+    pub changed_contents: Vec<String>,
+    pub written: u32,
+    pub elapsed_micros: i64,
+}
+
+/// Compiles, renders and assembles the output files, and writes the changed ones unless the
+/// caller formats them first. Only file names, hashes and files left to format reach JavaScript.
+#[napi]
+pub fn generate_files(
+    env: Env,
+    source: String,
+    yaml: bool,
+    options_json: String,
+    write_json: String,
+) -> Result<NativeFilesResult> {
+    let process: Object = env.get_global()?.get_named_property("process")?;
+    let environment: Object = process.get_named_property("env")?;
+    let setting: Option<String> = environment.get("OPENAPI_CODEGEN_NATIVE_CACHE")?;
+    let started = std::time::Instant::now();
+    let options: config::GenerateOptions = serde_json::from_str(&options_json)
+        .map_err(|error| Error::new(Status::InvalidArg, error.to_string()))?;
+    let write: files::WriteOptions = serde_json::from_str(&write_json)
+        .map_err(|error| Error::new(Status::InvalidArg, error.to_string()))?;
+    let use_cache = write.use_cache && setting.as_deref() != Some("0");
+    let compiled = compile_data_impl(source, yaml, options_json, use_cache)?;
+    let after_compile = started.elapsed();
+    let generated = files::generate_files(compiled.data, &options, &write)
+        .map_err(|error| Error::new(Status::GenericFailure, error))?;
+    if std::env::var_os("OPENAPI_NATIVE_PROFILE").is_some() {
+        eprintln!(
+            "native files compile={:.3}ms files={:.3}ms",
+            after_compile.as_secs_f64() * 1000.0,
+            (started.elapsed() - after_compile).as_secs_f64() * 1000.0,
+        );
+    }
+    let elapsed_micros = started.elapsed().as_micros() as i64;
+    Ok(match generated {
+        Some(generated) => NativeFilesResult {
+            complete: true,
+            names: generated.names,
+            hashes: generated.hashes,
+            changed_names: generated.changed_names,
+            changed_contents: generated.changed_contents,
+            written: generated.written,
+            elapsed_micros,
+        },
+        None => NativeFilesResult {
+            complete: false,
+            names: Vec::new(),
+            hashes: Vec::new(),
+            changed_names: Vec::new(),
+            changed_contents: Vec::new(),
+            written: 0,
+            elapsed_micros,
+        },
+    })
+}
+
 fn compile_data_impl(
     source: String,
     yaml: bool,
@@ -217,8 +284,8 @@ fn compile_data_impl(
         .map_err(|error| Error::new(Status::GenericFailure, error))?;
     let after_endpoints = started.elapsed();
     let (generated, compiler) = extractor.into_generated_data();
-    let mut schema_owners = serde_json::Map::new();
-    let mut schema_refs = serde_json::Map::new();
+    let mut schema_owners = crate::json::Map::new();
+    let mut schema_refs = crate::json::Map::new();
     if let Some(document_schemas) = document
         .pointer("/components/schemas")
         .and_then(Value::as_object)
@@ -467,14 +534,14 @@ fn compile_data_impl(
     }
     rendered_tags.insert(options.default_tag.clone());
     let rendered_tags = rendered_tags.into_iter().collect::<Vec<_>>();
-    let compact = || Value::Object(serde_json::Map::new());
-    let mut data = serde_json::Map::new();
+    let compact = || Value::Object(crate::json::Map::new());
+    let mut data = crate::json::Map::new();
     data.insert(
         "endpoints".into(),
         if rendered_complete {
             Value::Array(Vec::new())
         } else {
-            Value::Array(endpoints)
+            Value::Array(std::mem::take(&mut endpoints))
         },
     );
     data.insert(
@@ -498,7 +565,7 @@ fn compile_data_impl(
         if rendered_complete {
             compact()
         } else {
-            serde_json::to_value(usage_tags).unwrap()
+            crate::json::to_value(usage_tags).unwrap()
         },
     );
     data.insert(
@@ -514,7 +581,7 @@ fn compile_data_impl(
         if rendered_complete {
             Value::Array(Vec::new())
         } else {
-            serde_json::to_value(circular_schemas).unwrap()
+            crate::json::to_value(circular_schemas).unwrap()
         },
     );
     data.insert(
@@ -522,7 +589,7 @@ fn compile_data_impl(
         if rendered_complete {
             Value::Array(Vec::new())
         } else {
-            serde_json::to_value(topology_order).unwrap()
+            crate::json::to_value(topology_order).unwrap()
         },
     );
     data.insert("baseUrl".into(), Value::String(base_url.to_owned()));
@@ -547,7 +614,7 @@ fn compile_data_impl(
         if rendered_complete {
             compact()
         } else {
-            serde_json::to_value(resolver.ordered_dependencies).unwrap()
+            crate::json::to_value(&resolver.ordered_dependencies).unwrap()
         },
     );
     data.insert("renderedModels".into(), Value::Object(rendered_models));
@@ -561,16 +628,19 @@ fn compile_data_impl(
     data.insert("renderedComplete".into(), Value::Bool(rendered_complete));
     data.insert(
         "renderedTags".into(),
-        serde_json::to_value(rendered_tags).unwrap(),
+        crate::json::to_value(rendered_tags).unwrap(),
     );
-    data.insert(
-        "document".into(),
-        if rendered_complete {
-            Value::Null
-        } else {
-            document
-        },
-    );
+    // Borrowers of `document` must go before it can move to the release thread.
+    drop(compiler);
+    drop(resolver);
+    let document = if rendered_complete {
+        // Freeing the parsed document is a sizeable share of a compile.
+        render_pool::release_in_background((document, endpoints));
+        Value::Null
+    } else {
+        document
+    };
+    data.insert("document".into(), document);
     let data = Value::Object(data);
     if std::env::var_os("OPENAPI_NATIVE_PROFILE").is_some() {
         let finished = started.elapsed();
@@ -599,12 +669,12 @@ fn compile_data_impl(
 // Preserve component/generated/enum precedence and stable leftover order without
 // shifting the remaining insertion-ordered map for each topology entry.
 fn order_compiled_schemas(
-    components: serde_json::Map<String, Value>,
-    generated: serde_json::Map<String, Value>,
+    components: crate::json::Map<String, Value>,
+    generated: crate::json::Map<String, Value>,
     topology_order: &[String],
-) -> serde_json::Map<String, Value> {
+) -> crate::json::Map<String, Value> {
     let mut root_enums = Vec::new();
-    let mut remaining = serde_json::Map::new();
+    let mut remaining = crate::json::Map::new();
     for (name, code) in components {
         if code.as_str().is_some_and(|code| code.starts_with("z.enum")) {
             root_enums.push((name, code));
@@ -614,7 +684,7 @@ fn order_compiled_schemas(
     }
     remaining.extend(generated);
     remaining.extend(root_enums);
-    let mut ordered = serde_json::Map::new();
+    let mut ordered = crate::json::Map::new();
     for name in topology_order {
         // Distinct component references can normalize to the same schema name.
         if !ordered.contains_key(name) {
@@ -634,7 +704,7 @@ fn order_compiled_schemas(
 // Build the rendered-schema graph once, then revisit only schemas whose usage changed.
 // Token recognition deliberately matches the existing ownership propagation semantics.
 fn propagate_schema_usage_tags(
-    schemas: &serde_json::Map<String, Value>,
+    schemas: &crate::json::Map<String, Value>,
     usage_tags: &mut rustc_hash::FxHashMap<String, rustc_hash::FxHashSet<String>>,
 ) {
     use rustc_hash::FxHashMap;
@@ -655,21 +725,24 @@ fn propagate_schema_usage_tags(
             pending.push_back(id);
         }
     }
-    let dependencies: Vec<Vec<usize>> = schemas
-        .iter()
-        .enumerate()
-        .map(|(id, (_, code))| {
-            let mut seen = rustc_hash::FxHashSet::default();
-            code.as_str()
-                .into_iter()
-                .flat_map(|code| {
-                    code.split(|c: char| !c.is_ascii_alphanumeric() && c != '_' && c != '$')
-                })
-                .filter_map(|name| ids.get(name).copied())
-                .filter(|&dependency| dependency != id && seen.insert(dependency))
-                .collect()
-        })
-        .collect();
+    // Scanning every compiled schema for the names it uses is independent per schema.
+    let scan = |(id, code): (usize, &Value)| -> Vec<usize> {
+        let mut seen = rustc_hash::FxHashSet::default();
+        code.as_str()
+            .into_iter()
+            .flat_map(|code| {
+                code.split(|c: char| !c.is_ascii_alphanumeric() && c != '_' && c != '$')
+            })
+            .filter_map(|name| ids.get(name).copied())
+            .filter(|&dependency| dependency != id && seen.insert(dependency))
+            .collect()
+    };
+    let codes: Vec<(usize, &Value)> = schemas.values().enumerate().collect();
+    let dependencies: Vec<Vec<usize>> = render_pool::install(|| {
+        use rayon::prelude::*;
+        codes.par_iter().map(|&entry| scan(entry)).collect()
+    })
+    .unwrap_or_else(|_| codes.iter().map(|&entry| scan(entry)).collect());
     while let Some(id) = pending.pop_front() {
         queued[id] = false;
         let source = tags[id].as_ref().unwrap().clone();
@@ -697,7 +770,8 @@ mod usage_tests {
     #[test]
     fn indexed_ownership_preserves_tag_iteration_order_used_by_module_rendering() {
         use rustc_hash::{FxHashMap, FxHashSet};
-        let schemas = serde_json::json!({"First":"Shared", "Second":"Shared", "Shared":"Leaf", "Leaf":"Shared"});
+        let schemas =
+            crate::json!({"First":"Shared", "Second":"Shared", "Shared":"Leaf", "Leaf":"Shared"});
         let mut actual = FxHashMap::default();
         actual.insert(
             "First".to_string(),
@@ -735,7 +809,7 @@ mod usage_tests {
     #[test]
     fn indexed_ownership_preserves_large_tag_sets_empty_and_external_entries() {
         use rustc_hash::{FxHashMap, FxHashSet};
-        let schemas = serde_json::json!({"Root":"Middle", "Middle":"Leaf", "Leaf":"Root", "Empty":"EmptyChild", "EmptyChild":"Far", "Far":"z.string()"});
+        let schemas = crate::json!({"Root":"Middle", "Middle":"Leaf", "Leaf":"Root", "Empty":"EmptyChild", "EmptyChild":"Far", "Far":"z.string()"});
         let all: FxHashSet<String> = (0..130).map(|i| format!("Tag{i}")).collect();
         let mut usages = FxHashMap::default();
         usages.insert("Root".to_string(), all.clone());
@@ -766,7 +840,7 @@ mod usage_tests {
 
     #[test]
     fn schema_order_preserves_normalized_collisions_and_leftover_enum_precedence() {
-        let components = serde_json::json!({
+        let components = crate::json!({
             "UnusedSchema": "z.string()",
             "ChoiceSchema": "z.enum([\"first\", \"second\"])",
             "ThingItemSchema": "z.object({ value: z.string() })",
@@ -775,7 +849,7 @@ mod usage_tests {
         .as_object()
         .unwrap()
         .clone();
-        let generated = serde_json::json!({
+        let generated = crate::json!({
             "GeneratedSchema": "z.number()",
             "ChoiceSchema": "z.boolean()",
             "UnusedSchema": "z.string().optional()"
@@ -809,7 +883,7 @@ mod usage_tests {
 
     #[test]
     fn propagates_usage_through_reversed_chains_and_cycles() {
-        let schemas = serde_json::json!({
+        let schemas = crate::json!({
             "Leaf": "z.string()",
             "CycleA": "z.object({ next: CycleB, leaf: Leaf })",
             "CycleB": "z.object({ next: CycleA })",

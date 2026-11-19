@@ -1,148 +1,148 @@
-import type { CommandModule } from "yargs";
-
 import { logBanner } from "@/helpers/cli.helper";
 import { getVersion } from "@/helpers/version.helper";
-import { getBuilder, YargOption } from "@/helpers/yargs.helper";
+import { CliOption, type CliCommand } from "@/helpers/cli-options.helper";
 
 import { generate, GenerateParams } from "./generate";
 
 class GenerateOptions implements GenerateParams {
-  @YargOption({ envAlias: "config" })
+  @CliOption({ envAlias: "config" })
   config?: string;
 
-  @YargOption({ envAlias: "input" })
+  @CliOption({ envAlias: "input" })
   input?: string;
 
-  @YargOption({ envAlias: "output" })
+  @CliOption({ envAlias: "output" })
   output?: string;
 
-  @YargOption({ envAlias: "clearOutput", type: "boolean" })
+  @CliOption({ envAlias: "clearOutput", type: "boolean" })
   clearOutput?: boolean;
 
-  @YargOption({ envAlias: "incremental", type: "boolean" })
+  @CliOption({ envAlias: "incremental", type: "boolean" })
   incremental?: boolean;
 
-  @YargOption({ envAlias: "tsNamespaces", type: "boolean" })
+  @CliOption({ envAlias: "tsNamespaces", type: "boolean" })
   tsNamespaces?: boolean;
 
-  @YargOption({ envAlias: "treeShakeableNamespaces", type: "boolean" })
+  @CliOption({ envAlias: "treeShakeableNamespaces", type: "boolean" })
   treeShakeableNamespaces?: boolean;
 
-  @YargOption({ envAlias: "tsPath" })
+  @CliOption({ envAlias: "tsPath" })
   tsPath?: string;
 
-  @YargOption({ envAlias: "splitByTags", type: "boolean" })
+  @CliOption({ envAlias: "splitByTags", type: "boolean" })
   splitByTags?: boolean;
 
-  @YargOption({ envAlias: "defaultTag" })
+  @CliOption({ envAlias: "defaultTag" })
   defaultTag?: string;
 
-  @YargOption({ envAlias: "includeTags" })
+  @CliOption({ envAlias: "includeTags" })
   includeTags?: string;
 
-  @YargOption({ envAlias: "excludeTags" })
+  @CliOption({ envAlias: "excludeTags" })
   excludeTags?: string;
 
-  @YargOption({ envAlias: "excludePathRegex" })
+  @CliOption({ envAlias: "excludePathRegex" })
   excludePathRegex?: string;
 
-  @YargOption({ envAlias: "excludeRedundantZodSchemas", type: "boolean" })
+  @CliOption({ envAlias: "excludeRedundantZodSchemas", type: "boolean" })
   excludeRedundantZodSchemas?: boolean;
 
-  @YargOption({ envAlias: "includeSchemas" })
+  @CliOption({ envAlias: "includeSchemas" })
   includeSchemas?: string;
 
-  @YargOption({ envAlias: "importPath" })
+  @CliOption({ envAlias: "importPath" })
   importPath?: "ts" | "relative" | "absolute";
 
-  @YargOption({ envAlias: "compileSchemas", type: "boolean" })
+  @CliOption({ envAlias: "compileSchemas", type: "boolean" })
   compileSchemas?: boolean;
 
-  @YargOption({ envAlias: "lazySchemas", type: "boolean" })
+  @CliOption({ envAlias: "lazySchemas", type: "boolean" })
   lazySchemas?: boolean;
 
-  @YargOption({ envAlias: "generateJsDoc", type: "boolean" })
+  @CliOption({ envAlias: "generateJsDoc", type: "boolean" })
   generateJsDoc?: boolean;
 
-  @YargOption({ envAlias: "extractEnums", type: "boolean" })
+  @CliOption({ envAlias: "extractEnums", type: "boolean" })
   extractEnums?: boolean;
 
-  @YargOption({ envAlias: "modelsInCommon", type: "boolean" })
+  @CliOption({ envAlias: "modelsInCommon", type: "boolean" })
   modelsInCommon?: boolean;
 
-  @YargOption({ envAlias: "modelsInModules", type: "boolean" })
+  @CliOption({ envAlias: "modelsInModules", type: "boolean" })
   modelsInModules?: boolean;
 
-  @YargOption({ envAlias: "zodImportPath" })
+  @CliOption({ envAlias: "zodImportPath" })
   zodImportPath?: string;
 
-  @YargOption({ envAlias: "restClient", choices: ["axios", "native"] })
+  @CliOption({ envAlias: "restClient", choices: ["axios", "native"] })
   restClient?: "axios" | "native";
 
-  @YargOption({ envAlias: "mutationEffectsImportPath" })
+  @CliOption({ envAlias: "mutationEffectsImportPath" })
   mutationEffectsImportPath?: string;
 
-  @YargOption({ envAlias: "aclCheckImportPath" })
+  @CliOption({ envAlias: "aclCheckImportPath" })
   aclCheckImportPath?: string;
 
-  @YargOption({ envAlias: "removeOperationPrefixEndingWith" })
+  @CliOption({ envAlias: "removeOperationPrefixEndingWith" })
   removeOperationPrefixEndingWith?: string;
 
-  @YargOption({ envAlias: "acl", type: "boolean" })
+  @CliOption({ envAlias: "acl", type: "boolean" })
   acl?: boolean;
 
-  @YargOption({ envAlias: "checkAcl", type: "boolean" })
+  @CliOption({ envAlias: "checkAcl", type: "boolean" })
   checkAcl?: boolean;
 
-  @YargOption({ envAlias: "baseUrl" })
+  @CliOption({ envAlias: "baseUrl" })
   baseUrl?: string;
 
-  @YargOption({ envAlias: "replaceOptionalWithNullish", type: "boolean" })
+  @CliOption({ envAlias: "replaceOptionalWithNullish", type: "boolean" })
   replaceOptionalWithNullish?: boolean;
 
-  @YargOption({ envAlias: "infiniteQueries", type: "boolean" })
+  @CliOption({ envAlias: "infiniteQueries", type: "boolean" })
   infiniteQueries?: boolean;
 
-  @YargOption({ envAlias: "mutationEffects", type: "boolean" })
+  @CliOption({ envAlias: "mutationEffects", type: "boolean" })
   mutationEffects?: boolean;
 
-  @YargOption({ envAlias: "mutationDefaultOnError", type: "boolean" })
+  @CliOption({ envAlias: "mutationDefaultOnError", type: "boolean" })
   mutationDefaultOnError?: boolean;
 
-  @YargOption({ envAlias: "workspaceContext" })
+  @CliOption({ envAlias: "workspaceContext" })
   workspaceContext?: string;
 
-  @YargOption({ envAlias: "mutationScope", type: "boolean" })
+  @CliOption({ envAlias: "mutationScope", type: "boolean" })
   mutationScope?: boolean;
 
-  @YargOption({ envAlias: "parseRequestParams", type: "boolean" })
+  @CliOption({ envAlias: "parseRequestParams", type: "boolean" })
   parseRequestParams?: boolean;
 
-  @YargOption({ envAlias: "inlineEndpoints", type: "boolean" })
+  @CliOption({ envAlias: "inlineEndpoints", type: "boolean" })
   inlineEndpoints?: boolean;
 
-  @YargOption({ envAlias: "inlineEndpointsExcludeModules" })
+  @CliOption({ envAlias: "inlineEndpointsExcludeModules" })
   inlineEndpointsExcludeModules?: string;
 
-  @YargOption({ envAlias: "modelsOnly", type: "boolean" })
+  @CliOption({ envAlias: "modelsOnly", type: "boolean" })
   modelsOnly?: boolean;
 
-  @YargOption({ envAlias: "axiosRequestConfig", type: "boolean" })
+  @CliOption({ envAlias: "axiosRequestConfig", type: "boolean" })
   axiosRequestConfig?: boolean;
 
-  @YargOption({ envAlias: "format", default: true, type: "boolean" })
+  @CliOption({ envAlias: "format", type: "boolean" })
   format?: boolean;
 
-  @YargOption({ envAlias: "verbose", default: false, type: "boolean" })
+  @CliOption({ envAlias: "verbose", default: false, type: "boolean" })
   verbose?: boolean;
+
+  @CliOption({ envAlias: "watch", default: false, type: "boolean" })
+  watch?: boolean;
 }
 
-export const command: CommandModule = {
+export const command: CliCommand<GenerateOptions> = {
   command: "generate",
   describe: "Generate code from OpenAPI spec",
-  builder: getBuilder(GenerateOptions),
-  handler: async (_argv) => {
-    const argv = (await _argv) as unknown as GenerateOptions;
+  options: GenerateOptions,
+  handler: async (argv) => {
     if (argv.verbose) {
       logBanner(`OpenAPI CodeGen ${getVersion()}`);
     }

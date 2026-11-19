@@ -1,5 +1,5 @@
+use crate::json::Value;
 use serde::Serialize;
-use serde_json::Value;
 
 const METHODS: [&str; 8] = [
     "get", "put", "post", "delete", "options", "head", "patch", "trace",
